@@ -4,24 +4,16 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
   <title>GLITCH DROP — Mini App</title>
+
   <style>
     :root{
-      --bg:#060812;
-      --bg2:#04060e;
-      --panel:#0a0f1e;
-      --panel2:#0a0d19;
-      --card:#0e1330;
-      --card2:#0b0f26;
+      --bg:#060812; --bg2:#04060e;
+      --panel:#0a0f1e; --panel2:#0a0d19;
+      --card:#0e1330; --card2:#0b0f26;
       --grid:rgba(255,255,255,.04);
 
-      --neon-cyan:#16f1ff;
-      --neon-pink:#ff3ed0;
-      --neon-violet:#8a5cff;
-      --neon-yellow:#ffe47a;
-
-      --text:#e8efff;
-      --muted:#9fb2d9;
-      --border:rgba(120,180,255,.25);
+      --neon-cyan:#16f1ff; --neon-pink:#ff3ed0; --neon-violet:#8a5cff; --neon-yellow:#ffe47a;
+      --text:#e8efff; --muted:#9fb2d9; --border:rgba(120,180,255,.25);
 
       --shadow-strong:0 20px 60px rgba(10,20,60,.55), 0 0 60px rgba(22,241,255,.08);
       --shadow-soft:0 10px 30px rgba(10,20,60,.35);
@@ -41,7 +33,6 @@
       overflow-x:hidden;
     }
 
-    /* Сетка фона */
     .gridmask::before{
       content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
       background:
@@ -52,48 +43,46 @@
 
     .app{min-height:100%;display:flex;flex-direction:column;position:relative;z-index:1}
 
-    /* TopBar в стиле неон-стекла */
+    /* TOPBAR */
     .topbar{
       position:sticky; top:0; z-index:30;
-      display:flex; align-items:center; gap:14px;
+      display:flex; align-items:center; gap:12px;
       padding:12px 14px;
       background:linear-gradient(180deg,rgba(8,14,36,.72),rgba(6,10,26,.62));
       border-bottom:1px solid var(--border);
       backdrop-filter:blur(10px);
       box-shadow:var(--shadow-soft);
     }
-    .logo{
-      width:42px;height:42px;border-radius:12px;display:grid;place-items:center;
+
+    /* Аватар пользователя (неон-рамка) */
+    .avatar{
+      width:42px; height:42px; border-radius:50%;
+      border:2px solid rgba(22,241,255,.55);
+      box-shadow:0 0 18px rgba(22,241,255,.28), 0 0 28px rgba(255,62,208,.18);
+      object-fit:cover; background:linear-gradient(135deg, rgba(22,241,255,.15), rgba(255,62,208,.15));
+    }
+    .avatar.hidden{ display:none; }
+
+    /* Заглушка вместо аватара */
+    .avatar-fallback{
+      width:42px; height:42px; border-radius:12px; display:grid; place-items:center;
       background:linear-gradient(135deg, rgba(22,241,255,.18), rgba(255,62,208,.18));
-      border:1px solid var(--border);
-      font-weight:900; letter-spacing:.5px;
-      color:#081121;
-      text-shadow:0 0 12px rgba(22,241,255,.7);
+      border:1px solid var(--border); font-weight:900; letter-spacing:.5px;
+      color:#081121; text-shadow:0 0 12px rgba(22,241,255,.7);
     }
 
-    /* Глитч-заголовок */
+    /* Глитч-заголовок (ник) */
     .brand{position:relative; font-weight:900; line-height:1; letter-spacing:1px}
     .brand .glitch{
       font-size:22px; color:#cfe6ff; position:relative; display:inline-block;
-      text-shadow:
-        0 0 24px rgba(22,241,255,.55),
-        0 0 24px rgba(255,62,208,.35);
+      text-shadow:0 0 24px rgba(22,241,255,.55), 0 0 24px rgba(255,62,208,.35);
     }
     .brand .glitch::before,
     .brand .glitch::after{
       content:attr(data-text); position:absolute; left:0; top:0; width:100%; overflow:hidden;
-      clip-path:inset(0 0 0 0);
     }
-    .brand .glitch::before{
-      transform:translateX(1px); color:var(--neon-cyan); opacity:.9;
-      text-shadow:0 0 10px rgba(22,241,255,.8);
-      animation:glitch 3s infinite ease-in-out;
-    }
-    .brand .glitch::after{
-      transform:translateX(-1px); color:var(--neon-pink); opacity:.8;
-      text-shadow:0 0 10px rgba(255,62,208,.8);
-      animation:glitch 2.6s infinite ease-in-out reverse;
-    }
+    .brand .glitch::before{ transform:translateX(1px); color:var(--neon-cyan); opacity:.9; text-shadow:0 0 10px rgba(22,241,255,.8); animation:glitch 3s infinite ease-in-out;}
+    .brand .glitch::after{  transform:translateX(-1px); color:var(--neon-pink); opacity:.8; text-shadow:0 0 10px rgba(255,62,208,.8); animation:glitch 2.6s infinite ease-in-out reverse;}
     @keyframes glitch{
       0%,100%{clip-path:inset(0 0 0 0)}
       10%{clip-path:inset(0 0 65% 0)}
@@ -113,7 +102,7 @@
       font-weight:900; color:#cfe6ff;
     }
 
-    /* Чипы разделов (неоновые) */
+    /* CHIPS */
     .chipbar{
       position:sticky; top:64px; z-index:25;
       display:flex; gap:10px; padding:10px 14px; overflow-x:auto;
@@ -136,39 +125,26 @@
       box-shadow:0 6px 28px rgba(22,241,255,.35), 0 0 44px rgba(255,62,208,.25) !important;
     }
 
-    /* Контент */
     .content{flex:1; padding:16px; max-width:1100px; margin:0 auto; width:100%}
     h2.section{
       margin:20px 0 12px; text-align:center; font-size:13px; letter-spacing:2px; opacity:.95;
-      color:#d7e6ff;
-      text-shadow:0 0 16px rgba(22,241,255,.25);
-      scroll-margin-top:130px;
+      color:#d7e6ff; text-shadow:0 0 16px rgba(22,241,255,.25); scroll-margin-top:130px;
     }
 
-    /* Сетка карточек — 2 в ряд */
     .grid{display:grid; grid-template-columns:repeat(2,1fr); gap:14px}
 
-    /* Карточка кейса (неон-стекло) */
     .card{
-      position:relative;
-      background:linear-gradient(180deg, rgba(20,26,62,.55), rgba(14,18,40,.6));
-      border:1px solid var(--border);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow-strong);
-      padding:12px;
-      display:flex; flex-direction:column; gap:10px;
-      overflow:hidden;
+      position:relative; background:linear-gradient(180deg, rgba(20,26,62,.55), rgba(14,18,40,.6));
+      border:1px solid var(--border); border-radius:var(--radius);
+      box-shadow:var(--shadow-strong); padding:12px; display:flex; flex-direction:column; gap:10px; overflow:hidden;
     }
-    .card::before{
-      content:""; position:absolute; inset:-2px;
+    .card::before{ content:""; position:absolute; inset:-2px;
       background:conic-gradient(from 200deg, transparent, rgba(22,241,255,.18), transparent 30%, rgba(255,62,208,.18), transparent 55%);
       filter:blur(14px); opacity:.35; z-index:0;
     }
     .inner{position:relative; z-index:1}
-
     .thumb{
-      height:160px; border-radius:14px; position:relative;
-      border:1px dashed rgba(180,210,255,.35);
+      height:160px; border-radius:14px; border:1px dashed rgba(180,210,255,.35);
       background:
         radial-gradient(120px 80px at 20% 20%, rgba(22,241,255,.12), transparent 60%),
         radial-gradient(120px 80px at 80% 80%, rgba(255,62,208,.10), transparent 60%),
@@ -179,20 +155,16 @@
     .desc{font-size:12px; color:#9fb2d9}
     .price{font-weight:900; color:var(--neon-yellow); text-shadow:0 0 12px rgba(255,228,122,.25)}
 
-    /* Низ */
     .tabbar{
       position:sticky; bottom:0; z-index:24;
       background:linear-gradient(180deg,rgba(8,14,36,.72),rgba(6,10,26,.62));
-      border-top:1px solid var(--border);
-      backdrop-filter:blur(10px);
-      display:grid; grid-template-columns:repeat(5,1fr);
-      padding:8px 6px;
+      border-top:1px solid var(--border); backdrop-filter:blur(10px);
+      display:grid; grid-template-columns:repeat(5,1fr); padding:8px 6px
     }
     .tab{display:flex; flex-direction:column; align-items:center; gap:4px; padding:6px 2px; color:#9fb2d9; font-size:12px; font-weight:800}
     .tab.active{color:#e8efff}
     .ico{font-size:18px; text-shadow:0 0 10px rgba(22,241,255,.3)}
 
-    /* Кнопка "ВВЕРХ" — неон */
     .backtop{
       position:fixed; right:14px; bottom:90px; z-index:50;
       padding:9px 12px; border-radius:12px; font-weight:900; font-size:12px; letter-spacing:.3px;
@@ -207,11 +179,19 @@
 </head>
 <body>
   <div class="gridmask"></div>
+
   <div class="app" id="top">
     <!-- TOP -->
     <div class="topbar">
-      <div class="logo">GD</div>
-      <div class="brand"><span class="glitch" data-text="GLITCH&nbsp;DROP">GLITCH&nbsp;DROP</span></div>
+      <!-- аватар пользователя или заглушка -->
+      <img id="userAvatar" class="avatar hidden" alt="avatar">
+      <div id="avatarFallback" class="avatar-fallback">GD</div>
+
+      <!-- ник с глитч-эффектом -->
+      <div class="brand">
+        <span id="userName" class="glitch" data-text="GLITCH&nbsp;DROP">GLITCH&nbsp;DROP</span>
+      </div>
+
       <div class="grow"></div>
       <div class="pill"><span>⭐</span><span class="num" id="stars">120</span></div>
     </div>
@@ -240,7 +220,7 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <script>
-    // ---------- Данные разделов (8×4) ----------
+    // ---------- ДАННЫЕ РАЗДЕЛОВ (8×4) ----------
     const sections = [
       { id:'free',        title:'БЕСПЛАТНЫЕ КЕЙСЫ',  items:4, price:'БЕСПЛАТНО',
         descs:['Бонус за промокод','Ежедневный бонус','За подписку','За пополнение'] },
@@ -253,19 +233,17 @@
       { id:'expensive',   title:'ДОРОГИЕ КЕЙСЫ',     items:4, price:['200 ⭐','250 ⭐','300 ⭐','400 ⭐'] },
     ];
 
-    // ---------- Рендер чипов и контента ----------
+    // ---------- РЕНДЕР ----------
     const chipbar = document.getElementById('chipbar');
     const content = document.getElementById('content');
 
     sections.forEach(sec=>{
-      // чип
       const chip = document.createElement('div');
       chip.className = 'chip';
       chip.dataset.target = `#sec-${sec.id}`;
       chip.textContent = sec.title.replace(' КЕЙСЫ','');
       chipbar.appendChild(chip);
 
-      // секция
       const h2 = document.createElement('h2');
       h2.className = 'section';
       h2.id = `sec-${sec.id}`;
@@ -290,19 +268,17 @@
       content.appendChild(grid);
     });
 
-    // ---------- Навигация по чипам ----------
+    // ---------- ЧИПЫ: НАВИГАЦИЯ И ПОДСВЕТКА ----------
     const chips = Array.from(chipbar.querySelectorAll('.chip'));
     chipbar.addEventListener('click', e=>{
       const chip = e.target.closest('.chip'); if(!chip) return;
       setActiveChip(chip);
       const sel = chip.dataset.target;
       if(!sel || sel==="#top"){ window.scrollTo({top:0,behavior:'smooth'}); return; }
-      const el = document.querySelector(sel);
-      el?.scrollIntoView({behavior:'smooth', block:'start'});
+      document.querySelector(sel)?.scrollIntoView({behavior:'smooth', block:'start'});
     });
     function setActiveChip(ch){ chips.forEach(c=>c.classList.remove('active')); ch.classList.add('active'); }
 
-    // авто-подсветка
     const mapTargetToChip = new Map([['#top', chipbar.querySelector('.chip.active')], ...chips.map(c=>[c.dataset.target,c])]);
     const sectionEls = sections.map(s=>document.getElementById(`sec-${s.id}`));
     const io = new IntersectionObserver((entries)=>{
@@ -313,22 +289,39 @@
     }, {root:null, rootMargin:'-130px 0px -60% 0px', threshold:[0.2,0.4,0.6,0.8]});
     sectionEls.forEach(s=>io.observe(s));
 
-    // ---------- Кнопка ВВЕРХ ----------
+    // ---------- КНОПКА ВВЕРХ ----------
     const backTop = document.getElementById('backTop');
     const toggleBackTop = ()=> backTop.classList.toggle('show', window.scrollY>2);
     window.addEventListener('scroll', toggleBackTop, {passive:true});
     backTop.addEventListener('click', ()=> window.scrollTo({top:0, behavior:'smooth'}));
     toggleBackTop();
 
-    // ---------- Telegram WebApp ----------
+    // ---------- TELEGRAM WEBAPP: НИК + АВАТАР ----------
     (function(){
       const tg = window.Telegram && window.Telegram.WebApp;
-      if(!tg) return;
-      tg.expand();
-      // можно подставить имя в «pill» справа
+      const avatarImg = document.getElementById('userAvatar');
+      const fallback  = document.getElementById('avatarFallback');
+      const nameEl    = document.getElementById('userName');
+
+      if(!tg){ return; }         // открыт в браузере — оставим заглушки
+      tg.ready(); tg.expand();
+
       const u = tg.initDataUnsafe && tg.initDataUnsafe.user;
-      if(u){
-        document.getElementById('stars').textContent = (u.first_name || u.username || 'GLITCH');
+      if(!u){ return; }
+
+      // Ник/имя
+      const display = u.username ? '@' + u.username
+                     : [u.first_name||'', u.last_name||''].join(' ').trim() || 'GLITCH DROP';
+      nameEl.textContent = display;
+      nameEl.setAttribute('data-text', display.replaceAll(' ', '\u00A0')); // для глитча
+
+      // Аватар (если есть)
+      if (u.photo_url){
+        avatarImg.src = u.photo_url;
+        avatarImg.classList.remove('hidden');
+        fallback.style.display = 'none';
+      } else {
+        // оставляем fallback «GD»
       }
     })();
   </script>
