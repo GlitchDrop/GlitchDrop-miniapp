@@ -2,196 +2,229 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8" />
-  <!-- статичный масштаб без зума -->
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>Glitch Drop — Кейсы</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+  <title>GLITCH DROP — Mini App</title>
   <style>
     :root{
-      --bg:#0b0c0f; --bg2:#090a0d;
-      --panel:#101114; --panel2:#0e0f12;
-      --card:#131417; --card2:#111215;
-      --text:#e8dcb5; --muted:#b5a778;
-      --gold:#f5cf74; --border:rgba(249,215,109,.28);
-      --shadow:0 14px 30px rgba(0,0,0,.45);
+      --bg:#060812;
+      --bg2:#04060e;
+      --panel:#0a0f1e;
+      --panel2:#0a0d19;
+      --card:#0e1330;
+      --card2:#0b0f26;
+      --grid:rgba(255,255,255,.04);
+
+      --neon-cyan:#16f1ff;
+      --neon-pink:#ff3ed0;
+      --neon-violet:#8a5cff;
+      --neon-yellow:#ffe47a;
+
+      --text:#e8efff;
+      --muted:#9fb2d9;
+      --border:rgba(120,180,255,.25);
+
+      --shadow-strong:0 20px 60px rgba(10,20,60,.55), 0 0 60px rgba(22,241,255,.08);
+      --shadow-soft:0 10px 30px rgba(10,20,60,.35);
+
+      --radius:18px;
     }
+
     *{box-sizing:border-box}
-    html,body{height:100%;margin:0;font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif}
+    html,body{height:100%;margin:0;font-family:'Inter',system-ui,Segoe UI,Roboto,Arial,sans-serif}
     html{scroll-behavior:smooth}
-    body{background:linear-gradient(180deg,var(--bg),var(--bg2));color:var(--text)}
-    .app{min-height:100%;display:flex;flex-direction:column}
-
-    /* topbar */
-    .topbar{
-      position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;
-      padding:12px 14px;background:linear-gradient(180deg,var(--panel),var(--panel2));
-      border-bottom:1px solid var(--border);box-shadow:var(--shadow)
+    body{
+      color:var(--text);
+      background:
+        radial-gradient(60vw 60vh at 20% -10%, rgba(22,241,255,.10), transparent 60%),
+        radial-gradient(60vw 60vh at 80% -10%, rgba(255,62,208,.08), transparent 60%),
+        linear-gradient(180deg,var(--bg),var(--bg2));
+      overflow-x:hidden;
     }
-    .logo{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;
-      background:rgba(245,207,116,.15);border:1px solid var(--border);font-weight:800}
-    .brand strong{font-size:18px}
-    .grow{flex:1}
-    .pill{display:flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;
-      background:rgba(245,207,116,.12);border:1px solid var(--border);font-weight:800}
-    .pill .num{min-width:28px;text-align:right}
 
-    /* chips */
+    /* Сетка фона */
+    .gridmask::before{
+      content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
+      background:
+        linear-gradient(to right, var(--grid) 1px, transparent 1px) 0 0/34px 34px,
+        linear-gradient(to bottom, var(--grid) 1px, transparent 1px) 0 0/34px 34px;
+      mask:linear-gradient(180deg,rgba(0,0,0,.9),rgba(0,0,0,.2));
+    }
+
+    .app{min-height:100%;display:flex;flex-direction:column;position:relative;z-index:1}
+
+    /* TopBar в стиле неон-стекла */
+    .topbar{
+      position:sticky; top:0; z-index:30;
+      display:flex; align-items:center; gap:14px;
+      padding:12px 14px;
+      background:linear-gradient(180deg,rgba(8,14,36,.72),rgba(6,10,26,.62));
+      border-bottom:1px solid var(--border);
+      backdrop-filter:blur(10px);
+      box-shadow:var(--shadow-soft);
+    }
+    .logo{
+      width:42px;height:42px;border-radius:12px;display:grid;place-items:center;
+      background:linear-gradient(135deg, rgba(22,241,255,.18), rgba(255,62,208,.18));
+      border:1px solid var(--border);
+      font-weight:900; letter-spacing:.5px;
+      color:#081121;
+      text-shadow:0 0 12px rgba(22,241,255,.7);
+    }
+
+    /* Глитч-заголовок */
+    .brand{position:relative; font-weight:900; line-height:1; letter-spacing:1px}
+    .brand .glitch{
+      font-size:22px; color:#cfe6ff; position:relative; display:inline-block;
+      text-shadow:
+        0 0 24px rgba(22,241,255,.55),
+        0 0 24px rgba(255,62,208,.35);
+    }
+    .brand .glitch::before,
+    .brand .glitch::after{
+      content:attr(data-text); position:absolute; left:0; top:0; width:100%; overflow:hidden;
+      clip-path:inset(0 0 0 0);
+    }
+    .brand .glitch::before{
+      transform:translateX(1px); color:var(--neon-cyan); opacity:.9;
+      text-shadow:0 0 10px rgba(22,241,255,.8);
+      animation:glitch 3s infinite ease-in-out;
+    }
+    .brand .glitch::after{
+      transform:translateX(-1px); color:var(--neon-pink); opacity:.8;
+      text-shadow:0 0 10px rgba(255,62,208,.8);
+      animation:glitch 2.6s infinite ease-in-out reverse;
+    }
+    @keyframes glitch{
+      0%,100%{clip-path:inset(0 0 0 0)}
+      10%{clip-path:inset(0 0 65% 0)}
+      20%{clip-path:inset(0 0 0 0)}
+      30%{clip-path:inset(40% 0 0 0)}
+      45%{clip-path:inset(0 0 0 0)}
+      60%{clip-path:inset(0 0 75% 0)}
+      80%{clip-path:inset(20% 0 10% 0)}
+    }
+
+    .grow{flex:1}
+    .pill{
+      display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:999px;
+      border:1px solid var(--border);
+      background:linear-gradient(135deg, rgba(22,241,255,.1), rgba(138,92,255,.12));
+      box-shadow:0 0 18px rgba(22,241,255,.12) inset;
+      font-weight:900; color:#cfe6ff;
+    }
+
+    /* Чипы разделов (неоновые) */
     .chipbar{
-      position:sticky;top:60px;z-index:19;display:flex;gap:10px;padding:10px 14px;overflow-x:auto;
-      background:linear-gradient(180deg,var(--panel),var(--panel2));border-bottom:1px solid var(--border)
+      position:sticky; top:64px; z-index:25;
+      display:flex; gap:10px; padding:10px 14px; overflow-x:auto;
+      background:linear-gradient(180deg,rgba(8,14,36,.72),rgba(6,10,26,.62));
+      border-bottom:1px solid var(--border);
+      backdrop-filter:blur(10px);
     }
     .chipbar::-webkit-scrollbar{display:none}
     .chip{
-      padding:10px 14px;border-radius:999px;white-space:nowrap;cursor:pointer;
-      border:1px solid var(--border);color:var(--muted);font-weight:800;user-select:none;
-      background:transparent;transition:all .2s;
+      padding:10px 14px; border-radius:999px; white-space:nowrap; cursor:pointer;
+      border:1px solid var(--border); color:var(--muted); font-weight:800; user-select:none;
+      background:linear-gradient(135deg, rgba(15,20,48,.7), rgba(12,16,38,.7));
+      transition:transform .15s, box-shadow .15s, color .15s, background .2s, border-color .2s;
     }
+    .chip:hover{ transform:translateY(-1px); box-shadow:0 8px 22px rgba(22,241,255,.12)}
     .chip.active{
-      background:#fff !important;color:#111215 !important;border-color:#fff !important;
-      box-shadow:0 2px 12px rgba(255,255,255,.18) !important;
+      color:#081121 !important;
+      background:linear-gradient(135deg, var(--neon-cyan), var(--neon-pink)) !important;
+      border-color:transparent !important;
+      box-shadow:0 6px 28px rgba(22,241,255,.35), 0 0 44px rgba(255,62,208,.25) !important;
     }
 
-    .content{flex:1;padding:14px;max-width:1100px;margin:0 auto;width:100%}
+    /* Контент */
+    .content{flex:1; padding:16px; max-width:1100px; margin:0 auto; width:100%}
     h2.section{
-      margin:18px 0 10px;text-align:center;font-size:14px;letter-spacing:1.6px;
-      scroll-margin-top:120px; /* чтобы заголовок не прятался под шапкой */
+      margin:20px 0 12px; text-align:center; font-size:13px; letter-spacing:2px; opacity:.95;
+      color:#d7e6ff;
+      text-shadow:0 0 16px rgba(22,241,255,.25);
+      scroll-margin-top:130px;
     }
 
-    /* сетка: всегда 2 карточки в ряд */
-    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+    /* Сетка карточек — 2 в ряд */
+    .grid{display:grid; grid-template-columns:repeat(2,1fr); gap:14px}
 
+    /* Карточка кейса (неон-стекло) */
     .card{
-      background:linear-gradient(180deg,var(--card),var(--card2));
-      border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);
-      padding:12px;display:flex;flex-direction:column;gap:10px
+      position:relative;
+      background:linear-gradient(180deg, rgba(20,26,62,.55), rgba(14,18,40,.6));
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow-strong);
+      padding:12px;
+      display:flex; flex-direction:column; gap:10px;
+      overflow:hidden;
     }
+    .card::before{
+      content:""; position:absolute; inset:-2px;
+      background:conic-gradient(from 200deg, transparent, rgba(22,241,255,.18), transparent 30%, rgba(255,62,208,.18), transparent 55%);
+      filter:blur(14px); opacity:.35; z-index:0;
+    }
+    .inner{position:relative; z-index:1}
+
     .thumb{
-      height:160px;border-radius:14px;position:relative;border:1px dashed rgba(245,207,116,.35);
-      background:linear-gradient(180deg,#0f1116,#0c0e12);
-      display:grid;place-items:center;color:var(--muted);font-size:12px
+      height:160px; border-radius:14px; position:relative;
+      border:1px dashed rgba(180,210,255,.35);
+      background:
+        radial-gradient(120px 80px at 20% 20%, rgba(22,241,255,.12), transparent 60%),
+        radial-gradient(120px 80px at 80% 80%, rgba(255,62,208,.10), transparent 60%),
+        linear-gradient(180deg,#0c1230,#0a1028);
+      display:grid; place-items:center; color:#a9c2ff; font-size:12px; text-transform:uppercase; letter-spacing:1px;
     }
-    .name{font-weight:900}
-    .desc{font-size:12px;color:var(--muted)}
-    .price{font-weight:900;color:var(--gold)}
+    .name{font-weight:900; letter-spacing:.3px}
+    .desc{font-size:12px; color:#9fb2d9}
+    .price{font-weight:900; color:var(--neon-yellow); text-shadow:0 0 12px rgba(255,228,122,.25)}
 
-    /* bottom nav */
+    /* Низ */
     .tabbar{
-      position:sticky;bottom:0;z-index:20;
-      background:linear-gradient(180deg,var(--panel),var(--panel2));border-top:1px solid var(--border);
-      display:grid;grid-template-columns:repeat(5,1fr);padding:8px 6px
+      position:sticky; bottom:0; z-index:24;
+      background:linear-gradient(180deg,rgba(8,14,36,.72),rgba(6,10,26,.62));
+      border-top:1px solid var(--border);
+      backdrop-filter:blur(10px);
+      display:grid; grid-template-columns:repeat(5,1fr);
+      padding:8px 6px;
     }
-    .tab{display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 2px;color:var(--muted);font-size:12px;font-weight:800}
-    .tab.active{color:var(--text)}
-    .ico{font-size:18px}
+    .tab{display:flex; flex-direction:column; align-items:center; gap:4px; padding:6px 2px; color:#9fb2d9; font-size:12px; font-weight:800}
+    .tab.active{color:#e8efff}
+    .ico{font-size:18px; text-shadow:0 0 10px rgba(22,241,255,.3)}
 
-    /* плавающая кнопка "ВВЕРХ" */
+    /* Кнопка "ВВЕРХ" — неон */
     .backtop{
-      position:fixed; right:14px; bottom:88px; z-index:30;
-      padding:8px 10px; border-radius:12px; font-weight:900; font-size:12px;
-      border:1px solid rgba(255,255,255,.25); color:#fff;
-      background:rgba(170,180,190,.22); backdrop-filter:blur(6px);
+      position:fixed; right:14px; bottom:90px; z-index:50;
+      padding:9px 12px; border-radius:12px; font-weight:900; font-size:12px; letter-spacing:.3px;
+      border:1px solid rgba(22,241,255,.45); color:#081121;
+      background:linear-gradient(135deg, var(--neon-cyan), var(--neon-pink));
+      box-shadow:0 10px 28px rgba(22,241,255,.35), 0 0 36px rgba(255,62,208,.25);
       opacity:0; pointer-events:none; transform:translateY(8px);
       transition:opacity .2s, transform .2s;
     }
-    .backtop.show{ opacity:1; pointer-events:auto; transform:translateY(0); }
+    .backtop.show{opacity:1; pointer-events:auto; transform:translateY(0)}
   </style>
 </head>
 <body>
+  <div class="gridmask"></div>
   <div class="app" id="top">
-    <!-- Шапка -->
+    <!-- TOP -->
     <div class="topbar">
       <div class="logo">GD</div>
-      <div class="brand"><strong>Glitch Drop</strong></div>
+      <div class="brand"><span class="glitch" data-text="GLITCH&nbsp;DROP">GLITCH&nbsp;DROP</span></div>
       <div class="grow"></div>
       <div class="pill"><span>⭐</span><span class="num" id="stars">120</span></div>
     </div>
 
-    <!-- Кнопки-навигация по разделам -->
+    <!-- CHIPS -->
     <div class="chipbar" id="chipbar">
       <div class="chip active" data-target="#top">Все</div>
-      <div class="chip" data-target="#sec-free">Бесплатные кейсы</div>
-      <div class="chip" data-target="#sec-cheap">Дешёвые кейсы</div>
-      <div class="chip" data-target="#sec-nft">Только NFT-кейсы</div>
-      <div class="chip" data-target="#sec-exclusive">Эксклюзивные кейсы</div>
-      <div class="chip" data-target="#sec-standard">Стандартные кейсы</div>
-      <div class="chip" data-target="#sec-gold">Кейсы за золото</div>
-      <div class="chip" data-target="#sec-allornothing">Всё или ничего кейсы</div>
-      <div class="chip" data-target="#sec-expensive">Дорогие кейсы</div>
     </div>
 
-    <div class="content">
-      <!-- 1. БЕСПЛАТНЫЕ -->
-      <h2 class="section" id="sec-free">БЕСПЛАТНЫЕ КЕЙСЫ</h2>
-      <div class="grid">
-        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #1</div><div class="desc">Бонус за промокод</div><div class="price">БЕСПЛАТНО</div></div>
-        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #2</div><div class="desc">Ежедневный бонус</div><div class="price">БЕСПЛАТНО</div></div>
-        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #3</div><div class="desc">За подписку</div><div class="price">БЕСПЛАТНО</div></div>
-        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #4</div><div class="desc">За пополнение</div><div class="price">БЕСПЛАТНО</div></div>
-      </div>
+    <!-- CONTENT -->
+    <div class="content" id="content"></div>
 
-      <!-- 2. ДЕШЁВЫЕ -->
-      <h2 class="section" id="sec-cheap">ДЕШЁВЫЕ КЕЙСЫ</h2>
-      <div class="grid">
-        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #5</div><div class="desc">Начальный</div><div class="price">5 ⭐</div></div>
-        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #6</div><div class="desc">Мини</div><div class="price">10 ⭐</div></div>
-        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #7</div><div class="desc">Эконом</div><div class="price">12 ⭐</div></div>
-        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #8</div><div class="desc">Базовый</div><div class="price">15 ⭐</div></div>
-      </div>
-
-      <!-- 3. NFT -->
-      <h2 class="section" id="sec-nft">ТОЛЬКО NFT-КЕЙСЫ</h2>
-      <div class="grid">
-        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #9</div><div class="desc">NFT-предметы</div><div class="price">25 ⭐</div></div>
-        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #10</div><div class="desc">Коллекция A</div><div class="price">30 ⭐</div></div>
-        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #11</div><div class="desc">Коллекция B</div><div class="price">35 ⭐</div></div>
-        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #12</div><div class="desc">Редкие NFT</div><div class="price">40 ⭐</div></div>
-      </div>
-
-      <!-- 4. ЭКСКЛЮЗИВ -->
-      <h2 class="section" id="sec-exclusive">ЭКСКЛЮЗИВНЫЕ КЕЙСЫ</h2>
-      <div class="grid">
-        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #13</div><div class="desc">Эксклюзив 1</div><div class="price">60 ⭐</div></div>
-        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #14</div><div class="desc">Эксклюзив 2</div><div class="price">70 ⭐</div></div>
-        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #15</div><div class="desc">Эксклюзив 3</div><div class="price">80 ⭐</div></div>
-        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #16</div><div class="desc">Эксклюзив 4</div><div class="price">90 ⭐</div></div>
-      </div>
-
-      <!-- 5. СТАНДАРТ -->
-      <h2 class="section" id="sec-standard">СТАНДАРТНЫЕ КЕЙСЫ</h2>
-      <div class="grid">
-        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #17</div><div class="desc">Стандарт A</div><div class="price">20 ⭐</div></div>
-        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #18</div><div class="desc">Стандарт B</div><div class="price">25 ⭐</div></div>
-        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #19</div><div class="desc">Стандарт C</div><div class="price">28 ⭐</div></div>
-        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #20</div><div class="desc">Стандарт D</div><div class="price">35 ⭐</div></div>
-      </div>
-
-      <!-- 6. ЗОЛОТО -->
-      <h2 class="section" id="sec-gold">КЕЙСЫ ЗА ЗОЛОТО</h2>
-      <div class="grid">
-        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #21</div><div class="desc">Gold Pack I</div><div class="price">ЗОЛОТО</div></div>
-        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #22</div><div class="desc">Gold Pack II</div><div class="price">ЗОЛОТО</div></div>
-        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #23</div><div class="desc">Gold Pack III</div><div class="price">ЗОЛОТО</div></div>
-        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #24</div><div class="desc">Gold Pack IV</div><div class="price">ЗОЛОТО</div></div>
-      </div>
-
-      <!-- 7. ALL OR NOTHING -->
-      <h2 class="section" id="sec-allornothing">ВСЁ ИЛИ НИЧЕГО КЕЙСЫ</h2>
-      <div class="grid">
-        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #25</div><div class="desc">Риск A</div><div class="price">50 ⭐</div></div>
-        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #26</div><div class="desc">Риск B</div><div class="price">75 ⭐</div></div>
-        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #27</div><div class="desc">Риск C</div><div class="price">100 ⭐</div></div>
-        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #28</div><div class="desc">Риск D</div><div class="price">150 ⭐</div></div>
-      </div>
-
-      <!-- 8. ДОРОГИЕ -->
-      <h2 class="section" id="sec-expensive">ДОРОГИЕ КЕЙСЫ</h2>
-      <div class="grid">
-        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #29</div><div class="desc">Premium A</div><div class="price">200 ⭐</div></div>
-        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #30</div><div class="desc">Premium B</div><div class="price">250 ⭐</div></div>
-        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #31</div><div class="desc">Premium C</div><div class="price">300 ⭐</div></div>
-        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #32</div><div class="desc">Premium D</div><div class="price">400 ⭐</div></div>
-      </div>
-    </div>
-
+    <!-- TABBAR -->
     <nav class="tabbar">
       <div class="tab"><div class="ico">🏆</div>Конкурсы</div>
       <div class="tab"><div class="ico">⚡</div>Апгрейд</div>
@@ -201,81 +234,102 @@
     </nav>
   </div>
 
-  <!-- плавающая кнопка вверх -->
   <button id="backTop" class="backtop" aria-label="Вверх">ВВЕРХ ↑</button>
 
   <!-- Telegram WebApp SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <script>
-    // --- клики по чипам: плавная прокрутка к секциям ---
-    const chipbar = document.getElementById('chipbar');
-    const chips = Array.from(chipbar.querySelectorAll('.chip'));
+    // ---------- Данные разделов (8×4) ----------
+    const sections = [
+      { id:'free',        title:'БЕСПЛАТНЫЕ КЕЙСЫ',  items:4, price:'БЕСПЛАТНО',
+        descs:['Бонус за промокод','Ежедневный бонус','За подписку','За пополнение'] },
+      { id:'cheap',       title:'ДЕШЁВЫЕ КЕЙСЫ',     items:4, price:['5 ⭐','10 ⭐','12 ⭐','15 ⭐'] },
+      { id:'nft',         title:'ТОЛЬКО NFT-КЕЙСЫ',  items:4, price:['25 ⭐','30 ⭐','35 ⭐','40 ⭐'] },
+      { id:'exclusive',   title:'ЭКСКЛЮЗИВНЫЕ КЕЙСЫ',items:4, price:['60 ⭐','70 ⭐','80 ⭐','90 ⭐'] },
+      { id:'standard',    title:'СТАНДАРТНЫЕ КЕЙСЫ', items:4, price:['20 ⭐','25 ⭐','28 ⭐','35 ⭐'] },
+      { id:'gold',        title:'КЕЙСЫ ЗА ЗОЛОТО',    items:4, price:['ЗОЛОТО','ЗОЛОТО','ЗОЛОТО','ЗОЛОТО'] },
+      { id:'allornothing',title:'ВСЁ ИЛИ НИЧЕГО КЕЙСЫ',items:4,price:['50 ⭐','75 ⭐','100 ⭐','150 ⭐'] },
+      { id:'expensive',   title:'ДОРОГИЕ КЕЙСЫ',     items:4, price:['200 ⭐','250 ⭐','300 ⭐','400 ⭐'] },
+    ];
 
-    chipbar.addEventListener('click', (e)=>{
+    // ---------- Рендер чипов и контента ----------
+    const chipbar = document.getElementById('chipbar');
+    const content = document.getElementById('content');
+
+    sections.forEach(sec=>{
+      // чип
+      const chip = document.createElement('div');
+      chip.className = 'chip';
+      chip.dataset.target = `#sec-${sec.id}`;
+      chip.textContent = sec.title.replace(' КЕЙСЫ','');
+      chipbar.appendChild(chip);
+
+      // секция
+      const h2 = document.createElement('h2');
+      h2.className = 'section';
+      h2.id = `sec-${sec.id}`;
+      h2.textContent = sec.title;
+      content.appendChild(h2);
+
+      const grid = document.createElement('div');
+      grid.className = 'grid';
+
+      for(let i=0;i<sec.items;i++){
+        const card = document.createElement('div');
+        card.className='card';
+        card.innerHTML = `
+          <div class="inner">
+            <div class="thumb">Заглушка</div>
+            <div class="name">Кейс #${i+1}</div>
+            <div class="desc">${(sec.descs && sec.descs[i]) || 'Неоновая коллекция'}</div>
+            <div class="price">${Array.isArray(sec.price)? sec.price[i] : sec.price}</div>
+          </div>`;
+        grid.appendChild(card);
+      }
+      content.appendChild(grid);
+    });
+
+    // ---------- Навигация по чипам ----------
+    const chips = Array.from(chipbar.querySelectorAll('.chip'));
+    chipbar.addEventListener('click', e=>{
       const chip = e.target.closest('.chip'); if(!chip) return;
       setActiveChip(chip);
       const sel = chip.dataset.target;
-      if (!sel || sel === '#top') {
-        window.scrollTo({top:0, behavior:'smooth'});
-        return;
-      }
+      if(!sel || sel==="#top"){ window.scrollTo({top:0,behavior:'smooth'}); return; }
       const el = document.querySelector(sel);
-      if (el) el.scrollIntoView({behavior:'smooth', block:'start'});
+      el?.scrollIntoView({behavior:'smooth', block:'start'});
     });
+    function setActiveChip(ch){ chips.forEach(c=>c.classList.remove('active')); ch.classList.add('active'); }
 
-    function setActiveChip(chip) {
-      chips.forEach(c=>c.classList.remove('active'));
-      chip.classList.add('active');
-    }
-
-    // --- авто-подсветка при ручной прокрутке ---
-    const mapTargetToChip = new Map(chips.map(c => [c.dataset.target || '#top', c]));
-    const sections = [
-      '#sec-free','#sec-cheap','#sec-nft','#sec-exclusive',
-      '#sec-standard','#sec-gold','#sec-allornothing','#sec-expensive'
-    ].map(sel => document.querySelector(sel)).filter(Boolean);
-    const topChip = mapTargetToChip.get('#top');
-    const stickyOffset = 120;
-
+    // авто-подсветка
+    const mapTargetToChip = new Map([['#top', chipbar.querySelector('.chip.active')], ...chips.map(c=>[c.dataset.target,c])]);
+    const sectionEls = sections.map(s=>document.getElementById(`sec-${s.id}`));
     const io = new IntersectionObserver((entries)=>{
-      let best = null, bestRatio = 0;
-      for (const e of entries) {
-        if (e.isIntersecting && e.intersectionRatio > bestRatio) {
-          best = e.target; bestRatio = e.intersectionRatio;
-        }
-      }
-      if (best) {
-        const chip = mapTargetToChip.get('#' + best.id);
-        if (chip) setActiveChip(chip);
-      } else if (window.scrollY < 10 && topChip) {
-        setActiveChip(topChip);
-      }
-    }, { root:null, rootMargin:`-${stickyOffset}px 0px -60% 0px`, threshold:[0.2,0.4,0.6,0.8] });
+      let best=null,ratio=0;
+      for(const e of entries){ if(e.isIntersecting && e.intersectionRatio>ratio){best=e.target;ratio=e.intersectionRatio;} }
+      if(best){ const ch = mapTargetToChip.get('#'+best.id); ch && setActiveChip(ch); }
+      if(window.scrollY<10){ setActiveChip(mapTargetToChip.get('#top')); }
+    }, {root:null, rootMargin:'-130px 0px -60% 0px', threshold:[0.2,0.4,0.6,0.8]});
+    sectionEls.forEach(s=>io.observe(s));
 
-    sections.forEach(sec => io.observe(sec));
-
-    // --- плавающая кнопка "ВВЕРХ" ---
+    // ---------- Кнопка ВВЕРХ ----------
     const backTop = document.getElementById('backTop');
-    backTop.addEventListener('click', ()=> window.scrollTo({top:0, behavior:'smooth'}));
-    const toggleBackTop = ()=> backTop.classList.toggle('show', window.scrollY > 2);
-    toggleBackTop();
+    const toggleBackTop = ()=> backTop.classList.toggle('show', window.scrollY>2);
     window.addEventListener('scroll', toggleBackTop, {passive:true});
+    backTop.addEventListener('click', ()=> window.scrollTo({top:0, behavior:'smooth'}));
+    toggleBackTop();
 
-    // --- Telegram WebApp инициализация ---
+    // ---------- Telegram WebApp ----------
     (function(){
       const tg = window.Telegram && window.Telegram.WebApp;
-      if (!tg) return;           // открыт не из Telegram — просто работаем как обычный сайт
-
-      tg.expand();               // разворачиваем мини-апп на всю высоту
-
-      // Подхватим тему Telegram (опционально, можно расширять):
-      const tp = tg.themeParams || {};
-      if (tp.bg_color)   document.documentElement.style.setProperty('--bg', tp.bg_color);
-      if (tp.text_color) document.documentElement.style.setProperty('--text', tp.text_color);
-
-      // Можем показать имя пользователя (пример — лог в консоль)
-      console.log("TG user:", tg.initDataUnsafe && tg.initDataUnsafe.user);
+      if(!tg) return;
+      tg.expand();
+      // можно подставить имя в «pill» справа
+      const u = tg.initDataUnsafe && tg.initDataUnsafe.user;
+      if(u){
+        document.getElementById('stars').textContent = (u.first_name || u.username || 'GLITCH');
+      }
     })();
   </script>
 </body>
