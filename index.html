@@ -204,6 +204,9 @@
   <!-- плавающая кнопка вверх -->
   <button id="backTop" class="backtop" aria-label="Вверх">ВВЕРХ ↑</button>
 
+  <!-- Telegram WebApp SDK -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
   <script>
     // --- клики по чипам: плавная прокрутка к секциям ---
     const chipbar = document.getElementById('chipbar');
@@ -258,6 +261,22 @@
     const toggleBackTop = ()=> backTop.classList.toggle('show', window.scrollY > 2);
     toggleBackTop();
     window.addEventListener('scroll', toggleBackTop, {passive:true});
+
+    // --- Telegram WebApp инициализация ---
+    (function(){
+      const tg = window.Telegram && window.Telegram.WebApp;
+      if (!tg) return;           // открыт не из Telegram — просто работаем как обычный сайт
+
+      tg.expand();               // разворачиваем мини-апп на всю высоту
+
+      // Подхватим тему Telegram (опционально, можно расширять):
+      const tp = tg.themeParams || {};
+      if (tp.bg_color)   document.documentElement.style.setProperty('--bg', tp.bg_color);
+      if (tp.text_color) document.documentElement.style.setProperty('--text', tp.text_color);
+
+      // Можем показать имя пользователя (пример — лог в консоль)
+      console.log("TG user:", tg.initDataUnsafe && tg.initDataUnsafe.user);
+    })();
   </script>
 </body>
 </html>
