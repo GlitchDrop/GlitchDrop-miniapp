@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <!-- статичный масштаб без зума -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>Glitch Drop — Кейсы</title>
+  <style>
+    :root{
+      --bg:#0b0c0f; --bg2:#090a0d;
+      --panel:#101114; --panel2:#0e0f12;
+      --card:#131417; --card2:#111215;
+      --text:#e8dcb5; --muted:#b5a778;
+      --gold:#f5cf74; --border:rgba(249,215,109,.28);
+      --shadow:0 14px 30px rgba(0,0,0,.45);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif}
+    html{scroll-behavior:smooth}
+    body{background:linear-gradient(180deg,var(--bg),var(--bg2));color:var(--text)}
+    .app{min-height:100%;display:flex;flex-direction:column}
+
+    /* topbar */
+    .topbar{
+      position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;
+      padding:12px 14px;background:linear-gradient(180deg,var(--panel),var(--panel2));
+      border-bottom:1px solid var(--border);box-shadow:var(--shadow)
+    }
+    .logo{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;
+      background:rgba(245,207,116,.15);border:1px solid var(--border);font-weight:800}
+    .brand strong{font-size:18px}
+    .grow{flex:1}
+    .pill{display:flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;
+      background:rgba(245,207,116,.12);border:1px solid var(--border);font-weight:800}
+    .pill .num{min-width:28px;text-align:right}
+
+    /* chips */
+    .chipbar{
+      position:sticky;top:60px;z-index:19;display:flex;gap:10px;padding:10px 14px;overflow-x:auto;
+      background:linear-gradient(180deg,var(--panel),var(--panel2));border-bottom:1px solid var(--border)
+    }
+    .chipbar::-webkit-scrollbar{display:none}
+    .chip{
+      padding:10px 14px;border-radius:999px;white-space:nowrap;cursor:pointer;
+      border:1px solid var(--border);color:var(--muted);font-weight:800;user-select:none;
+      background:transparent;transition:all .2s;
+    }
+    .chip.active{
+      background:#fff !important;color:#111215 !important;border-color:#fff !important;
+      box-shadow:0 2px 12px rgba(255,255,255,.18) !important;
+    }
+
+    .content{flex:1;padding:14px;max-width:1100px;margin:0 auto;width:100%}
+    h2.section{
+      margin:18px 0 10px;text-align:center;font-size:14px;letter-spacing:1.6px;
+      scroll-margin-top:120px; /* чтобы заголовок не прятался под шапкой */
+    }
+
+    /* сетка: всегда 2 карточки в ряд */
+    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+
+    .card{
+      background:linear-gradient(180deg,var(--card),var(--card2));
+      border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);
+      padding:12px;display:flex;flex-direction:column;gap:10px
+    }
+    .thumb{
+      height:160px;border-radius:14px;position:relative;border:1px dashed rgba(245,207,116,.35);
+      background:linear-gradient(180deg,#0f1116,#0c0e12);
+      display:grid;place-items:center;color:var(--muted);font-size:12px
+    }
+    .name{font-weight:900}
+    .desc{font-size:12px;color:var(--muted)}
+    .price{font-weight:900;color:var(--gold)}
+
+    /* bottom nav */
+    .tabbar{
+      position:sticky;bottom:0;z-index:20;
+      background:linear-gradient(180deg,var(--panel),var(--panel2));border-top:1px solid var(--border);
+      display:grid;grid-template-columns:repeat(5,1fr);padding:8px 6px
+    }
+    .tab{display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 2px;color:var(--muted);font-size:12px;font-weight:800}
+    .tab.active{color:var(--text)}
+    .ico{font-size:18px}
+
+    /* плавающая кнопка "ВВЕРХ" */
+    .backtop{
+      position:fixed; right:14px; bottom:88px; z-index:30;
+      padding:8px 10px; border-radius:12px; font-weight:900; font-size:12px;
+      border:1px solid rgba(255,255,255,.25); color:#fff;
+      background:rgba(170,180,190,.22); backdrop-filter:blur(6px);
+      opacity:0; pointer-events:none; transform:translateY(8px);
+      transition:opacity .2s, transform .2s;
+    }
+    .backtop.show{ opacity:1; pointer-events:auto; transform:translateY(0); }
+  </style>
+</head>
+<body>
+  <div class="app" id="top">
+    <!-- Шапка -->
+    <div class="topbar">
+      <div class="logo">GD</div>
+      <div class="brand"><strong>Glitch Drop</strong></div>
+      <div class="grow"></div>
+      <div class="pill"><span>⭐</span><span class="num" id="stars">120</span></div>
+    </div>
+
+    <!-- Кнопки-навигация по разделам -->
+    <div class="chipbar" id="chipbar">
+      <div class="chip active" data-target="#top">Все</div>
+      <div class="chip" data-target="#sec-free">Бесплатные кейсы</div>
+      <div class="chip" data-target="#sec-cheap">Дешёвые кейсы</div>
+      <div class="chip" data-target="#sec-nft">Только NFT-кейсы</div>
+      <div class="chip" data-target="#sec-exclusive">Эксклюзивные кейсы</div>
+      <div class="chip" data-target="#sec-standard">Стандартные кейсы</div>
+      <div class="chip" data-target="#sec-gold">Кейсы за золото</div>
+      <div class="chip" data-target="#sec-allornothing">Всё или ничего кейсы</div>
+      <div class="chip" data-target="#sec-expensive">Дорогие кейсы</div>
+    </div>
+
+    <div class="content">
+      <!-- 1. БЕСПЛАТНЫЕ -->
+      <h2 class="section" id="sec-free">БЕСПЛАТНЫЕ КЕЙСЫ</h2>
+      <div class="grid">
+        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #1</div><div class="desc">Бонус за промокод</div><div class="price">БЕСПЛАТНО</div></div>
+        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #2</div><div class="desc">Ежедневный бонус</div><div class="price">БЕСПЛАТНО</div></div>
+        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #3</div><div class="desc">За подписку</div><div class="price">БЕСПЛАТНО</div></div>
+        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #4</div><div class="desc">За пополнение</div><div class="price">БЕСПЛАТНО</div></div>
+      </div>
+
+      <!-- 2. ДЕШЁВЫЕ -->
+      <h2 class="section" id="sec-cheap">ДЕШЁВЫЕ КЕЙСЫ</h2>
+      <div class="grid">
+        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #5</div><div class="desc">Начальный</div><div class="price">5 ⭐</div></div>
+        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #6</div><div class="desc">Мини</div><div class="price">10 ⭐</div></div>
+        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #7</div><div class="desc">Эконом</div><div class="price">12 ⭐</div></div>
+        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #8</div><div class="desc">Базовый</div><div class="price">15 ⭐</div></div>
+      </div>
+
+      <!-- 3. NFT -->
+      <h2 class="section" id="sec-nft">ТОЛЬКО NFT-КЕЙСЫ</h2>
+      <div class="grid">
+        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #9</div><div class="desc">NFT-предметы</div><div class="price">25 ⭐</div></div>
+        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #10</div><div class="desc">Коллекция A</div><div class="price">30 ⭐</div></div>
+        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #11</div><div class="desc">Коллекция B</div><div class="price">35 ⭐</div></div>
+        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #12</div><div class="desc">Редкие NFT</div><div class="price">40 ⭐</div></div>
+      </div>
+
+      <!-- 4. ЭКСКЛЮЗИВ -->
+      <h2 class="section" id="sec-exclusive">ЭКСКЛЮЗИВНЫЕ КЕЙСЫ</h2>
+      <div class="grid">
+        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #13</div><div class="desc">Эксклюзив 1</div><div class="price">60 ⭐</div></div>
+        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #14</div><div class="desc">Эксклюзив 2</div><div class="price">70 ⭐</div></div>
+        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #15</div><div class="desc">Эксклюзив 3</div><div class="price">80 ⭐</div></div>
+        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #16</div><div class="desc">Эксклюзив 4</div><div class="price">90 ⭐</div></div>
+      </div>
+
+      <!-- 5. СТАНДАРТ -->
+      <h2 class="section" id="sec-standard">СТАНДАРТНЫЕ КЕЙСЫ</h2>
+      <div class="grid">
+        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #17</div><div class="desc">Стандарт A</div><div class="price">20 ⭐</div></div>
+        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #18</div><div class="desc">Стандарт B</div><div class="price">25 ⭐</div></div>
+        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #19</div><div class="desc">Стандарт C</div><div class="price">28 ⭐</div></div>
+        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #20</div><div class="desc">Стандарт D</div><div class="price">35 ⭐</div></div>
+      </div>
+
+      <!-- 6. ЗОЛОТО -->
+      <h2 class="section" id="sec-gold">КЕЙСЫ ЗА ЗОЛОТО</h2>
+      <div class="grid">
+        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #21</div><div class="desc">Gold Pack I</div><div class="price">ЗОЛОТО</div></div>
+        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #22</div><div class="desc">Gold Pack II</div><div class="price">ЗОЛОТО</div></div>
+        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #23</div><div class="desc">Gold Pack III</div><div class="price">ЗОЛОТО</div></div>
+        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #24</div><div class="desc">Gold Pack IV</div><div class="price">ЗОЛОТО</div></div>
+      </div>
+
+      <!-- 7. ALL OR NOTHING -->
+      <h2 class="section" id="sec-allornothing">ВСЁ ИЛИ НИЧЕГО КЕЙСЫ</h2>
+      <div class="grid">
+        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #25</div><div class="desc">Риск A</div><div class="price">50 ⭐</div></div>
+        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #26</div><div class="desc">Риск B</div><div class="price">75 ⭐</div></div>
+        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #27</div><div class="desc">Риск C</div><div class="price">100 ⭐</div></div>
+        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #28</div><div class="desc">Риск D</div><div class="price">150 ⭐</div></div>
+      </div>
+
+      <!-- 8. ДОРОГИЕ -->
+      <h2 class="section" id="sec-expensive">ДОРОГИЕ КЕЙСЫ</h2>
+      <div class="grid">
+        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #29</div><div class="desc">Premium A</div><div class="price">200 ⭐</div></div>
+        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #30</div><div class="desc">Premium B</div><div class="price">250 ⭐</div></div>
+        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #31</div><div class="desc">Premium C</div><div class="price">300 ⭐</div></div>
+        <div class="card"><div class="thumb">Заглушка</div><div class="name">Кейс #32</div><div class="desc">Premium D</div><div class="price">400 ⭐</div></div>
+      </div>
+    </div>
+
+    <nav class="tabbar">
+      <div class="tab"><div class="ico">🏆</div>Конкурсы</div>
+      <div class="tab"><div class="ico">⚡</div>Апгрейд</div>
+      <div class="tab active"><div class="ico">🎁</div>Кейсы</div>
+      <div class="tab"><div class="ico">👥</div>Друзья</div>
+      <div class="tab"><div class="ico">👤</div>Профиль</div>
+    </nav>
+  </div>
+
+  <!-- плавающая кнопка вверх -->
+  <button id="backTop" class="backtop" aria-label="Вверх">ВВЕРХ ↑</button>
+
+  <script>
+    // --- клики по чипам: плавная прокрутка к секциям ---
+    const chipbar = document.getElementById('chipbar');
+    const chips = Array.from(chipbar.querySelectorAll('.chip'));
+
+    chipbar.addEventListener('click', (e)=>{
+      const chip = e.target.closest('.chip'); if(!chip) return;
+      setActiveChip(chip);
+      const sel = chip.dataset.target;
+      if (!sel || sel === '#top') {
+        window.scrollTo({top:0, behavior:'smooth'});
+        return;
+      }
+      const el = document.querySelector(sel);
+      if (el) el.scrollIntoView({behavior:'smooth', block:'start'});
+    });
+
+    function setActiveChip(chip) {
+      chips.forEach(c=>c.classList.remove('active'));
+      chip.classList.add('active');
+    }
+
+    // --- авто-подсветка при ручной прокрутке ---
+    const mapTargetToChip = new Map(chips.map(c => [c.dataset.target || '#top', c]));
+    const sections = [
+      '#sec-free','#sec-cheap','#sec-nft','#sec-exclusive',
+      '#sec-standard','#sec-gold','#sec-allornothing','#sec-expensive'
+    ].map(sel => document.querySelector(sel)).filter(Boolean);
+    const topChip = mapTargetToChip.get('#top');
+    const stickyOffset = 120;
+
+    const io = new IntersectionObserver((entries)=>{
+      let best = null, bestRatio = 0;
+      for (const e of entries) {
+        if (e.isIntersecting && e.intersectionRatio > bestRatio) {
+          best = e.target; bestRatio = e.intersectionRatio;
+        }
+      }
+      if (best) {
+        const chip = mapTargetToChip.get('#' + best.id);
+        if (chip) setActiveChip(chip);
+      } else if (window.scrollY < 10 && topChip) {
+        setActiveChip(topChip);
+      }
+    }, { root:null, rootMargin:`-${stickyOffset}px 0px -60% 0px`, threshold:[0.2,0.4,0.6,0.8] });
+
+    sections.forEach(sec => io.observe(sec));
+
+    // --- плавающая кнопка "ВВЕРХ" ---
+    const backTop = document.getElementById('backTop');
+    backTop.addEventListener('click', ()=> window.scrollTo({top:0, behavior:'smooth'}));
+    const toggleBackTop = ()=> backTop.classList.toggle('show', window.scrollY > 2);
+    toggleBackTop();
+    window.addEventListener('scroll', toggleBackTop, {passive:true});
+  </script>
+</body>
+</html>
