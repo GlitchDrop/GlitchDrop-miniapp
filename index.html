@@ -12,14 +12,13 @@
       --card:#0e1330; --card2:#0b0f26;
       --grid:rgba(255,255,255,.04);
 
-      --neon-cyan:#16f1ff; --neon-pink:#ff3ed0; --neon-violet:#8a5cff; --neon-yellow:#ffe47a;
+      --neon-cyan:#16f1ff; --neon-pink:#ff3ed0; --neon-yellow:#ffe47a;
       --text:#e8efff; --muted:#9fb2d9; --border:rgba(120,180,255,.25);
 
       --shadow-strong:0 20px 60px rgba(10,20,60,.55), 0 0 60px rgba(22,241,255,.08);
       --shadow-soft:0 10px 30px rgba(10,20,60,.35);
 
       --radius:18px;
-      --gold:#ffd45c;
     }
 
     *{box-sizing:border-box}
@@ -136,7 +135,6 @@
       box-shadow:var(--shadow-strong); padding:12px; display:flex; flex-direction:column; gap:10px; overflow:hidden;
       cursor:pointer;
     }
-    .card.disabled{ opacity:.6; cursor:default; }
     .card::before{ content:""; position:absolute; inset:-2px;
       background:conic-gradient(from 200deg, transparent, rgba(22,241,255,.18), transparent 30%, rgba(255,62,208,.18), transparent 55%);
       filter:blur(14px); opacity:.35; z-index:0;
@@ -175,7 +173,7 @@
     }
     .backtop.show{opacity:1; pointer-events:auto; transform:translateY(0)}
 
-    /* ====== DETAIL VIEW (страница кейса) ====== */
+    /* ====== DETAIL VIEW ====== */
     .detail{
       position:fixed; inset:0; z-index:60; display:none; flex-direction:column;
       background:
@@ -197,9 +195,7 @@
     .d-title{font-weight:900}
 
     .d-body{padding:16px; max-width:1100px; margin:0 auto; width:100%}
-    .d-hero{
-      display:grid; grid-template-columns:1fr; gap:14px; margin-bottom:10px;
-    }
+    .d-hero{display:grid; grid-template-columns:1fr; gap:14px; margin-bottom:10px;}
     .d-thumb{
       height:200px; border-radius:16px; border:1px dashed rgba(180,210,255,.35);
       background:
@@ -215,7 +211,6 @@
       box-shadow:0 10px 28px rgba(255,209,102,.35), 0 0 30px rgba(255,209,102,.25);
     }
 
-    /* demo + qty */
     .panel{
       margin-top:14px; padding:12px; border:1px solid var(--border); border-radius:16px;
       background:linear-gradient(180deg, rgba(20,26,62,.55), rgba(14,18,40,.6));
@@ -238,10 +233,10 @@
     }
     .qty .q.active{ outline:2px solid var(--neon-cyan); color:#081121; background:linear-gradient(135deg,var(--neon-cyan),var(--neon-pink)); border-color:transparent }
 
-    /* содержимое кейса */
     .subhead{margin:18px 0 10px; text-align:center; font-weight:900; letter-spacing:1.2px}
     .loot-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:12px}
-    .loot{height:120px; border-radius:14px; border:1px dashed rgba(180,210,255,.35);
+    .loot{
+      height:120px; border-radius:14px; border:1px dashed rgba(180,210,255,.35);
       background:
         radial-gradient(100px 70px at 20% 20%, rgba(22,241,255,.12), transparent 60%),
         radial-gradient(100px 70px at 80% 80%, rgba(255,62,208,.10), transparent 60%),
@@ -372,10 +367,9 @@
             <div class="desc">${(sec.descs && sec.descs[i]) || 'Неоновая коллекция'}</div>
             <div class="price">${Array.isArray(sec.price)? sec.price[i] : sec.price}</div>
           </div>`;
-        // запрет открытия для 4 бесплатных
-        if (sec.id === 'free') {
-          card.classList.add('disabled');
-        } else {
+
+        // Бесплатные — без открытия (но без затемнения/классов)
+        if (sec.id !== 'free') {
           card.addEventListener('click', ()=> openDetail({
             title:`${sec.title} — Кейс #${i+1}`,
             price: Array.isArray(sec.price)? sec.price[i] : sec.price
@@ -414,7 +408,7 @@
     backTop.addEventListener('click', ()=> window.scrollTo({top:0, behavior:'smooth'}));
     toggleBackTop();
 
-    // ---------- DETAIL VIEW ЛОГИКА ----------
+    // ---------- DETAIL VIEW ----------
     const detail = document.getElementById('detail');
     const backBtn = document.getElementById('backBtn');
     const dTitle = document.getElementById('detailTitle');
@@ -428,7 +422,6 @@
       dTitle.textContent = title;
       dPrice.textContent = String(price || '—');
       dThumb.textContent = 'Заглушка';
-      // заполнить 32 заглушки
       lootGrid.innerHTML = "";
       for(let i=0;i<32;i++){
         const l = document.createElement('div');
