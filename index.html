@@ -7,10 +7,13 @@
 
   <style>
     :root{
-      --bg:#060812; --bg2:#04060e;
+      --bg-top:#0c1822;    /* верх фона */
+      --bg-bot:#0e2230;    /* низ фона */
+      --grid:rgba(255,255,255,.035); /* сетка */
+      --grid-gap:34px;
+
       --panel:#0a0f1e; --panel2:#0a0d19;
       --card:#0e1330; --card2:#0b0f26;
-      --grid:rgba(255,255,255,.04);
 
       --neon-cyan:#16f1ff; --neon-pink:#ff3ed0; --neon-yellow:#ffe47a;
       --text:#e8efff; --muted:#9fb2d9; --border:rgba(120,180,255,.25);
@@ -24,21 +27,18 @@
     *{box-sizing:border-box}
     html,body{height:100%;margin:0;font-family:'Inter',system-ui,Segoe UI,Roboto,Arial,sans-serif}
     html{scroll-behavior:smooth}
-    body{
-      color:var(--text);
-      background:
-        radial-gradient(60vw 60vh at 20% -10%, rgba(22,241,255,.10), transparent 60%),
-        radial-gradient(60vw 60vh at 80% -10%, rgba(255,62,208,.08), transparent 60%),
-        linear-gradient(180deg,var(--bg),var(--bg2));
-      overflow-x:hidden;
-    }
+    body{ color:var(--text); overflow-x:hidden; background:#0e1b25; }
 
-    .gridmask::before{
-      content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
+    /* ЕДИНЫЙ ФОНОВЫЙ СЛОЙ ДЛЯ ВСЕГО ИНТЕРФЕЙСА */
+    .cyber-bg{
+      position:fixed; inset:0; z-index:0; pointer-events:none;
+      /* основной плавный градиент без резких затемнений */
       background:
-        linear-gradient(to right, var(--grid) 1px, transparent 1px) 0 0/34px 34px,
-        linear-gradient(to bottom, var(--grid) 1px, transparent 1px) 0 0/34px 34px;
-      mask:linear-gradient(180deg,rgba(0,0,0,.9),rgba(0,0,0,.2));
+        linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bot) 100%),
+        /* тонкая сетка поверх (верт + гориз) */
+        repeating-linear-gradient(0deg,  var(--grid) 0 1px,  transparent 1px var(--grid-gap)),
+        repeating-linear-gradient(90deg, var(--grid) 0 1px,  transparent 1px var(--grid-gap));
+      background-blend-mode: normal, overlay, overlay;
     }
 
     .app{min-height:100%;display:flex;flex-direction:column;position:relative;z-index:1}
@@ -176,10 +176,12 @@
     /* ====== DETAIL VIEW ====== */
     .detail{
       position:fixed; inset:0; z-index:60; display:none; flex-direction:column;
+      /* Тот же ровный фон, что и у основной страницы */
       background:
-        radial-gradient(60vw 60vh at 20% -10%, rgba(22,241,255,.10), transparent 60%),
-        radial-gradient(60vw 60vh at 80% -10%, rgba(255,62,208,.08), transparent 60%),
-        linear-gradient(180deg,var(--bg),var(--bg2));
+        linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bot) 100%),
+        repeating-linear-gradient(0deg,  var(--grid) 0 1px,  transparent 1px var(--grid-gap)),
+        repeating-linear-gradient(90deg, var(--grid) 0 1px,  transparent 1px var(--grid-gap));
+      background-blend-mode: normal, overlay, overlay;
       overflow:auto;
     }
     .detail.show{ display:flex; }
@@ -246,7 +248,8 @@
   </style>
 </head>
 <body>
-  <div class="gridmask"></div>
+  <!-- ЕДИНЫЙ ФОН -->
+  <div class="cyber-bg"></div>
 
   <div class="app" id="top">
     <!-- TOP -->
@@ -368,7 +371,7 @@
             <div class="price">${Array.isArray(sec.price)? sec.price[i] : sec.price}</div>
           </div>`;
 
-        // Бесплатные — без открытия (но без затемнения/классов)
+        // Бесплатные — клики игнорируем (без затемнения)
         if (sec.id !== 'free') {
           card.addEventListener('click', ()=> openDetail({
             title:`${sec.title} — Кейс #${i+1}`,
