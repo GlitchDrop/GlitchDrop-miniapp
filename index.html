@@ -20,8 +20,6 @@
     html,body{height:100%;margin:0;font-family:'Inter',system-ui,Segoe UI,Roboto,Arial,sans-serif}
     html{scroll-behavior:smooth}
     body{ color:var(--text); overflow-x:hidden; background:#0e1b25; }
-
-    /* ЕДИНЫЙ ФОН */
     .cyber-bg{
       position:fixed; inset:0; z-index:0; pointer-events:none;
       background:
@@ -33,7 +31,6 @@
 
     .app{min-height:100%;display:flex;flex-direction:column;position:relative;z-index:1}
 
-    /* TOPBAR */
     .topbar{
       position:sticky; top:0; z-index:30;
       display:flex; align-items:center; gap:12px;
@@ -43,32 +40,18 @@
       backdrop-filter:blur(10px);
       box-shadow:var(--shadow-soft);
     }
-    .avatar{
-      width:42px; height:42px; border-radius:50%;
-      border:2px solid rgba(22,241,255,.55);
-      box-shadow:0 0 18px rgba(22,241,255,.28), 0 0 28px rgba(255,62,208,.18);
-      object-fit:cover; background:linear-gradient(135deg, rgba(22,241,255,.15), rgba(255,62,208,.15));
-    }
+    .avatar{ width:42px; height:42px; border-radius:50%; border:2px solid rgba(22,241,255,.55); box-shadow:0 0 18px rgba(22,241,255,.28), 0 0 28px rgba(255,62,208,.18); object-fit:cover; background:linear-gradient(135deg, rgba(22,241,255,.15), rgba(255,62,208,.15)); }
     .avatar.hidden{ display:none; }
-    .avatar-fallback{
-      width:42px; height:42px; border-radius:12px; display:grid; place-items:center;
-      background:linear-gradient(135deg, rgba(22,241,255,.18), rgba(255,62,208,.18));
-      border:1px solid var(--border); font-weight:900; letter-spacing:.5px;
-      color:#081121; text-shadow:0 0 12px rgba(22,241,255,.7);
-    }
-
+    .avatar-fallback{ width:42px; height:42px; border-radius:12px; display:grid; place-items:center; background:linear-gradient(135deg, rgba(22,241,255,.18), rgba(255,62,208,.18)); border:1px solid var(--border); font-weight:900; letter-spacing:.5px; color:#081121; text-shadow:0 0 12px rgba(22,241,255,.7); }
     .brand{position:relative; font-weight:900; line-height:1; letter-spacing:1px}
     .brand .glitch{ font-size:22px; color:#cfe6ff; position:relative; display:inline-block; text-shadow:0 0 24px rgba(22,241,255,.55), 0 0 24px rgba(255,62,208,.35); }
-    .brand .glitch::before, .brand .glitch::after{ content:attr(data-text); position:absolute; left:0; top:0; width:100%; overflow:hidden; }
+    .brand .glitch::before,.brand .glitch::after{ content:attr(data-text); position:absolute; left:0; top:0; width:100%; overflow:hidden; }
     .brand .glitch::before{ transform:translateX(1px); color:var(--neon-cyan); opacity:.9; text-shadow:0 0 10px rgba(22,241,255,.8); animation:glitch 3s infinite ease-in-out;}
     .brand .glitch::after { transform:translateX(-1px); color:var(--neon-pink); opacity:.8; text-shadow:0 0 10px rgba(255,62,208,.8); animation:glitch 2.6s infinite ease-in-out reverse;}
     @keyframes glitch{ 0%,100%{clip-path:inset(0 0 0 0)} 10%{clip-path:inset(0 0 65% 0)} 20%{clip-path:inset(0 0 0 0)} 30%{clip-path:inset(40% 0 0 0)} 45%{clip-path:inset(0 0 0 0)} 60%{clip-path:inset(0 0 75% 0)} 80%{clip-path:inset(20% 0 10% 0)} }
-
     .grow{flex:1}
-    .pill{ display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:999px; border:1px solid var(--border);
-      background:linear-gradient(135deg, rgba(22,241,255,.1), rgba(138,92,255,.12)); box-shadow:0 0 18px rgba(22,241,255,.12) inset; font-weight:900; color:#cfe6ff; }
+    .pill{ display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:999px; border:1px solid var(--border); background:linear-gradient(135deg, rgba(22,241,255,.1), rgba(138,92,255,.12)); box-shadow:0 0 18px rgba(22,241,255,.12) inset; font-weight:900; color:#cfe6ff; }
 
-    /* CHIPS */
     .chipbar{
       position:sticky; top:64px; z-index:25;
       display:flex; gap:10px; padding:10px 14px; overflow-x:auto;
@@ -88,24 +71,12 @@
 
     .content{flex:1; padding:16px; max-width:1100px; margin:0 auto; width:100%}
     h2.section{ margin:20px 0 12px; text-align:center; font-size:13px; letter-spacing:2px; opacity:.95; color:#d7e6ff; text-shadow:0 0 16px rgba(22,241,255,.25); scroll-margin-top:130px; }
-
     .grid{display:grid; grid-template-columns:repeat(2,1fr); gap:14px}
 
-    .card{
-      position:relative; background:linear-gradient(180deg, rgba(20,26,62,.55), rgba(14,18,40,.6));
-      border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow-strong);
-      padding:12px; display:flex; flex-direction:column; gap:10px; overflow:hidden; cursor:pointer;
-    }
+    .card{ position:relative; background:linear-gradient(180deg, rgba(20,26,62,.55), rgba(14,18,40,.6)); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow-strong); padding:12px; display:flex; flex-direction:column; gap:10px; overflow:hidden; cursor:pointer; }
     .card::before{ content:""; position:absolute; inset:-2px; background:conic-gradient(from 200deg, transparent, rgba(22,241,255,.18), transparent 30%, rgba(255,62,208,.18), transparent 55%); filter:blur(14px); opacity:.35; z-index:0; }
     .inner{position:relative; z-index:1}
-    .thumb{
-      height:160px; border-radius:14px; border:1px dashed rgba(180,210,255,.35);
-      background:
-        radial-gradient(120px 80px at 20% 20%, rgba(22,241,255,.12), transparent 60%),
-        radial-gradient(120px 80px at 80% 80%, rgba(255,62,208,.10), transparent 60%),
-        linear-gradient(180deg,#0c1230,#0a1028);
-      display:grid; place-items:center; color:#a9c2ff; font-size:12px; text-transform:uppercase; letter-spacing:1px;
-    }
+    .thumb{ height:160px; border-radius:14px; border:1px dashed rgba(180,210,255,.35); background: radial-gradient(120px 80px at 20% 20%, rgba(22,241,255,.12), transparent 60%), radial-gradient(120px 80px at 80% 80%, rgba(255,62,208,.10), transparent 60%), linear-gradient(180deg,#0c1230,#0a1028); display:grid; place-items:center; color:#a9c2ff; font-size:12px; text-transform:uppercase; letter-spacing:1px; }
     .name{font-weight:900; letter-spacing:.3px}
     .desc{font-size:12px; color:#9fb2d9}
     .price{font-weight:900; color:var(--neon-yellow); text-shadow:0 0 12px rgba(255,228,122,.25)}
@@ -151,16 +122,8 @@
     .qty .q.active{ outline:2px solid var(--neon-cyan); color:#081121; background:linear-gradient(135deg,var(--neon-cyan),var(--neon-pink)); border-color:transparent }
 
     .subhead{margin:18px 0 10px; text-align:center; font-weight:900; letter-spacing:1.2px}
-
-    /* сетка лута */
     .loot-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:12px}
-    .loot{
-      border-radius:14px; border:1px dashed rgba(180,210,255,.35);
-      background: linear-gradient(180deg,#0c1230,#0a1028);
-      display:grid; place-items:center;
-      width:100%; aspect-ratio:1/1; overflow:hidden;  /* квадрат */
-      color:#a9c2ff; font-size:12px; text-transform:uppercase; letter-spacing:1px;
-    }
+    .loot{ border-radius:14px; border:1px dashed rgba(180,210,255,.35); background: linear-gradient(180deg,#0c1230,#0a1028); display:grid; place-items:center; width:100%; aspect-ratio:1/1; overflow:hidden; color:#a9c2ff; font-size:12px; text-transform:uppercase; letter-spacing:1px; }
     .loot img{ width:100%; height:100%; object-fit:cover; display:block; }
   </style>
 </head>
@@ -168,28 +131,17 @@
   <div class="cyber-bg"></div>
 
   <div class="app" id="top">
-    <!-- TOP -->
     <div class="topbar">
       <img id="userAvatar" class="avatar hidden" alt="avatar">
       <div id="avatarFallback" class="avatar-fallback">GD</div>
-
-      <div class="brand">
-        <span id="userName" class="glitch" data-text="GLITCH&nbsp;DROP">GLITCH&nbsp;DROP</span>
-      </div>
-
+      <div class="brand"><span id="userName" class="glitch" data-text="GLITCH&nbsp;DROP">GLITCH&nbsp;DROP</span></div>
       <div class="grow"></div>
       <div class="pill"><span>⭐</span><span class="num" id="stars">120</span></div>
     </div>
 
-    <!-- CHIPS -->
-    <div class="chipbar" id="chipbar">
-      <div class="chip active" data-target="#top">Все</div>
-    </div>
-
-    <!-- CONTENT -->
+    <div class="chipbar" id="chipbar"><div class="chip active" data-target="#top">Все</div></div>
     <div class="content" id="content"></div>
 
-    <!-- TABBAR -->
     <nav class="tabbar">
       <div class="tab"><div class="ico">🏆</div>Конкурсы</div>
       <div class="tab"><div class="ico">⚡</div>Апгрейд</div>
@@ -223,10 +175,8 @@
 
         <h3>Сколько кейсов открыть?</h3>
         <div class="qty" id="qtyWrap">
-          <div class="q active" data-v="1">1</div>
-          <div class="q" data-v="2">2</div>
-          <div class="q" data-v="3">3</div>
-          <div class="q" data-v="4">4</div>
+          <div class="q active" data-v="1">1</div><div class="q" data-v="2">2</div>
+          <div class="q" data-v="3">3</div><div class="q" data-v="4">4</div>
           <div class="q" data-v="5">5</div>
         </div>
       </div>
@@ -239,31 +189,72 @@
 
   <button id="backTop" class="backtop" aria-label="Вверх">ВВЕРХ ↑</button>
 
-  <!-- Telegram WebApp SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
   <script>
-    // ---------- 1) ЗАДАЙ ССЫЛКИ НА 11 КАРТИНОК ДЛЯ КЕЙСА "ДЕШЁВЫЕ КЕЙСЫ" → ПЕРВЫЙ (5 ⭐) ----------
-    // ВСТАВЬ свои URL вместо пустых строк "".
-    // Формат можно любой (png/jpg/webp), рекомендую квадрат 512x512. Можно использовать GitHub Pages: /assets/loot/имя.png
+    /* ===================== LOOT-СЕТЫ НА ВСЕ КЕЙСЫ (11 ССЫЛОК В КАЖДОМ) ===================== 
+       Формат ключа: <section>_<index> — где <index> это номер кейса в разделе (1..4).
+       Разделы (кроме free): cheap, nft, exclusive, standard, gold, allornothing, expensive.
+       Просто вставляй ссылки вместо "".
+    */
     const LOOT_SETS = {
+      // ДЕШЁВЫЕ КЕЙСЫ
       cheap_1: [
         /* картинка #1  — ВСТАВЬ ССЫЛКУ */ "assets/images/20251003_1635_Прозрачный фон_remix_01k6n4frmwe74ry17r7gszk6ef.png",
         /* картинка #2  — ВСТАВЬ ССЫЛКУ */ "assets/images/20251003_1629_Прозрачный фон_remix_01k6n43z74eq3ve8a9rcx44f02.png",
         /* картинка #3  — ВСТАВЬ ССЫЛКУ */ "assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png",
-        /* картинка #4  — ВСТАВЬ ССЫЛКУ */ "assets/images/20251003_1632_Прозрачный фон_remix_01k6n49ebnfssrvwq0605g9bkx.png",
-        /* картинка #5  — ВСТАВЬ ССЫЛКУ */ "assets/images/20251003_1626_Прозрачный Фон_remix_01k6n3y428frhrwqy0rqfwq9n5.png",
+        /* картинка #4  — ВСТАВЬ ССЫЛКУ */ "assets/images/20251003_1626_Прозрачный Фон_remix_01k6n3y428frhrwqy0rqfwq9n5.png",
+        /* картинка #5  — ВСТАВЬ ССЫЛКУ */ "assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png",
         /* картинка #6  — ВСТАВЬ ССЫЛКУ */ "assets/images/20251003_1622_Прозрачный фон_remix_01k6n3re47eearqtkwjkzktpma.png",
-        /* картинка #7  — ВСТАВЬ ССЫЛКУ */ "assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png",
-        /* картинка #8  — ВСТАВЬ ССЫЛКУ */ "assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png",
-        /* картинка #9  — ВСТАВЬ ССЫЛКУ */ "assets/images/20251003_1621_Прозрачный фон_remix_01k6n3p2hwf4fbk1r0rqbvdc5d.png",
-        /* картинка #10 — ВСТАВЬ ССЫЛКУ */ "assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png",
-        /* картинка #11 — ВСТАВЬ ССЫЛКУ */ "assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png"
-      ]
+        /* картинка #7  — ВСТАВЬ ССЫЛКУ */ "assets/images/20251003_1632_Прозрачный фон_remix_01k6n49ebnfssrvwq0605g9bkx.png",
+        /* картинка #8  — ВСТАВЬ ССЫЛКУ */ "assets/images/20251003_1621_Прозрачный фон_remix_01k6n3p2hwf4fbk1r0rqbvdc5d.png",
+        /* картинка #9  — ВСТАВЬ ССЫЛКУ */ "assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png",
+        /* картинка #10 — ВСТАВЬ ССЫЛКУ */ "assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png",
+        /* картинка #11 — ВСТАВЬ ССЫЛКУ */ "assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png"
+      ],
+      cheap_2: ["assets/images/20251003_2112_Прозрачный фон_remix_01k6nma55peh9tf1dw0mjfv2x2.png","assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png","assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png","assets/images/20251003_1622_Прозрачный фон_remix_01k6n3re47eearqtkwjkzktpma.png","assets/images/20251003_1629_Прозрачный фон_remix_01k6n43z74eq3ve8a9rcx44f02.png","assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png","assets/images/20251003_1626_Прозрачный Фон_remix_01k6n3y428frhrwqy0rqfwq9n5.png","assets/images/20251003_1632_Прозрачный фон_remix_01k6n49ebnfssrvwq0605g9bkx.png","assets/images/20251003_1622_Прозрачный фон_remix_01k6n3re47eearqtkwjkzktpma.png","assets/images/20251003_1626_Прозрачный Фон_remix_01k6n3y428frhrwqy0rqfwq9n5.png","assets/images/20251003_1626_Прозрачный Фон_remix_01k6n3y428frhrwqy0rqfwq9n5.png"],
+      cheap_3: ["","","","","","","","","","",""],
+      cheap_4: ["","","","","","","","","","",""],
+
+      // ТОЛЬКО NFT-КЕЙСЫ
+      nft_1:   ["","","","","","","","","","",""],
+      nft_2:   ["","","","","","","","","","",""],
+      nft_3:   ["","","","","","","","","","",""],
+      nft_4:   ["","","","","","","","","","",""],
+
+      // ЭКСКЛЮЗИВНЫЕ КЕЙСЫ
+      exclusive_1: ["","","","","","","","","","",""],
+      exclusive_2: ["","","","","","","","","","",""],
+      exclusive_3: ["","","","","","","","","","",""],
+      exclusive_4: ["","","","","","","","","","",""],
+
+      // СТАНДАРТНЫЕ КЕЙСЫ
+      standard_1:  ["","","","","","","","","","",""],
+      standard_2:  ["","","","","","","","","","",""],
+      standard_3:  ["","","","","","","","","","",""],
+      standard_4:  ["","","","","","","","","","",""],
+
+      // КЕЙСЫ ЗА ЗОЛОТО
+      gold_1:      ["","","","","","","","","","",""],
+      gold_2:      ["","","","","","","","","","",""],
+      gold_3:      ["","","","","","","","","","",""],
+      gold_4:      ["","","","","","","","","","",""],
+
+      // ВСЁ ИЛИ НИЧЕГО КЕЙСЫ
+      allornothing_1: ["","","","","","","","","","",""],
+      allornothing_2: ["","","","","","","","","","",""],
+      allornothing_3: ["","","","","","","","","","",""],
+      allornothing_4: ["","","","","","","","","","",""],
+
+      // ДОРОГИЕ КЕЙСЫ
+      expensive_1: ["","","","","","","","","","",""],
+      expensive_2: ["","","","","","","","","","",""],
+      expensive_3: ["","","","","","","","","","",""],
+      expensive_4: ["","","","","","","","","","",""],
     };
+
     const FALLBACK_IMG = "https://via.placeholder.com/512?text=%F0%9F%8E%81";
 
-    // ---------- 2) ДАННЫЕ РАЗДЕЛОВ ----------
+    // Разделы
     const sections = [
       { id:'free',        title:'БЕСПЛАТНЫЕ КЕЙСЫ',  items:4, price:'БЕСПЛАТНО',
         descs:['Бонус за промокод','Ежедневный бонус','За подписку','За пополнение'] },
@@ -276,7 +267,7 @@
       { id:'expensive',   title:'ДОРОГИЕ КЕЙСЫ',     items:4, price:['200 ⭐','250 ⭐','300 ⭐','400 ⭐'] },
     ];
 
-    // ---------- 3) РЕНДЕР СПИСКА ----------
+    // Рендер списка
     const chipbar = document.getElementById('chipbar');
     const content = document.getElementById('content');
 
@@ -307,11 +298,9 @@
             <div class="price">${Array.isArray(sec.price)? sec.price[i] : sec.price}</div>
           </div>`;
 
-        // Бесплатные — клики игнорируем (без затемнения)
         if (sec.id !== 'free') {
-          // ВАЖНО: для первого дешёвого кейса (5 ⭐) передаем setId='cheap_1'
-          const setId = (sec.id === 'cheap' && i === 0) ? 'cheap_1' : null;
-
+          // формируем setId для каждого кейса, например: cheap_1, nft_3 и т.д.
+          const setId = `${sec.id}_${i+1}`;
           card.addEventListener('click', ()=> openDetail({
             title:`${sec.title} — Кейс #${i+1}`,
             price: Array.isArray(sec.price)? sec.price[i] : sec.price,
@@ -323,7 +312,7 @@
       content.appendChild(grid);
     });
 
-    // ---------- 4) ЧИПЫ ----------
+    // Чипы
     const chips = Array.from(chipbar.querySelectorAll('.chip'));
     chipbar.addEventListener('click', e=>{
       const chip = e.target.closest('.chip'); if(!chip) return;
@@ -333,7 +322,6 @@
       document.querySelector(sel)?.scrollIntoView({behavior:'smooth', block:'start'});
     });
     function setActiveChip(ch){ chips.forEach(c=>c.classList.remove('active')); ch.classList.add('active'); }
-
     const mapTargetToChip = new Map([['#top', chipbar.querySelector('.chip.active')], ...chips.map(c=>[c.dataset.target,c])]);
     const sectionEls = sections.map(s=>document.getElementById(`sec-${s.id}`));
     const io = new IntersectionObserver((entries)=>{
@@ -344,14 +332,14 @@
     }, {root:null, rootMargin:'-130px 0px -60% 0px', threshold:[0.2,0.4,0.6,0.8]});
     sectionEls.forEach(s=>io.observe(s));
 
-    // ---------- 5) ВВЕРХ ----------
+    // Кнопка вверх
     const backTop = document.getElementById('backTop');
     const toggleBackTop = ()=> backTop.classList.toggle('show', window.scrollY>2);
     window.addEventListener('scroll', toggleBackTop, {passive:true});
     backTop.addEventListener('click', ()=> window.scrollTo({top:0, behavior:'smooth'}));
     toggleBackTop();
 
-    // ---------- 6) DETAIL VIEW ----------
+    // DETAIL VIEW
     const detail = document.getElementById('detail');
     const backBtn = document.getElementById('backBtn');
     const dTitle = document.getElementById('detailTitle');
@@ -363,21 +351,21 @@
 
     function renderLoot(images){
       lootGrid.innerHTML = "";
-      const arr = images && images.length ? images : Array.from({length:32}, (_,i)=>null);
-      arr.forEach((src, idx)=>{
-        const wrap = document.createElement('div');
-        wrap.className = 'loot';
+      const list = (images && images.length) ? images.slice(0,11) : Array.from({length:11}, ()=>null);
+      list.forEach((src, idx)=>{
+        const cell = document.createElement('div');
+        cell.className = 'loot';
         if (src){
           const img = document.createElement('img');
           img.src = src;
           img.alt = `Предмет ${idx+1}`;
           img.loading = "lazy";
           img.onerror = () => img.src = FALLBACK_IMG;
-          wrap.appendChild(img);
+          cell.appendChild(img);
         } else {
-          wrap.textContent = 'Заглушка';
+          cell.textContent = 'Заглушка';
         }
-        lootGrid.appendChild(wrap);
+        lootGrid.appendChild(cell);
       });
     }
 
@@ -386,12 +374,8 @@
       dPrice.textContent = String(price || '—');
       dThumb.textContent = 'Заглушка';
 
-      // если это первый дешёвый кейс — берём 11 картинок из LOOT_SETS.cheap_1
-      if (setId === 'cheap_1') {
-        renderLoot(LOOT_SETS.cheap_1.slice(0,11));
-      } else {
-        renderLoot(null); // стандартные 32 заглушки
-      }
+      const images = LOOT_SETS[setId] || null;  // берём массив для нужного кейса
+      renderLoot(images);                        // всегда 11 плиток
 
       detail.classList.add('show');
       detail.scrollTop = 0;
@@ -408,21 +392,20 @@
       q.classList.add('active');
     });
 
-    // ---------- 7) TELEGRAM WEBAPP: НИК + АВАТАР ----------
-    (function(){
+    // Telegram WebApp: ник + аватар
+    (()=> {
       const tg = window.Telegram && window.Telegram.WebApp;
       const avatarImg = document.getElementById('userAvatar');
       const fallback  = document.getElementById('avatarFallback');
       const nameEl    = document.getElementById('userName');
 
-      if(!tg){ return; }
+      if(!tg) return;
       tg.ready(); tg.expand();
 
       const u = tg.initDataUnsafe && tg.initDataUnsafe.user;
-      if(!u){ return; }
+      if(!u) return;
 
-      const display = u.username ? '@' + u.username
-                     : [u.first_name||'', u.last_name||''].join(' ').trim() || 'GLITCH DROP';
+      const display = u.username ? '@' + u.username : [u.first_name||'', u.last_name||''].join(' ').trim() || 'GLITCH DROP';
       nameEl.textContent = display;
       nameEl.setAttribute('data-text', display.replaceAll(' ', '\u00A0'));
 
