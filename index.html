@@ -76,7 +76,17 @@
     .card{ position:relative; background:linear-gradient(180deg, rgba(20,26,62,.55), rgba(14,18,40,.6)); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow-strong); padding:12px; display:flex; flex-direction:column; gap:10px; overflow:hidden; cursor:pointer; }
     .card::before{ content:""; position:absolute; inset:-2px; background:conic-gradient(from 200deg, transparent, rgba(22,241,255,.18), transparent 30%, rgba(255,62,208,.18), transparent 55%); filter:blur(14px); opacity:.35; z-index:0; }
     .inner{position:relative; z-index:1}
-    .thumb{ height:160px; border-radius:14px; border:1px dashed rgba(180,210,255,.35); background: radial-gradient(120px 80px at 20% 20%, rgba(22,241,255,.12), transparent 60%), radial-gradient(120px 80px at 80% 80%, rgba(255,62,208,.10), transparent 60%), linear-gradient(180deg,#0c1230,#0a1028); display:grid; place-items:center; color:#a9c2ff; font-size:12px; text-transform:uppercase; letter-spacing:1px; }
+    .thumb{
+      height:160px; border-radius:14px; border:1px dashed rgba(180,210,255,.35);
+      background: radial-gradient(120px 80px at 20% 20%, rgba(22,241,255,.12), transparent 60%), radial-gradient(120px 80px at 80% 80%, rgba(255,62,208,.10), transparent 60%), linear-gradient(180deg,#0c1230,#0a1028);
+      display:grid; place-items:center; color:#a9c2ff; font-size:12px; text-transform:uppercase; letter-spacing:1px;
+      overflow:hidden;
+    }
+    /* картинка обложки кейса внутри превью */
+    .thumb img{
+      width:100%; height:100%; object-fit:cover; display:block;
+    }
+
     .name{font-weight:900; letter-spacing:.3px}
     .desc{font-size:12px; color:#9fb2d9}
     .price{font-weight:900; color:var(--neon-yellow); text-shadow:0 0 12px rgba(255,228,122,.25)}
@@ -101,7 +111,7 @@
     }
     .detail.show{ display:flex; }
     .d-topbar{ position:sticky; top:0; z-index:61; display:flex; align-items:center; gap:10px; padding:10px 14px; background:linear-gradient(180deg,rgba(8,14,36,.82),rgba(6,10,26,.7)); border-bottom:1px solid var(--border); backdrop-filter:blur(10px); }
-    .btn-back{ appearance:none; border:1px solid var(--border); background:transparent; color:var(--text); padding:8px 12px; border-radius:12px; font-weight:900; cursor:pointer; }
+    .btn-back{ appearance:none; border:1px solid var(--border); background:transparent; color:#text; padding:8px 12px; border-radius:12px; font-weight:900; cursor:pointer; }
     .d-title{font-weight:900}
     .d-body{padding:16px; max-width:1100px; margin:0 auto; width:100%}
     .d-hero{display:grid; grid-template-columns:1fr; gap:14px; margin-bottom:10px;}
@@ -199,57 +209,121 @@
     const LOOT_SETS = {
       // ДЕШЁВЫЕ КЕЙСЫ
       cheap_1: [
-        /* картинка #1  — ВСТАВЬ ССЫЛКУ */ "assets/images/20251003_1635_Прозрачный фон_remix_01k6n4frmwe74ry17r7gszk6ef.png",
-        /* картинка #2  — ВСТАВЬ ССЫЛКУ */ "assets/images/20251003_1629_Прозрачный фон_remix_01k6n43z74eq3ve8a9rcx44f02.png",
-        /* картинка #3  — ВСТАВЬ ССЫЛКУ */ "assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png",
-        /* картинка #4  — ВСТАВЬ ССЫЛКУ */ "assets/images/20251003_1626_Прозрачный Фон_remix_01k6n3y428frhrwqy0rqfwq9n5.png",
-        /* картинка #5  — ВСТАВЬ ССЫЛКУ */ "assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png",
-        /* картинка #6  — ВСТАВЬ ССЫЛКУ */ "assets/images/20251003_1622_Прозрачный фон_remix_01k6n3re47eearqtkwjkzktpma.png",
-        /* картинка #7  — ВСТАВЬ ССЫЛКУ */ "assets/images/20251003_1632_Прозрачный фон_remix_01k6n49ebnfssrvwq0605g9bkx.png",
-        /* картинка #8  — ВСТАВЬ ССЫЛКУ */ "assets/images/20251003_1621_Прозрачный фон_remix_01k6n3p2hwf4fbk1r0rqbvdc5d.png",
-        /* картинка #9  — ВСТАВЬ ССЫЛКУ */ "assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png",
-        /* картинка #10 — ВСТАВЬ ССЫЛКУ */ "assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png",
-        /* картинка #11 — ВСТАВЬ ССЫЛКУ */ "assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png"
+        "assets/images/20251003_1635_Прозрачный фон_remix_01k6n4frmwe74ry17r7gszk6ef.png",
+        "assets/images/20251003_1629_Прозрачный фон_remix_01k6n43z74eq3ve8a9rcx44f02.png",
+        "assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png",
+        "assets/images/20251003_1626_Прозрачный Фон_remix_01k6n3y428frhrwqy0rqfwq9n5.png",
+        "assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png",
+        "assets/images/20251003_1622_Прозрачный фон_remix_01k6n3re47eearqtkwjkzktpma.png",
+        "assets/images/20251003_1632_Прозрачный фон_remix_01k6n49ebnfssrvwq0605g9bkx.png",
+        "assets/images/20251003_1621_Прозрачный фон_remix_01k6n3p2hwf4fbk1r0rqbvdc5d.png",
+        "assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png",
+        "assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png",
+        "assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png"
       ],
       cheap_2: ["assets/images/снупп дог.png","assets/images/20251003_1635_Прозрачный фон_remix_01k6n4frmwe74ry17r7gszk6ef.png","assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png","assets/images/20251003_1629_Прозрачный фон_remix_01k6n43z74eq3ve8a9rcx44f02.png","assets/images/20251003_1626_Прозрачный Фон_remix_01k6n3y428frhrwqy0rqfwq9n5.png","assets/images/20251003_1632_Прозрачный фон_remix_01k6n49ebnfssrvwq0605g9bkx.png","assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png","assets/images/20251003_1622_Прозрачный фон_remix_01k6n3re47eearqtkwjkzktpma.png","assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png","assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png","assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png"],
       cheap_3: ["assets/images/kniga.png","assets/images/klever.png","assets/images/20251003_1635_Прозрачный фон_remix_01k6n4frmwe74ry17r7gszk6ef.png","assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png","assets/images/20251003_1629_Прозрачный фон_remix_01k6n43z74eq3ve8a9rcx44f02.png","assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png","assets/images/20251003_1622_Прозрачный фон_remix_01k6n3re47eearqtkwjkzktpma.png","assets/images/20251003_1621_Прозрачный фон_remix_01k6n3p2hwf4fbk1r0rqbvdc5d.png","assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png","assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png","assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png"],
       cheap_4: ["","","","","","","","","","",""],
 
-      // ТОЛЬКО NFT-КЕЙСЫ
       nft_1:   ["","","","","","","","","","",""],
       nft_2:   ["","","","","","","","","","",""],
       nft_3:   ["","","","","","","","","","",""],
       nft_4:   ["","","","","","","","","","",""],
 
-      // ЭКСКЛЮЗИВНЫЕ КЕЙСЫ
       exclusive_1: ["","","","","","","","","","",""],
       exclusive_2: ["","","","","","","","","","",""],
       exclusive_3: ["","","","","","","","","","",""],
       exclusive_4: ["","","","","","","","","","",""],
 
-      // СТАНДАРТНЫЕ КЕЙСЫ
       standard_1:  ["","","","","","","","","","",""],
       standard_2:  ["","","","","","","","","","",""],
       standard_3:  ["","","","","","","","","","",""],
       standard_4:  ["","","","","","","","","","",""],
 
-      // КЕЙСЫ ЗА ЗОЛОТО
       gold_1:      ["","","","","","","","","","",""],
       gold_2:      ["","","","","","","","","","",""],
       gold_3:      ["","","","","","","","","","",""],
       gold_4:      ["","","","","","","","","","",""],
 
-      // ВСЁ ИЛИ НИЧЕГО КЕЙСЫ
       allornothing_1: ["","","","","","","","","","",""],
       allornothing_2: ["","","","","","","","","","",""],
       allornothing_3: ["","","","","","","","","","",""],
       allornothing_4: ["","","","","","","","","","",""],
 
-      // ДОРОГИЕ КЕЙСЫ
       expensive_1: ["","","","","","","","","","",""],
       expensive_2: ["","","","","","","","","","",""],
       expensive_3: ["","","","","","","","","","",""],
       expensive_4: ["","","","","","","","","","",""],
+    };
+
+    /* ===================== ОБЛОЖКИ САМИХ КЕЙСОВ (картинка на плитке) =====================
+       Редактируй здесь! Для каждого раздела массив из 4 строк — кейс #1..#4.
+       Просто вставь URL вместо "".
+    */
+    const CASE_THUMBS = {
+      // БЕСПЛАТНЫЕ (можно тоже поставить обложки; эти кейсы не открывают детальный экран)
+      free: [
+        /* кейс free #1 — ВСТАВЬ ССЫЛКУ */ "",
+        /* кейс free #2 — ВСТАВЬ ССЫЛКУ */ "",
+        /* кейс free #3 — ВСТАВЬ ССЫЛКУ */ "",
+        /* кейс free #4 — ВСТАВЬ ССЫЛКУ */ "",
+      ],
+
+      // ДЕШЁВЫЕ
+      cheap: [
+        /* кейс cheap #1 — ВСТАВЬ ССЫЛКУ */ "",
+        /* кейс cheap #2 — ВСТАВЬ ССЫЛКУ */ "assets/images/case.png",
+        /* кейс cheap #3 — ВСТАВЬ ССЫЛКУ */ "",
+        /* кейс cheap #4 — ВСТАВЬ ССЫЛКУ */ "",
+      ],
+
+      // NFT
+      nft: [
+        /* кейс nft #1 — ВСТАВЬ ССЫЛКУ */ "",
+        /* кейс nft #2 — ВСТАВЬ ССЫЛКУ */ "",
+        /* кейс nft #3 — ВСТАВЬ ССЫЛКУ */ "",
+        /* кейс nft #4 — ВСТАВЬ ССЫЛКУ */ "",
+      ],
+
+      // ЭКСКЛЮЗИВ
+      exclusive: [
+        /* кейс exclusive #1 — ВСТАВЬ ССЫЛКУ */ "",
+        /* кейс exclusive #2 — ВСТАВЬ ССЫЛКУ */ "",
+        /* кейс exclusive #3 — ВСТАВЬ ССЫЛКУ */ "",
+        /* кейс exclusive #4 — ВСТАВЬ ССЫЛКУ */ "",
+      ],
+
+      // СТАНДАРТ
+      standard: [
+        /* кейс standard #1 — ВСТАВЬ ССЫЛКУ */ "",
+        /* кейс standard #2 — ВСТАВЬ ССЫЛКУ */ "",
+        /* кейс standard #3 — ВСТАВЬ ССЫЛКУ */ "",
+        /* кейс standard #4 — ВСТАВЬ ССЫЛКУ */ "",
+      ],
+
+      // ЗОЛОТО
+      gold: [
+        /* кейс gold #1 — ВСТАВЬ ССЫЛКУ */ "",
+        /* кейс gold #2 — ВСТАВЬ ССЫЛКУ */ "",
+        /* кейс gold #3 — ВСТАВЬ ССЫЛКУ */ "",
+        /* кейс gold #4 — ВСТАВЬ ССЫЛКУ */ "",
+      ],
+
+      // ВСЁ ИЛИ НИЧЕГО
+      allornothing: [
+        /* кейс allornothing #1 — ВСТАВЬ ССЫЛКУ */ "",
+        /* кейс allornothing #2 — ВСТАВЬ ССЫЛКУ */ "",
+        /* кейс allornothing #3 — ВСТАВЬ ССЫЛКУ */ "",
+        /* кейс allornothing #4 — ВСТАВЬ ССЫЛКУ */ "",
+      ],
+
+      // ДОРОГИЕ
+      expensive: [
+        /* кейс expensive #1 — ВСТАВЬ ССЫЛКУ */ "",
+        /* кейс expensive #2 — ВСТАВЬ ССЫЛКУ */ "",
+        /* кейс expensive #3 — ВСТАВЬ ССЫЛКУ */ "",
+        /* кейс expensive #4 — ВСТАВЬ ССЫЛКУ */ "",
+      ],
     };
 
     const FALLBACK_IMG = "https://via.placeholder.com/512?text=%F0%9F%8E%81";
@@ -288,18 +362,20 @@
       grid.className = 'grid';
 
       for(let i=0;i<sec.items;i++){
+        const thumbUrl = (CASE_THUMBS[sec.id] && CASE_THUMBS[sec.id][i]) || "";
+        const thumbHTML = thumbUrl ? `<img src="${thumbUrl}" alt="Обложка кейса #${i+1}">` : `Заглушка`;
+
         const card = document.createElement('div');
         card.className='card';
         card.innerHTML = `
           <div class="inner">
-            <div class="thumb">Заглушка</div>
+            <div class="thumb">${thumbHTML}</div>
             <div class="name">${sec.title.split(' ')[0]} Кейс #${i+1}</div>
             <div class="desc">${(sec.descs && sec.descs[i]) || 'Неоновая коллекция'}</div>
             <div class="price">${Array.isArray(sec.price)? sec.price[i] : sec.price}</div>
           </div>`;
 
         if (sec.id !== 'free') {
-          // формируем setId для каждого кейса, например: cheap_1, nft_3 и т.д.
           const setId = `${sec.id}_${i+1}`;
           card.addEventListener('click', ()=> openDetail({
             title:`${sec.title} — Кейс #${i+1}`,
@@ -374,8 +450,8 @@
       dPrice.textContent = String(price || '—');
       dThumb.textContent = 'Заглушка';
 
-      const images = LOOT_SETS[setId] || null;  // берём массив для нужного кейса
-      renderLoot(images);                        // всегда 11 плиток
+      const images = LOOT_SETS[setId] || null;
+      renderLoot(images); // 11 плиток
 
       detail.classList.add('show');
       detail.scrollTop = 0;
