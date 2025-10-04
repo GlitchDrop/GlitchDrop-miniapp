@@ -110,7 +110,7 @@
     .d-topbar{ position:sticky; top:0; z-index:61; display:flex; align-items:center; gap:10px; padding:10px 14px; background:linear-gradient(180deg,rgba(8,14,36,.82),rgba(6,10,26,.7)); border-bottom:1px solid var(--border); backdrop-filter:blur(10px); }
     .btn-back{ appearance:none; border:1px solid var(--border); background:transparent; color:var(--text); padding:8px 12px; border-radius:12px; font-weight:900; cursor:pointer; }
     .d-title{font-weight:900}
-    .d-body{padding:16px; max-width:1100px; margin:0 auto; width:100%}
+    .d-body{padding:16px; max-width:1100px; margin:0 авто; width:100%}
     .d-hero{display:grid; grid-template-columns:1fr; gap:14px; margin-bottom:10px;}
     .d-thumb{ height:200px; border-radius:16px; border:1px dashed rgba(180,210,255,.35);
       background: radial-gradient(160px 110px at 20% 20%, rgba(22,241,255,.12), transparent 60%), radial-gradient(160px 110px at 80% 80%, rgba(255,62,208,.10), transparent 60%), linear-gradient(180deg,#0c1230,#0a1028);
@@ -130,11 +130,32 @@
 
     .subhead{margin:18px 0 10px; text-align:center; font-weight:900; letter-spacing:1.2px}
     .loot-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:12px}
-    .loot{ border-radius:14px; border:1px dashed rgba(180,210,255,.35); background: linear-gradient(180deg,#0c1230,#0a1028); display:grid; place-items:center; width:100%; aspect-ratio:1/1; overflow:hidden; color:#a9c2ff; font-size:12px; text-transform:uppercase; letter-spacing:1px; }
-    .loot img{ width:100%; height:100%; object-fit:cover; display:block; }
 
-    /* ===== LOOT meta (название + цены) ===== */
-    .loot .meta{ width:100%; padding:8px 10px 10px; text-align:center; display:flex; flex-direction:column; gap:6px; }
+    /* ===== карточки лута со слоями ===== */
+    .loot{
+      position:relative;
+      border-radius:14px;
+      border:1px dashed rgba(180,210,255,.35);
+      background: linear-gradient(180deg,#0c1230,#0a1028);
+      display:block;
+      width:100%;
+      aspect-ratio:1/1;
+      overflow:hidden;
+      color:#a9c2ff; font-size:12px; text-transform:uppercase; letter-spacing:1px;
+    }
+    .loot img{
+      position:absolute; inset:0;
+      width:100%; height:100%;
+      object-fit:cover; display:block;
+      z-index:0;
+    }
+    .loot .meta{
+      position:absolute; left:0; right:0; bottom:0;
+      z-index:2;
+      padding:10px 10px 12px;
+      text-align:center; display:flex; flex-direction:column; gap:6px;
+      background:linear-gradient(to top, rgba(6,10,26,.88) 0%, rgba(6,10,26,.65) 60%, rgba(6,10,26,0) 100%);
+    }
     .loot .title{ font-weight:900; font-size:12px; line-height:1.2; color:#e8efff; text-shadow:0 0 8px rgba(22,241,255,.25); }
     .loot .prices{ display:flex; flex-direction:column; align-items:center; gap:4px; }
     .loot .price-row{ display:flex; align-items:center; gap:6px; font-weight:900; font-size:14px; line-height:1; color:#e8efff; }
@@ -221,9 +242,44 @@
         "assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png",
         "assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png"
       ],
-      cheap_2: ["assets/images/снупп дог.png","assets/images/20251003_1635_Прозрачный фон_remix_01k6n4frmwe74ry17r7gszk6ef.png","assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png","assets/images/20251003_1629_Прозрачный фон_remix_01k6n43з74eq3ve8a9rcx44f02.png","assets/images/20251003_1626_Прозрачный Фон_remix_01k6n3y428frhrwqy0rqfwq9n5.png","assets/images/20251003_1632_Прозрачный фон_remix_01k6n49ebnfssrvwq0605g9bkx.png","assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png","assets/images/20251003_1622_Прозрачный фон_remix_01k6n3re47eearqtkwjkзktpma.png","assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png","assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png","assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png"],
-      cheap_3: ["assets/images/kniga.png","assets/images/klever.png","assets/images/20251003_1635_Прозрачный фон_remix_01k6n4frmwe74ry17r7gszk6ef.png","assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png","assets/images/20251003_1629_Прозрачный фон_remix_01k6n43з74eq3ve8a9rcx44f02.png","assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png","assets/images/20251003_1622_Прозрачный фон_remix_01k6n3re47eearqtkwjkзktpma.png","assets/images/20251003_1621_Прозрачный фон_remix_01k6n3p2hwf4fbk1r0rqbvdc5d.png","assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png","assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png","assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png"],
-      cheap_4: ["assets/images/кепка дурова синяя.png","assets/images/кольцо фиолетовое.png","assets/images/шляпа белая.png","assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png","assets/images/20251003_1626_Прозрачный Фон_remix_01k6n3y428frhrwqy0rqfwq9н5.png","assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png","assets/images/20251003_1622_Прозрачный фон_remix_01k6n3re47eearqtkwjkзktpma.png","assets/images/20251003_1621_Прозрачный фон_remix_01k6n3p2hwf4fbk1r0rqbvdc5d.png","assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png","assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png","assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png"],
+      cheap_2: [
+        "assets/images/снупп дог.png",
+        "assets/images/20251003_1635_Прозрачный фон_remix_01k6n4frmwe74ry17r7gszk6ef.png",
+        "assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png",
+        "assets/images/20251003_1629_Прозрачный фон_remix_01k6n43z74eq3ve8a9rcx44f02.png",
+        "assets/images/20251003_1626_Прозрачный Фон_remix_01k6n3y428frhrwqy0rqfwq9n5.png",
+        "assets/images/20251003_1632_Прозрачный фон_remix_01k6n49ebnfssrvwq0605g9bkx.png",
+        "assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png",
+        "assets/images/20251003_1622_Прозрачный фон_remix_01k6n3re47eearqtkwjkzktpma.png",
+        "assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png",
+        "assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png",
+        "assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png"
+      ],
+      cheap_3: [
+        "assets/images/kniga.png","assets/images/klever.png",
+        "assets/images/20251003_1635_Прозрачный фон_remix_01k6n4frmwe74ry17r7gszk6ef.png",
+        "assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png",
+        "assets/images/20251003_1629_Прозрачный фон_remix_01k6n43z74eq3ve8a9rcx44f02.png",
+        "assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png",
+        "assets/images/20251003_1622_Прозрачный фон_remix_01k6n3re47eearqtkwjkzktpma.png",
+        "assets/images/20251003_1621_Прозрачный фон_remix_01k6n3p2hwf4fbk1r0rqbvdc5d.png",
+        "assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png",
+        "assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png",
+        "assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png"
+      ],
+      cheap_4: [
+        "assets/images/кепка дурова синяя.png",
+        "assets/images/кольцо фиолетовое.png",
+        "assets/images/шляпа белая.png",
+        "assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png",
+        "assets/images/20251003_1626_Прозрачный Фон_remix_01k6n3y428frhrwqy0rqfwq9n5.png",
+        "assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png",
+        "assets/images/20251003_1622_Прозрачный фон_remix_01k6n3re47eearqtkwjkzktpma.png",
+        "assets/images/20251003_1621_Прозрачный фон_remix_01k6n3p2hwf4fbk1r0rqbvdc5d.png",
+        "assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png",
+        "assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png",
+        "assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png"
+      ],
 
       nft_1:   ["","","","","","","","","","",""],
       nft_2:   ["","","","","","","","","","",""],
@@ -274,9 +330,7 @@
     const STAR_ICON = "assets/images/звезда.png";
     const TON_ICON  = "assets/images/тон.png";
 
-    /* ====== ЦЕНЫ/ТЕКСТЫ лута только для ДЕШЁВЫХ кейсов ======
-       Меняй цифры/названия тут.
-    */
+    /* ====== ЦЕНЫ/ТЕКСТЫ лута только для ДЕШЁВЫХ кейсов ====== */
     const LOOT_META = {
       cheap_1: [
         { title: "Durov's Cap Dipper", stars: 174000, ton: 870 },
@@ -437,7 +491,6 @@
         const cell = document.createElement('div');
         cell.className = 'loot';
 
-        // картинка
         if (src){
           const img = document.createElement('img');
           img.src = src;
@@ -446,10 +499,14 @@
           img.onerror = () => img.src = FALLBACK_IMG;
           cell.appendChild(img);
         } else {
-          cell.textContent = 'Заглушка';
+          // Заглушка без картинки
+          const dummy = document.createElement('div');
+          dummy.style.position='absolute'; dummy.style.inset='0';
+          dummy.style.display='grid'; dummy.style.placeItems='center';
+          dummy.textContent='Заглушка';
+          cell.appendChild(dummy);
         }
 
-        // meta (название + цены) — только если передан meta (для cheap_* кейсов)
         if (meta && meta[idx]){
           const m = meta[idx];
 
@@ -493,9 +550,7 @@
       dThumb.textContent = 'Заглушка';
 
       const images = LOOT_SETS[setId] || null;
-
-      // показываем цены/названия только для ДЕШЁВЫХ кейсов
-      const meta = setId.startsWith('cheap_') ? (LOOT_META[setId] || null) : null;
+      const meta   = setId.startsWith('cheap_') ? (LOOT_META[setId] || null) : null;
 
       renderLoot(images, meta);
       detail.classList.add('show');
