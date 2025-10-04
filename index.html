@@ -90,7 +90,7 @@
 
     .tabbar{ position:sticky; bottom:0; z-index:24; background:linear-gradient(180deg,rgba(8,14,36,.72),rgba(6,10,26,.62)); border-top:1px solid var(--border); backdrop-filter:blur(10px); display:grid; grid-template-columns:repeat(5,1fr); padding:8px 6px }
     .tab{display:flex; flex-direction:column; align-items:center; gap:4px; padding:6px 2px; color:#9fb2d9; font-size:12px; font-weight:800}
-    .tab.active{color:#e8efff}
+    .tab.active{color:#e8effф}
     .ico{font-size:18px; text-shadow:0 0 10px rgba(22,241,255,.3)}
 
     .backtop{ position:fixed; right:14px; bottom:90px; z-index:50; padding:9px 12px; border-radius:12px; font-weight:900; font-size:12px; letter-spacing:.3px; border:1px solid rgba(22,241,255,.45); color:#081121; background:linear-gradient(135deg, var(--neon-cyan), var(--neon-pink)); box-shadow:0 10px 28px rgba(22,241,255,.35), 0 0 36px rgba(255,62,208,.25); opacity:0; pointer-events:none; transform:translateY(8px); transition:opacity .2s, transform .2s; }
@@ -126,7 +126,7 @@
     .toggle.active{ background:#19e6ff; } .toggle.active::after{ transform:translateX(20px); }
     .qty{display:flex; gap:10px; justify-content:center}
     .qty .q{ min-width:44px; height:40px; border-radius:12px; display:grid; place-items:center; cursor:pointer; border:1px solid var(--border); background:rgba(15,20,48,.6); font-weight:900; }
-    .qty .q.active{ outline:2px solid var(--neон-cyan); color:#081121; background:linear-gradient(135deg,var(--neon-cyan),var(--neon-pink)); border-color:transparent }
+    .qty .q.active{ outline:2px solid var(--neon-cyan); color:#081121; background:linear-gradient(135deg,var(--neon-cyan),var(--neon-pink)); border-color:transparent }
 
     .subhead{margin:18px 0 10px; text-align:center; font-weight:900; letter-spacing:1.2px}
     .loot-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:12px}
@@ -158,26 +158,28 @@
     }
     .loot .title{ font-weight:900; font-size:12px; line-height:1.2; color:#e8efff; text-shadow:0 0 8px rgba(22,241,255,.25); }
 
-    /* ---- обновлённые отступы и размеры для цен ---- */
+    /* ---- максимально близко и в одну строку ---- */
     .loot .prices{
       display:flex;
       flex-direction:column;
       align-items:center;
-      gap:2px;                  /* строки ближе друг к другу */
+      gap:2px;                 /* строки ближе */
     }
     .loot .price-row{
-      display:flex;
-      align-items:center;
-      gap:4px;                  /* иконка ближе к числам */
-      font-weight:1000;         /* жирнее */
-      font-size:18px;           /* крупнее числа */
-      line-height:1.05;         /* плотнее по вертикали */
+      display:inline-flex;     /* одна строка */
+      align-items:baseline;    /* выравнивание по базовой линии текста */
+      gap:2px;                 /* минимальный зазор между иконкой и числом */
+      white-space:nowrap;      /* не переносить */
+      font-weight:1000;
+      font-size:18px;
+      line-height:1.05;
       color:#e8efff;
     }
     .loot .price-row img{
-      width:16px; height:16px;  /* компактнее иконки */
-      object-fit:contain; display:block;
-      transform:translateY(1px);/* микро-выравнивание к базовой линии */
+      width:16px; height:16px;
+      object-fit:contain; display:inline-block;
+      margin-right:2px;        /* почти вплотную */
+      transform:translateY(1px); /* микро-выравнивание */
       filter:drop-shadow(0 0 6px rgba(22,241,255,.25));
     }
   </style>
@@ -266,7 +268,7 @@
         "assets/images/снупп дог.png",
         "assets/images/20251003_1635_Прозрачный фон_remix_01k6n4frmwe74ry17r7gszk6ef.png",
         "assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png",
-        "assets/images/20251003_1629_Прозрачный фон_remix_01k6n43z74eq3ve8a9rcx44f02.png",
+        "assets/images/20251003_1629_Прозрачный фон_remix_01k6n43з74eq3ve8a9rcx44f02.png",
         "assets/images/20251003_1626_Прозрачный Фон_remix_01k6n3y428frhrwqy0rqfwq9n5.png",
         "assets/images/20251003_1632_Прозрачный фон_remix_01k6n49ebnfssrvwq0605g9bkx.png",
         "assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png",
@@ -279,7 +281,7 @@
         "assets/images/kniga.png","assets/images/klever.png",
         "assets/images/20251003_1635_Прозрачный фон_remix_01k6n4frmwe74ry17r7gszk6ef.png",
         "assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png",
-        "assets/images/20251003_1629_Прозрачный фон_remix_01k6n43z74eq3ve8a9rcx44f02.png",
+        "assets/images/20251003_1629_Прозрачный фон_remix_01k6n43з74eq3ve8a9rcx44f02.png",
         "assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png",
         "assets/images/20251003_1622_Прозрачный фон_remix_01k6n3re47eearqtkwjkzktpma.png",
         "assets/images/20251003_1621_Прозрачный фон_remix_01k6n3p2hwf4fbk1r0rqbvdc5d.png",
@@ -294,7 +296,7 @@
         "assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png",
         "assets/images/20251003_1626_Прозрачный Фон_remix_01k6n3y428frhrwqy0rqfwq9n5.png",
         "assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png",
-        "assets/images/20251003_1622_Прозрачный фон_remix_01k6n3re47eearqtkwjkзktpma.png",
+        "assets/images/20251003_1622_Прозрачный фон_remix_01k6n3re47eearqtkwjkzktpma.png",
         "assets/images/20251003_1621_Прозрачный фон_remix_01k6n3p2hwf4fbk1r0rqbvdc5d.png",
         "assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png",
         "assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png",
@@ -551,7 +553,7 @@
           if (typeof m.ton === 'number'){
             const row2 = document.createElement('div');
             row2.className = 'price-row';
-            row2.innerHTML = `<img src="${TON_ICON}" alt="💎"> ${m.ton.toLocaleString('ru-RU')}`;
+            row2.innerHTML = `<img src="${TON_ICON}" alt="TON"> ${m.ton.toLocaleString('ru-RU')}`;
             prices.appendChild(row2);
           }
 
