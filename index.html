@@ -82,10 +82,7 @@
       display:grid; place-items:center; color:#a9c2ff; font-size:12px; text-transform:uppercase; letter-spacing:1px;
       overflow:hidden;
     }
-    /* картинка обложки кейса внутри превью */
-    .thumb img{
-      width:100%; height:100%; object-fit:cover; display:block;
-    }
+    .thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
 
     .name{font-weight:900; letter-spacing:.3px}
     .desc{font-size:12px; color:#9fb2d9}
@@ -111,7 +108,7 @@
     }
     .detail.show{ display:flex; }
     .d-topbar{ position:sticky; top:0; z-index:61; display:flex; align-items:center; gap:10px; padding:10px 14px; background:linear-gradient(180deg,rgba(8,14,36,.82),rgba(6,10,26,.7)); border-bottom:1px solid var(--border); backdrop-filter:blur(10px); }
-    .btn-back{ appearance:none; border:1px solid var(--border); background:transparent; color:#text; padding:8px 12px; border-radius:12px; font-weight:900; cursor:pointer; }
+    .btn-back{ appearance:none; border:1px solid var(--border); background:transparent; color:var(--text); padding:8px 12px; border-radius:12px; font-weight:900; cursor:pointer; }
     .d-title{font-weight:900}
     .d-body{padding:16px; max-width:1100px; margin:0 auto; width:100%}
     .d-hero{display:grid; grid-template-columns:1fr; gap:14px; margin-bottom:10px;}
@@ -135,6 +132,13 @@
     .loot-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:12px}
     .loot{ border-radius:14px; border:1px dashed rgba(180,210,255,.35); background: linear-gradient(180deg,#0c1230,#0a1028); display:grid; place-items:center; width:100%; aspect-ratio:1/1; overflow:hidden; color:#a9c2ff; font-size:12px; text-transform:uppercase; letter-spacing:1px; }
     .loot img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+    /* ===== LOOT meta (название + цены) ===== */
+    .loot .meta{ width:100%; padding:8px 10px 10px; text-align:center; display:flex; flex-direction:column; gap:6px; }
+    .loot .title{ font-weight:900; font-size:12px; line-height:1.2; color:#e8efff; text-shadow:0 0 8px rgba(22,241,255,.25); }
+    .loot .prices{ display:flex; flex-direction:column; align-items:center; gap:4px; }
+    .loot .price-row{ display:flex; align-items:center; gap:6px; font-weight:900; font-size:14px; line-height:1; color:#e8efff; }
+    .loot .price-row img{ width:18px; height:18px; object-fit:contain; display:block; filter: drop-shadow(0 0 6px rgba(22,241,255,.25)); }
   </style>
 </head>
 <body>
@@ -201,11 +205,7 @@
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script>
-    /* ===================== LOOT-СЕТЫ НА ВСЕ КЕЙСЫ (11 ССЫЛОК В КАЖДОМ) ===================== 
-       Формат ключа: <section>_<index> — где <index> это номер кейса в разделе (1..4).
-       Разделы (кроме free): cheap, nft, exclusive, standard, gold, allornothing, expensive.
-       Просто вставляй ссылки вместо "".
-    */
+    /* ===================== LOOT-СЕТЫ НА ВСЕ КЕЙСЫ (11 ССЫЛОК В КАЖДОМ) ===================== */
     const LOOT_SETS = {
       // ДЕШЁВЫЕ КЕЙСЫ
       cheap_1: [
@@ -221,9 +221,9 @@
         "assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png",
         "assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png"
       ],
-      cheap_2: ["assets/images/снупп дог.png","assets/images/20251003_1635_Прозрачный фон_remix_01k6n4frmwe74ry17r7gszk6ef.png","assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png","assets/images/20251003_1629_Прозрачный фон_remix_01k6n43z74eq3ve8a9rcx44f02.png","assets/images/20251003_1626_Прозрачный Фон_remix_01k6n3y428frhrwqy0rqfwq9n5.png","assets/images/20251003_1632_Прозрачный фон_remix_01k6n49ebnfssrvwq0605g9bkx.png","assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png","assets/images/20251003_1622_Прозрачный фон_remix_01k6n3re47eearqtkwjkzktpma.png","assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png","assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png","assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png"],
-      cheap_3: ["assets/images/kniga.png","assets/images/klever.png","assets/images/20251003_1635_Прозрачный фон_remix_01k6n4frmwe74ry17r7gszk6ef.png","assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png","assets/images/20251003_1629_Прозрачный фон_remix_01k6n43z74eq3ve8a9rcx44f02.png","assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png","assets/images/20251003_1622_Прозрачный фон_remix_01k6n3re47eearqtkwjkzktpma.png","assets/images/20251003_1621_Прозрачный фон_remix_01k6n3p2hwf4fbk1r0rqbvdc5d.png","assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png","assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png","assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png"],
-      cheap_4: ["assets/images/кепка дурова синяя.png","assets/images/кольцо фиолетовое.png","assets/images/шляпа белая.png","assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png","assets/images/20251003_1626_Прозрачный Фон_remix_01k6n3y428frhrwqy0rqfwq9n5.png","assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png","assets/images/20251003_1622_Прозрачный фон_remix_01k6n3re47eearqtkwjkzktpma.png","assets/images/20251003_1621_Прозрачный фон_remix_01k6n3p2hwf4fbk1r0rqbvdc5d.png","assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png","assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png","assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png"],
+      cheap_2: ["assets/images/снупп дог.png","assets/images/20251003_1635_Прозрачный фон_remix_01k6n4frmwe74ry17r7gszk6ef.png","assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png","assets/images/20251003_1629_Прозрачный фон_remix_01k6n43з74eq3ve8a9rcx44f02.png","assets/images/20251003_1626_Прозрачный Фон_remix_01k6n3y428frhrwqy0rqfwq9n5.png","assets/images/20251003_1632_Прозрачный фон_remix_01k6n49ebnfssrvwq0605g9bkx.png","assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png","assets/images/20251003_1622_Прозрачный фон_remix_01k6n3re47eearqtkwjkзktpma.png","assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png","assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png","assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png"],
+      cheap_3: ["assets/images/kniga.png","assets/images/klever.png","assets/images/20251003_1635_Прозрачный фон_remix_01k6n4frmwe74ry17r7gszk6ef.png","assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png","assets/images/20251003_1629_Прозрачный фон_remix_01k6n43з74eq3ve8a9rcx44f02.png","assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png","assets/images/20251003_1622_Прозрачный фон_remix_01k6n3re47eearqtkwjkзktpma.png","assets/images/20251003_1621_Прозрачный фон_remix_01k6n3p2hwf4fbk1r0rqbvdc5d.png","assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png","assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png","assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png"],
+      cheap_4: ["assets/images/кепка дурова синяя.png","assets/images/кольцо фиолетовое.png","assets/images/шляпа белая.png","assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png","assets/images/20251003_1626_Прозрачный Фон_remix_01k6n3y428frhrwqy0rqfwq9н5.png","assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png","assets/images/20251003_1622_Прозрачный фон_remix_01k6n3re47eearqtkwjkзktpma.png","assets/images/20251003_1621_Прозрачный фон_remix_01k6n3p2hwf4fbk1r0rqbvdc5d.png","assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png","assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png","assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png"],
 
       nft_1:   ["","","","","","","","","","",""],
       nft_2:   ["","","","","","","","","","",""],
@@ -256,77 +256,81 @@
       expensive_4: ["","","","","","","","","","",""],
     };
 
-    /* ===================== ОБЛОЖКИ САМИХ КЕЙСОВ (картинка на плитке) =====================
-       Редактируй здесь! Для каждого раздела массив из 4 строк — кейс #1..#4.
-       Просто вставь URL вместо "".
-    */
+    /* ===================== ОБЛОЖКИ САМИХ КЕЙСОВ (картинка на плитке) ===================== */
     const CASE_THUMBS = {
-      // БЕСПЛАТНЫЕ (можно тоже поставить обложки; эти кейсы не открывают детальный экран)
-      free: [
-        /* кейс free #1 — ВСТАВЬ ССЫЛКУ */ "",
-        /* кейс free #2 — ВСТАВЬ ССЫЛКУ */ "assets/images/case.png",
-        /* кейс free #3 — ВСТАВЬ ССЫЛКУ */ "",
-        /* кейс free #4 — ВСТАВЬ ССЫЛКУ */ "",
-      ],
-
-      // ДЕШЁВЫЕ
-      cheap: [
-        /* кейс cheap #1 — ВСТАВЬ ССЫЛКУ */ "",
-        /* кейс cheap #2 — ВСТАВЬ ССЫЛКУ */ "",
-        /* кейс cheap #3 — ВСТАВЬ ССЫЛКУ */ "",
-        /* кейс cheap #4 — ВСТАВЬ ССЫЛКУ */ "",
-      ],
-
-      // NFT
-      nft: [
-        /* кейс nft #1 — ВСТАВЬ ССЫЛКУ */ "",
-        /* кейс nft #2 — ВСТАВЬ ССЫЛКУ */ "",
-        /* кейс nft #3 — ВСТАВЬ ССЫЛКУ */ "",
-        /* кейс nft #4 — ВСТАВЬ ССЫЛКУ */ "",
-      ],
-
-      // ЭКСКЛЮЗИВ
-      exclusive: [
-        /* кейс exclusive #1 — ВСТАВЬ ССЫЛКУ */ "",
-        /* кейс exclusive #2 — ВСТАВЬ ССЫЛКУ */ "",
-        /* кейс exclusive #3 — ВСТАВЬ ССЫЛКУ */ "",
-        /* кейс exclusive #4 — ВСТАВЬ ССЫЛКУ */ "",
-      ],
-
-      // СТАНДАРТ
-      standard: [
-        /* кейс standard #1 — ВСТАВЬ ССЫЛКУ */ "",
-        /* кейс standard #2 — ВСТАВЬ ССЫЛКУ */ "",
-        /* кейс standard #3 — ВСТАВЬ ССЫЛКУ */ "",
-        /* кейс standard #4 — ВСТАВЬ ССЫЛКУ */ "",
-      ],
-
-      // ЗОЛОТО
-      gold: [
-        /* кейс gold #1 — ВСТАВЬ ССЫЛКУ */ "",
-        /* кейс gold #2 — ВСТАВЬ ССЫЛКУ */ "",
-        /* кейс gold #3 — ВСТАВЬ ССЫЛКУ */ "",
-        /* кейс gold #4 — ВСТАВЬ ССЫЛКУ */ "",
-      ],
-
-      // ВСЁ ИЛИ НИЧЕГО
-      allornothing: [
-        /* кейс allornothing #1 — ВСТАВЬ ССЫЛКУ */ "",
-        /* кейс allornothing #2 — ВСТАВЬ ССЫЛКУ */ "",
-        /* кейс allornothing #3 — ВСТАВЬ ССЫЛКУ */ "",
-        /* кейс allornothing #4 — ВСТАВЬ ССЫЛКУ */ "",
-      ],
-
-      // ДОРОГИЕ
-      expensive: [
-        /* кейс expensive #1 — ВСТАВЬ ССЫЛКУ */ "",
-        /* кейс expensive #2 — ВСТАВЬ ССЫЛКУ */ "",
-        /* кейс expensive #3 — ВСТАВЬ ССЫЛКУ */ "",
-        /* кейс expensive #4 — ВСТАВЬ ССЫЛКУ */ "",
-      ],
+      free:     ["","assets/images/case.png","",""],
+      cheap:    ["","","",""],
+      nft:      ["","","",""],
+      exclusive:["","","",""],
+      standard: ["","","",""],
+      gold:     ["","","",""],
+      allornothing:["","","",""],
+      expensive:["","","",""],
     };
 
     const FALLBACK_IMG = "https://via.placeholder.com/512?text=%F0%9F%8E%81";
+
+    /* ====== Иконки для цен под лутом ====== */
+    const STAR_ICON = "assets/images/звезда.png";
+    const TON_ICON  = "assets/images/тон.png";
+
+    /* ====== ЦЕНЫ/ТЕКСТЫ лута только для ДЕШЁВЫХ кейсов ======
+       Меняй цифры/названия тут.
+    */
+    const LOOT_META = {
+      cheap_1: [
+        { title: "Durov's Cap Dipper", stars: 174000, ton: 870 },
+        { title: "Item #2", stars: 1200, ton: 15 },
+        { title: "Item #3", stars: 900,  ton: 9  },
+        { title: "Item #4", stars: 500,  ton: 5  },
+        { title: "Item #5", stars: 300,  ton: 3  },
+        { title: "Item #6", stars: 200,  ton: 2  },
+        { title: "Item #7", stars: 150,  ton: 1  },
+        { title: "Item #8", stars: 120,  ton: 1  },
+        { title: "Item #9", stars: 100,  ton: 1  },
+        { title: "Item #10",stars: 80,   ton: 1  },
+        { title: "Item #11",stars: 50,   ton: 0  },
+      ],
+      cheap_2: [
+        { title:"Item #1", stars:1000, ton:10 },
+        { title:"Item #2", stars:900, ton:9 },
+        { title:"Item #3", stars:800, ton:8 },
+        { title:"Item #4", stars:700, ton:7 },
+        { title:"Item #5", stars:600, ton:6 },
+        { title:"Item #6", stars:500, ton:5 },
+        { title:"Item #7", stars:400, ton:4 },
+        { title:"Item #8", stars:300, ton:3 },
+        { title:"Item #9", stars:200, ton:2 },
+        { title:"Item #10",stars:150, ton:1 },
+        { title:"Item #11",stars:100, ton:1 },
+      ],
+      cheap_3: [
+        { title:"Item #1", stars:1100, ton:11 },
+        { title:"Item #2", stars:1000, ton:10 },
+        { title:"Item #3", stars:900,  ton:9  },
+        { title:"Item #4", stars:800,  ton:8  },
+        { title:"Item #5", stars:700,  ton:7  },
+        { title:"Item #6", stars:600,  ton:6  },
+        { title:"Item #7", stars:500,  ton:5  },
+        { title:"Item #8", stars:400,  ton:4  },
+        { title:"Item #9", stars:300,  ton:3  },
+        { title:"Item #10",stars:200,  ton:2  },
+        { title:"Item #11",stars:100,  ton:1  },
+      ],
+      cheap_4: [
+        { title:"Item #1", stars:900, ton:9 },
+        { title:"Item #2", stars:820, ton:8 },
+        { title:"Item #3", stars:740, ton:7 },
+        { title:"Item #4", stars:660, ton:6 },
+        { title:"Item #5", stars:580, ton:5 },
+        { title:"Item #6", stars:500, ton:5 },
+        { title:"Item #7", stars:420, ton:4 },
+        { title:"Item #8", stars:340, ton:3 },
+        { title:"Item #9", stars:260, ton:2 },
+        { title:"Item #10",stars:180, ton:2 },
+        { title:"Item #11",stars:120, ton:1 },
+      ],
+    };
 
     // Разделы
     const sections = [
@@ -416,21 +420,24 @@
     toggleBackTop();
 
     // DETAIL VIEW
-    const detail = document.getElementById('detail');
-    const backBtn = document.getElementById('backBtn');
-    const dTitle = document.getElementById('detailTitle');
-    const dPrice = document.getElementById('detailPrice');
-    const dThumb = document.getElementById('detailThumb');
+    const detail   = document.getElementById('detail');
+    const backBtn  = document.getElementById('backBtn');
+    const dTitle   = document.getElementById('detailTitle');
+    const dPrice   = document.getElementById('detailPrice');
+    const dThumb   = document.getElementById('detailThumb');
     const lootGrid = document.getElementById('lootGrid');
     const demoToggle = document.getElementById('demoToggle');
-    const qtyWrap = document.getElementById('qtyWrap');
+    const qtyWrap    = document.getElementById('qtyWrap');
 
-    function renderLoot(images){
+    function renderLoot(images, meta){
       lootGrid.innerHTML = "";
       const list = (images && images.length) ? images.slice(0,11) : Array.from({length:11}, ()=>null);
+
       list.forEach((src, idx)=>{
         const cell = document.createElement('div');
         cell.className = 'loot';
+
+        // картинка
         if (src){
           const img = document.createElement('img');
           img.src = src;
@@ -441,6 +448,41 @@
         } else {
           cell.textContent = 'Заглушка';
         }
+
+        // meta (название + цены) — только если передан meta (для cheap_* кейсов)
+        if (meta && meta[idx]){
+          const m = meta[idx];
+
+          const metaBox = document.createElement('div');
+          metaBox.className = 'meta';
+
+          if (m.title){
+            const title = document.createElement('div');
+            title.className = 'title';
+            title.textContent = m.title;
+            metaBox.appendChild(title);
+          }
+
+          const prices = document.createElement('div');
+          prices.className = 'prices';
+
+          if (typeof m.stars === 'number'){
+            const row1 = document.createElement('div');
+            row1.className = 'price-row';
+            row1.innerHTML = `<img src="${STAR_ICON}" alt="⭐"> ${m.stars.toLocaleString('ru-RU')}`;
+            prices.appendChild(row1);
+          }
+          if (typeof m.ton === 'number'){
+            const row2 = document.createElement('div');
+            row2.className = 'price-row';
+            row2.innerHTML = `<img src="${TON_ICON}" alt="💎"> ${m.ton.toLocaleString('ru-RU')}`;
+            prices.appendChild(row2);
+          }
+
+          metaBox.appendChild(prices);
+          cell.appendChild(metaBox);
+        }
+
         lootGrid.appendChild(cell);
       });
     }
@@ -451,8 +493,11 @@
       dThumb.textContent = 'Заглушка';
 
       const images = LOOT_SETS[setId] || null;
-      renderLoot(images); // 11 плиток
 
+      // показываем цены/названия только для ДЕШЁВЫХ кейсов
+      const meta = setId.startsWith('cheap_') ? (LOOT_META[setId] || null) : null;
+
+      renderLoot(images, meta);
       detail.classList.add('show');
       detail.scrollTop = 0;
     }
