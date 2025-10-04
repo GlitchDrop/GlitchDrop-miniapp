@@ -73,66 +73,20 @@
     h2.section{ margin:20px 0 12px; text-align:center; font-size:13px; letter-spacing:2px; opacity:.95; color:#d7e6ff; text-shadow:0 0 16px rgba(22,241,255,.25); scroll-margin-top:130px; }
     .grid{display:grid; grid-template-columns:repeat(2,1fr); gap:14px}
 
-    /* ====== CARD (добавлен флип) ====== */
-    .card{ position:relative; perspective:1000px; }
-    .inner{ position:relative; z-index:auto; } /* сохранено имя класса, но не используется для флипа */
-    .flip-inner{
-      position:relative; width:100%; height:100%;
-      transform-style:preserve-3d;
-      transition:transform .48s cubic-bezier(.2,.7,.2,1);
-      border-radius:var(--radius);
-      min-height:260px;
-    }
-    .card.flipped .flip-inner{ transform:rotateY(180deg); }
-
-    .flip-face{
-      position:absolute; inset:0;
-      background:linear-gradient(180deg, rgba(20,26,62,.55), rgba(14,18,40,.6));
-      border:1px solid var(--border);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow-strong);
-      padding:12px;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      overflow:hidden;
-      backface-visibility:hidden;
-      -webkit-backface-visibility:hidden;
-    }
-
-    /* FRONT (как у тебя было) */
-    .flip-front .thumb{
+    /* ====== CARD кейса — как было (без флипа) ====== */
+    .card{ position:relative; background:linear-gradient(180deg, rgba(20,26,62,.55), rgba(14,18,40,.6)); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow-strong); padding:12px; display:flex; flex-direction:column; gap:10px; overflow:hidden; cursor:pointer; }
+    .card::before{ content:""; position:absolute; inset:-2px; background:conic-gradient(from 200deg, transparent, rgba(22,241,255,.18), transparent 30%, rgba(255,62,208,.18), transparent 55%); filter:blur(14px); opacity:.35; z-index:0; }
+    .inner{position:relative; z-index:1}
+    .thumb{
       height:160px; border-radius:14px; border:1px dashed rgba(180,210,255,.35);
-      background: radial-gradient(120px 80px at 20% 20%, rgba(22,241,255,.12), transparent 60%),
-                  radial-gradient(120px 80px at 80% 80%, rgba(255,62,208,.10), transparent 60%),
-                  linear-gradient(180deg,#0c1230,#0a1028);
+      background: radial-gradient(120px 80px at 20% 20%, rgba(22,241,255,.12), transparent 60%), radial-gradient(120px 80px at 80% 80%, rgba(255,62,208,.10), transparent 60%), linear-gradient(180deg,#0c1230,#0a1028);
       display:grid; place-items:center; color:#a9c2ff; font-size:12px; text-transform:uppercase; letter-spacing:1px;
       overflow:hidden;
     }
-    .flip-front .thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
-    .flip-front .name{font-weight:900; letter-spacing:.3px}
-    .flip-front .desc{font-size:12px; color:#9fb2d9}
-    .flip-front .price{font-weight:900; color:var(--neon-yellow); text-shadow:0 0 12px rgba(255,228,122,.25)}
-
-    /* BACK (простая «спинка») */
-    .flip-back{
-      transform:rotateY(180deg);
-      background:
-        linear-gradient(180deg, rgba(12,18,48,.85), rgba(8,14,36,.85)),
-        radial-gradient(600px 200px at 50% 110%, rgba(22,241,255,.12), transparent 60%),
-        radial-gradient(600px 200px at 50% -10%, rgba(255,62,208,.10), transparent 60%);
-      display:flex; flex-direction:column; gap:10px; justify-content:center; align-items:center; text-align:center;
-    }
-    .flip-back .title{ font-weight:900; letter-spacing:.4px; }
-    .flip-back .meta{ font-size:12px; color:var(--muted); }
-    .flip-back .pill{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:8px 12px; border-radius:999px;
-      border:1px solid var(--border);
-      background:linear-gradient(135deg, rgba(22,241,255,.1), rgba(138,92,255,.12));
-      box-shadow:0 0 18px rgba(22,241,255,.12) inset;
-      font-weight:900; color:#cfe6ff;
-    }
+    .thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+    .name{font-weight:900; letter-spacing:.3px}
+    .desc{font-size:12px; color:#9fb2d9}
+    .price{font-weight:900; color:var(--neon-yellow); text-shadow:0 0 12px rgba(255,228,122,.25)}
 
     .tabbar{ position:sticky; bottom:0; z-index:24; background:linear-gradient(180deg,rgba(8,14,36,.72),rgba(6,10,26,.62)); border-top:1px solid var(--border); backdrop-filter:blur(10px); display:grid; grid-template-columns:repeat(5,1fr); padding:8px 6px }
     .tab{display:flex; flex-direction:column; align-items:center; gap:4px; padding:6px 2px; color:#9fb2d9; font-size:12px; font-weight:800}
@@ -142,7 +96,7 @@
     .backtop{ position:fixed; right:14px; bottom:90px; z-index:50; padding:9px 12px; border-radius:12px; font-weight:900; font-size:12px; letter-spacing:.3px; border:1px solid rgba(22,241,255,.45); color:#081121; background:linear-gradient(135deg, var(--neon-cyan), var(--neon-pink)); box-shadow:0 10px 28px rgba(22,241,255,.35), 0 0 36px rgba(255,62,208,.25); opacity:0; pointer-events:none; transform:translateY(8px); transition:opacity .2s, transform .2s; }
     .backtop.show{opacity:1; pointer-events:auto; transform:translateY(0)}
 
-    /* ====== DETAIL VIEW (оставил как было) ====== */
+    /* ====== DETAIL VIEW ====== */
     .detail{
       position:fixed; inset:0; z-index:60; display:none; flex-direction:column;
       background:
@@ -175,9 +129,45 @@
     .qty .q.active{ outline:2px solid var(--neon-cyan); color:#081121; background:linear-gradient(135deg,var(--neon-cyan),var(--neon-pink)); border-color:transparent }
 
     .subhead{margin:18px 0 10px; text-align:center; font-weight:900; letter-spacing:1.2px}
+
+    /* ====== LOOT GRID (флип у плиток) ====== */
     .loot-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:12px}
-    .loot{ border-radius:14px; border:1px dashed rgba(180,210,255,.35); background: linear-gradient(180deg,#0c1230,#0a1028); display:grid; place-items:center; width:100%; aspect-ratio:1/1; overflow:hidden; color:#a9c2ff; font-size:12px; text-transform:uppercase; letter-spacing:1px; }
-    .loot img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+    .loot{
+      position:relative; width:100%; aspect-ratio:1/1;
+      perspective:900px;
+      border-radius:14px;
+    }
+    .loot-inner{
+      position:relative; width:100%; height:100%;
+      transform-style:preserve-3d;
+      transition:transform .45s cubic-bezier(.2,.7,.2,1);
+      border-radius:14px;
+    }
+    .loot.flipped .loot-inner{ transform:rotateY(180deg); }
+
+    .loot-face{
+      position:absolute; inset:0;
+      border-radius:14px;
+      border:1px dashed rgba(180,210,255,.35);
+      overflow:hidden;
+      backface-visibility:hidden; -webkit-backface-visibility:hidden;
+      display:grid; place-items:center;
+      background: linear-gradient(180deg,#0c1230,#0a1028);
+      color:#a9c2ff; font-size:12px; letter-spacing:1px; text-transform:uppercase;
+    }
+    .loot-front img{ width:100%; height:100%; object-fit:cover; display:block; }
+    .loot-back{
+      transform:rotateY(180deg);
+      background:
+        linear-gradient(180deg, rgba(12,18,48,.85), rgba(8,14,36,.85)),
+        radial-gradient(600px 200px at 50% 110%, rgba(22,241,255,.12), transparent 60%),
+        radial-gradient(600px 200px at 50% -10%, rgba(255,62,208,.10), transparent 60%);
+      padding:10px; gap:8px;
+    }
+    .loot-back .lb-title{ font-weight:900; letter-spacing:.4px; text-align:center; }
+    .loot-back .lb-note{ font-size:11px; color:var(--muted); text-align:center; }
+
   </style>
 </head>
 <body>
@@ -204,7 +194,7 @@
     </nav>
   </div>
 
-  <!-- DETAIL VIEW (оставлено, но мы его не открываем при клике по карточке) -->
+  <!-- DETAIL VIEW -->
   <div id="detail" class="detail" aria-hidden="true">
     <div class="d-topbar">
       <button id="backBtn" class="btn-back">← Назад</button>
@@ -244,7 +234,10 @@
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script>
-    /* ===================== LOOT-СЕТЫ НА ВСЕ КЕЙСЫ (11 ССЫЛОК В КАЖДОМ) ===================== */
+    /* ===================== LOOT-СЕТЫ НА ВСЕ КЕЙСЫ (11 ССЫЛОК В КАЖДОМ) ===================== 
+       Формат ключа: <section>_<index> — где <index> это номер кейса в разделе (1..4).
+       Разделы (кроме free): cheap, nft, exclusive, standard, gold, allornothing, expensive.
+    */
     const LOOT_SETS = {
       // ДЕШЁВЫЕ КЕЙСЫ
       cheap_1: [
@@ -260,8 +253,8 @@
         "assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png",
         "assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png"
       ],
-      cheap_2: ["assets/images/снупп дог.png","assets/images/20251003_1635_Прозрачный фон_remix_01k6n4frmwe74ry17r7gszk6ef.png","assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png","assets/images/20251003_1629_Прозрачный фон_remix_01k6n43z74eq3ve8a9rcx44f02.png","assets/images/20251003_1626_Прозрачный Фон_remix_01k6n3y428frhrwqy0rqfwq9n5.png","assets/images/20251003_1632_Прозрачный фон_remix_01k6n49ebnfssrvwq0605g9bkx.png","assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png","assets/images/20251003_1622_Прозрачный фон_remix_01k6n3re47eearqtkwjkzktpma.png","assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png","assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png","assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png"],
-      cheap_3: ["assets/images/kniga.png","assets/images/klever.png","assets/images/20251003_1635_Прозрачный фон_remix_01k6n4frmwe74ry17r7gszk6ef.png","assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png","assets/images/20251003_1629_Прозрачный фон_remix_01k6n43z74eq3ve8a9rcx44f02.png","assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png","assets/images/20251003_1622_Прозрачный фон_remix_01k6n3re47eearqtkwjkzktpma.png","assets/images/20251003_1621_Прозрачный фон_remix_01k6n3p2hwf4fbk1r0rqbvdc5d.png","assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png","assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png","assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png"],
+      cheap_2: ["assets/images/снупп дог.png","assets/images/20251003_1635_Прозрачный фон_remix_01k6n4frmwe74ry17r7gszk6ef.png","assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png","assets/images/20251003_1629_Прозрачный фон_remix_01k6n43з74eq3ve8a9rcx44f02.png","assets/images/20251003_1626_Прозрачный Фон_remix_01k6n3y428frhrwqy0rqfwq9n5.png","assets/images/20251003_1632_Прозрачный фон_remix_01k6n49ebnfssrvwq0605g9bkx.png","assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png","assets/images/20251003_1622_Прозрачный фон_remix_01k6n3re47eearqtkwjkzktpma.png","assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png","assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png","assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png"],
+      cheap_3: ["assets/images/kniga.png","assets/images/klever.png","assets/images/20251003_1635_Прозрачный фон_remix_01k6n4frmwe74ry17r7gszk6ef.png","assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png","assets/images/20251003_1629_Прозрачный фон_remix_01k6n43з74eq3ve8a9rcx44f02.png","assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png","assets/images/20251003_1622_Прозрачный фон_remix_01k6n3re47eearqtkwjkzktpma.png","assets/images/20251003_1621_Прозрачный фон_remix_01k6n3p2hwf4fbk1r0rqbvdc5d.png","assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png","assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png","assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png"],
       cheap_4: ["","","","","","","","","","",""],
 
       nft_1:   ["","","","","","","","","","",""],
@@ -348,55 +341,22 @@
 
         const card = document.createElement('div');
         card.className='card';
-        card.setAttribute('role','button');
-        card.setAttribute('tabindex','0');
-        card.setAttribute('aria-label', `${sec.title} — Кейс #${i+1}`);
+        card.innerHTML = `
+          <div class="inner">
+            <div class="thumb">${thumbHTML}</div>
+            <div class="name">${sec.title.split(' ')[0]} Кейс #${i+1}</div>
+            <div class="desc">${(sec.descs && sec.descs[i]) || 'Неоновая коллекция'}</div>
+            <div class="price">${Array.isArray(sec.price)? sec.price[i] : sec.price}</div>
+          </div>`;
 
-        // === флип-структура
-        const flip = document.createElement('div');
-        flip.className = 'flip-inner';
-
-        // FRONT
-        const front = document.createElement('div');
-        front.className = 'flip-face flip-front';
-        front.innerHTML = `
-          <div class="thumb">${thumbHTML}</div>
-          <div class="name">${sec.title.split(' ')[0]} Кейс #${i+1}</div>
-          <div class="desc">${(sec.descs && sec.descs[i]) || 'Неоновая коллекция'}</div>
-          <div class="price">${Array.isArray(sec.price)? sec.price[i] : sec.price}</div>
-        `;
-
-        // BACK
-        const back = document.createElement('div');
-        back.className = 'flip-face flip-back';
-        back.innerHTML = `
-          <div class="title">${sec.title.split(' ')[0]} — кейс #${i+1}</div>
-          <div class="meta">Нажми ещё раз, чтобы перевернуть обратно.</div>
-          <div class="pill">Цена: ${Array.isArray(sec.price)? sec.price[i] : sec.price}</div>
-        `;
-
-        flip.appendChild(front);
-        flip.appendChild(back);
-        card.appendChild(flip);
-
-        // КЛИК = переворот; детальный экран больше не открываем
-        card.addEventListener('click', (ev)=>{
-          ev.preventDefault();
-          const open = card.classList.contains('flipped');
-          // закрыть все другие
-          document.querySelectorAll('.card.flipped').forEach(c=>c.classList.remove('flipped'));
-          // открыть текущую, если была закрыта
-          if(!open) card.classList.add('flipped');
-        }, {passive:false});
-
-        // поддержка Enter/Space
-        card.addEventListener('keydown', (e)=>{
-          if(e.key === 'Enter' || e.key === ' '){
-            e.preventDefault();
-            card.click();
-          }
-        });
-
+        if (sec.id !== 'free') {
+          const setId = `${sec.id}_${i+1}`;
+          card.addEventListener('click', ()=> openDetail({
+            title:`${sec.title} — Кейс #${i+1}`,
+            price: Array.isArray(sec.price)? sec.price[i] : sec.price,
+            setId
+          }));
+        }
         grid.appendChild(card);
       }
       content.appendChild(grid);
@@ -422,20 +382,14 @@
     }, {root:null, rootMargin:'-130px 0px -60% 0px', threshold:[0.2,0.4,0.6,0.8]});
     sectionEls.forEach(s=>io.observe(s));
 
-    // Кнопка вверх + автозакрытие флипа при скролле
+    // Кнопка вверх
     const backTop = document.getElementById('backTop');
     const toggleBackTop = ()=> backTop.classList.toggle('show', window.scrollY>2);
-    window.addEventListener('scroll', ()=>{
-      toggleBackTop();
-      clearTimeout(window.__flipCloseTimer);
-      window.__flipCloseTimer = setTimeout(()=> {
-        document.querySelectorAll('.card.flipped').forEach(c=>c.classList.remove('flipped'));
-      }, 120);
-    }, {passive:true});
+    window.addEventListener('scroll', toggleBackTop, {passive:true});
     backTop.addEventListener('click', ()=> window.scrollTo({top:0, behavior:'smooth'}));
     toggleBackTop();
 
-    // DETAIL VIEW (оставлено; сейчас ни на что не навешано)
+    // ===== DETAIL VIEW =====
     const detail = document.getElementById('detail');
     const backBtn = document.getElementById('backBtn');
     const dTitle = document.getElementById('detailTitle');
@@ -445,23 +399,63 @@
     const demoToggle = document.getElementById('demoToggle');
     const qtyWrap = document.getElementById('qtyWrap');
 
+    // РЕНДЕР плиток содержимого кейса с флипом
     function renderLoot(images){
       lootGrid.innerHTML = "";
       const list = (images && images.length) ? images.slice(0,11) : Array.from({length:11}, ()=>null);
+
       list.forEach((src, idx)=>{
-        const cell = document.createElement('div');
-        cell.className = 'loot';
+        const wrap = document.createElement('div');
+        wrap.className = 'loot';
+        wrap.setAttribute('aria-label', `Предмет ${idx+1}`);
+        wrap.setAttribute('role','button');
+        wrap.tabIndex = 0;
+
+        const inner = document.createElement('div');
+        inner.className = 'loot-inner';
+
+        const front = document.createElement('div');
+        front.className = 'loot-face loot-front';
         if (src){
           const img = document.createElement('img');
           img.src = src;
           img.alt = `Предмет ${idx+1}`;
           img.loading = "lazy";
           img.onerror = () => img.src = FALLBACK_IMG;
-          cell.appendChild(img);
+          front.appendChild(img);
         } else {
-          cell.textContent = 'Заглушка';
+          front.textContent = 'Заглушка';
         }
-        lootGrid.appendChild(cell);
+
+        const back = document.createElement('div');
+        back.className = 'loot-face loot-back';
+        back.innerHTML = `
+          <div class="lb-title">Элемент #${idx+1}</div>
+          <div class="lb-note">Нажми, чтобы перевернуть обратно</div>
+        `;
+
+        inner.appendChild(front);
+        inner.appendChild(back);
+        wrap.appendChild(inner);
+
+        // клик = флип
+        wrap.addEventListener('click', (e)=>{
+          e.preventDefault();
+          const isOpen = wrap.classList.contains('flipped');
+          // закрыть другие открытые плитки
+          lootGrid.querySelectorAll('.loot.flipped').forEach(l=>l.classList.remove('flipped'));
+          if (!isOpen) wrap.classList.add('flipped');
+        }, {passive:false});
+
+        // клавиатура (Enter/Space)
+        wrap.addEventListener('keydown', (e)=>{
+          if(e.key==='Enter' || e.key===' '){
+            e.preventDefault();
+            wrap.click();
+          }
+        });
+
+        lootGrid.appendChild(wrap);
       });
     }
 
@@ -471,18 +465,27 @@
       dThumb.textContent = 'Заглушка';
 
       const images = LOOT_SETS[setId] || null;
-      renderLoot(images); // 11 плиток
+      renderLoot(images);
 
       detail.classList.add('show');
       detail.scrollTop = 0;
+
+      // при прокрутке закрываем открытые флипы, чтобы не «зависали»
+      detail.addEventListener('scroll', ()=>{
+        clearTimeout(detail.__flipCloseTimer);
+        detail.__flipCloseTimer = setTimeout(()=> {
+          lootGrid.querySelectorAll('.loot.flipped').forEach(l=>l.classList.remove('flipped'));
+        }, 100);
+      }, {passive:true});
     }
+
     backBtn.addEventListener('click', ()=> detail.classList.remove('show'));
 
-    demoToggle?.addEventListener('click', ()=>{
+    demoToggle.addEventListener('click', ()=>{
       demoToggle.classList.toggle('active');
       demoToggle.setAttribute('aria-checked', demoToggle.classList.contains('active') ? 'true' : 'false');
     });
-    qtyWrap?.addEventListener('click', e=>{
+    qtyWrap.addEventListener('click', e=>{
       const q = e.target.closest('.q'); if(!q) return;
       qtyWrap.querySelectorAll('.q').forEach(el=>el.classList.remove('active'));
       q.classList.add('active');
