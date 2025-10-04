@@ -73,30 +73,76 @@
     h2.section{ margin:20px 0 12px; text-align:center; font-size:13px; letter-spacing:2px; opacity:.95; color:#d7e6ff; text-shadow:0 0 16px rgba(22,241,255,.25); scroll-margin-top:130px; }
     .grid{display:grid; grid-template-columns:repeat(2,1fr); gap:14px}
 
-    .card{ position:relative; background:linear-gradient(180deg, rgba(20,26,62,.55), rgba(14,18,40,.6)); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow-strong); padding:12px; display:flex; flex-direction:column; gap:10px; overflow:hidden; cursor:pointer; }
-    .card::before{ content:""; position:absolute; inset:-2px; background:conic-gradient(from 200deg, transparent, rgba(22,241,255,.18), transparent 30%, rgba(255,62,208,.18), transparent 55%); filter:blur(14px); opacity:.35; z-index:0; }
-    .inner{position:relative; z-index:1}
-    .thumb{
+    /* ====== CARD (добавлен флип) ====== */
+    .card{ position:relative; perspective:1000px; }
+    .inner{ position:relative; z-index:auto; } /* сохранено имя класса, но не используется для флипа */
+    .flip-inner{
+      position:relative; width:100%; height:100%;
+      transform-style:preserve-3d;
+      transition:transform .48s cubic-bezier(.2,.7,.2,1);
+      border-radius:var(--radius);
+      min-height:260px;
+    }
+    .card.flipped .flip-inner{ transform:rotateY(180deg); }
+
+    .flip-face{
+      position:absolute; inset:0;
+      background:linear-gradient(180deg, rgba(20,26,62,.55), rgba(14,18,40,.6));
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow-strong);
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      overflow:hidden;
+      backface-visibility:hidden;
+      -webkit-backface-visibility:hidden;
+    }
+
+    /* FRONT (как у тебя было) */
+    .flip-front .thumb{
       height:160px; border-radius:14px; border:1px dashed rgba(180,210,255,.35);
-      background: radial-gradient(120px 80px at 20% 20%, rgba(22,241,255,.12), transparent 60%), radial-gradient(120px 80px at 80% 80%, rgba(255,62,208,.10), transparent 60%), linear-gradient(180deg,#0c1230,#0a1028);
+      background: radial-gradient(120px 80px at 20% 20%, rgba(22,241,255,.12), transparent 60%),
+                  radial-gradient(120px 80px at 80% 80%, rgba(255,62,208,.10), transparent 60%),
+                  linear-gradient(180deg,#0c1230,#0a1028);
       display:grid; place-items:center; color:#a9c2ff; font-size:12px; text-transform:uppercase; letter-spacing:1px;
       overflow:hidden;
     }
-    .thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+    .flip-front .thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+    .flip-front .name{font-weight:900; letter-spacing:.3px}
+    .flip-front .desc{font-size:12px; color:#9fb2d9}
+    .flip-front .price{font-weight:900; color:var(--neon-yellow); text-shadow:0 0 12px rgba(255,228,122,.25)}
 
-    .name{font-weight:900; letter-spacing:.3px}
-    .desc{font-size:12px; color:#9fb2d9}
-    .price{font-weight:900; color:var(--neon-yellow); text-shadow:0 0 12px rgba(255,228,122,.25)}
+    /* BACK (простая «спинка») */
+    .flip-back{
+      transform:rotateY(180deg);
+      background:
+        linear-gradient(180deg, rgba(12,18,48,.85), rgba(8,14,36,.85)),
+        radial-gradient(600px 200px at 50% 110%, rgba(22,241,255,.12), transparent 60%),
+        radial-gradient(600px 200px at 50% -10%, rgba(255,62,208,.10), transparent 60%);
+      display:flex; flex-direction:column; gap:10px; justify-content:center; align-items:center; text-align:center;
+    }
+    .flip-back .title{ font-weight:900; letter-spacing:.4px; }
+    .flip-back .meta{ font-size:12px; color:var(--muted); }
+    .flip-back .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 12px; border-radius:999px;
+      border:1px solid var(--border);
+      background:linear-gradient(135deg, rgba(22,241,255,.1), rgba(138,92,255,.12));
+      box-shadow:0 0 18px rgba(22,241,255,.12) inset;
+      font-weight:900; color:#cfe6ff;
+    }
 
     .tabbar{ position:sticky; bottom:0; z-index:24; background:linear-gradient(180deg,rgba(8,14,36,.72),rgba(6,10,26,.62)); border-top:1px solid var(--border); backdrop-filter:blur(10px); display:grid; grid-template-columns:repeat(5,1fr); padding:8px 6px }
     .tab{display:flex; flex-direction:column; align-items:center; gap:4px; padding:6px 2px; color:#9fb2d9; font-size:12px; font-weight:800}
-    .tab.active{color:#e8effф}
+    .tab.active{color:#e8efff}
     .ico{font-size:18px; text-shadow:0 0 10px rgba(22,241,255,.3)}
 
     .backtop{ position:fixed; right:14px; bottom:90px; z-index:50; padding:9px 12px; border-radius:12px; font-weight:900; font-size:12px; letter-spacing:.3px; border:1px solid rgba(22,241,255,.45); color:#081121; background:linear-gradient(135deg, var(--neon-cyan), var(--neon-pink)); box-shadow:0 10px 28px rgba(22,241,255,.35), 0 0 36px rgba(255,62,208,.25); opacity:0; pointer-events:none; transform:translateY(8px); transition:opacity .2s, transform .2s; }
     .backtop.show{opacity:1; pointer-events:auto; transform:translateY(0)}
 
-    /* ====== DETAIL VIEW ====== */
+    /* ====== DETAIL VIEW (оставил как было) ====== */
     .detail{
       position:fixed; inset:0; z-index:60; display:none; flex-direction:column;
       background:
@@ -108,7 +154,7 @@
     }
     .detail.show{ display:flex; }
     .d-topbar{ position:sticky; top:0; z-index:61; display:flex; align-items:center; gap:10px; padding:10px 14px; background:linear-gradient(180deg,rgba(8,14,36,.82),rgba(6,10,26,.7)); border-bottom:1px solid var(--border); backdrop-filter:blur(10px); }
-    .btn-back{ appearance:none; border:1px solid var(--border); background:transparent; color:var(--text); padding:8px 12px; border-radius:12px; font-weight:900; cursor:pointer; }
+    .btn-back{ appearance:none; border:1px solid var(--border); background:transparent; color:#text; padding:8px 12px; border-radius:12px; font-weight:900; cursor:pointer; }
     .d-title{font-weight:900}
     .d-body{padding:16px; max-width:1100px; margin:0 auto; width:100%}
     .d-hero{display:grid; grid-template-columns:1fr; gap:14px; margin-bottom:10px;}
@@ -130,58 +176,8 @@
 
     .subhead{margin:18px 0 10px; text-align:center; font-weight:900; letter-spacing:1.2px}
     .loot-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:12px}
-
-    /* ===== карточки лута со слоями ===== */
-    .loot{
-      position:relative;
-      border-radius:14px;
-      border:1px dashed rgba(180,210,255,.35);
-      background: linear-gradient(180deg,#0c1230,#0a1028);
-      display:block;
-      width:100%;
-      aspect-ratio:1/1;
-      overflow:hidden;
-      color:#a9c2ff; font-size:12px; text-transform:uppercase; letter-spacing:1px;
-    }
-    .loot img{
-      position:absolute; inset:0;
-      width:100%; height:100%;
-      object-fit:cover; display:block;
-      z-index:0;
-    }
-    .loot .meta{
-      position:absolute; left:0; right:0; bottom:0;
-      z-index:2;
-      padding:10px 10px 12px;
-      text-align:center; display:flex; flex-direction:column; gap:6px;
-      background:linear-gradient(to top, rgba(6,10,26,.88) 0%, rgba(6,10,26,.65) 60%, rgba(6,10,26,0) 100%);
-    }
-    .loot .title{ font-weight:900; font-size:12px; line-height:1.2; color:#e8efff; text-shadow:0 0 8px rgba(22,241,255,.25); }
-
-    /* ---- максимально близко и в одну строку ---- */
-    .loot .prices{
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap:2px;                 /* строки ближе */
-    }
-    .loot .price-row{
-      display:inline-flex;     /* одна строка */
-      align-items:baseline;    /* выравнивание по базовой линии текста */
-      gap:2px;                 /* минимальный зазор между иконкой и числом */
-      white-space:nowrap;      /* не переносить */
-      font-weight:1000;
-      font-size:18px;
-      line-height:1.05;
-      color:#e8efff;
-    }
-    .loot .price-row img{
-      width:16px; height:16px;
-      object-fit:contain; display:inline-block;
-      margin-right:2px;        /* почти вплотную */
-      transform:translateY(1px); /* микро-выравнивание */
-      filter:drop-shadow(0 0 6px rgba(22,241,255,.25));
-    }
+    .loot{ border-radius:14px; border:1px dashed rgba(180,210,255,.35); background: linear-gradient(180deg,#0c1230,#0a1028); display:grid; place-items:center; width:100%; aspect-ratio:1/1; overflow:hidden; color:#a9c2ff; font-size:12px; text-transform:uppercase; letter-spacing:1px; }
+    .loot img{ width:100%; height:100%; object-fit:cover; display:block; }
   </style>
 </head>
 <body>
@@ -208,7 +204,7 @@
     </nav>
   </div>
 
-  <!-- DETAIL VIEW -->
+  <!-- DETAIL VIEW (оставлено, но мы его не открываем при клике по карточке) -->
   <div id="detail" class="detail" aria-hidden="true">
     <div class="d-topbar">
       <button id="backBtn" class="btn-back">← Назад</button>
@@ -264,44 +260,9 @@
         "assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png",
         "assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png"
       ],
-      cheap_2: [
-        "assets/images/снупп дог.png",
-        "assets/images/20251003_1635_Прозрачный фон_remix_01k6n4frmwe74ry17r7gszk6ef.png",
-        "assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png",
-        "assets/images/20251003_1629_Прозрачный фон_remix_01k6n43з74eq3ve8a9rcx44f02.png",
-        "assets/images/20251003_1626_Прозрачный Фон_remix_01k6n3y428frhrwqy0rqfwq9n5.png",
-        "assets/images/20251003_1632_Прозрачный фон_remix_01k6n49ebnfssrvwq0605g9bkx.png",
-        "assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png",
-        "assets/images/20251003_1622_Прозрачный фон_remix_01k6n3re47eearqtkwjkzktpma.png",
-        "assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png",
-        "assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png",
-        "assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png"
-      ],
-      cheap_3: [
-        "assets/images/kniga.png","assets/images/klever.png",
-        "assets/images/20251003_1635_Прозрачный фон_remix_01k6n4frmwe74ry17r7gszk6ef.png",
-        "assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png",
-        "assets/images/20251003_1629_Прозрачный фон_remix_01k6n43з74eq3ve8a9rcx44f02.png",
-        "assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png",
-        "assets/images/20251003_1622_Прозрачный фон_remix_01k6n3re47eearqtkwjkzktpma.png",
-        "assets/images/20251003_1621_Прозрачный фон_remix_01k6n3p2hwf4fbk1r0rqbvdc5d.png",
-        "assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png",
-        "assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png",
-        "assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png"
-      ],
-      cheap_4: [
-        "assets/images/кепка дурова синяя.png",
-        "assets/images/кольцо фиолетовое.png",
-        "assets/images/шляпа белая.png",
-        "assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png",
-        "assets/images/20251003_1626_Прозрачный Фон_remix_01k6n3y428frhrwqy0rqfwq9n5.png",
-        "assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png",
-        "assets/images/20251003_1622_Прозрачный фон_remix_01k6n3re47eearqtkwjkzktpma.png",
-        "assets/images/20251003_1621_Прозрачный фон_remix_01k6n3p2hwf4fbk1r0rqbvdc5d.png",
-        "assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png",
-        "assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png",
-        "assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png"
-      ],
+      cheap_2: ["assets/images/снупп дог.png","assets/images/20251003_1635_Прозрачный фон_remix_01k6n4frmwe74ry17r7gszk6ef.png","assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png","assets/images/20251003_1629_Прозрачный фон_remix_01k6n43z74eq3ve8a9rcx44f02.png","assets/images/20251003_1626_Прозрачный Фон_remix_01k6n3y428frhrwqy0rqfwq9n5.png","assets/images/20251003_1632_Прозрачный фон_remix_01k6n49ebnfssrvwq0605g9bkx.png","assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png","assets/images/20251003_1622_Прозрачный фон_remix_01k6n3re47eearqtkwjkzktpma.png","assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png","assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png","assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png"],
+      cheap_3: ["assets/images/kniga.png","assets/images/klever.png","assets/images/20251003_1635_Прозрачный фон_remix_01k6n4frmwe74ry17r7gszk6ef.png","assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png","assets/images/20251003_1629_Прозрачный фон_remix_01k6n43z74eq3ve8a9rcx44f02.png","assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png","assets/images/20251003_1622_Прозрачный фон_remix_01k6n3re47eearqtkwjkzktpma.png","assets/images/20251003_1621_Прозрачный фон_remix_01k6n3p2hwf4fbk1r0rqbvdc5d.png","assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png","assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png","assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png"],
+      cheap_4: ["","","","","","","","","","",""],
 
       nft_1:   ["","","","","","","","","","",""],
       nft_2:   ["","","","","","","","","","",""],
@@ -336,77 +297,17 @@
 
     /* ===================== ОБЛОЖКИ САМИХ КЕЙСОВ (картинка на плитке) ===================== */
     const CASE_THUMBS = {
-      free:     ["","assets/images/case.png","",""],
-      cheap:    ["","","",""],
-      nft:      ["","","",""],
+      free: ["","","",""],
+      cheap:["","","",""],
+      nft:["","","",""],
       exclusive:["","","",""],
-      standard: ["","","",""],
-      gold:     ["","","",""],
+      standard:["","","",""],
+      gold:["","","",""],
       allornothing:["","","",""],
       expensive:["","","",""],
     };
 
     const FALLBACK_IMG = "https://via.placeholder.com/512?text=%F0%9F%8E%81";
-
-    /* ====== Иконки для цен под лутом ====== */
-    const STAR_ICON = "assets/images/звезда.png";
-    const TON_ICON  = "assets/images/тон.png";
-
-    /* ====== ЦЕНЫ/ТЕКСТЫ лута только для ДЕШЁВЫХ кейсов ====== */
-    const LOOT_META = {
-      cheap_1: [
-        { title: "Durov's Cap Dipper", stars: 174000, ton: 870 },
-        { title: "Item #2", stars: 1200, ton: 15 },
-        { title: "Item #3", stars: 900,  ton: 9  },
-        { title: "Item #4", stars: 500,  ton: 5  },
-        { title: "Item #5", stars: 300,  ton: 3  },
-        { title: "Item #6", stars: 200,  ton: 2  },
-        { title: "Item #7", stars: 150,  ton: 1  },
-        { title: "Item #8", stars: 120,  ton: 1  },
-        { title: "Item #9", stars: 100,  ton: 1  },
-        { title: "Item #10",stars: 80,   ton: 1  },
-        { title: "Item #11",stars: 50,   ton: 0  },
-      ],
-      cheap_2: [
-        { title:"Item #1", stars:1000, ton:10 },
-        { title:"Item #2", stars:900, ton:9 },
-        { title:"Item #3", stars:800, ton:8 },
-        { title:"Item #4", stars:700, ton:7 },
-        { title:"Item #5", stars:600, ton:6 },
-        { title:"Item #6", stars:500, ton:5 },
-        { title:"Item #7", stars:400, ton:4 },
-        { title:"Item #8", stars:300, ton:3 },
-        { title:"Item #9", stars:200, ton:2 },
-        { title:"Item #10",stars:150, ton:1 },
-        { title:"Item #11",stars:100, ton:1 },
-      ],
-      cheap_3: [
-        { title:"Item #1", stars:1100, ton:11 },
-        { title:"Item #2", stars:1000, ton:10 },
-        { title:"Item #3", stars:900,  ton:9  },
-        { title:"Item #4", stars:800,  ton:8  },
-        { title:"Item #5", stars:700,  ton:7  },
-        { title:"Item #6", stars:600,  ton:6  },
-        { title:"Item #7", stars:500,  ton:5  },
-        { title:"Item #8", stars:400,  ton:4  },
-        { title:"Item #9", stars:300,  ton:3  },
-        { title:"Item #10",stars:200,  ton:2  },
-        { title:"Item #11",stars:100,  ton:1  },
-      ],
-      cheap_4: [
-        { title:"Item #1", stars:900, ton:9 },
-        { title:"Item #2", stars:820, ton:8 },
-        { title:"Item #3", stars:740, ton:7 },
-        { title:"Item #4", stars:660, ton:6 },
-        { title:"Item #5", stars:580, ton:5 },
-        { title:"Item #6", stars:500, ton:5 },
-        { title:"Item #7", stars:420, ton:4 },
-        { title:"Item #8", stars:340, ton:3 },
-        { title:"Item #9", stars:260, ton:2 },
-        { title:"Item #10",stars:180, ton:2 },
-        { title:"Item #11",stars:120, ton:1 },
-      ],
-    };
 
     // Разделы
     const sections = [
@@ -443,26 +344,59 @@
 
       for(let i=0;i<sec.items;i++){
         const thumbUrl = (CASE_THUMBS[sec.id] && CASE_THUMBS[sec.id][i]) || "";
-        const thumbHTML = thumbUrl ? `<img src="${thumbUrl}" alt="Обложка кейса #${i+1}">` : `Заглушка`;
+        const thumbHTML = thumbUrl ? `<img src="${thumbUrl}" alt="Обложка кейса #${i+1}" onerror="this.src='${FALLBACK_IMG}'">` : `Заглушка`;
 
         const card = document.createElement('div');
         card.className='card';
-        card.innerHTML = `
-          <div class="inner">
-            <div class="thumb">${thumbHTML}</div>
-            <div class="name">${sec.title.split(' ')[0]} Кейс #${i+1}</div>
-            <div class="desc">${(sec.descs && sec.descs[i]) || 'Неоновая коллекция'}</div>
-            <div class="price">${Array.isArray(sec.price)? sec.price[i] : sec.price}</div>
-          </div>`;
+        card.setAttribute('role','button');
+        card.setAttribute('tabindex','0');
+        card.setAttribute('aria-label', `${sec.title} — Кейс #${i+1}`);
 
-        if (sec.id !== 'free') {
-          const setId = `${sec.id}_${i+1}`;
-          card.addEventListener('click', ()=> openDetail({
-            title:`${sec.title} — Кейс #${i+1}`,
-            price: Array.isArray(sec.price)? sec.price[i] : sec.price,
-            setId
-          }));
-        }
+        // === флип-структура
+        const flip = document.createElement('div');
+        flip.className = 'flip-inner';
+
+        // FRONT
+        const front = document.createElement('div');
+        front.className = 'flip-face flip-front';
+        front.innerHTML = `
+          <div class="thumb">${thumbHTML}</div>
+          <div class="name">${sec.title.split(' ')[0]} Кейс #${i+1}</div>
+          <div class="desc">${(sec.descs && sec.descs[i]) || 'Неоновая коллекция'}</div>
+          <div class="price">${Array.isArray(sec.price)? sec.price[i] : sec.price}</div>
+        `;
+
+        // BACK
+        const back = document.createElement('div');
+        back.className = 'flip-face flip-back';
+        back.innerHTML = `
+          <div class="title">${sec.title.split(' ')[0]} — кейс #${i+1}</div>
+          <div class="meta">Нажми ещё раз, чтобы перевернуть обратно.</div>
+          <div class="pill">Цена: ${Array.isArray(sec.price)? sec.price[i] : sec.price}</div>
+        `;
+
+        flip.appendChild(front);
+        flip.appendChild(back);
+        card.appendChild(flip);
+
+        // КЛИК = переворот; детальный экран больше не открываем
+        card.addEventListener('click', (ev)=>{
+          ev.preventDefault();
+          const open = card.classList.contains('flipped');
+          // закрыть все другие
+          document.querySelectorAll('.card.flipped').forEach(c=>c.classList.remove('flipped'));
+          // открыть текущую, если была закрыта
+          if(!open) card.classList.add('flipped');
+        }, {passive:false});
+
+        // поддержка Enter/Space
+        card.addEventListener('keydown', (e)=>{
+          if(e.key === 'Enter' || e.key === ' '){
+            e.preventDefault();
+            card.click();
+          }
+        });
+
         grid.appendChild(card);
       }
       content.appendChild(grid);
@@ -488,31 +422,35 @@
     }, {root:null, rootMargin:'-130px 0px -60% 0px', threshold:[0.2,0.4,0.6,0.8]});
     sectionEls.forEach(s=>io.observe(s));
 
-    // Кнопка вверх
+    // Кнопка вверх + автозакрытие флипа при скролле
     const backTop = document.getElementById('backTop');
     const toggleBackTop = ()=> backTop.classList.toggle('show', window.scrollY>2);
-    window.addEventListener('scroll', toggleBackTop, {passive:true});
+    window.addEventListener('scroll', ()=>{
+      toggleBackTop();
+      clearTimeout(window.__flipCloseTimer);
+      window.__flipCloseTimer = setTimeout(()=> {
+        document.querySelectorAll('.card.flipped').forEach(c=>c.classList.remove('flipped'));
+      }, 120);
+    }, {passive:true});
     backTop.addEventListener('click', ()=> window.scrollTo({top:0, behavior:'smooth'}));
     toggleBackTop();
 
-    // DETAIL VIEW
-    const detail   = document.getElementById('detail');
-    const backBtn  = document.getElementById('backBtn');
-    const dTitle   = document.getElementById('detailTitle');
-    const dPrice   = document.getElementById('detailPrice');
-    const dThumb   = document.getElementById('detailThumb');
+    // DETAIL VIEW (оставлено; сейчас ни на что не навешано)
+    const detail = document.getElementById('detail');
+    const backBtn = document.getElementById('backBtn');
+    const dTitle = document.getElementById('detailTitle');
+    const dPrice = document.getElementById('detailPrice');
+    const dThumb = document.getElementById('detailThumb');
     const lootGrid = document.getElementById('lootGrid');
     const demoToggle = document.getElementById('demoToggle');
-    const qtyWrap    = document.getElementById('qtyWrap');
+    const qtyWrap = document.getElementById('qtyWrap');
 
-    function renderLoot(images, meta){
+    function renderLoot(images){
       lootGrid.innerHTML = "";
       const list = (images && images.length) ? images.slice(0,11) : Array.from({length:11}, ()=>null);
-
       list.forEach((src, idx)=>{
         const cell = document.createElement('div');
         cell.className = 'loot';
-
         if (src){
           const img = document.createElement('img');
           img.src = src;
@@ -521,46 +459,8 @@
           img.onerror = () => img.src = FALLBACK_IMG;
           cell.appendChild(img);
         } else {
-          const dummy = document.createElement('div');
-          dummy.style.position='absolute'; dummy.style.inset='0';
-          dummy.style.display='grid'; dummy.style.placeItems='center';
-          dummy.textContent='Заглушка';
-          cell.appendChild(dummy);
+          cell.textContent = 'Заглушка';
         }
-
-        if (meta && meta[idx]){
-          const m = meta[idx];
-
-          const metaBox = document.createElement('div');
-          metaBox.className = 'meta';
-
-          if (m.title){
-            const title = document.createElement('div');
-            title.className = 'title';
-            title.textContent = m.title;
-            metaBox.appendChild(title);
-          }
-
-          const prices = document.createElement('div');
-          prices.className = 'prices';
-
-          if (typeof m.stars === 'number'){
-            const row1 = document.createElement('div');
-            row1.className = 'price-row';
-            row1.innerHTML = `<img src="${STAR_ICON}" alt="⭐"> ${m.stars.toLocaleString('ru-RU')}`;
-            prices.appendChild(row1);
-          }
-          if (typeof m.ton === 'number'){
-            const row2 = document.createElement('div');
-            row2.className = 'price-row';
-            row2.innerHTML = `<img src="${TON_ICON}" alt="TON"> ${m.ton.toLocaleString('ru-RU')}`;
-            prices.appendChild(row2);
-          }
-
-          metaBox.appendChild(prices);
-          cell.appendChild(metaBox);
-        }
-
         lootGrid.appendChild(cell);
       });
     }
@@ -571,19 +471,18 @@
       dThumb.textContent = 'Заглушка';
 
       const images = LOOT_SETS[setId] || null;
-      const meta   = setId.startsWith('cheap_') ? (LOOT_META[setId] || null) : null;
+      renderLoot(images); // 11 плиток
 
-      renderLoot(images, meta);
       detail.classList.add('show');
       detail.scrollTop = 0;
     }
     backBtn.addEventListener('click', ()=> detail.classList.remove('show'));
 
-    demoToggle.addEventListener('click', ()=>{
+    demoToggle?.addEventListener('click', ()=>{
       demoToggle.classList.toggle('active');
       demoToggle.setAttribute('aria-checked', demoToggle.classList.contains('active') ? 'true' : 'false');
     });
-    qtyWrap.addEventListener('click', e=>{
+    qtyWrap?.addEventListener('click', e=>{
       const q = e.target.closest('.q'); if(!q) return;
       qtyWrap.querySelectorAll('.q').forEach(el=>el.classList.remove('active'));
       q.classList.add('active');
