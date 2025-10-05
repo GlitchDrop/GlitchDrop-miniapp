@@ -50,9 +50,18 @@
     .brand .glitch::after { transform:translateX(-1px); color:var(--neon-pink); opacity:.8; text-shadow:0 0 10px rgba(255,62,208,.8); animation:glitch 2.6s infinite ease-in-out reverse;}
     @keyframes glitch{ 0%,100%{clip-path:inset(0 0 0 0)} 10%{clip-path:inset(0 0 65% 0)} 20%{clip-path:inset(0 0 0 0)} 30%{clip-path:inset(40% 0 0 0)} 45%{clip-path:inset(0 0 0 0)} 60%{clip-path:inset(0 0 75% 0)} 80%{clip-path:inset(20% 0 10% 0)} }
     .grow{flex:1}
-    .pill{ display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:999px; border:1px solid var(--border); background:linear-gradient(135deg, rgba(22,241,255,.1), rgba(138,92,255,.12)); box-shadow:0 0 18px rgba(22,241,255,.12) inset; font-weight:900; color:#cfe6ff; }
-    /* компактная иконка в пилюле */
-    .pill img{width:16px; height:16px; display:block; object-fit:cover; border-radius:4px}
+
+    .pill{
+      display:flex; align-items:center; gap:10px; padding:8px 12px;
+      border-radius:999px; border:1px solid var(--border);
+      background:linear-gradient(135deg, rgba(22,241,255,.1), rgba(138,92,255,.12));
+      box-shadow:0 0 18px rgba(22,241,255,.12) inset;
+      font-weight:900; color:#cfe6ff;
+    }
+    /* базовый размер иконок в пилюлях */
+    .pill img{width:18px; height:18px; display:block; object-fit:cover; border-radius:4px}
+    /* увеличенная иконка именно для глитч-токена */
+    .pill--glitch img{width:24px; height:24px}
 
     .chipbar{
       position:sticky; top:64px; z-index:25;
@@ -199,11 +208,16 @@
       <div id="avatarFallback" class="avatar-fallback">GD</div>
       <div class="brand"><span id="userName" class="glitch" data-text="GLITCH&nbsp;DROP">GLITCH&nbsp;DROP</span></div>
       <div class="grow"></div>
-      <!-- существующая пилюля со звёздами -->
-      <div class="pill"><span>⭐</span><span class="num" id="stars">120</span></div>
-      <!-- новая пилюля с иконкой и числом 50 -->
+
+      <!-- Пилюля со звёздами (замена на изображение звезды) -->
       <div class="pill">
-        <img src="assets/images/20251005_0825_Яркое неоновое сияние_remix_01k6sd902pf03ah1w3cpkr66jz.png" alt="иконка">
+        <img src="assets/images/звезда.png" alt="звезда">
+        <span class="num" id="stars">120</span>
+      </div>
+
+      <!-- Новая пилюля: глитч-токен с увеличенной иконкой -->
+      <div class="pill pill--glitch" title="Глитч-токен">
+        <img src="assets/images/20251005_0825_Яркое неоновое сияние_remix_01k6sd902pf03ah1w3cpkr66jz.png" alt="глитч-токен">
         <span class="num" id="bonus">50</span>
       </div>
     </div>
@@ -264,7 +278,7 @@
     const LOOT_SETS = {
       cheap_1: [
         "assets/images/20251003_1635_Прозрачный фон_remix_01k6n4frmwe74ry17r7gszk6ef.png",
-        "assets/images/20251003_1629_Прозрачный фон_remix_01k6n43z74eq3ve8a9rcx44f02.png",
+        "assets/images/20251003_1629_Прозрачный фон_remix_01k6n43з74eq3ve8a9rcx44f02.png",
         "assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png",
         "assets/images/20251003_1626_Прозрачный Фон_remix_01k6n3y428frhrwqy0rqfwq9н5.png",
         "assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png",
@@ -275,8 +289,32 @@
         "assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png",
         "assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png"
       ],
-      cheap_2: ["assets/images/снупп дог.png","assets/images/20251003_1635_Прозрачный фон_remix_01k6n4frmwe74ry17r7gszk6ef.png","assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png","assets/images/20251003_1629_Прозрачный фон_remix_01k6n43z74eq3ve8a9rcx44f02.png","assets/images/20251003_1626_Прозрачный Фон_remix_01k6n3y428frhrwqy0rqfwq9н5.png","assets/images/20251003_1632_Прозрачный фон_remix_01k6n49ebnfssrvwq0605g9bkx.png","assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png","assets/images/20251003_1622_Прозрачный фон_remix_01k6n3re47eearqtkwjkzktpma.png","assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png","assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png","assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png"],
-      cheap_3: ["assets/images/kniga.png","assets/images/klever.png","assets/images/20251003_1635_Прозрачный фон_remix_01k6n4frmwe74ry17r7gszk6ef.png","assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png","assets/images/20251003_1629_Прозрачный фон_remix_01k6n43z74eq3ve8a9rcx44f02.png","assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png","assets/images/20251003_1622_Прозрачный фон_remix_01k6n3re47eearqtkwjkzktpma.png","assets/images/20251003_1621_Прозрачный фон_remix_01k6n3p2hwf4fbk1r0rqbvdc5d.png","assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png","assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png","assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png"],
+      cheap_2: [
+        "assets/images/снупп дог.png",
+        "assets/images/20251003_1635_Прозрачный фон_remix_01k6n4frmwe74ry17r7gszk6ef.png",
+        "assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png",
+        "assets/images/20251003_1629_Прозрачный фон_remix_01k6n43з74eq3ve8a9rcx44f02.png",
+        "assets/images/20251003_1626_Прозрачный Фон_remix_01k6n3y428frhrwqy0rqfwq9н5.png",
+        "assets/images/20251003_1632_Прозрачный фон_remix_01k6n49ebnfssrvwq0605g9bkx.png",
+        "assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png",
+        "assets/images/20251003_1622_Прозрачный фон_remix_01k6n3re47eearqtkwjkzktpma.png",
+        "assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png",
+        "assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png",
+        "assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png"
+      ],
+      cheap_3: [
+        "assets/images/kniga.png",
+        "assets/images/klever.png",
+        "assets/images/20251003_1635_Прозрачный фон_remix_01k6n4frmwe74ry17r7gszk6ef.png",
+        "assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png",
+        "assets/images/20251003_1629_Прозрачный фон_remix_01k6n43з74eq3ve8a9rcx44f02.png",
+        "assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png",
+        "assets/images/20251003_1622_Прозрачный фон_remix_01k6n3re47eearqtkwjkzktpma.png",
+        "assets/images/20251003_1621_Прозрачный фон_remix_01k6n3p2hwf4fbk1r0rqbvdc5d.png",
+        "assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png",
+        "assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png",
+        "assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png"
+      ],
       cheap_4: ["","","","","","","","","","",""],
 
       nft_1:["","","","","","","","","","",""],
@@ -310,63 +348,31 @@
       expensive_4:["","","","","","","","","","",""],
     };
 
-    /* ===== ТЕКСТ НА ОБОРОТЕ ДЛЯ ДЕШЁВЫХ КЕЙСОВ (ТАБЛИЦА РЕДАКТИРОВАНИЯ) =====
-       Для каждого cheap_* — массив из 11 элементов. Каждый элемент — объект:
-       { stars: "174000/", ton: "870" }
-       Оставишь пустую строку — подставится дефолт (stars="174000/", ton="870").
-    */
+    /* ===== ТЕКСТ НА ОБОРОТЕ ДЛЯ ДЕШЁВЫХ КЕЙСОВ (ТАБЛИЦА РЕДАКТИРОВАНИЯ) ===== */
     const CHEAP_BACK_TEXT = {
       cheap_1: [
-        /* плитка #1  */ {stars:"174000/", ton:"870"},
-        /* плитка #2  */ {stars:"174000/", ton:"870"},
-        /* плитка #3  */ {stars:"174000/", ton:"870"},
-        /* плитка #4  */ {stars:"174000/", ton:"870"},
-        /* плитка #5  */ {stars:"174000/", ton:"870"},
-        /* плитка #6  */ {stars:"174000/", ton:"870"},
-        /* плитка #7  */ {stars:"174000/", ton:"870"},
-        /* плитка #8  */ {stars:"174000/", ton:"870"},
-        /* плитка #9  */ {stars:"174000/", ton:"870"},
-        /* плитка #10 */ {stars:"174000/", ton:"870"},
-        /* плитка #11 */ {stars:"174000/", ton:"870"},
+        {stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},
+        {stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},
+        {stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},
+        {stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},
       ],
       cheap_2: [
-        /* #1 */ {stars:"174000/", ton:"870"},
-        /* #2 */ {stars:"174000/", ton:"870"},
-        /* #3 */ {stars:"174000/", ton:"870"},
-        /* #4 */ {stars:"174000/", ton:"870"},
-        /* #5 */ {stars:"174000/", ton:"870"},
-        /* #6 */ {stars:"174000/", ton:"870"},
-        /* #7 */ {stars:"174000/", ton:"870"},
-        /* #8 */ {stars:"174000/", ton:"870"},
-        /* #9 */ {stars:"174000/", ton:"870"},
-        /* #10*/ {stars:"174000/", ton:"870"},
-        /* #11*/ {stars:"174000/", ton:"870"},
+        {stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},
+        {stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},
+        {stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},
+        {stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},
       ],
       cheap_3: [
-        /* #1 */ {stars:"174000/", ton:"870"},
-        /* #2 */ {stars:"174000/", ton:"870"},
-        /* #3 */ {stars:"174000/", ton:"870"},
-        /* #4 */ {stars:"174000/", ton:"870"},
-        /* #5 */ {stars:"174000/", ton:"870"},
-        /* #6 */ {stars:"174000/", ton:"870"},
-        /* #7 */ {stars:"174000/", ton:"870"},
-        /* #8 */ {stars:"174000/", ton:"870"},
-        /* #9 */ {stars:"174000/", ton:"870"},
-        /* #10*/ {stars:"174000/", ton:"870"},
-        /* #11*/ {stars:"174000/", ton:"870"},
+        {stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},
+        {stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},
+        {stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},
+        {stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},
       ],
       cheap_4: [
-        /* #1 */ {stars:"174000/", ton:"870"},
-        /* #2 */ {stars:"174000/", ton:"870"},
-        /* #3 */ {stars:"174000/", ton:"870"},
-        /* #4 */ {stars:"174000/", ton:"870"},
-        /* #5 */ {stars:"174000/", ton:"870"},
-        /* #6 */ {stars:"174000/", ton:"870"},
-        /* #7 */ {stars:"174000/", ton:"870"},
-        /* #8 */ {stars:"174000/", ton:"870"},
-        /* #9 */ {stars:"174000/", ton:"870"},
-        /* #10*/ {stars:"174000/", ton:"870"},
-        /* #11*/ {stars:"174000/", ton:"870"},
+        {stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},
+        {stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},
+        {stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},
+        {stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},
       ],
     };
 
