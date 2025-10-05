@@ -58,10 +58,11 @@
       box-shadow:0 0 18px rgba(22,241,255,.12) inset;
       font-weight:900; color:#cfe6ff;
     }
-    /* базовый размер иконок в пилюлях */
+    /* базовый размер иконок */
     .pill img{width:18px; height:18px; display:block; object-fit:cover; border-radius:4px}
-    /* увеличенная иконка именно для глитч-токена */
-    .pill--glitch img{width:24px; height:24px}
+    /* единый увеличенный размер для обеих пилюль */
+    .pill--lg{ padding:10px 14px; }
+    .pill--lg img{ width:24px; height:24px; }
 
     .chipbar{
       position:sticky; top:64px; z-index:25;
@@ -73,7 +74,7 @@
     .chipbar::-webkit-scrollbar{display:none}
     .chip{
       padding:10px 14px; border-radius:999px; white-space:nowrap; cursor:pointer;
-      border:1px solid var(--border); color:var(--muted); font-weight:800; user-select:none;
+      border:1px solid var(--border); color:#9fb2d9; font-weight:800; user-select:none;
       background:linear-gradient(135deg, rgba(15,20,48,.7), rgba(12,16,38,.7));
       transition:transform .15s, box-shadow .15s, color .15s, background .2s, border-color .2s;
     }
@@ -137,7 +138,7 @@
     .toggle.active{ background:#19e6ff; } .toggle.active::after{ transform:translateX(20px); }
     .qty{display:flex; gap:10px; justify-content:center}
     .qty .q{ min-width:44px; height:40px; border-radius:12px; display:grid; place-items:center; cursor:pointer; border:1px solid var(--border); background:rgba(15,20,48,.6); font-weight:900; }
-    .qty .q.active{ outline:2px solid var(--neon-cyan); color:#081121; background:linear-gradient(135deg,var(--neon-cyan),var(--неон-пинк)); border-color:transparent }
+    .qty .q.active{ outline:2px solid var(--neon-cyan); color:#081121; background:linear-gradient(135deg,var(--неон-cyan),var(--неон-пинк)); border-color:transparent }
 
     .subhead{margin:18px 0 10px; text-align:center; font-weight:900; letter-spacing:1.2px}
 
@@ -209,16 +210,16 @@
       <div class="brand"><span id="userName" class="glitch" data-text="GLITCH&nbsp;DROP">GLITCH&nbsp;DROP</span></div>
       <div class="grow"></div>
 
-      <!-- Пилюля со звёздами (замена на изображение звезды) -->
-      <div class="pill">
-        <img src="assets/images/звезда.png" alt="звезда">
-        <span class="num" id="stars">120</span>
-      </div>
-
-      <!-- Новая пилюля: глитч-токен с увеличенной иконкой -->
-      <div class="pill pill--glitch" title="Глитч-токен">
+      <!-- Пилюля ГЛИТЧ-ТОКЕН слева -->
+      <div class="pill pill--lg" title="Глитч-токен">
         <img src="assets/images/20251005_0825_Яркое неоновое сияние_remix_01k6sd902pf03ah1w3cpkr66jz.png" alt="глитч-токен">
         <span class="num" id="bonus">50</span>
+      </div>
+
+      <!-- Пилюля со ЗВЕЗДОЙ справа (такой же размер) -->
+      <div class="pill pill--lg">
+        <img src="assets/images/звезда.png" alt="звезда">
+        <span class="num" id="stars">120</span>
       </div>
     </div>
 
