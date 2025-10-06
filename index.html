@@ -120,9 +120,9 @@
     }
     .detail.show{ display:flex; }
     .d-topbar{ position:sticky; top:0; z-index:61; display:flex; align-items:center; gap:10px; padding:10px 14px; background:linear-gradient(180deg,rgba(8,14,36,.82),rgba(6,10,26,.7)); border-bottom:1px solid var(--border); backdrop-filter:blur(10px); }
-    .btn-back{ appearance:none; border:1px solid var(--border); background:transparent; color:#text; padding:8px 12px; border-radius:12px; font-weight:900; cursor:pointer; }
+    .btn-back{ appearance:none; border:1px solid var(--border); background:transparent; color:var(--text); padding:8px 12px; border-radius:12px; font-weight:900; cursor:pointer; }
     .d-title{font-weight:900}
-    .d-body{padding:16px; max-width:1100px; margin:0 авто; width:100%}
+    .d-body{padding:16px; max-width:1100px; margin:0 auto; width:100%}
     .d-hero{display:grid; grid-template-columns:1fr; gap:14px; margin-bottom:10px;}
     .d-thumb{ height:200px; border-radius:16px; border:1px dashed rgba(180,210,255,.35);
       background: radial-gradient(160px 110px at 20% 20%, rgba(22,241,255,.12), transparent 60%), radial-gradient(160px 110px at 80% 80%, rgba(255,62,208,.10), transparent 60%), linear-gradient(180deg,#0c1230,#0a1028);
@@ -138,7 +138,7 @@
     .toggle.active{ background:#19e6ff; } .toggle.active::after{ transform:translateX(20px); }
     .qty{display:flex; gap:10px; justify-content:center}
     .qty .q{ min-width:44px; height:40px; border-radius:12px; display:grid; place-items:center; cursor:pointer; border:1px solid var(--border); background:rgba(15,20,48,.6); font-weight:900; }
-    .qty .q.active{ outline:2px solid var(--neon-cyan); color:#081121; background:linear-gradient(135deg,var(--неон-cyan),var(--неон-пинк)); border-color:transparent }
+    .qty .q.active{ outline:2px solid var(--neon-cyan); color:#081121; background:linear-gradient(135deg,var(--neon-cyan),var(--neon-pink)); border-color:transparent }
 
     .subhead{margin:18px 0 10px; text-align:center; font-weight:900; letter-spacing:1.2px}
 
@@ -199,6 +199,7 @@
       text-shadow:0 0 12px rgba(22,241,255,.22);
     }
   </style>
+
 <!-- ===================== SPIN REEL: CSS ===================== -->
 <style>
   /* === ОВЕРЛЕЙ ПРОКРУТКИ (в твоём неон-стиле) === */
@@ -407,6 +408,28 @@
   </div>
 
   <button id="backTop" class="backtop" aria-label="Вверх">ВВЕРХ ↑</button>
+
+<!-- ===== SPIN OVERLAY (окно прокрутки) ===== -->
+<div id="spinOverlay" class="spin-overlay" aria-hidden="true">
+  <div class="spin-shell">
+    <div class="spin-topbar">
+      <div class="spin-title">Прокрутка кейса</div>
+      <button class="spin-close" type="button">Закрыть</button>
+    </div>
+
+    <div class="spin-viewport">
+      <div class="spin-track" id="spinTrack"></div>
+      <div class="spin-pointer"></div>
+    </div>
+
+    <div class="spin-actions">
+      <button class="spin-cta secondary" type="button" id="spinAgainBtn">Ещё раз</button>
+      <button class="spin-cta" type="button" id="spinOkBtn">Забрать</button>
+    </div>
+  </div>
+</div>
+<!-- ===== /SPIN OVERLAY ===== -->
+
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script>
@@ -709,6 +732,9 @@
       const images = LOOT_SETS[setId] || null;
       renderLoot(images, setId);
 
+const spinBtn = detail.querySelector('.btn-spin');
+spinBtn.onclick = ()=> openSpin(setId);
+
       detail.classList.add('show');
       detail.scrollTop = 0;
 
@@ -755,6 +781,181 @@
         fallback.style.display = 'none';
       }
     })();
-  </script>
+</script>
+
+
+<script>
+// ===================== SPIN REEL: JS =====================
+
+// ====== 11 вкладок (ТЫ РЕДАКТИРУЕШЬ ТОЛЬКО ЭТОТ МАССИВ) ======
+// img — URL квадрата 1:1 (можешь оставить "" — тогда покажется "—")
+// label — подпись; value — число/награда
+// ================== РЕДАКТИРУЕШЬ ЗДЕСЬ ↓↓↓ ==================
+const SPIN_TILES = [
+  { img: "", label: "ПРИЗ #1",  value: "10 ⭐" },
+  { img: "", label: "ПРИЗ #2",  value: "25 ⭐" },
+  { img: "", label: "ПРИЗ #3",  value: "50 ⭐" },
+  { img: "", label: "ПРИЗ #4",  value: "100 ⭐" },
+  { img: "", label: "ПРИЗ #5",  value: "3 ⭐" },
+  { img: "", label: "ПРИЗ #6",  value: "5 ⭐" },
+  { img: "", label: "ПРИЗ #7",  value: "8 ⭐" },
+  { img: "", label: "ПРИЗ #8",  value: "15 ⭐" },
+  { img: "", label: "ПРИЗ #9",  value: "20 ⭐" },
+  { img: "", label: "ПРИЗ #10", value: "30 ⭐" },
+  { img: "", label: "ПРИЗ #11", value: "60 ⭐" },
+];
+// ================== РЕДАКТИРУЕШЬ ЗДЕСЬ ↑↑↑ ==================
+
+// БАЗОВЫЕ НАСТРОЙКИ (совпадают со стилями)
+const TILE_W = 110;       // .slot width
+const TILE_GAP = 12;      // gap между плитками
+const SPIN_TIME_MS = 4000; // 4 секунды
+const EXTRA_LOOPS = 6;     // сколько «кругов» до остановки
+
+let spinBuilt = false;
+let currentX = 0;
+let rafId = 0;
+let lastWinEl = null;
+
+function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
+
+function qs(sel, root=document){ return root.querySelector(sel); }
+function qsa(sel, root=document){ return Array.from(root.querySelectorAll(sel)); }
+
+// Строим DOM для дорожки из SPIN_TILES (и дублируем для длинного прогона)
+function buildSpinOverlay(){
+  if (spinBuilt) return;
+  const track = qs('#spinTrack');
+  if (!track) return;
+
+  // Сборка одной «линии»
+  const row = SPIN_TILES.map((t, idx)=>{
+    const el = document.createElement('div');
+    el.className = 'slot';
+    el.dataset.baseIndex = String(idx); // запомним исходный индекс (0..10)
+    el.innerHTML = `
+      <div class="slot-img">${t.img ? `<img src="${t.img}" alt="">` : '—'}</div>
+      <div class="slot-label">${t.label || ''}</div>
+      <div class="slot-value">${t.value || ''}</div>
+    `;
+    return el;
+  });
+
+  // Дублируем ряды, чтобы хватило расстояния для нескольких «кругов»
+  // Сделаем *минимум* EXTRA_LOOPS + немного запаса.
+  const totalCopies = Math.max(EXTRA_LOOPS + 2, 9);
+  for (let c=0; c<totalCopies; c++){
+    row.forEach(node=> track.appendChild(node.cloneNode(true)));
+  }
+
+  // Начальная позиция
+  currentX = 0;
+  track.style.transform = `translateX(${currentX}px)`;
+
+  // Кнопки
+  qs('.spin-close').addEventListener('click', closeSpin);
+  qs('#spinOkBtn').addEventListener('click', closeSpin);
+  qs('#spinAgainBtn').addEventListener('click', ()=> startSpin(true));
+
+  spinBuilt = true;
+}
+
+// Открыть оверлей и запустить спин
+function openSpin(setId){
+  // setId можно использовать для логики дропа по кейсу, если понадобится
+  const overlay = qs('#spinOverlay');
+  overlay.setAttribute('aria-hidden','false');
+
+  buildSpinOverlay();
+  // небольшая задержка чтобы CSS подхватился
+  setTimeout(()=> startSpin(false), 50);
+}
+
+function closeSpin(){
+  const overlay = qs('#spinOverlay');
+  overlay.setAttribute('aria-hidden','true');
+  cancelAnimationFrame(rafId);
+  rafId = 0;
+}
+
+// Собственно анимация на 4 секунды с плавной остановкой на случайной вкладке
+function startSpin(repeat){
+  const overlay = qs('#spinOverlay');
+  const viewport = qs('.spin-viewport', overlay);
+  const track = qs('#spinTrack', overlay);
+  if (!viewport || !track) return;
+
+  // Снимаем подсветку прошлого выигрыша
+  if (lastWinEl){ lastWinEl.style.outline = ''; lastWinEl.style.transform = ''; lastWinEl = null; }
+
+  cancelAnimationFrame(rafId);
+
+  // Геометрия
+  const tiles = qsa('.slot', track);
+  const rowLen = SPIN_TILES.length; // 11
+  const tileFull = TILE_W + TILE_GAP;
+  const rowWidth = rowLen * tileFull;
+
+  // Выбираем целевой базовый индекс (0..10)
+  const targetBaseIndex = Math.floor(Math.random() * rowLen);
+
+  // Находим позицию *какого-то* элемента с таким baseIndex достаточно далеко вправо,
+  // чтобы мы смогли прокрутить несколько кругов и на нём остановиться.
+  // Возьмем элемент на копии № (EXTRA_LOOPS + 1), чтобы гарантировать длину.
+  const targetCopyNo = EXTRA_LOOPS + 1;
+  const targetGlobalIndex = targetCopyNo * rowLen + targetBaseIndex;
+  const targetEl = tiles[targetGlobalIndex];
+  if (!targetEl) return;
+
+  // Координаты
+  const vRect = viewport.getBoundingClientRect();
+  const tRect = targetEl.getBoundingClientRect();
+
+  // Позиция targetEl LEFT относительно track:
+  // Берём index среди детей, считаем left = index * tileFull
+  // (для стабильности лучше не верить getBoundingClientRect во время анимации)
+  const indexInTrack = tiles.indexOf(targetEl);
+  const targetLeftInTrack = indexInTrack * tileFull;
+  const targetCenterInTrack = targetLeftInTrack + TILE_W/2;
+
+  const viewportCenter = vRect.width / 2;
+
+  // Конечное смещение дорожки так, чтобы центр целевой плитки совпал с центром вьюпорта:
+  const targetX = viewportCenter - targetCenterInTrack;
+
+  // Старт — текущее положение дорожки (currentX)
+  const startX = currentX;
+  const from = startX;
+  const to = targetX;
+
+  const t0 = performance.now();
+  const dur = SPIN_TIME_MS;
+
+  function frame(now){
+    const dt = now - t0;
+    const p = Math.min(1, dt / dur);
+    const e = easeOutCubic(p);
+    currentX = from + (to - from) * e;
+    track.style.transform = `translateX(${currentX}px)`;
+    if (p < 1){
+      rafId = requestAnimationFrame(frame);
+    } else {
+      // Финиш — подсветим победную плитку
+      lastWinEl = targetEl;
+      lastWinEl.style.outline = '2px solid var(--neon-cyan)';
+      lastWinEl.style.transform = 'scale(1.05)';
+      rafId = 0;
+    }
+  }
+  rafId = requestAnimationFrame(frame);
+}
+
+// (патч уже добавил в openDetail) — при открытии кейса вешаем на кнопку .btn-spin -> openSpin
+// см. вставку №2 выше
+
+// ===================== /SPIN REEL: JS =====================
+</script>
+
+
 </body>
 </html>
