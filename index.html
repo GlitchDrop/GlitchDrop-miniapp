@@ -199,6 +199,141 @@
       text-shadow:0 0 12px rgba(22,241,255,.22);
     }
   </style>
+<!-- ===================== SPIN REEL: CSS ===================== -->
+<style>
+  /* === ОВЕРЛЕЙ ПРОКРУТКИ (в твоём неон-стиле) === */
+  .spin-overlay{
+    position:fixed; inset:0; z-index:100;
+    display:flex; align-items:center; justify-content:center;
+    background:
+      linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bot) 100%),
+      repeating-linear-gradient(0deg,  rgba(255,255,255,.035) 0 1px,  transparent 1px var(--grid-gap)),
+      repeating-linear-gradient(90deg, rgba(255,255,255,.035) 0 1px,  transparent 1px var(--grid-gap));
+    background-blend-mode: normal, overlay, overlay;
+    backdrop-filter: blur(10px);
+  }
+  .spin-overlay[aria-hidden="true"]{ display:none; }
+
+  .spin-shell{
+    width:min(960px, 92vw);
+    border-radius:20px;
+    border:1px solid var(--border);
+    background:linear-gradient(180deg, rgba(20,26,62,.65), rgba(14,18,40,.7));
+    box-shadow:0 24px 80px rgba(10,20,60,.55), 0 0 60px rgba(22,241,255,.08);
+    padding:14px;
+  }
+
+  .spin-topbar{
+    display:flex; align-items:center; gap:10px;
+    margin-bottom:10px;
+  }
+  .spin-title{
+    font-weight:900; letter-spacing:.6px; color:#d7e6ff;
+    text-shadow:0 0 16px rgba(22,241,255,.25);
+  }
+  .spin-close{
+    margin-left:auto;
+    appearance:none; cursor:pointer;
+    border:1px solid var(--border); border-radius:12px;
+    background:linear-gradient(135deg, rgba(22,241,255,.10), rgba(138,92,255,.12));
+    color:var(--text); font-weight:800;
+    padding:8px 12px;
+  }
+
+  /* === ВЬЮПОРТ + ДОРОЖКА === */
+  .spin-viewport{
+    position:relative;
+    height:160px;
+    border-radius:16px;
+    border:1px solid var(--border);
+    background:linear-gradient(180deg,#0c1230,#0a1028);
+    overflow:hidden;
+    box-shadow:inset 0 0 24px rgba(22,241,255,.12);
+  }
+
+  .spin-track{
+    position:absolute; left:50%; top:50%;
+    transform:translate(-50%, -50%);
+    display:flex; align-items:center;
+    gap:12px; /* <-- совпадает с JS: TILE_GAP */
+    will-change: transform;
+  }
+
+  /* Центральный указатель (куда «попадаем») */
+  .spin-pointer{
+    position:absolute; top:0; bottom:0; left:50%;
+    width:2px; transform:translateX(-50%);
+    background:linear-gradient(180deg, var(--neon-cyan), var(--neon-pink));
+    box-shadow:
+      0 0 14px rgba(22,241,255,.55),
+      0 0 22px rgba(255,62,208,.35);
+    pointer-events:none;
+  }
+
+  /* === ПЛИТКА (SLOT) — КВАДРАТ 1:1 === */
+  .slot{
+    width:110px;               /* <-- совпадает с JS: TILE_W */
+    aspect-ratio:1/1;
+    border-radius:14px;
+    border:1px dashed rgba(180,210,255,.35);
+    background:
+      radial-gradient(120px 80px at 20% 20%, rgba(22,241,255,.12), transparent 60%),
+      radial-gradient(120px 80px at 80% 80%, rgba(255,62,208,.10), transparent 60%),
+      linear-gradient(180deg,#0c1230,#0a1028);
+    display:grid;
+    grid-template-rows: 1fr auto auto;
+    align-items:center; justify-items:center;
+    padding:8px;
+    box-shadow:0 10px 30px rgba(10,20,60,.35);
+  }
+
+  /* Картинка 1:1 (если задана) */
+  .slot-img{
+    width:64px; height:64px; border-radius:12px; overflow:hidden;
+    border:1px solid var(--border);
+    background: radial-gradient(80px 60px at 50% 50%, rgba(22,241,255,.10), transparent 60%);
+    display:grid; place-items:center;
+  }
+  .slot-img img{
+    width:100%; height:100%; display:block; object-fit:cover;
+  }
+
+  /* Подпись и число */
+  .slot-label{
+    margin-top:6px;
+    font-size:12px; font-weight:800; color:#a9c2ff; text-transform:uppercase;
+    letter-spacing:.4px; text-align:center;
+  }
+  .slot-value{
+    font-size:14px; font-weight:900; color:var(--neon-yellow);
+    text-shadow:0 0 12px rgba(255,228,122,.25);
+  }
+
+  /* === КНОПКИ НИЖЕ === */
+  .spin-actions{
+    margin-top:12px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;
+  }
+  .spin-cta{
+    appearance:none; cursor:pointer; border:none;
+    padding:12px 16px; border-radius:14px; font-weight:900; color:#081121;
+    background:linear-gradient(135deg,#ffe28a,#ffc13a);
+    box-shadow:0 10px 28px rgba(255,209,102,.35), 0 0 30px rgba(255,209,102,.25);
+  }
+  .spin-cta.secondary{
+    background:transparent; color:#e8efff;
+    border:1px solid var(--border);
+    box-shadow:none;
+  }
+
+  /* Адаптив: ужимаем плитки на узких экранах */
+  @media (max-width: 400px){
+    .spin-shell{ padding:12px; }
+    .spin-viewport{ height:148px; }
+    .slot{ width:96px; }
+    .slot-img{ width:56px; height:56px; }
+  }
+</style>
+
 </head>
 <body>
   <div class="cyber-bg"></div>
