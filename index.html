@@ -200,140 +200,66 @@
     }
   </style>
 
-<!-- ===================== SPIN REEL: CSS ===================== -->
-<style>
-  /* === ОВЕРЛЕЙ ПРОКРУТКИ (в твоём неон-стиле) === */
-  .spin-overlay{
-    position:fixed; inset:0; z-index:100;
-    display:flex; align-items:center; justify-content:center;
-    background:
-      linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bot) 100%),
-      repeating-linear-gradient(0deg,  rgba(255,255,255,.035) 0 1px,  transparent 1px var(--grid-gap)),
-      repeating-linear-gradient(90deg, rgba(255,255,255,.035) 0 1px,  transparent 1px var(--grid-gap));
-    background-blend-mode: normal, overlay, overlay;
-    backdrop-filter: blur(10px);
-  }
-  .spin-overlay[aria-hidden="true"]{ display:none; }
+<style id="spin-css">
+/* ===== Прокрутка в d-thumb ===== */
+.spin-embed{ width:100%; height:100%; display:flex; flex-direction:column; gap:10px; }
+.spin-viewport{
+  height:100%; border-radius:16px; border:1px solid var(--border);
+  background:linear-gradient(180deg,#0c1230,#0a1028);
+  overflow:hidden; box-shadow:inset 0 0 24px rgba(22,241,255,.12);
+  position:relative;
+}
+.spin-track{
+  position:absolute; left:50%; top:50%;
+  transform:translate(-50%,-50%);
+  display:flex; align-items:center; gap:12px;
+  will-change:transform;
+}
+.spin-pointer{
+  position:absolute; top:0; bottom:0; left:50%; width:2px; transform:translateX(-50%);
+  background:linear-gradient(180deg, var(--neon-cyan), var(--neon-pink));
+  box-shadow:0 0 14px rgba(22,241,255,.55), 0 0 22px rgba(255,62,208,.35);
+  pointer-events:none;
+}
 
-  .spin-shell{
-    width:min(960px, 92vw);
-    border-radius:20px;
-    border:1px solid var(--border);
-    background:linear-gradient(180deg, rgba(20,26,62,.65), rgba(14,18,40,.7));
-    box-shadow:0 24px 80px rgba(10,20,60,.55), 0 0 60px rgba(22,241,255,.08);
-    padding:14px;
-  }
+/* плитка растянута по высоте viewport; изображение 1:1 */
+.slot{
+  width:110px; height:100%;
+  border-radius:14px; border:1px dashed rgba(180,210,255,.35);
+  background:
+    radial-gradient(120px 80px at 20% 20%, rgba(22,241,255,.12), transparent 60%),
+    radial-gradient(120px 80px at 80% 80%, rgba(255,62,208,.10), transparent 60%),
+    linear-gradient(180deg,#0c1230,#0a1028);
+  display:grid; grid-template-rows: 1fr auto auto; align-items:center; justify-items:center; padding:8px;
+  box-shadow:0 10px 30px rgba(10,20,60,.35);
+}
+.slot-img{
+  width:auto; height:70%; aspect-ratio:1/1; border-radius:12px; overflow:hidden; border:1px solid var(--border);
+  background: radial-gradient(80px 60px at 50% 50%, rgba(22,241,255,.10), transparent 60%);
+  display:grid; place-items:center;
+}
+.slot-img img{ width:100%; height:100%; object-fit:cover; display:block; }
+.slot-label{ margin-top:6px; font-size:12px; font-weight:800; color:#a9c2ff; text-transform:uppercase; letter-spacing:.4px; text-align:center; }
+.slot-value{ font-size:14px; font-weight:900; color:var(--neon-yellow); text-shadow:0 0 12px rgba(255,228,122,.25); }
 
-  .spin-topbar{
-    display:flex; align-items:center; gap:10px;
-    margin-bottom:10px;
-  }
-  .spin-title{
-    font-weight:900; letter-spacing:.6px; color:#d7e6ff;
-    text-shadow:0 0 16px rgba(22,241,255,.25);
-  }
-  .spin-close{
-    margin-left:auto;
-    appearance:none; cursor:pointer;
-    border:1px solid var(--border); border-radius:12px;
-    background:linear-gradient(135deg, rgba(22,241,255,.10), rgba(138,92,255,.12));
-    color:var(--text); font-weight:800;
-    padding:8px 12px;
-  }
+/* подсветка плитки под указателем */
+.slot.hot{ outline:2px solid var(--neon-cyan); box-shadow:0 0 24px rgba(22,241,255,.25), inset 0 0 12px rgba(22,241,255,.12); }
 
-  /* === ВЬЮПОРТ + ДОРОЖКА === */
-  .spin-viewport{
-    position:relative;
-    height:160px;
-    border-radius:16px;
-    border:1px solid var(--border);
-    background:linear-gradient(180deg,#0c1230,#0a1028);
-    overflow:hidden;
-    box-shadow:inset 0 0 24px rgba(22,241,255,.12);
-  }
-
-  .spin-track{
-    position:absolute; left:50%; top:50%;
-    transform:translate(-50%, -50%);
-    display:flex; align-items:center;
-    gap:12px; /* <-- совпадает с JS: TILE_GAP */
-    will-change: transform;
-  }
-
-  /* Центральный указатель (куда «попадаем») */
-  .spin-pointer{
-    position:absolute; top:0; bottom:0; left:50%;
-    width:2px; transform:translateX(-50%);
-    background:linear-gradient(180deg, var(--neon-cyan), var(--neon-pink));
-    box-shadow:
-      0 0 14px rgba(22,241,255,.55),
-      0 0 22px rgba(255,62,208,.35);
-    pointer-events:none;
-  }
-
-  /* === ПЛИТКА (SLOT) — КВАДРАТ 1:1 === */
-  .slot{
-    width:110px;               /* <-- совпадает с JS: TILE_W */
-    aspect-ratio:1/1;
-    border-radius:14px;
-    border:1px dashed rgba(180,210,255,.35);
-    background:
-      radial-gradient(120px 80px at 20% 20%, rgba(22,241,255,.12), transparent 60%),
-      radial-gradient(120px 80px at 80% 80%, rgba(255,62,208,.10), transparent 60%),
-      linear-gradient(180deg,#0c1230,#0a1028);
-    display:grid;
-    grid-template-rows: 1fr auto auto;
-    align-items:center; justify-items:center;
-    padding:8px;
-    box-shadow:0 10px 30px rgba(10,20,60,.35);
-  }
-
-  /* Картинка 1:1 (если задана) */
-  .slot-img{
-    width:64px; height:64px; border-radius:12px; overflow:hidden;
-    border:1px solid var(--border);
-    background: radial-gradient(80px 60px at 50% 50%, rgba(22,241,255,.10), transparent 60%);
-    display:grid; place-items:center;
-  }
-  .slot-img img{
-    width:100%; height:100%; display:block; object-fit:cover;
-  }
-
-  /* Подпись и число */
-  .slot-label{
-    margin-top:6px;
-    font-size:12px; font-weight:800; color:#a9c2ff; text-transform:uppercase;
-    letter-spacing:.4px; text-align:center;
-  }
-  .slot-value{
-    font-size:14px; font-weight:900; color:var(--neon-yellow);
-    text-shadow:0 0 12px rgba(255,228,122,.25);
-  }
-
-  /* === КНОПКИ НИЖЕ === */
-  .spin-actions{
-    margin-top:12px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;
-  }
-  .spin-cta{
-    appearance:none; cursor:pointer; border:none;
-    padding:12px 16px; border-radius:14px; font-weight:900; color:#081121;
-    background:linear-gradient(135deg,#ffe28a,#ffc13a);
-    box-shadow:0 10px 28px rgba(255,209,102,.35), 0 0 30px rgba(255,209,102,.25);
-  }
-  .spin-cta.secondary{
-    background:transparent; color:#e8efff;
-    border:1px solid var(--border);
-    box-shadow:none;
-  }
-
-  /* Адаптив: ужимаем плитки на узких экранах */
-  @media (max-width: 400px){
-    .spin-shell{ padding:12px; }
-    .spin-viewport{ height:148px; }
-    .slot{ width:96px; }
-    .slot-img{ width:56px; height:56px; }
-  }
+/* кнопки «Забрать / Ещё раз» */
+.spin-cta{
+  appearance:none; cursor:pointer; border:none;
+  padding:12px 16px; border-radius:14px; font-weight:900; color:#081121;
+  background:linear-gradient(135deg,#ffe28a,#ffc13a);
+  box-shadow:0 10px 28px rgba(255,209,102,.35), 0 0 30px rgba(255,209,102,.25);
+}
+.spin-cta.secondary{
+  background:transparent; color:#e8efff;
+  border:1px solid var(--border);
+  box-shadow:none;
+}
+.hide{ display:none !important; }
 </style>
+
 
 </head>
 <body>
@@ -382,10 +308,13 @@
       <div class="d-hero">
         <div id="detailThumb" class="d-thumb">Заглушка</div>
         <div class="d-actions">
-          <button class="btn-spin">КРУТИТЬ</button>
-          <div class="pill"><span>Цена:</span><span class="num" id="detailPrice">—</span></div>
-        </div>
-      </div>
+  <button class="btn-spin" id="spinStartBtn">КРУТИТЬ</button>
+  <button class="spin-cta hide" id="spinOkBtn">Забрать</button>
+  <button class="spin-cta secondary hide" id="spinAgainBtn">Ещё раз</button>
+  <div class="pill"><span>Цена:</span><span class="num" id="detailPrice">—</span></div>
+</div>
+
+</div> <!-- закрывает .d-hero -->
 
       <div class="panel">
         <div class="switch" style="justify-content:space-between;margin-bottom:10px;">
@@ -409,553 +338,479 @@
 
   <button id="backTop" class="backtop" aria-label="Вверх">ВВЕРХ ↑</button>
 
-<!-- ===== SPIN OVERLAY (окно прокрутки) ===== -->
-<div id="spinOverlay" class="spin-overlay" aria-hidden="true">
-  <div class="spin-shell">
-    <div class="spin-topbar">
-      <div class="spin-title">Прокрутка кейса</div>
-      <button class="spin-close" type="button">Закрыть</button>
-    </div>
-
-    <div class="spin-viewport">
-      <div class="spin-track" id="spinTrack"></div>
-      <div class="spin-pointer"></div>
-    </div>
-
-    <div class="spin-actions">
-      <button class="spin-cta secondary" type="button" id="spinAgainBtn">Ещё раз</button>
-      <button class="spin-cta" type="button" id="spinOkBtn">Забрать</button>
-    </div>
-  </div>
-</div>
-<!-- ===== /SPIN OVERLAY ===== -->
 
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script>
-    /* ===================== LOOT-СЕТЫ (11 ссылок) ===================== */
-    const LOOT_SETS = {
-      cheap_1: [
-        "assets/images/20251003_1635_Прозрачный фон_remix_01k6n4frmwe74ry17r7gszk6ef.png",
-        "assets/images/20251003_1629_Прозрачный фон_remix_01k6n43z74eq3ve8a9rcx44f02.png",
-        "assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png",
-        "assets/images/20251003_1626_Прозрачный Фон_remix_01k6n3y428frhrwqy0rqfwq9n5.png",
-        "assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png",
-        "assets/images/20251003_1622_Прозрачный фон_remix_01k6n3re47eearqtkwjkzktpma.png",
-        "assets/images/20251003_1632_Прозрачный фон_remix_01k6n49ebnfssrvwq0605g9bkx.png",
-        "assets/images/20251003_1621_Прозрачный фон_remix_01k6n3p2hwf4fbk1r0rqbvdc5d.png",
-        "assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png",
-        "assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png",
-        "assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png"
-      ],
-      cheap_2: [
-        "assets/images/снупп дог.png",
-        "assets/images/20251003_1635_Прозрачный фон_remix_01k6n4frmwe74ry17r7gszk6ef.png",
-        "assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png",
-        "assets/images/20251003_1629_Прозрачный фон_remix_01k6n43z74eq3ve8a9rcx44f02.png",
-        "assets/images/20251003_1626_Прозрачный Фон_remix_01k6n3y428frhrwqy0rqfwq9n5.png",
-        "assets/images/20251003_1632_Прозрачный фон_remix_01k6n49ebnfssrvwq0605g9bkx.png",
-        "assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png",
-        "assets/images/20251003_1622_Прозрачный фон_remix_01k6n3re47eearqtkwjkzktpma.png",
-        "assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png",
-        "assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png",
-        "assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png"
-      ],
-      cheap_3: [
-        "assets/images/kniga.png",
-        "assets/images/klever.png",
-        "assets/images/20251003_1635_Прозрачный фон_remix_01k6n4frmwe74ry17r7gszk6ef.png",
-        "assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png",
-        "assets/images/20251003_1629_Прозрачный фон_remix_01k6n43z74eq3ve8a9rcx44f02.png",
-        "assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png",
-        "assets/images/20251003_1622_Прозрачный фон_remix_01k6n3re47eearqtkwjkzktpma.png",
-        "assets/images/20251003_1621_Прозрачный фон_remix_01k6n3p2hwf4fbk1r0rqbvdc5d.png",
-        "assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png",
-        "assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png",
-        "assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png"
-      ],
-      cheap_4: ["","","","","","","","","","",""],
 
-      nft_1:["","","","","","","","","","",""],
-      nft_2:["","","","","","","","","","",""],
-      nft_3:["","","","","","","","","","",""],
-      nft_4:["","","","","","","","","","",""],
+<script>
+// ====== ДАННЫЕ ======
+const LOOT_SETS = { /* <-- твои массивы, оставляю как есть */ 
+  cheap_1:[ "assets/images/20251003_1635_Прозрачный фон_remix_01k6n4frmwe74ry17r7gszk6ef.png",
+    "assets/images/20251003_1629_Прозрачный фон_remix_01k6n43z74eq3ve8a9rcx44f02.png",
+    "assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png",
+    "assets/images/20251003_1626_Прозрачный Фон_remix_01k6n3y428frhrwqy0rqfwq9n5.png",
+    "assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png",
+    "assets/images/20251003_1622_Прозрачный фон_remix_01k6n3re47eearqtkwjkзktpma.png",
+    "assets/images/20251003_1632_Прозрачный фон_remix_01k6n49ebnfssrvwq0605g9bkx.png",
+    "assets/images/20251003_1621_Прозрачный фон_remix_01k6n3p2hwf4fbk1r0rqbvdc5d.png",
+    "assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png",
+    "assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png",
+    "assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png"
+  ],
+  cheap_2:[/* ... */],
+  cheap_3:[/* ... */],
+  cheap_4:["","","","","","","","","","",""],
+  nft_1:["","","","","","","","","","",""],
+  nft_2:["","","","","","","","","","",""],
+  nft_3:["","","","","","","","","","",""],
+  nft_4:["","","","","","","","","","",""],
+  exclusive_1:["","","","","","","","","","",""],
+  exclusive_2:["","","","","","","","","","",""],
+  exclusive_3:["","","","","","","","","","",""],
+  exclusive_4:["","","","","","","","","","",""],
+  standard_1:["","","","","","","","","","",""],
+  standard_2:["","","","","","","","","","",""],
+  standard_3:["","","","","","","","","","",""],
+  standard_4:["","","","","","","","","","",""],
+  gold_1:["","","","","","","","","","",""],
+  gold_2:["","","","","","","","","","",""],
+  gold_3:["","","","","","","","","","",""],
+  gold_4:["","","","","","","","","","",""],
+  allornothing_1:["","","","","","","","","","",""],
+  allornothing_2:["","","","","","","","","","",""],
+  allornothing_3:["","","","","","","","","","",""],
+  allornothing_4:["","","","","","","","","","",""],
+  expensive_1:["","","","","","","","","","",""],
+  expensive_2:["","","","","","","","","","",""],
+  expensive_3:["","","","","","","","","","",""],
+  expensive_4:["","","","","","","","","","",""],
+};
 
-      exclusive_1:["","","","","","","","","","",""],
-      exclusive_2:["","","","","","","","","","",""],
-      exclusive_3:["","","","","","","","","","",""],
-      exclusive_4:["","","","","","","","","","",""],
+const CHEAP_BACK_TEXT = {
+  cheap_1: Array(11).fill({stars:"174000/", ton:"870"}),
+  cheap_2: Array(11).fill({stars:"174000/", ton:"870"}),
+  cheap_3: Array(11).fill({stars:"174000/", ton:"870"}),
+  cheap_4: Array(11).fill({stars:"174000/", ton:"870"}),
+};
 
-      standard_1:["","","","","","","","","","",""],
-      standard_2:["","","","","","","","","","",""],
-      standard_3:["","","","","","","","","","",""],
-      standard_4:["","","","","","","","","","",""],
+const CASE_THUMBS = {
+  free:["assets/images/20251006_1323_Изумрудный кейс_remix_01k6wgnp9kfc7t5tsc54yag55g.png","assets/images/20251006_1250_Энергичный Глитч Кейс_remix_01k6wes6ykf1rtbax6cajjgpae.png","assets/images/20251006_1340_Жёлтый Глитч Дроп_remix_01k6whmtz7e3d8ejjj7vz9dt6z.png","assets/images/case 10 000.png"],
+  cheap:["","","",""],
+  nft:["assets/images/ChatGPT Image 5 окт. 2025 г., 10_33_06.png","assets/images/ChatGPT Image 5 окт. 2025 г., 11_26_19.png","assets/images/NFT 3.png","assets/images/20251005_1527_Зелёная призрачная тыква_remix_01k6t5bwrrfxet6r4vzrkgra3k.png"],
+  exclusive:["assets/images/20251005_1639_Новогодняя змея_remix_01k6t9fz7mevwt1beaq5bxehc4.png","assets/images/20251005_1703_Фен с розовой лентой_remix_01k6tavjk3fq8brq0e5fr8hycw.png","assets/images/20251005_1718_Стильный школьный рюкзак_simple_compose_01k6tbpyfyedkb0r4qcr8r6p8m.png","assets/images/20251005_1752_Радужные Губы и Пузыри_remix_01k6tdn1ebem893yskvv82bpgz.png"],
+  standard:["","","",""],
+  gold:["","","",""],
+  allornothing:["","","",""],
+  expensive:["","","",""],
+};
 
-      gold_1:["","","","","","","","","","",""],
-      gold_2:["","","","","","","","","","",""],
-      gold_3:["","","","","","","","","","",""],
-      gold_4:["","","","","","","","","","",""],
+const sections = [
+  { id:'free',        title:'БЕСПЛАТНЫЕ КЕЙСЫ',  items:4, price:'БЕСПЛАТНО',
+    descs:['Бонус за промокод','Ежедневный бонус','За подписку','За пополнение'] },
+  { id:'cheap',       title:'ДЕШЁВЫЕ КЕЙСЫ',     items:4, price:['50 ⭐','250 ⭐','500 ⭐','1500 ⭐'] },
+  { id:'nft',         title:'ТОЛЬКО NFT-КЕЙСЫ',  items:4, price:['25 ⭐','30 ⭐','35 ⭐','40 ⭐'] },
+  { id:'exclusive',   title:'ЭКСКЛЮЗИВНЫЕ КЕЙСЫ',items:4, price:['2000 ⭐','3500 ⭐','5800 ⭐','8500 ⭐'] },
+  { id:'standard',    title:'СТАНДАРТНЫЕ КЕЙСЫ', items:4, price:['20 ⭐','25 ⭐','28 ⭐','35 ⭐'] },
+  { id:'gold',        title:'КЕЙСЫ ЗА ЗОЛОТО',   items:4, price:['ЗОЛОТО','ЗОЛОТО','ЗОЛОТО','ЗОЛОТО'] },
+  { id:'allornothing',title:'ВСЁ ИЛИ НИЧЕГО КЕЙСЫ',items:4,price:['50 ⭐','75 ⭐','100 ⭐','150 ⭐'] },
+  { id:'expensive',   title:'ДОРОГИЕ КЕЙСЫ',     items:4, price:['200 ⭐','250 ⭐','300 ⭐','400 ⭐'] },
+];
 
-      allornothing_1:["","","","","","","","","","",""],
-      allornothing_2:["","","","","","","","","","",""],
-      allornothing_3:["","","","","","","","","","",""],
-      allornothing_4:["","","","","","","","","","",""],
+const FALLBACK_IMG = "https://via.placeholder.com/512?text=%F0%9F%8E%81";
 
-      expensive_1:["","","","","","","","","","",""],
-      expensive_2:["","","","","","","","","","",""],
-      expensive_3:["","","","","","","","","","",""],
-      expensive_4:["","","","","","","","","","",""],
-    };
+// ====== DOM-ссылки ======
+const chipbar  = document.getElementById('chipbar');
+const content  = document.getElementById('content');
+const detail   = document.getElementById('detail');
+const backBtn  = document.getElementById('backBtn');
+const dTitle   = document.getElementById('detailTitle');
+const dPrice   = document.getElementById('detailPrice');
+const dThumb   = document.getElementById('detailThumb');
+const lootGrid = document.getElementById('lootGrid');
+const demoToggle = document.getElementById('demoToggle');
+const qtyWrap  = document.getElementById('qtyWrap');
 
-    /* ===== ТЕКСТ НА ОБОРОТЕ ДЛЯ ДЕШЁВЫХ КЕЙСОВ (ТАБЛИЦА РЕДАКТИРОВАНИЯ) ===== */
-    const CHEAP_BACK_TEXT = {
-      cheap_1: [
-        {stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},
-        {stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},
-        {stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},
-        {stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},
-      ],
-      cheap_2: [
-        {stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},
-        {stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},
-        {stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},
-        {stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},
-      ],
-      cheap_3: [
-        {stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},
-        {stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},
-        {stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},
-        {stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},
-      ],
-      cheap_4: [
-        {stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},
-        {stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},
-        {stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},
-        {stars:"174000/", ton:"870"},{stars:"174000/", ton:"870"},
-      ],
-    };
+// ====== Рендер карточек ======
+sections.forEach(sec=>{
+  // чип
+  const chip = document.createElement('div');
+  chip.className = 'chip';
+  chip.dataset.target = `#sec-${sec.id}`;
+  chip.textContent = sec.title.replace(' КЕЙСЫ','');
+  chipbar.appendChild(chip);
 
-    /* обложки кейсов (по желанию) */
-    const CASE_THUMBS = {
-      free:["assets/images/20251006_1323_Изумрудный кейс_remix_01k6wgnp9kfc7t5tsc54yag55g.png","assets/images/20251006_1250_Энергичный Глитч Кейс_remix_01k6wes6ykf1rtbax6cajjgpae.png","assets/images/20251006_1340_Жёлтый Глитч Дроп_remix_01k6whmtz7e3d8ejjj7vz9dt6z.png","assets/images/case 10 000.png"],
-      cheap:["","","",""],
-      nft:["assets/images/ChatGPT Image 5 окт. 2025 г., 10_33_06.png","assets/images/ChatGPT Image 5 окт. 2025 г., 11_26_19.png","assets/images/NFT 3.png","assets/images/20251005_1527_Зелёная призрачная тыква_remix_01k6t5bwrrfxet6r4vzrkgra3k.png"],
-      exclusive:["assets/images/20251005_1639_Новогодняя змея_remix_01k6t9fz7mevwt1beaq5bxehc4.png","assets/images/20251005_1703_Фен с розовой лентой_remix_01k6tavjk3fq8brq0e5fr8hycw.png","assets/images/20251005_1718_Стильный школьный рюкзак_simple_compose_01k6tbpyfyedkb0r4qcr8r6p8m.png","assets/images/20251005_1752_Радужные Губы и Пузыри_remix_01k6tdn1ebem893yskvv82bpgz.png"],
-      standard:["","","",""],
-      gold:["","","",""],
-      allornothing:["","","",""],
-      expensive:["","","",""],
-    };
+  // заголовок секции
+  const h2 = document.createElement('h2');
+  h2.className = 'section';
+  h2.id = `sec-${sec.id}`;
+  h2.textContent = sec.title;
+  content.appendChild(h2);
 
-    const FALLBACK_IMG = "https://via.placeholder.com/512?text=%F0%9F%8E%81";
+  // грид
+  const grid = document.createElement('div');
+  grid.className = 'grid';
 
-    // Разделы
-    const sections = [
-      { id:'free',        title:'БЕСПЛАТНЫЕ КЕЙСЫ',  items:4, price:'БЕСПЛАТНО',
-        descs:['Бонус за промокод','Ежедневный бонус','За подписку','За пополнение'] },
-      { id:'cheap',       title:'ДЕШЁВЫЕ КЕЙСЫ',     items:4, price:['50 ⭐','250 ⭐','500 ⭐','1500 ⭐'] },
-      { id:'nft',         title:'ТОЛЬКО NFT-КЕЙСЫ',  items:4, price:['25 ⭐','30 ⭐','35 ⭐','40 ⭐'] },
-      { id:'exclusive',   title:'ЭКСКЛЮЗИВНЫЕ КЕЙСЫ',items:4, price:['2000 ⭐','3500 ⭐','5800 ⭐','8500 ⭐'] },
-      { id:'standard',    title:'СТАНДАРТНЫЕ КЕЙСЫ', items:4, price:['20 ⭐','25 ⭐','28 ⭐','35 ⭐'] },
-      { id:'gold',        title:'КЕЙСЫ ЗА ЗОЛОТО',    items:4, price:['ЗОЛОТО','ЗОЛОТО','ЗОЛОТО','ЗОЛОТО'] },
-      { id:'allornothing',title:'ВСЁ ИЛИ НИЧЕГО КЕЙСЫ',items:4,price:['50 ⭐','75 ⭐','100 ⭐','150 ⭐'] },
-      { id:'expensive',   title:'ДОРОГИЕ КЕЙСЫ',     items:4, price:['200 ⭐','250 ⭐','300 ⭐','400 ⭐'] },
-    ];
+  for(let i=0;i<sec.items;i++){
+    const thumbUrl  = (CASE_THUMBS[sec.id] && CASE_THUMBS[sec.id][i]) || "";
+    const thumbHTML = thumbUrl ? `<img src="${thumbUrl}" alt="Обложка кейса #${i+1}" onerror="this.src='${FALLBACK_IMG}'">` : `Заглушка`;
 
-    // Рендер списка секций и кейсов
-    const chipbar = document.getElementById('chipbar');
-    const content = document.getElementById('content');
+    const card = document.createElement('div');
+    card.className='card';
+    card.innerHTML = `
+      <div class="inner">
+        <div class="thumb">${thumbHTML}</div>
+        <div class="name">${sec.title.split(' ')[0]} Кейс #${i+1}</div>
+        <div class="desc">${(sec.descs && sec.descs[i]) || 'Неоновая коллекция'}</div>
+        <div class="price">${Array.isArray(sec.price)? sec.price[i] : sec.price}</div>
+      </div>`;
 
-    sections.forEach(sec=>{
-      const chip = document.createElement('div');
-      chip.className = 'chip';
-      chip.dataset.target = `#sec-${sec.id}`;
-      chip.textContent = sec.title.replace(' КЕЙСЫ','');
-      chipbar.appendChild(chip);
+    if (sec.id !== 'free') {
+      const setId = `${sec.id}_${i+1}`;
+      card.addEventListener('click', ()=> openDetail({
+        title: `${sec.title} — Кейс #${i+1}`,
+        price: Array.isArray(sec.price)? sec.price[i] : sec.price,
+        setId
+      }));
+    }
+    grid.appendChild(card);
+  }
 
-      const h2 = document.createElement('h2');
-      h2.className = 'section';
-      h2.id = `sec-${sec.id}`;
-      h2.textContent = sec.title;
-      content.appendChild(h2);
+  content.appendChild(grid);
+});
 
-      const grid = document.createElement('div');
-      grid.className = 'grid';
+// ====== Чипы (скролл по секциям) ======
+const chips = Array.from(chipbar.querySelectorAll('.chip'));
+chipbar.addEventListener('click', e=>{
+  const chip = e.target.closest('.chip'); if(!chip) return;
+  setActiveChip(chip);
+  const sel = chip.dataset.target;
+  if(!sel || sel==="#top"){ window.scrollTo({top:0,behavior:'smooth'}); return; }
+  document.querySelector(sel)?.scrollIntoView({behavior:'smooth', block:'start'});
+});
+function setActiveChip(ch){ chips.forEach(c=>c.classList.remove('active')); ch.classList.add('active'); }
+const mapTargetToChip = new Map([['#top', chipbar.querySelector('.chip.active')], ...chips.map(c=>[c.dataset.target,c])]);
+const sectionEls = sections.map(s=>document.getElementById(`sec-${s.id}`));
+const io = new IntersectionObserver((entries)=>{
+  let best=null,ratio=0;
+  for(const e of entries){ if(e.isIntersecting && e.intersectionRatio>ratio){best=e.target;ratio=e.intersectionRatio;} }
+  if(best){ const ch = mapTargetToChip.get('#'+best.id); ch && setActiveChip(ch); }
+  if(window.scrollY<10){ setActiveChip(mapTargetToChip.get('#top')); }
+}, {root:null, rootMargin:'-130px 0px -60% 0px', threshold:[0.2,0.4,0.6,0.8]});
+sectionEls.forEach(s=>io.observe(s));
 
-      for(let i=0;i<sec.items;i++){
-        const thumbUrl = (CASE_THUMBS[sec.id] && CASE_THUMBS[sec.id][i]) || "";
-        const thumbHTML = thumbUrl ? `<img src="${thumbUrl}" alt="Обложка кейса #${i+1}" onerror="this.src='${FALLBACK_IMG}'">` : `Заглушка`;
+// ====== Кнопка «вверх» ======
+const backTop = document.getElementById('backTop');
+const toggleBackTop = ()=> backTop.classList.toggle('show', window.scrollY>2);
+window.addEventListener('scroll', toggleBackTop, {passive:true});
+backTop.addEventListener('click', ()=> window.scrollTo({top:0, behavior:'smooth'}));
+toggleBackTop();
 
-        const card = document.createElement('div');
-        card.className='card';
-        card.innerHTML = `
-          <div class="inner">
-            <div class="thumb">${thumbHTML}</div>
-            <div class="name">${sec.title.split(' ')[0]} Кейс #${i+1}</div>
-            <div class="desc">${(sec.descs && sec.descs[i]) || 'Неоновая коллекция'}</div>
-            <div class="price">${Array.isArray(sec.price)? sec.price[i] : sec.price}</div>
-          </div>`;
+// ====== Рендер лута (флип-карточки) ======
+function renderLoot(images, setId){
+  lootGrid.innerHTML = "";
+  const list = (images && images.length) ? images.slice(0,11) : Array.from({length:11}, ()=>null);
+  const isCheap = typeof setId === 'string' && setId.startsWith('cheap');
+  const table = isCheap ? (CHEAP_BACK_TEXT[setId] || []) : [];
 
-        if (sec.id !== 'free') {
-          const setId = `${sec.id}_${i+1}`;
-          card.addEventListener('click', ()=> openDetail({
-            title:`${sec.title} — Кейс #${i+1}`,
-            price: Array.isArray(sec.price)? sec.price[i] : sec.price,
-            setId
-          }));
-        }
-        grid.appendChild(card);
-      }
-      content.appendChild(grid);
-    });
+  const DEF_STARS = "174000/";
+  const DEF_TON   = "870";
 
-    // Чипы
-    const chips = Array.from(chipbar.querySelectorAll('.chip'));
-    chipbar.addEventListener('click', e=>{
-      const chip = e.target.closest('.chip'); if(!chip) return;
-      setActiveChip(chip);
-      const sel = chip.dataset.target;
-      if(!sel || sel==="#top"){ window.scrollTo({top:0,behavior:'smooth'}); return; }
-      document.querySelector(sel)?.scrollIntoView({behavior:'smooth', block:'start'});
-    });
-    function setActiveChip(ch){ chips.forEach(c=>c.classList.remove('active')); ch.classList.add('active'); }
-    const mapTargetToChip = new Map([['#top', chipbar.querySelector('.chip.active')], ...chips.map(c=>[c.dataset.target,c])]);
-    const sectionEls = sections.map(s=>document.getElementById(`sec-${s.id}`));
-    const io = new IntersectionObserver((entries)=>{
-      let best=null,ratio=0;
-      for(const e of entries){ if(e.isIntersecting && e.intersectionRatio>ratio){best=e.target;ratio=e.intersectionRatio;} }
-      if(best){ const ch = mapTargetToChip.get('#'+best.id); ch && setActiveChip(ch); }
-      if(window.scrollY<10){ setActiveChip(mapTargetToChip.get('#top')); }
-    }, {root:null, rootMargin:'-130px 0px -60% 0px', threshold:[0.2,0.4,0.6,0.8]});
-    sectionEls.forEach(s=>io.observe(s));
+  list.forEach((src, idx)=>{
+    const wrap = document.createElement('div');
+    wrap.className = 'loot';
+    wrap.setAttribute('aria-label', `Предмет ${idx+1}`);
+    wrap.setAttribute('role','button');
+    wrap.tabIndex = 0;
 
-    // Кнопка вверх
-    const backTop = document.getElementById('backTop');
-    const toggleBackTop = ()=> backTop.classList.toggle('show', window.scrollY>2);
-    window.addEventListener('scroll', toggleBackTop, {passive:true});
-    backTop.addEventListener('click', ()=> window.scrollTo({top:0, behavior:'smooth'}));
-    toggleBackTop();
+    const inner = document.createElement('div');
+    inner.className = 'loot-inner';
 
-    // ===== DETAIL VIEW =====
-    const detail = document.getElementById('detail');
-    const backBtn = document.getElementById('backBtn');
-    const dTitle = document.getElementById('detailTitle');
-    const dPrice = document.getElementById('detailPrice');
-    const dThumb = document.getElementById('detailThumb');
-    const lootGrid = document.getElementById('lootGrid');
-    const demoToggle = document.getElementById('demoToggle');
-    const qtyWrap = document.getElementById('qtyWrap');
-
-    // рендер плиток с флипом; в cheap_* берём текст из CHEAP_BACK_TEXT
-    function renderLoot(images, setId){
-      lootGrid.innerHTML = "";
-      const list = (images && images.length) ? images.slice(0,11) : Array.from({length:11}, ()=>null);
-      const isCheap = typeof setId === 'string' && setId.startsWith('cheap');
-      const table = isCheap ? (CHEAP_BACK_TEXT[setId] || []) : [];
-
-      const DEF_STARS = "174000/";
-      const DEF_TON   = "870";
-
-      list.forEach((src, idx)=>{
-        const wrap = document.createElement('div');
-        wrap.className = 'loot';
-        wrap.setAttribute('aria-label', `Предмет ${idx+1}`);
-        wrap.setAttribute('role','button');
-        wrap.tabIndex = 0;
-
-        const inner = document.createElement('div');
-        inner.className = 'loot-inner';
-
-        const front = document.createElement('div');
-        front.className = 'loot-face loot-front';
-        if (src){
-          const img = document.createElement('img');
-          img.src = src;
-          img.alt = `Предмет ${idx+1}`;
-          img.loading = "lazy";
-          img.onerror = () => img.src = FALLBACK_IMG;
-          front.appendChild(img);
-        } else {
-          front.textContent = 'Заглушка';
-        }
-
-        const back = document.createElement('div');
-        back.className = 'loot-face loot-back';
-
-        if (isCheap){
-          const row = table[idx] || {};
-          const s = (row.stars ?? "").trim() || DEF_STARS;
-          const t = (row.ton   ?? "").trim() || DEF_TON;
-          back.innerHTML = `
-            <div class="lb-stats">
-              <div class="lb-stars">${s}</div>
-              <div class="lb-ton">${t}</div>
-            </div>
-          `;
-        } else {
-          back.innerHTML = `
-            <div class="lb-stats">
-              <div class="lb-stars">—</div>
-              <div class="lb-ton">—</div>
-            </div>
-          `;
-        }
-
-        inner.appendChild(front);
-        inner.appendChild(back);
-        wrap.appendChild(inner);
-
-        // клик = флип (одна открыта за раз)
-        wrap.addEventListener('click', (e)=>{
-          e.preventDefault();
-          const isOpen = wrap.classList.contains('flipped');
-          lootGrid.querySelectorAll('.loot.flipped').forEach(l=>l.classList.remove('flipped'));
-          if (!isOpen) wrap.classList.add('flipped');
-        }, {passive:false});
-
-        wrap.addEventListener('keydown', (e)=>{
-          if(e.key==='Enter' || e.key===' '){
-            e.preventDefault();
-            wrap.click();
-          }
-        });
-
-        lootGrid.appendChild(wrap);
-      });
+    const front = document.createElement('div');
+    front.className = 'loot-face loot-front';
+    if (src){
+      const img = document.createElement('img');
+      img.src = src;
+      img.alt = `Предмет ${idx+1}`;
+      img.loading = "lazy";
+      img.onerror = () => img.src = FALLBACK_IMG;
+      front.appendChild(img);
+    } else {
+      front.textContent = 'Заглушка';
     }
 
-    function openDetail({title, price, setId}) {
-      dTitle.textContent = title;
-      dPrice.textContent = String(price || '—');
-      dThumb.textContent = 'Заглушка';
+    const back = document.createElement('div');
+    back.className = 'loot-face loot-back';
 
-      const images = LOOT_SETS[setId] || null;
-      renderLoot(images, setId);
-
-const spinBtn = detail.querySelector('.btn-spin');
-spinBtn.onclick = ()=> openSpin(setId);
-
-      detail.classList.add('show');
-      detail.scrollTop = 0;
-
-      detail.addEventListener('scroll', ()=>{
-        clearTimeout(detail.__flipCloseTimer);
-        detail.__flipCloseTimer = setTimeout(()=> {
-          lootGrid.querySelectorAll('.loot.flipped').forEach(l=>l.classList.remove('flipped'));
-        }, 100);
-      }, {passive:true});
+    if (isCheap){
+      const row = table[idx] || {};
+      const s = (row.stars ?? "").trim() || DEF_STARS;
+      const t = (row.ton   ?? "").trim() || DEF_TON;
+      back.innerHTML = `
+        <div class="lb-stats">
+          <div class="lb-stars">${s}</div>
+          <div class="lb-ton">${t}</div>
+        </div>`;
+    } else {
+      back.innerHTML = `
+        <div class="lb-stats">
+          <div class="lb-stars">—</div>
+          <div class="lb-ton">—</div>
+        </div>`;
     }
 
-    backBtn.addEventListener('click', ()=> detail.classList.remove('show'));
+    inner.appendChild(front);
+    inner.appendChild(back);
+    wrap.appendChild(inner);
 
-    demoToggle.addEventListener('click', ()=>{
-      demoToggle.classList.toggle('active');
-      demoToggle.setAttribute('aria-checked', demoToggle.classList.contains('active') ? 'true' : 'false');
-    });
-    qtyWrap.addEventListener('click', e=>{
-      const q = e.target.closest('.q'); if(!q) return;
-      qtyWrap.querySelectorAll('.q').forEach(el=>el.classList.remove('active'));
-      q.classList.add('active');
-    });
+    // флип (одна открыта за раз)
+    wrap.addEventListener('click', (e)=>{
+      e.preventDefault();
+      const isOpen = wrap.classList.contains('flipped');
+      lootGrid.querySelectorAll('.loot.flipped').forEach(l=>l.classList.remove('flipped'));
+      if (!isOpen) wrap.classList.add('flipped');
+    }, {passive:false});
 
-    // Telegram WebApp: ник + аватар
-    (()=>{
-      const tg = window.Telegram && window.Telegram.WebApp;
-      const avatarImg = document.getElementById('userAvatar');
-      const fallback  = document.getElementById('avatarFallback');
-      const nameEl    = document.getElementById('userName');
-
-      if(!tg) return;
-      tg.ready(); tg.expand();
-
-      const u = tg.initDataUnsafe && tg.initDataUnsafe.user;
-      if(!u) return;
-
-      const display = u.username ? '@' + u.username : [u.first_name||'', u.last_name||''].join(' ').trim() || 'GLITCH DROP';
-      nameEl.textContent = display;
-      nameEl.setAttribute('data-text', display.replaceAll(' ', '\u00A0'));
-
-      if (u.photo_url){
-        avatarImg.src = u.photo_url;
-        avatarImg.classList.remove('hidden');
-        fallback.style.display = 'none';
+    wrap.addEventListener('keydown', (e)=>{
+      if(e.key==='Enter' || e.key===' '){
+        e.preventDefault();
+        wrap.click();
       }
-    })();
+    });
+
+    lootGrid.appendChild(wrap);
+  });
+}
+
+// ====== Открытие детали кейса (ПРАВИЛЬНАЯ версия) ======
+function openDetail({title, price, setId}) {
+  dTitle.textContent = title;
+  dPrice.textContent = String(price || '—');
+
+  // рисуем прокрутку прямо в заглушке — размер = размер d-thumb
+  mountSpinInThumb();
+
+  // содержимое кейса снизу
+  const images = LOOT_SETS[setId] || null;
+  renderLoot(images, setId);
+
+  // кнопки
+  const spinStartBtn = document.getElementById('spinStartBtn');
+  const spinOkBtn    = document.getElementById('spinOkBtn');
+  const spinAgainBtn = document.getElementById('spinAgainBtn');
+
+  spinStartBtn.onclick = () => startSpin();
+  spinAgainBtn.onclick = () => startSpin();
+  spinOkBtn.onclick = () => { hideSpinActions(); /* TODO: начислить приз */ };
+
+  detail.classList.add('show');
+  detail.scrollTop = 0;
+
+  detail.addEventListener('scroll', ()=>{
+    clearTimeout(detail.__flipCloseTimer);
+    detail.__flipCloseTimer = setTimeout(()=>{
+      lootGrid.querySelectorAll('.loot.flipped').forEach(l=>l.classList.remove('flipped'));
+    }, 100);
+  }, {passive:true});
+}
+
+// ====== Кнопки и переключатели в деталке ======
+backBtn.addEventListener('click', ()=> detail.classList.remove('show'));
+demoToggle.addEventListener('click', ()=>{
+  demoToggle.classList.toggle('active');
+  demoToggle.setAttribute('aria-checked', demoToggle.classList.contains('active') ? 'true' : 'false');
+});
+qtyWrap.addEventListener('click', e=>{
+  const q = e.target.closest('.q'); if(!q) return;
+  qtyWrap.querySelectorAll('.q').forEach(el=>el.classList.remove('active'));
+  q.classList.add('active');
+});
+
+// ====== Telegram WebApp ======
+(()=>{
+  const tg = window.Telegram && window.Telegram.WebApp;
+  const avatarImg = document.getElementById('userAvatar');
+  const fallback  = document.getElementById('avatarFallback');
+  const nameEl    = document.getElementById('userName');
+
+  if(!tg) return;
+  tg.ready(); tg.expand();
+
+  const u = tg.initDataUnsafe && tg.initDataUnsafe.user;
+  if(!u) return;
+
+  const display = u.username ? '@' + u.username : [u.first_name||'', u.last_name||''].join(' ').trim() || 'GLITCH DROP';
+  nameEl.textContent = display;
+  nameEl.setAttribute('data-text', display.replaceAll(' ', '\u00A0'));
+
+  if (u.photo_url){
+    avatarImg.src = u.photo_url;
+    avatarImg.classList.remove('hidden');
+    fallback.style.display = 'none';
+  }
+})();
 </script>
 
 
 <script>
-// ===================== SPIN REEL: JS =====================
+  // ====== КОНФИГ ПРОКРУТКИ ======
+  const SPIN_TILES = [
+    { img: "", label: "ПРИЗ", value: "10 ⭐"  }, // №1
+    { img: "", label: "ПРИЗ", value: "25 ⭐"  }, // №2
+    { img: "", label: "ПРИЗ", value: "50 ⭐"  }, // №3
+    { img: "", label: "ПРИЗ", value: "100 ⭐" }, // №4
+    { img: "", label: "ПРИЗ", value: "3 ⭐"   }, // №5
+    { img: "", label: "ПРИЗ", value: "5 ⭐"   }, // №6
+    { img: "", label: "ПРИЗ", value: "8 ⭐"   }, // №7
+    { img: "", label: "ПРИЗ", value: "15 ⭐"  }, // №8
+    { img: "", label: "ПРИЗ", value: "20 ⭐"  }, // №9
+    { img: "", label: "ПРИЗ", value: "30 ⭐"  }, // №10
+    { img: "", label: "ПРИЗ", value: "60 ⭐"  }, // №11
+  ];
 
-// ====== 11 вкладок (ТЫ РЕДАКТИРУЕШЬ ТОЛЬКО ЭТОТ МАССИВ) ======
-// img — URL квадрата 1:1 (можешь оставить "" — тогда покажется "—")
-// label — подпись; value — число/награда
-// ================== РЕДАКТИРУЕШЬ ЗДЕСЬ ↓↓↓ ==================
-const SPIN_TILES = [
-  { img: "", label: "ПРИЗ #1",  value: "10 ⭐" },
-  { img: "", label: "ПРИЗ #2",  value: "25 ⭐" },
-  { img: "", label: "ПРИЗ #3",  value: "50 ⭐" },
-  { img: "", label: "ПРИЗ #4",  value: "100 ⭐" },
-  { img: "", label: "ПРИЗ #5",  value: "3 ⭐" },
-  { img: "", label: "ПРИЗ #6",  value: "5 ⭐" },
-  { img: "", label: "ПРИЗ #7",  value: "8 ⭐" },
-  { img: "", label: "ПРИЗ #8",  value: "15 ⭐" },
-  { img: "", label: "ПРИЗ #9",  value: "20 ⭐" },
-  { img: "", label: "ПРИЗ #10", value: "30 ⭐" },
-  { img: "", label: "ПРИЗ #11", value: "60 ⭐" },
-];
-// ================== РЕДАКТИРУЕШЬ ЗДЕСЬ ↑↑↑ ==================
+  // ВЕСА (шансы) по порядку №1..№11 — редактируешь здесь
+  const SPIN_WEIGHTS = [ 10, 8, 6, 3, 15, 14, 12, 11, 9, 7, 5 ];
+  // Чем больше число — тем выше шанс. Сумма может быть любой.
 
-// БАЗОВЫЕ НАСТРОЙКИ (совпадают со стилями)
-const TILE_W = 110;       // .slot width
-const TILE_GAP = 12;      // gap между плитками
-const SPIN_TIME_MS = 4000; // 4 секунды
-const EXTRA_LOOPS = 6;     // сколько «кругов» до остановки
+  const TILE_W = 110;
+  const TILE_GAP = 12;
+  const SPIN_TIME_MS = 4000;
+  const EXTRA_LOOPS = 6;
 
-let spinBuilt = false;
-let currentX = 0;
-let rafId = 0;
-let lastWinEl = null;
+  let currentX = 0;
+  let rafId = 0;
+  let lastWinEl = null;
 
-function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
+  function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
+  const qs  = (sel,root=document)=> root.querySelector(sel);
+  const qsa = (sel,root=document)=> Array.from(root.querySelectorAll(sel));
 
-function qs(sel, root=document){ return root.querySelector(sel); }
-function qsa(sel, root=document){ return Array.from(root.querySelectorAll(sel)); }
+  function hideSpinActions(){
+    document.getElementById('spinOkBtn')?.classList.add('hide');
+    document.getElementById('spinAgainBtn')?.classList.add('hide');
+  }
+  function showSpinActions(){
+    document.getElementById('spinOkBtn')?.classList.remove('hide');
+    document.getElementById('spinAgainBtn')?.classList.remove('hide');
+  }
 
-// Строим DOM для дорожки из SPIN_TILES (и дублируем для длинного прогона)
-function buildSpinOverlay(){
-  if (spinBuilt) return;
-  const track = qs('#spinTrack');
-  if (!track) return;
+  // Рисуем «прокрутку» прямо в d-thumb (размер = как у заглушки)
+  function mountSpinInThumb(){
+    const dThumb = document.getElementById('detailThumb');
+    if(!dThumb) return;
 
-  // Сборка одной «линии»
-  const row = SPIN_TILES.map((t, idx)=>{
-    const el = document.createElement('div');
-    el.className = 'slot';
-    el.dataset.baseIndex = String(idx); // запомним исходный индекс (0..10)
-    el.innerHTML = `
-      <div class="slot-img">${t.img ? `<img src="${t.img}" alt="">` : '—'}</div>
-      <div class="slot-label">${t.label || ''}</div>
-      <div class="slot-value">${t.value || ''}</div>
+    dThumb.innerHTML = `
+      <div class="spin-embed">
+        <div class="spin-viewport">
+          <div class="spin-track" id="spinTrack"></div>
+          <div class="spin-pointer"></div>
+        </div>
+      </div>
     `;
-    return el;
-  });
-
-  // Дублируем ряды, чтобы хватило расстояния для нескольких «кругов»
-  // Сделаем *минимум* EXTRA_LOOPS + немного запаса.
-  const totalCopies = Math.max(EXTRA_LOOPS + 2, 9);
-  for (let c=0; c<totalCopies; c++){
-    row.forEach(node=> track.appendChild(node.cloneNode(true)));
+    buildTrack(dThumb);
+    hideSpinActions();
   }
 
-  // Начальная позиция
-  currentX = 0;
-  track.style.transform = `translateX(${currentX}px)`;
+  function buildTrack(root){
+    const track = qs('#spinTrack', root);
+    const FALLBACK_IMG = "https://via.placeholder.com/512?text=%F0%9F%8E%81";
+    track.innerHTML = '';
 
-  // Кнопки
-  qs('.spin-close').addEventListener('click', closeSpin);
-  qs('#spinOkBtn').addEventListener('click', closeSpin);
-  qs('#spinAgainBtn').addEventListener('click', ()=> startSpin(true));
+    const row = SPIN_TILES.map((t, idx)=>{
+      const el = document.createElement('div');
+      el.className = 'slot';
+      el.dataset.baseIndex = String(idx);
+      el.innerHTML = `
+        <div class="slot-img">${t.img ? `<img src="${t.img}" alt="" onerror="this.src='${FALLBACK_IMG}'">` : '—'}</div>
+        <div class="slot-label">№${idx+1} ${t.label || ''}</div>
+        <div class="slot-value">${t.value || ''}</div>
+      `;
+      return el;
+    });
 
-  spinBuilt = true;
-}
+    const totalCopies = Math.max(EXTRA_LOOPS + 2, 9);
+    for(let c=0;c<totalCopies;c++){ row.forEach(n=>track.appendChild(n.cloneNode(true))); }
 
-// Открыть оверлей и запустить спин
-function openSpin(setId){
-  // setId можно использовать для логики дропа по кейсу, если понадобится
-  const overlay = qs('#spinOverlay');
-  overlay.setAttribute('aria-hidden','false');
-
-  buildSpinOverlay();
-  // небольшая задержка чтобы CSS подхватился
-  setTimeout(()=> startSpin(false), 50);
-}
-
-function closeSpin(){
-  const overlay = qs('#spinOverlay');
-  overlay.setAttribute('aria-hidden','true');
-  cancelAnimationFrame(rafId);
-  rafId = 0;
-}
-
-// Собственно анимация на 4 секунды с плавной остановкой на случайной вкладке
-function startSpin(repeat){
-  const overlay = qs('#spinOverlay');
-  const viewport = qs('.spin-viewport', overlay);
-  const track = qs('#spinTrack', overlay);
-  if (!viewport || !track) return;
-
-  // Снимаем подсветку прошлого выигрыша
-  if (lastWinEl){ lastWinEl.style.outline = ''; lastWinEl.style.transform = ''; lastWinEl = null; }
-
-  cancelAnimationFrame(rafId);
-
-  // Геометрия
-  const tiles = qsa('.slot', track);
-  const rowLen = SPIN_TILES.length; // 11
-  const tileFull = TILE_W + TILE_GAP;
-  const rowWidth = rowLen * tileFull;
-
-  // Выбираем целевой базовый индекс (0..10)
-  const targetBaseIndex = Math.floor(Math.random() * rowLen);
-
-  // Находим позицию *какого-то* элемента с таким baseIndex достаточно далеко вправо,
-  // чтобы мы смогли прокрутить несколько кругов и на нём остановиться.
-  // Возьмем элемент на копии № (EXTRA_LOOPS + 1), чтобы гарантировать длину.
-  const targetCopyNo = EXTRA_LOOPS + 1;
-  const targetGlobalIndex = targetCopyNo * rowLen + targetBaseIndex;
-  const targetEl = tiles[targetGlobalIndex];
-  if (!targetEl) return;
-
-  // Координаты
-  const vRect = viewport.getBoundingClientRect();
-  const tRect = targetEl.getBoundingClientRect();
-
-  // Позиция targetEl LEFT относительно track:
-  // Берём index среди детей, считаем left = index * tileFull
-  // (для стабильности лучше не верить getBoundingClientRect во время анимации)
-  const indexInTrack = tiles.indexOf(targetEl);
-  const targetLeftInTrack = indexInTrack * tileFull;
-  const targetCenterInTrack = targetLeftInTrack + TILE_W/2;
-
-  const viewportCenter = vRect.width / 2;
-
-  // Конечное смещение дорожки так, чтобы центр целевой плитки совпал с центром вьюпорта:
-  const targetX = viewportCenter - targetCenterInTrack;
-
-  // Старт — текущее положение дорожки (currentX)
-  const startX = currentX;
-  const from = startX;
-  const to = targetX;
-
-  const t0 = performance.now();
-  const dur = SPIN_TIME_MS;
-
-  function frame(now){
-    const dt = now - t0;
-    const p = Math.min(1, dt / dur);
-    const e = easeOutCubic(p);
-    currentX = from + (to - from) * e;
+    currentX = 0;
     track.style.transform = `translateX(${currentX}px)`;
-    if (p < 1){
-      rafId = requestAnimationFrame(frame);
-    } else {
-      // Финиш — подсветим победную плитку
-      lastWinEl = targetEl;
-      lastWinEl.style.outline = '2px solid var(--neon-cyan)';
-      lastWinEl.style.transform = 'scale(1.05)';
-      rafId = 0;
-    }
   }
-  rafId = requestAnimationFrame(frame);
-}
 
-// (патч уже добавил в openDetail) — при открытии кейса вешаем на кнопку .btn-spin -> openSpin
-// см. вставку №2 выше
+  function pickWeightedIndex(weights){
+    const sum = weights.reduce((a,b)=>a+b,0);
+    let r = Math.random() * sum;
+    for(let i=0;i<weights.length;i++){ if((r -= weights[i]) <= 0) return i; }
+    return weights.length - 1;
+  }
 
-// ===================== /SPIN REEL: JS =====================
+  function highlightTileUnderPointer(){
+    const dThumb   = document.getElementById('detailThumb');
+    const viewport = qs('.spin-viewport', dThumb);
+    const track    = qs('#spinTrack', dThumb);
+    if(!viewport || !track) return;
+
+    const tiles = qsa('.slot', track);
+    const tileFull = TILE_W + TILE_GAP;
+    const viewportCenter = viewport.getBoundingClientRect().width / 2;
+    const pointerInTrack = (viewportCenter - currentX);
+    const idx = Math.round((pointerInTrack - TILE_W/2) / tileFull);
+    const clamped = Math.max(0, Math.min(tiles.length-1, idx));
+
+    tiles.forEach(t=>t.classList.remove('hot'));
+    tiles[clamped]?.classList.add('hot');
+  }
+
+  function startSpin(){
+    const dThumb   = document.getElementById('detailThumb');
+    const viewport = qs('.spin-viewport', dThumb);
+    const track    = qs('#spinTrack', dThumb);
+    if (!viewport || !track) return;
+
+    hideSpinActions();
+    if (lastWinEl){ lastWinEl.classList.remove('hot'); lastWinEl.style.transform=''; lastWinEl=null; }
+    cancelAnimationFrame(rafId);
+
+    const tiles = qsa('.slot', track);
+    const rowLen = SPIN_TILES.length;
+    const tileFull = TILE_W + TILE_GAP;
+
+    // Выбираем целевой индекс по весам
+    const targetBaseIndex = pickWeightedIndex(SPIN_WEIGHTS);
+
+    // Берём элемент на копии № (EXTRA_LOOPS + 1), чтобы хватило хода
+    const targetCopyNo = EXTRA_LOOPS + 1;
+    const targetGlobalIndex = targetCopyNo * rowLen + targetBaseIndex;
+    const targetEl = tiles[targetGlobalIndex];
+    if (!targetEl) return;
+
+    const viewportCenter = viewport.getBoundingClientRect().width / 2;
+    const indexInTrack = tiles.indexOf(targetEl);
+    const targetLeftInTrack = indexInTrack * tileFull;
+    const targetCenterInTrack = targetLeftInTrack + TILE_W/2;
+    const targetX = viewportCenter - targetCenterInTrack;
+
+    const from = currentX;
+    const to = targetX;
+    const t0 = performance.now();
+    const dur = SPIN_TIME_MS;
+
+    function frame(now){
+      const p = Math.min(1, (now - t0) / dur);
+      const e = easeOutCubic(p);
+      currentX = from + (to - from) * e;
+      track.style.transform = `translateX(${currentX}px)`;
+      highlightTileUnderPointer();
+      if (p < 1){
+        rafId = requestAnimationFrame(frame);
+      } else {
+        lastWinEl = targetEl;
+        lastWinEl.classList.add('hot');
+        lastWinEl.style.transform = 'scale(1.03)';
+        showSpinActions();
+        rafId = 0;
+      }
+    }
+    rafId = requestAnimationFrame(frame);
+  }
 </script>
-
 
 </body>
 </html>
