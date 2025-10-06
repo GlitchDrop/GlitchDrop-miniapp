@@ -200,20 +200,23 @@
     }
   </style>
 
-<style id="spin-css">
+<style>
+
 /* ===== Прокрутка в d-thumb ===== */
-.spin-embed{ width:100%; height:100%; display:flex; flex-direction:column; gap:10px; }
+.spin-embed{ width:100%; height:100%; display:flex; }
 .spin-viewport{
-  height:100%; border-radius:16px; border:1px solid var(--border);
+  height:100%; width:100%;
+  border-radius:16px; border:1px solid var(--border);
   background:linear-gradient(180deg,#0c1230,#0a1028);
   overflow:hidden; box-shadow:inset 0 0 24px rgba(22,241,255,.12);
   position:relative;
 }
+/* ВАЖНО: трек во всю высоту viewport */
 .spin-track{
-  position:absolute; left:50%; top:50%;
-  transform:translate(-50%,-50%);
-  display:flex; align-items:center; gap:12px;
+  position:absolute; top:0; left:0; height:100%;
+  display:flex; align-items:stretch; gap:12px;
   will-change:transform;
+  transform:translateX(0);
 }
 .spin-pointer{
   position:absolute; top:0; bottom:0; left:50%; width:2px; transform:translateX(-50%);
@@ -222,7 +225,7 @@
   pointer-events:none;
 }
 
-/* плитка растянута по высоте viewport; изображение 1:1 */
+/* плитка ровно по высоте viewport */
 .slot{
   width:110px; height:100%;
   border-radius:14px; border:1px dashed rgba(180,210,255,.35);
@@ -234,7 +237,7 @@
   box-shadow:0 10px 30px rgba(10,20,60,.35);
 }
 .slot-img{
-  width:auto; height:70%; aspect-ratio:1/1; border-radius:12px; overflow:hidden; border:1px solid var(--border);
+  height:70%; aspect-ratio:1/1; border-radius:12px; overflow:hidden; border:1px solid var(--border);
   background: radial-gradient(80px 60px at 50% 50%, rgba(22,241,255,.10), transparent 60%);
   display:grid; place-items:center;
 }
@@ -242,10 +245,9 @@
 .slot-label{ margin-top:6px; font-size:12px; font-weight:800; color:#a9c2ff; text-transform:uppercase; letter-spacing:.4px; text-align:center; }
 .slot-value{ font-size:14px; font-weight:900; color:var(--neon-yellow); text-shadow:0 0 12px rgba(255,228,122,.25); }
 
-/* подсветка плитки под указателем */
 .slot.hot{ outline:2px solid var(--neon-cyan); box-shadow:0 0 24px rgba(22,241,255,.25), inset 0 0 12px rgba(22,241,255,.12); }
 
-/* кнопки «Забрать / Ещё раз» */
+/* CTA */
 .spin-cta{
   appearance:none; cursor:pointer; border:none;
   padding:12px 16px; border-radius:14px; font-weight:900; color:#081121;
@@ -258,8 +260,8 @@
   box-shadow:none;
 }
 .hide{ display:none !important; }
-</style>
 
+</style>
 
 </head>
 <body>
@@ -581,37 +583,33 @@ function renderLoot(images, setId){
   });
 }
 
-// ====== Открытие детали кейса (ПРАВИЛЬНАЯ версия) ======
 function openDetail({title, price, setId}) {
   dTitle.textContent = title;
   dPrice.textContent = String(price || '—');
 
-  // рисуем прокрутку прямо в заглушке — размер = размер d-thumb
-  mountSpinInThumb();
+  // !!! вот эту строку нужно УБРАТЬ, чтобы до клика ленты не было:
+  // mountSpinInThumb();
 
-  // содержимое кейса снизу
+  // вместо этого – показываем чистую заглушку:
+  dThumb.textContent = 'Заглушка';
+
   const images = LOOT_SETS[setId] || null;
   renderLoot(images, setId);
 
-  // кнопки
   const spinStartBtn = document.getElementById('spinStartBtn');
   const spinOkBtn    = document.getElementById('spinOkBtn');
   const spinAgainBtn = document.getElementById('spinAgainBtn');
 
-  spinStartBtn.onclick = () => startSpin();
+  spinStartBtn.onclick = () => startSpin(); // лента появится ТОЛЬКО тут
   spinAgainBtn.onclick = () => startSpin();
-  spinOkBtn.onclick = () => { hideSpinActions(); /* TODO: начислить приз */ };
+  spinOkBtn.onclick = () => { hideSpinActions(); /* TODO: приз */ };
 
   detail.classList.add('show');
   detail.scrollTop = 0;
 
-  detail.addEventListener('scroll', ()=>{
-    clearTimeout(detail.__flipCloseTimer);
-    detail.__flipCloseTimer = setTimeout(()=>{
-      lootGrid.querySelectorAll('.loot.flipped').forEach(l=>l.classList.remove('flipped'));
-    }, 100);
-  }, {passive:true});
+  // остальное оставьте как есть
 }
+
 
 // ====== Кнопки и переключатели в деталке ======
 backBtn.addEventListener('click', ()=> detail.classList.remove('show'));
@@ -653,51 +651,52 @@ qtyWrap.addEventListener('click', e=>{
 
 <script>
   // ====== КОНФИГ ПРОКРУТКИ ======
-  const SPIN_TILES = [
-    { img: "", label: "ПРИЗ", value: "10 ⭐"  }, // №1
-    { img: "", label: "ПРИЗ", value: "25 ⭐"  }, // №2
-    { img: "", label: "ПРИЗ", value: "50 ⭐"  }, // №3
-    { img: "", label: "ПРИЗ", value: "100 ⭐" }, // №4
-    { img: "", label: "ПРИЗ", value: "3 ⭐"   }, // №5
-    { img: "", label: "ПРИЗ", value: "5 ⭐"   }, // №6
-    { img: "", label: "ПРИЗ", value: "8 ⭐"   }, // №7
-    { img: "", label: "ПРИЗ", value: "15 ⭐"  }, // №8
-    { img: "", label: "ПРИЗ", value: "20 ⭐"  }, // №9
-    { img: "", label: "ПРИЗ", value: "30 ⭐"  }, // №10
-    { img: "", label: "ПРИЗ", value: "60 ⭐"  }, // №11
-  ];
+const SPIN_TILES = [
+  { img: "", label: "ПРИЗ", value: "10 ⭐"  },
+  { img: "", label: "ПРИЗ", value: "25 ⭐"  },
+  { img: "", label: "ПРИЗ", value: "50 ⭐"  },
+  { img: "", label: "ПРИЗ", value: "100 ⭐" },
+  { img: "", label: "ПРИЗ", value: "3 ⭐"   },
+  { img: "", label: "ПРИЗ", value: "5 ⭐"   },
+  { img: "", label: "ПРИЗ", value: "8 ⭐"   },
+  { img: "", label: "ПРИЗ", value: "15 ⭐"  },
+  { img: "", label: "ПРИЗ", value: "20 ⭐"  },
+  { img: "", label: "ПРИЗ", value: "30 ⭐"  },
+  { img: "", label: "ПРИЗ", value: "60 ⭐"  },
+];
 
-  // ВЕСА (шансы) по порядку №1..№11 — редактируешь здесь
-  const SPIN_WEIGHTS = [ 10, 8, 6, 3, 15, 14, 12, 11, 9, 7, 5 ];
-  // Чем больше число — тем выше шанс. Сумма может быть любой.
+// ВЕСА (шансы) для №1..№11
+const SPIN_WEIGHTS = [ 10, 8, 6, 3, 15, 14, 12, 11, 9, 7, 5 ];
 
-  const TILE_W = 110;
-  const TILE_GAP = 12;
-  const SPIN_TIME_MS = 4000;
-  const EXTRA_LOOPS = 6;
+const TILE_W = 110;
+const TILE_GAP = 12;
+const SPIN_TIME_MS = 4000;
+const EXTRA_LOOPS = 6;
 
-  let currentX = 0;
-  let rafId = 0;
-  let lastWinEl = null;
+let currentX = 0;
+let rafId = 0;
+let lastWinEl = null;
 
-  function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
-  const qs  = (sel,root=document)=> root.querySelector(sel);
-  const qsa = (sel,root=document)=> Array.from(root.querySelectorAll(sel));
+function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
+function qs(sel,root=document){ return root.querySelector(sel); }
+function qsa(sel,root=document){ return Array.from(root.querySelectorAll(sel)); }
 
-  function hideSpinActions(){
-    document.getElementById('spinOkBtn')?.classList.add('hide');
-    document.getElementById('spinAgainBtn')?.classList.add('hide');
-  }
-  function showSpinActions(){
-    document.getElementById('spinOkBtn')?.classList.remove('hide');
-    document.getElementById('spinAgainBtn')?.classList.remove('hide');
-  }
+function hideSpinActions(){
+  document.getElementById('spinOkBtn')?.classList.add('hide');
+  document.getElementById('spinAgainBtn')?.classList.add('hide');
+}
+function showSpinActions(){
+  document.getElementById('spinOkBtn')?.classList.remove('hide');
+  document.getElementById('spinAgainBtn')?.classList.remove('hide');
+}
 
-  // Рисуем «прокрутку» прямо в d-thumb (размер = как у заглушки)
-  function mountSpinInThumb(){
-    const dThumb = document.getElementById('detailThumb');
-    if(!dThumb) return;
+/* МОНТИРУЕМ ленту только по клику */
+function mountSpinInThumb(){
+  const dThumb = document.getElementById('detailThumb');
+  if(!dThumb) return;
 
+  // если еще не смонтировано — создаём контейнер
+  if(!qs('.spin-embed', dThumb)){
     dThumb.innerHTML = `
       <div class="spin-embed">
         <div class="spin-viewport">
@@ -706,110 +705,123 @@ qtyWrap.addEventListener('click', e=>{
         </div>
       </div>
     `;
-    buildTrack(dThumb);
-    hideSpinActions();
+  } else {
+    // если уже есть — очистим трек
+    qs('#spinTrack', dThumb).innerHTML = '';
+  }
+  buildTrack(dThumb);
+  hideSpinActions();
+}
+
+function buildTrack(root){
+  const track = qs('#spinTrack', root);
+  const FALLBACK_IMG = "https://via.placeholder.com/512?text=%F0%9F%8E%81";
+  track.innerHTML = '';
+
+  const row = SPIN_TILES.map((t, idx)=>{
+    const el = document.createElement('div');
+    el.className = 'slot';
+    el.dataset.baseIndex = String(idx);
+    el.innerHTML = `
+      <div class="slot-img">${t.img ? `<img src="${t.img}" alt="" onerror="this.src='${FALLBACK_IMG}'">` : '—'}</div>
+      <div class="slot-label">№${idx+1} ${t.label || ''}</div>
+      <div class="slot-value">${t.value || ''}</div>
+    `;
+    return el;
+  });
+
+  const totalCopies = Math.max(EXTRA_LOOPS + 2, 9);
+  for(let c=0;c<totalCopies;c++){ row.forEach(n=>track.appendChild(n.cloneNode(true))); }
+
+  currentX = 0;
+  track.style.transform = `translateX(${currentX}px)`;
+}
+
+function highlightTileUnderPointer(){
+  const dThumb   = document.getElementById('detailThumb');
+  const viewport = qs('.spin-viewport', dThumb);
+  const track    = qs('#spinTrack', dThumb);
+  if(!viewport || !track) return;
+
+  const tiles = qsa('.slot', track);
+  const tileFull = TILE_W + TILE_GAP;
+  const viewportCenter = viewport.getBoundingClientRect().width / 2;
+  const pointerInTrack = (viewportCenter - currentX);
+  const idx = Math.round((pointerInTrack - TILE_W/2) / tileFull);
+  const clamped = Math.max(0, Math.min(tiles.length-1, idx));
+
+  tiles.forEach(t=>t.classList.remove('hot'));
+  tiles[clamped]?.classList.add('hot');
+}
+
+function pickWeightedIndex(weights){
+  const sum = weights.reduce((a,b)=>a+b,0);
+  let r = Math.random() * sum;
+  for(let i=0;i<weights.length;i++){ if((r -= weights[i]) <= 0) return i; }
+  return weights.length - 1;
+}
+
+/* === СТАРТ ПРОКРУТКИ: если лента не смонтирована — смонтировать === */
+function startSpin(){
+  const dThumb = document.getElementById('detailThumb');
+
+  // если до этого был текст/картинка-заглушка — заменяем на ленту
+  if(!qs('.spin-embed', dThumb)){
+    mountSpinInThumb();
   }
 
-  function buildTrack(root){
-    const track = qs('#spinTrack', root);
-    const FALLBACK_IMG = "https://via.placeholder.com/512?text=%F0%9F%8E%81";
-    track.innerHTML = '';
+  const viewport = qs('.spin-viewport', dThumb);
+  const track    = qs('#spinTrack', dThumb);
+  if (!viewport || !track) return;
 
-    const row = SPIN_TILES.map((t, idx)=>{
-      const el = document.createElement('div');
-      el.className = 'slot';
-      el.dataset.baseIndex = String(idx);
-      el.innerHTML = `
-        <div class="slot-img">${t.img ? `<img src="${t.img}" alt="" onerror="this.src='${FALLBACK_IMG}'">` : '—'}</div>
-        <div class="slot-label">№${idx+1} ${t.label || ''}</div>
-        <div class="slot-value">${t.value || ''}</div>
-      `;
-      return el;
-    });
+  hideSpinActions();
+  if (lastWinEl){ lastWinEl.classList.remove('hot'); lastWinEl.style.transform=''; lastWinEl=null; }
+  cancelAnimationFrame(rafId);
 
-    const totalCopies = Math.max(EXTRA_LOOPS + 2, 9);
-    for(let c=0;c<totalCopies;c++){ row.forEach(n=>track.appendChild(n.cloneNode(true))); }
+  const tiles = qsa('.slot', track);
+  const rowLen = SPIN_TILES.length;
+  const tileFull = TILE_W + TILE_GAP;
 
-    currentX = 0;
+  // целевой индекс по весам
+  const targetBaseIndex = pickWeightedIndex(SPIN_WEIGHTS);
+
+  // берём элемент на копии № (EXTRA_LOOPS + 1)
+  const targetCopyNo = EXTRA_LOOPS + 1;
+  const targetGlobalIndex = targetCopyNo * rowLen + targetBaseIndex;
+  const targetEl = tiles[targetGlobalIndex];
+  if (!targetEl) return;
+
+  const viewportCenter = viewport.getBoundingClientRect().width / 2;
+  const indexInTrack = tiles.indexOf(targetEl);
+  const targetLeftInTrack = indexInTrack * tileFull;
+  const targetCenterInTrack = targetLeftInTrack + TILE_W/2;
+  const targetX = viewportCenter - targetCenterInTrack;
+
+  const from = currentX;
+  const to = targetX;
+  const t0 = performance.now();
+  const dur = SPIN_TIME_MS;
+
+  function frame(now){
+    const p = Math.min(1, (now - t0) / dur);
+    const e = easeOutCubic(p);
+    currentX = from + (to - from) * e;
     track.style.transform = `translateX(${currentX}px)`;
-  }
-
-  function pickWeightedIndex(weights){
-    const sum = weights.reduce((a,b)=>a+b,0);
-    let r = Math.random() * sum;
-    for(let i=0;i<weights.length;i++){ if((r -= weights[i]) <= 0) return i; }
-    return weights.length - 1;
-  }
-
-  function highlightTileUnderPointer(){
-    const dThumb   = document.getElementById('detailThumb');
-    const viewport = qs('.spin-viewport', dThumb);
-    const track    = qs('#spinTrack', dThumb);
-    if(!viewport || !track) return;
-
-    const tiles = qsa('.slot', track);
-    const tileFull = TILE_W + TILE_GAP;
-    const viewportCenter = viewport.getBoundingClientRect().width / 2;
-    const pointerInTrack = (viewportCenter - currentX);
-    const idx = Math.round((pointerInTrack - TILE_W/2) / tileFull);
-    const clamped = Math.max(0, Math.min(tiles.length-1, idx));
-
-    tiles.forEach(t=>t.classList.remove('hot'));
-    tiles[clamped]?.classList.add('hot');
-  }
-
-  function startSpin(){
-    const dThumb   = document.getElementById('detailThumb');
-    const viewport = qs('.spin-viewport', dThumb);
-    const track    = qs('#spinTrack', dThumb);
-    if (!viewport || !track) return;
-
-    hideSpinActions();
-    if (lastWinEl){ lastWinEl.classList.remove('hot'); lastWinEl.style.transform=''; lastWinEl=null; }
-    cancelAnimationFrame(rafId);
-
-    const tiles = qsa('.slot', track);
-    const rowLen = SPIN_TILES.length;
-    const tileFull = TILE_W + TILE_GAP;
-
-    // Выбираем целевой индекс по весам
-    const targetBaseIndex = pickWeightedIndex(SPIN_WEIGHTS);
-
-    // Берём элемент на копии № (EXTRA_LOOPS + 1), чтобы хватило хода
-    const targetCopyNo = EXTRA_LOOPS + 1;
-    const targetGlobalIndex = targetCopyNo * rowLen + targetBaseIndex;
-    const targetEl = tiles[targetGlobalIndex];
-    if (!targetEl) return;
-
-    const viewportCenter = viewport.getBoundingClientRect().width / 2;
-    const indexInTrack = tiles.indexOf(targetEl);
-    const targetLeftInTrack = indexInTrack * tileFull;
-    const targetCenterInTrack = targetLeftInTrack + TILE_W/2;
-    const targetX = viewportCenter - targetCenterInTrack;
-
-    const from = currentX;
-    const to = targetX;
-    const t0 = performance.now();
-    const dur = SPIN_TIME_MS;
-
-    function frame(now){
-      const p = Math.min(1, (now - t0) / dur);
-      const e = easeOutCubic(p);
-      currentX = from + (to - from) * e;
-      track.style.transform = `translateX(${currentX}px)`;
-      highlightTileUnderPointer();
-      if (p < 1){
-        rafId = requestAnimationFrame(frame);
-      } else {
-        lastWinEl = targetEl;
-        lastWinEl.classList.add('hot');
-        lastWinEl.style.transform = 'scale(1.03)';
-        showSpinActions();
-        rafId = 0;
-      }
+    highlightTileUnderPointer();
+    if (p < 1){
+      rafId = requestAnimationFrame(frame);
+    } else {
+      lastWinEl = targetEl;
+      lastWinEl.classList.add('hot');
+      lastWinEl.style.transform = 'scale(1.03)';
+      showSpinActions();
+      rafId = 0;
     }
-    rafId = requestAnimationFrame(frame);
   }
+  rafId = requestAnimationFrame(frame);
+}
+
+
 </script>
 
 </body>
