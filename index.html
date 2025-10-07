@@ -261,19 +261,22 @@
 }
 .hide{ display:none !important; }
 
-/* ===== Матрица из нескольких виджетов прокрута ===== */
+/* ===== Матрица спинов: один столбец, 10px между рядами ===== */
 .spin-matrix{
-
   display:grid;
-  gap:10px;
-  grid-template-columns: repeat(var(--cols,1), 1fr);
+  grid-template-columns: 1fr;  /* всегда одна колонка */
+  gap:10px;                    /* из ТЗ */
 }
 
-/* каждая ячейка матрицы имеет свою высоту */
-.spin-cell{ height: var(--cell-h, 200px); }
+/* каждая ячейка матрицы имеет одинаковую высоту */
+.spin-cell{ height: var(--cell-h, 160px); }
+
+/* виджет растягивается по высоте ячейки */
+.spin-embed{ width:100%; height:100%; display:flex; }
 
 /* матрица на всю ширину заглушки */
 .d-thumb > .spin-matrix{ width:100%; }
+
 
 /* Кнопка «КРУТИТЬ» недоступна во время прокрута */
 .btn-spin:disabled{
@@ -962,34 +965,38 @@ function getSelectedQty(){
   return Math.max(1, Math.min(5, n));
 }
 
-function layoutForQty(qty){
-  if(qty===1) return {cols:1, rows:1, cellH:'200px'};
-  if(qty===2) return {cols:2, rows:1, cellH:'170px'};
-  if(qty===3) return {cols:3, rows:1, cellH:'150px'};
-  if(qty===4) return {cols:2, rows:2, cellH:'140px'};
-  return          {cols:3, rows:2, cellH:'130px'}; // qty=5
+// высота ряда так, чтобы суммарно не выйти за пределы d-thumb
+function computeCellHeight(parent, qty){
+  const gap = 10; // как просил
+  // реальная доступная высота контейнера (или его min-height)
+  const cs = getComputedStyle(parent);
+  const minH = parseInt(cs.minHeight || '0', 10) || 0;
+  const avail = parent.clientHeight || minH || 200; // подстраховка
+  // одинаковая высота каждого ряда
+  const h = Math.floor((avail - gap * (qty - 1)) / qty);
+  return Math.max(1, h);
 }
 
 function renderSpinMatrix(setId, qty){
-  const {cols, cellH} = layoutForQty(qty);
   const parent = document.getElementById('detailThumb');
   if(!parent) return;
 
+  // контейнер с одной колонкой
   parent.innerHTML = `<div class="spin-matrix" id="spinMatrix"></div>`;
   const matrix = document.getElementById('spinMatrix');
-  matrix.style.setProperty('--cols', String(cols));
-  matrix.style.setProperty('--cell-h', cellH);
+
+  // одинаковая высота рядов, суммарно не выше d-thumb
+  const cellH = computeCellHeight(parent, qty);
+  matrix.style.setProperty('--cell-h', `${cellH}px`);
 
   for(let i=0;i<qty;i++){
     const key = `${setId}__${i}`;
     const embedId = `spinEmbed_${key}`;
     const trackId = `spinTrack_${key}`;
 
-    // обёртка-ячейка с высотой
     const cell = document.createElement('div');
     cell.className = 'spin-cell';
 
-    // сам виджет
     const widget = document.createElement('div');
     widget.className = 'spin-embed';
     widget.id = embedId;
