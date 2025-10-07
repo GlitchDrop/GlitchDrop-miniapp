@@ -595,14 +595,16 @@ function openDetail({title, price, setId}) {
 
   const images = LOOT_SETS[setId] || null;
   renderLoot(images, setId);
+hideSpinActions();
 
   const spinStartBtn = document.getElementById('spinStartBtn');
-  const spinOkBtn    = document.getElementById('spinOkBtn');
-  const spinAgainBtn = document.getElementById('spinAgainBtn');
+const spinOkBtn    = document.getElementById('spinOkBtn');
+const spinAgainBtn = document.getElementById('spinAgainBtn');
 
-  spinStartBtn.onclick = () => startSpin(); // лента появится ТОЛЬКО тут
-  spinAgainBtn.onclick = () => startSpin();
-  spinOkBtn.onclick = () => { hideSpinActions(); /* TODO: приз */ };
+// ВАЖНО: пробрасываем setId — теперь у каждого кейса свой отдельный прокрут
+spinStartBtn.onclick  = () => startSpin(setId);
+spinAgainBtn.onclick  = () => startSpin(setId);
+spinOkBtn.onclick     = () => { hideSpinActions(); /* TODO: начислить приз */ };
 
   detail.classList.add('show');
   detail.scrollTop = 0;
@@ -650,37 +652,159 @@ qtyWrap.addEventListener('click', e=>{
 
 
 <script>
-  // ====== КОНФИГ ПРОКРУТКИ ======
-const SPIN_TILES = [
-  { img: "", label: "ПРИЗ", value: "10 ⭐"  },
-  { img: "", label: "ПРИЗ", value: "25 ⭐"  },
-  { img: "", label: "ПРИЗ", value: "50 ⭐"  },
-  { img: "", label: "ПРИЗ", value: "100 ⭐" },
-  { img: "", label: "ПРИЗ", value: "3 ⭐"   },
-  { img: "", label: "ПРИЗ", value: "5 ⭐"   },
-  { img: "", label: "ПРИЗ", value: "8 ⭐"   },
-  { img: "", label: "ПРИЗ", value: "15 ⭐"  },
-  { img: "", label: "ПРИЗ", value: "20 ⭐"  },
-  { img: "", label: "ПРИЗ", value: "30 ⭐"  },
-  { img: "", label: "ПРИЗ", value: "60 ⭐"  },
-];
 
-// ВЕСА (шансы) для №1..№11
-const SPIN_WEIGHTS = [ 10, 8, 6, 3, 15, 14, 12, 11, 9, 7, 5 ];
+/* ===== КАРТИНКИ ДЛЯ ПРОКРУТА (11 слотов на каждый setId) ===== */
+const SPIN_IMAGES = {
+  cheap_1:        ["","","","","","","","","","",""],
+  cheap_2:        ["","","","","","","","","","",""],
+  cheap_3:        ["","","","","","","","","","",""],
+  cheap_4:        ["","","","","","","","","","",""],
 
-const TILE_W = 110;
-const TILE_GAP = 12;
-const SPIN_TIME_MS = 4000;
-const EXTRA_LOOPS = 6;
+  nft_1:          ["","","","","","","","","","",""],
+  nft_2:          ["assets/images/klever.png","","","","","","","","","",""],
+  nft_3:          ["","","","","","","","","","",""],
+  nft_4:          ["","","","","","","","","","",""],
 
-let currentX = 0;
-let rafId = 0;
-let lastWinEl = null;
+  exclusive_1:    ["","","","","","","","","","",""],
+  exclusive_2:    ["","","","","","","","","","",""],
+  exclusive_3:    ["","","","","","","","","","",""],
+  exclusive_4:    ["","","","","","","","","","",""],
 
-function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
-function qs(sel,root=document){ return root.querySelector(sel); }
-function qsa(sel,root=document){ return Array.from(root.querySelectorAll(sel)); }
+  standard_1:     ["","","","","","","","","","",""],
+  standard_2:     ["","","","","","","","","","",""],
+  standard_3:     ["","","","","","","","","","",""],
+  standard_4:     ["","","","","","","","","","",""],
 
+  gold_1:         ["","","","","","","","","","",""],
+  gold_2:         ["","","","","","","","","","",""],
+  gold_3:         ["","","","","","","","","","",""],
+  gold_4:         ["","","","","","","","","","",""],
+
+  allornothing_1: ["","","","","","","","","","",""],
+  allornothing_2: ["","","","","","","","","","",""],
+  allornothing_3: ["","","","","","","","","","",""],
+  allornothing_4: ["","","","","","","","","","",""],
+
+  expensive_1:    ["","","","","","","","","","",""],
+  expensive_2:    ["","","","","","","","","","",""],
+  expensive_3:    ["","","","","","","","","","",""],
+  expensive_4:    ["","","","","","","","","","",""],
+};
+
+/* ========= “ЖИВАЯ” ЛЕНТА СПИНА С ПРОЦЕНТАМИ ПО КАЖДОМУ ТАЙЛУ =========
+   Как пользоваться:
+   1) Картинки тайлов: редактируй в объекте SPIN_IMAGES (у тебя выше).
+      На каждый setId — 11 строк-URL.
+   2) Проценты выпадения: редактируй ниже в SPIN_CONFIGS_PERCENT.
+      На каждый setId — 11 чисел (в процентах). Сумма может быть любой —
+      мы нормализуем автоматически.
+   3) Подписи/значения на тайлах: в SPIN_LABELS (необязательно).
+====================================================================== */
+
+/* === 1) ПРОЦЕНТЫ ПО ВКЛАДКАМ (11 штук на каждый setId) ============== */
+/* Пример заполнен для cheap_1 и nft_2, остальные — шаблон из нулей.
+   Меняй проценты как тебе нужно. */
+const SPIN_CONFIGS_PERCENT = {
+  cheap_1:        [12,10,9,6,14,12,10,9,8,6,4],
+  cheap_2:        [0,0,0,0,0,0,0,0,0,0,0],
+  cheap_3:        [0,0,0,0,0,0,0,0,0,0,0],
+  cheap_4:        [0,0,0,0,0,0,0,0,0,0,0],
+
+  nft_1:          [0,0,0,0,0,0,0,0,0,0,0],
+  nft_2:          [90,1,1,1,1,1,1,1,1,1,1],
+  nft_3:          [0,0,0,0,0,0,0,0,0,0,0],
+  nft_4:          [0,0,0,0,0,0,0,0,0,0,0],
+
+  exclusive_1:    [0,0,0,0,0,0,0,0,0,0,0],
+  exclusive_2:    [0,0,0,0,0,0,0,0,0,0,0],
+  exclusive_3:    [0,0,0,0,0,0,0,0,0,0,0],
+  exclusive_4:    [0,0,0,0,0,0,0,0,0,0,0],
+
+  standard_1:     [0,0,0,0,0,0,0,0,0,0,0],
+  standard_2:     [0,0,0,0,0,0,0,0,0,0,0],
+  standard_3:     [0,0,0,0,0,0,0,0,0,0,0],
+  standard_4:     [0,0,0,0,0,0,0,0,0,0,0],
+
+  gold_1:         [0,0,0,0,0,0,0,0,0,0,0],
+  gold_2:         [0,0,0,0,0,0,0,0,0,0,0],
+  gold_3:         [0,0,0,0,0,0,0,0,0,0,0],
+  gold_4:         [0,0,0,0,0,0,0,0,0,0,0],
+
+  allornothing_1: [0,0,0,0,0,0,0,0,0,0,0],
+  allornothing_2: [0,0,0,0,0,0,0,0,0,0,0],
+  allornothing_3: [0,0,0,0,0,0,0,0,0,0,0],
+  allornothing_4: [0,0,0,0,0,0,0,0,0,0,0],
+
+  expensive_1:    [0,0,0,0,0,0,0,0,0,0,0],
+  expensive_2:    [0,0,0,0,0,0,0,0,0,0,0],
+  expensive_3:    [0,0,0,0,0,0,0,0,0,0,0],
+  expensive_4:    [0,0,0,0,0,0,0,0,0,0,0],
+};
+
+/* === 2) ТЕКСТЫ НА ТАЙЛАХ (необязательно; 11 штук на setId) ========== */
+/* Если не укажешь — подставятся дефолтные label/value. */
+const SPIN_LABELS = {
+  // пример: CHEAP #1
+  cheap_1: {
+    labels: ["CHEAP#1","CHEAP#1","CHEAP#1","CHEAP#1","CHEAP#1","CHEAP#1","CHEAP#1","CHEAP#1","CHEAP#1","CHEAP#1","CHEAP#1"],
+    values: ["10 ⭐","25 ⭐","50 ⭐","100 ⭐","3 ⭐","5 ⭐","8 ⭐","15 ⭐","20 ⭐","30 ⭐","60 ⭐"]
+  },
+  // пример: NFT #2
+  nft_2: {
+    labels: ["NFT#2","NFT#2","NFT#2","NFT#2","NFT#2","NFT#2","NFT#2","NFT#2","NFT#2","NFT#2","NFT#2"],
+    values: ["🔷 1","🔷 2","🔷 3","🔷 5","🔷 8","🔷 13","🔷 21","🔷 34","🔷 55","🔷 89","🔷 144"]
+  },
+  // остальные можешь не заполнять — возьмутся дефолты
+};
+
+/* === 3) ДЕФОЛТНЫЕ ПОДПИСИ/ЗНАЧЕНИЯ, ЕСЛИ НЕТ В SPIN_LABELS ========= */
+const DEFAULT_LABELS = ["ПРИЗ","ПРИЗ","ПРИЗ","ПРИЗ","ПРИЗ","ПРИЗ","ПРИЗ","ПРИЗ","ПРИЗ","ПРИЗ","ПРИЗ"];
+const DEFAULT_VALUES = ["10 ⭐","25 ⭐","50 ⭐","100 ⭐","3 ⭐","5 ⭐","8 ⭐","15 ⭐","20 ⭐","30 ⭐","60 ⭐"];
+
+/* === 4) ПАРАМЕТРЫ АНИМАЦИИ ========================================= */
+const TILE_W = 110;           // ширина тайла (как в CSS)
+const TILE_GAP = 12;          // зазор между тайлами (как в CSS)
+const TILE_FULL = TILE_W + TILE_GAP;
+const SPIN_TIME_MS = 4000;    // длительность анимации
+const PRE_BUFFER_TILES = 16;  // случайных тайлов ДО выигрыша
+const POST_BUFFER_TILES = 6;  // «хвост» ПОСЛЕ выигрыша
+
+/* === 5) СОСТОЯНИЕ ПО КЕЙСАМ ========================================= */
+const SPIN_STATE = new Map();
+/* state:
+{
+  currentX: number,
+  rafId: number|0,
+  lastWinEl: HTMLElement|null,
+  weights: number[11],      // нормализованные веса 0..1
+  labels: string[11],
+  values: string[11]
+}
+*/
+function ensureSpinState(setId){
+  if(!SPIN_STATE.has(setId)){
+    const weightsRaw = (SPIN_CONFIGS_PERCENT[setId] && SPIN_CONFIGS_PERCENT[setId].slice(0,11)) || Array(11).fill(0);
+    const sum = weightsRaw.reduce((a,b)=>a+b,0) || 1;
+    const weights = weightsRaw.map(w=> Math.max(0,w) / sum);
+
+    const L = (SPIN_LABELS[setId]?.labels || DEFAULT_LABELS).slice(0,11);
+    const V = (SPIN_LABELS[setId]?.values || DEFAULT_VALUES).slice(0,11);
+    while(L.length<11) L.push("ПРИЗ");
+    while(V.length<11) V.push("—");
+
+    SPIN_STATE.set(setId, {
+      currentX: 0,
+      rafId: 0,
+      lastWinEl: null,
+      weights,
+      labels: L,
+      values: V
+    });
+  }
+  return SPIN_STATE.get(setId);
+}
+
+/* === 6) UI-хелперы ================================================== */
 function hideSpinActions(){
   document.getElementById('spinOkBtn')?.classList.add('hide');
   document.getElementById('spinAgainBtn')?.classList.add('hide');
@@ -690,138 +814,181 @@ function showSpinActions(){
   document.getElementById('spinAgainBtn')?.classList.remove('hide');
 }
 
-/* МОНТИРУЕМ ленту только по клику */
-function mountSpinInThumb(){
+/* === 7) ВСТАВЛЯЕМ ОБЁРТКУ ЛЕНТЫ В detailThumb ====================== */
+function mountSpinInThumb(setId){
   const dThumb = document.getElementById('detailThumb');
   if(!dThumb) return;
 
-  // если еще не смонтировано — создаём контейнер
-  if(!qs('.spin-embed', dThumb)){
+  const trackId = `spinTrack_${setId}`;
+  const embedId = `spinEmbed_${setId}`;
+
+  if(!document.getElementById(embedId)){
     dThumb.innerHTML = `
-      <div class="spin-embed">
+      <div class="spin-embed" id="${embedId}">
         <div class="spin-viewport">
-          <div class="spin-track" id="spinTrack"></div>
+          <div class="spin-track" id="${trackId}"></div>
           <div class="spin-pointer"></div>
         </div>
       </div>
     `;
   } else {
-    // если уже есть — очистим трек
-    qs('#spinTrack', dThumb).innerHTML = '';
+    const track = document.getElementById(trackId);
+    if(track) track.innerHTML = '';
   }
-  buildTrack(dThumb);
   hideSpinActions();
 }
 
-function buildTrack(root){
-  const track = qs('#spinTrack', root);
-  const FALLBACK_IMG = "https://via.placeholder.com/512?text=%F0%9F%8E%81";
-  track.innerHTML = '';
-
-  const row = SPIN_TILES.map((t, idx)=>{
-    const el = document.createElement('div');
-    el.className = 'slot';
-    el.dataset.baseIndex = String(idx);
-    el.innerHTML = `
-      <div class="slot-img">${t.img ? `<img src="${t.img}" alt="" onerror="this.src='${FALLBACK_IMG}'">` : '—'}</div>
-      <div class="slot-label">№${idx+1} ${t.label || ''}</div>
-      <div class="slot-value">${t.value || ''}</div>
-    `;
-    return el;
-  });
-
-  const totalCopies = Math.max(EXTRA_LOOPS + 2, 9);
-  for(let c=0;c<totalCopies;c++){ row.forEach(n=>track.appendChild(n.cloneNode(true))); }
-
-  currentX = 0;
-  track.style.transform = `translateX(${currentX}px)`;
+/* === 8) Выбор индекса по весам (из 11) ============================== */
+function pickIndexByWeights(weights){
+  let r = Math.random();
+  let acc = 0;
+  for(let i=0;i<weights.length;i++){
+    acc += weights[i];
+    if(r <= acc) return i;
+  }
+  return weights.length-1;
 }
 
-function highlightTileUnderPointer(){
-  const dThumb   = document.getElementById('detailThumb');
-  const viewport = qs('.spin-viewport', dThumb);
-  const track    = qs('#spinTrack', dThumb);
+/* === 9) Создаём один тайл по индексу (берём картинку из SPIN_IMAGES) == */
+function createTileEl(setId, baseIndex){
+  const FALLBACK = "https://via.placeholder.com/512?text=%F0%9F%8E%81";
+  const state = ensureSpinState(setId);
+  const imgUrl = (SPIN_IMAGES[setId] && SPIN_IMAGES[setId][baseIndex]) || "";
+
+  const el = document.createElement('div');
+  el.className = 'slot';
+  el.dataset.baseIndex = String(baseIndex);
+  el.innerHTML = `
+    <div class="slot-img">
+      ${imgUrl ? `<img src="${imgUrl}" alt="" onerror="this.src='${FALLBACK}'">` : '—'}
+    </div>
+    <div class="slot-label">№${baseIndex+1} ${state.labels[baseIndex] || ''}</div>
+    <div class="slot-value">${state.values[baseIndex] || ''}</div>
+  `;
+  return el;
+}
+
+/* === 10) Подсветка тайла под указателем ============================== */
+function highlightTileUnderPointer(setId){
+  const track = document.getElementById(`spinTrack_${setId}`);
+  const dThumb = document.getElementById('detailThumb');
+  const viewport = dThumb && dThumb.querySelector('.spin-viewport');
   if(!viewport || !track) return;
 
-  const tiles = qsa('.slot', track);
-  const tileFull = TILE_W + TILE_GAP;
+  const state = ensureSpinState(setId);
+  const tiles = Array.from(track.querySelectorAll('.slot'));
   const viewportCenter = viewport.getBoundingClientRect().width / 2;
-  const pointerInTrack = (viewportCenter - currentX);
-  const idx = Math.round((pointerInTrack - TILE_W/2) / tileFull);
+  const pointerInTrack = (viewportCenter - state.currentX);
+  const idx = Math.round((pointerInTrack - TILE_W/2) / TILE_FULL);
   const clamped = Math.max(0, Math.min(tiles.length-1, idx));
 
   tiles.forEach(t=>t.classList.remove('hot'));
   tiles[clamped]?.classList.add('hot');
 }
 
-function pickWeightedIndex(weights){
-  const sum = weights.reduce((a,b)=>a+b,0);
-  let r = Math.random() * sum;
-  for(let i=0;i<weights.length;i++){ if((r -= weights[i]) <= 0) return i; }
-  return weights.length - 1;
-}
+/* === 11) СБОРКА ДИНАМИЧЕСКОЙ ЛЕНТЫ ПЕРЕД СТАРТОМ ===================== */
+/* Генерируем:
+   - PRE_BUFFER_TILES случайных по весам
+   - 1 «выигрышный» по весам (winnerIndex)
+   - POST_BUFFER_TILES случайных по весам
+   Победный — точно последний из основного блока перед хвостом,
+   анимация остановится ровно на нём.                       */
+function buildDynamicTrack(setId){
+  const track = document.getElementById(`spinTrack_${setId}`);
+  if(!track) return { winnerEl:null };
 
-/* === СТАРТ ПРОКРУТКИ: если лента не смонтирована — смонтировать === */
-function startSpin(){
-  const dThumb = document.getElementById('detailThumb');
+  const state = ensureSpinState(setId);
+  track.innerHTML = '';
 
-  // если до этого был текст/картинка-заглушка — заменяем на ленту
-  if(!qs('.spin-embed', dThumb)){
-    mountSpinInThumb();
+  // случайные до победы
+  for(let i=0;i<PRE_BUFFER_TILES;i++){
+    const idx = pickIndexByWeights(state.weights);
+    track.appendChild(createTileEl(setId, idx));
   }
 
-  const viewport = qs('.spin-viewport', dThumb);
-  const track    = qs('#spinTrack', dThumb);
-  if (!viewport || !track) return;
+  // победный
+  const winnerIndex = pickIndexByWeights(state.weights);
+  const winnerEl = createTileEl(setId, winnerIndex);
+  track.appendChild(winnerEl);
+
+  // «хвост» после победы (чтобы лента не обрывалась сразу)
+  for(let i=0;i<POST_BUFFER_TILES;i++){
+    const idx = pickIndexByWeights(state.weights);
+    track.appendChild(createTileEl(setId, idx));
+  }
+
+  // выставляем X в начало
+  state.currentX = 0;
+  track.style.transform = `translateX(${state.currentX}px)`;
+
+  return { winnerEl };
+}
+
+/* === 12) СТАРТ СПИНА — ДИНАМИЧЕСКИ ГЕНЕРИМ И КРУТИМ ================== */
+function startSpin(setId){
+  ensureSpinState(setId);
+  const state = SPIN_STATE.get(setId);
+
+  if(!document.getElementById(`spinTrack_${setId}`)){
+    mountSpinInThumb(setId);
+  }
+
+  const track = document.getElementById(`spinTrack_${setId}`);
+  const dThumb = document.getElementById('detailThumb');
+  const viewport = dThumb && dThumb.querySelector('.spin-viewport');
+  if(!viewport || !track) return;
 
   hideSpinActions();
-  if (lastWinEl){ lastWinEl.classList.remove('hot'); lastWinEl.style.transform=''; lastWinEl=null; }
-  cancelAnimationFrame(rafId);
+  if(state.lastWinEl){
+    state.lastWinEl.classList.remove('hot');
+    state.lastWinEl.style.transform = '';
+    state.lastWinEl = null;
+  }
+  cancelAnimationFrame(state.rafId);
 
-  const tiles = qsa('.slot', track);
-  const rowLen = SPIN_TILES.length;
-  const tileFull = TILE_W + TILE_GAP;
+  // Собираем «живую» ленту (случайная — победный — хвост)
+  const { winnerEl } = buildDynamicTrack(setId);
+  if(!winnerEl) return;
 
-  // целевой индекс по весам
-  const targetBaseIndex = pickWeightedIndex(SPIN_WEIGHTS);
-
-  // берём элемент на копии № (EXTRA_LOOPS + 1)
-  const targetCopyNo = EXTRA_LOOPS + 1;
-  const targetGlobalIndex = targetCopyNo * rowLen + targetBaseIndex;
-  const targetEl = tiles[targetGlobalIndex];
-  if (!targetEl) return;
-
+  // Считаем координату остановки: центр winnerEl -> центр viewport
+  const tiles = Array.from(track.querySelectorAll('.slot'));
   const viewportCenter = viewport.getBoundingClientRect().width / 2;
-  const indexInTrack = tiles.indexOf(targetEl);
-  const targetLeftInTrack = indexInTrack * tileFull;
+  const indexInTrack = tiles.indexOf(winnerEl);
+  const targetLeftInTrack = indexInTrack * TILE_FULL;
   const targetCenterInTrack = targetLeftInTrack + TILE_W/2;
   const targetX = viewportCenter - targetCenterInTrack;
 
-  const from = currentX;
+  const from = state.currentX;
   const to = targetX;
   const t0 = performance.now();
   const dur = SPIN_TIME_MS;
 
+  function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
+
   function frame(now){
     const p = Math.min(1, (now - t0) / dur);
     const e = easeOutCubic(p);
-    currentX = from + (to - from) * e;
-    track.style.transform = `translateX(${currentX}px)`;
-    highlightTileUnderPointer();
-    if (p < 1){
-      rafId = requestAnimationFrame(frame);
+    state.currentX = from + (to - from) * e;
+    track.style.transform = `translateX(${state.currentX}px)`;
+    highlightTileUnderPointer(setId);
+
+    // ⚡ При желании можно «на лету» добавлять ещё рандомных тайлов,
+    // если лента заканчивается — сейчас это не нужно, т.к. у нас
+    // уже есть хвост после победителя.
+
+    if(p < 1){
+      state.rafId = requestAnimationFrame(frame);
     } else {
-      lastWinEl = targetEl;
-      lastWinEl.classList.add('hot');
-      lastWinEl.style.transform = 'scale(1.03)';
+      state.lastWinEl = winnerEl;
+      state.lastWinEl.classList.add('hot');
+      state.lastWinEl.style.transform = 'scale(1.03)';
       showSpinActions();
-      rafId = 0;
+      state.rafId = 0;
     }
   }
-  rafId = requestAnimationFrame(frame);
+
+  state.rafId = requestAnimationFrame(frame);
 }
-
-
 </script>
 
 </body>
