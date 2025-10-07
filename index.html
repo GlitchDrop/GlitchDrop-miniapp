@@ -136,7 +136,10 @@
     .toggle{ width:46px; height:26px; border-radius:999px; position:relative; background:#2a314a; border:1px solid var(--border); cursor:pointer; }
     .toggle::after{ content:""; position:absolute; top:2px; left:2px; width:22px; height:22px; border-radius:50%; background:#fff; transition:transform .18s; }
     .toggle.active{ background:#19e6ff; } .toggle.active::after{ transform:translateX(20px); }
-    
+    .qty{display:flex; gap:10px; justify-content:center}
+    .qty .q{ min-width:44px; height:40px; border-radius:12px; display:grid; place-items:center; cursor:pointer; border:1px solid var(--border); background:rgba(15,20,48,.6); font-weight:900; }
+    .qty .q.active{ outline:2px solid var(--neon-cyan); color:#081121; background:linear-gradient(135deg,var(--neon-cyan),var(--neon-pink)); border-color:transparent }
+
     .subhead{margin:18px 0 10px; text-align:center; font-weight:900; letter-spacing:1.2px}
 
     /* ====== LOOT GRID с флипом ====== */
@@ -258,6 +261,25 @@
 }
 .hide{ display:none !important; }
 
+/* ===== Матрица из нескольких виджетов прокрута ===== */
+.spin-matrix{
+  display:grid;
+  gap:10px;
+  grid-template-columns: repeat(var(--cols,1), 1fr);
+}
+.spin-matrix .spin-viewport{
+  height: var(--cell-h, 200px); /* динамически уменьшаем из JS */
+}
+
+/* Кнопка «КРУТИТЬ» недоступна во время прокрута */
+.btn-spin:disabled{
+  opacity:.6;
+  cursor:not-allowed;
+  filter:grayscale(0.5);
+  background:linear-gradient(135deg,#8c8c8c,#b0b0b0);
+  box-shadow:none;
+}
+
 </style>
 
 </head>
@@ -320,6 +342,14 @@
           <span>Демо режим</span>
           <div id="demoToggle" class="toggle" role="switch" aria-checked="false"></div>
         </div>
+
+        <h3>Сколько кейсов открыть?</h3>
+        <div class="qty" id="qtyWrap">
+          <div class="q active" data-v="1">1</div><div class="q" data-v="2">2</div>
+          <div class="q" data-v="3">3</div><div class="q" data-v="4">4</div>
+          <div class="q" data-v="5">5</div>
+        </div>
+      </div>
 
       <div class="subhead">СОДЕРЖИМОЕ КЕЙСА</div>
       <div id="lootGrid" class="loot-grid"></div>
@@ -419,6 +449,7 @@ const dPrice   = document.getElementById('detailPrice');
 const dThumb   = document.getElementById('detailThumb');
 const lootGrid = document.getElementById('lootGrid');
 const demoToggle = document.getElementById('demoToggle');
+const qtyWrap  = document.getElementById('qtyWrap');
 
 // ====== Рендер карточек ======
 sections.forEach(sec=>{
@@ -575,36 +606,64 @@ function openDetail({title, price, setId}) {
   dTitle.textContent = title;
   dPrice.textContent = String(price || '—');
 
-  // показываем заглушку; ленту спина создаём только при клике "КРУТИТЬ"
+  // !!! вот эту строку нужно УБРАТЬ, чтобы до клика ленты не было:
+  // mountSpinInThumb();
+
+  // вместо этого – показываем чистую заглушку:
   dThumb.textContent = 'Заглушка';
 
   const images = LOOT_SETS[setId] || null;
   renderLoot(images, setId);
+hideSpinActions();
 
-  hideSpinActions();
+ const spinStartBtn = document.getElementById('spinStartBtn');
+const spinOkBtn    = document.getElementById('spinOkBtn');
+const spinAgainBtn = document.getElementById('spinAgainBtn');
+if (spinStartBtn) spinStartBtn.disabled = false; // вдруг осталась выключенной
+IS_SPINNING = false;                              // на всякий случай снимаем блок
 
-  const spinStartBtn = document.getElementById('spinStartBtn');
-  const spinOkBtn    = document.getElementById('spinOkBtn');
-  const spinAgainBtn = document.getElementById('spinAgainBtn');
 
-  // одиночный спин
-  spinStartBtn.onclick = () => startSpin(setId);
-  spinOkBtn.onclick    = () => { hideSpinActions(); /* TODO: начислить приз */ };
-  spinAgainBtn.onclick = () => { startSpin(setId); };
-  if (spinAgainBtn) spinAgainBtn.textContent = 'Ещё раз';
+// ГРУППОВОЙ спин по выбранному количеству (1–5)
+spinStartBtn.onclick  = () => beginGroupSpin(setId);
+spinOkBtn.onclick     = () => { hideSpinActions(); /* TODO: начислить приз */ };
+spinAgainBtn.onclick  = () => { beginGroupSpin(setId); }; // повторяет группу
+if (spinAgainBtn) spinAgainBtn.textContent = 'Ещё раз';
 
   detail.classList.add('show');
   detail.scrollTop = 0;
+
+  // остальное оставьте как есть
 }
 
 
 // ====== Кнопки и переключатели в деталке ======
-backBtn.addEventListener('click', ()=> detail.classList.remove('show'));
+backBtn.addEventListener('click', ()=>{
+  // Стопаем любые активные анимации, если пользователь уходит
+  SPIN_STATE.forEach(st=>{
+    if (st.rafId) cancelAnimationFrame(st.rafId);
+    st.rafId = 0;
+  });
+  IS_SPINNING = false;
+  document.getElementById('spinStartBtn')?.removeAttribute('disabled');
+  detail.classList.remove('show');
+});
 
 demoToggle.addEventListener('click', ()=>{
   demoToggle.classList.toggle('active');
   demoToggle.setAttribute('aria-checked', demoToggle.classList.contains('active') ? 'true' : 'false');
 });
+
+qtyWrap.addEventListener('click', e=>{
+  // Не даём менять количество во время прокрута
+  if (IS_SPINNING) return;
+
+  const q = e.target.closest('.q'); 
+  if (!q) return;
+
+  qtyWrap.querySelectorAll('.q').forEach(el => el.classList.remove('active'));
+  q.classList.add('active');
+});
+
 
 // ====== Telegram WebApp ======
 (()=>{
@@ -633,6 +692,9 @@ demoToggle.addEventListener('click', ()=>{
 
 <script>
 /* ===== КАРТИНКИ ДЛЯ ПРОКРУТА (11 слотов на каждый setId) ===== */
+
+// Глобальный флажок «идёт прокрут»
+let IS_SPINNING = false;
 
 const SPIN_IMAGES = {
   cheap_1:        ["","","","","","","","","","",""],
@@ -761,6 +823,30 @@ const SPIN_STATE = new Map();
   values: string[11]
 }
 */
+function ensureSpinState(key){
+  if(!SPIN_STATE.has(key)){
+    // key имеет вид: setId__index
+    const setId = key.split('__')[0];
+    const weightsRaw = (SPIN_CONFIGS_PERCENT[setId] && SPIN_CONFIGS_PERCENT[setId].slice(0,11)) || Array(11).fill(0);
+    const sum = weightsRaw.reduce((a,b)=>a+b,0) || 1;
+    const weights = weightsRaw.map(w=> Math.max(0,w) / sum);
+
+    const L = (SPIN_LABELS[setId]?.labels || DEFAULT_LABELS).slice(0,11);
+    const V = (SPIN_LABELS[setId]?.values || DEFAULT_VALUES).slice(0,11);
+    while(L.length<11) L.push("ПРИЗ");
+    while(V.length<11) V.push("—");
+
+    SPIN_STATE.set(key, {
+      currentX: 0,
+      rafId: 0,
+      lastWinEl: null,
+      weights,
+      labels: L,
+      values: V
+    });
+  }
+  return SPIN_STATE.get(key);
+}
 
 /* === 6) UI-хелперы ================================================== */
 function hideSpinActions(){
@@ -785,29 +871,11 @@ function pickIndexByWeights(weights){
   return weights.length-1;
 }
 
-function mountSpinInThumb(setId){
-  const dThumb = document.getElementById('detailThumb');
-  if(!dThumb) return;
-  const trackId = `spinTrack_${setId}`;
-  const embedId = `spinEmbed_${setId}`;
-  if(!document.getElementById(embedId)){
-    dThumb.innerHTML = `
-      <div class="spin-embed" id="${embedId}">
-        <div class="spin-viewport">
-          <div class="spin-track" id="${trackId}"></div>
-          <div class="spin-pointer"></div>
-        </div>
-      </div>`;
-  } else {
-    const track = document.getElementById(trackId);
-    if(track) track.innerHTML = '';
-  }
-  hideSpinActions();
-}
-
-function createTileEl(setId, baseIndex){
+/* === 9) Создаём один тайл по индексу (берём картинку из SPIN_IMAGES) == */
+function createTileEl(key, baseIndex){
+  const setId = key.split('__')[0];
   const FALLBACK = "https://via.placeholder.com/512?text=%F0%9F%8E%81";
-  const state = ensureSpinState(setId);
+  const state = ensureSpinState(key);
   const imgUrl = (SPIN_IMAGES[setId] && SPIN_IMAGES[setId][baseIndex]) || "";
 
   const el = document.createElement('div');
@@ -823,13 +891,14 @@ function createTileEl(setId, baseIndex){
   return el;
 }
 
-function highlightTileUnderPointer(setId){
-  const track = document.getElementById(`spinTrack_${setId}`);
-  const dThumb = document.getElementById('detailThumb');
-  const viewport = dThumb && dThumb.querySelector('.spin-viewport');
+/* === 10) Подсветка тайла под указателем ============================== */
+function highlightTileUnderPointer(key){
+  const track = document.getElementById(trackIdByKey(key));
+  const embed = embedByKey(key);
+  const viewport = embed && embed.querySelector('.spin-viewport');
   if(!viewport || !track) return;
 
-  const state = ensureSpinState(setId);
+  const state = ensureSpinState(key);
   const tiles = Array.from(track.querySelectorAll('.slot'));
   const viewportCenter = viewport.getBoundingClientRect().width / 2;
   const pointerInTrack = (viewportCenter - state.currentX);
@@ -840,24 +909,31 @@ function highlightTileUnderPointer(setId){
   tiles[clamped]?.classList.add('hot');
 }
 
-function buildDynamicTrack(setId){
-  const track = document.getElementById(`spinTrack_${setId}`);
+/* === 11) СБОРКА ДИНАМИЧЕСКОЙ ЛЕНТЫ ПЕРЕД СТАРТОМ ===================== */
+/* Генерируем:
+   - PRE_BUFFER_TILES случайных по весам
+   - 1 «выигрышный» по весам (winnerIndex)
+   - POST_BUFFER_TILES случайных по весам
+   Победный — точно последний из основного блока перед хвостом,
+   анимация остановится ровно на нём.                       */
+function buildDynamicTrack(key){
+  const track = document.getElementById(trackIdByKey(key));
   if(!track) return { winnerEl:null };
 
-  const state = ensureSpinState(setId);
+  const state = ensureSpinState(key);
   track.innerHTML = '';
 
   for(let i=0;i<PRE_BUFFER_TILES;i++){
     const idx = pickIndexByWeights(state.weights);
-    track.appendChild(createTileEl(setId, idx));
+    track.appendChild(createTileEl(key, idx));
   }
   const winnerIndex = pickIndexByWeights(state.weights);
-  const winnerEl = createTileEl(setId, winnerIndex);
+  const winnerEl = createTileEl(key, winnerIndex);
   track.appendChild(winnerEl);
 
   for(let i=0;i<POST_BUFFER_TILES;i++){
     const idx = pickIndexByWeights(state.weights);
-    track.appendChild(createTileEl(setId, idx));
+    track.appendChild(createTileEl(key, idx));
   }
 
   state.currentX = 0;
@@ -866,19 +942,90 @@ function buildDynamicTrack(setId){
   return { winnerEl };
 }
 
-function startSpin(setId){
-  ensureSpinState(setId);
-  const state = SPIN_STATE.get(setId);
+/* === Глобальные хелперы для количества и лейаута === */
+function getSelectedQty(){
+  const q = qtyWrap.querySelector('.q.active');
+  const n = parseInt(q?.dataset.v || '1', 10);
+  return Math.max(1, Math.min(5, n));
+}
 
-  if(!document.getElementById(`spinTrack_${setId}`)){
-    mountSpinInThumb(setId);
+function layoutForQty(qty){
+  if(qty===1) return {cols:1, rows:1, cellH:'200px'};
+  if(qty===2) return {cols:2, rows:1, cellH:'170px'};
+  if(qty===3) return {cols:3, rows:1, cellH:'150px'};
+  if(qty===4) return {cols:2, rows:2, cellH:'140px'};
+  return          {cols:3, rows:2, cellH:'130px'}; // qty=5
+}
+
+function renderSpinMatrix(setId, qty){
+  const {cols, cellH} = layoutForQty(qty);
+  const parent = document.getElementById('detailThumb');
+  if(!parent) return;
+
+  parent.innerHTML = `<div class="spin-matrix" id="spinMatrix"></div>`;
+  const matrix = document.getElementById('spinMatrix');
+  matrix.style.setProperty('--cols', String(cols));
+  matrix.style.setProperty('--cell-h', cellH);
+
+  for(let i=0;i<qty;i++){
+    const key = `${setId}__${i}`;
+    const embedId = `spinEmbed_${key}`;
+    const trackId = `spinTrack_${key}`;
+    const widget = document.createElement('div');
+    widget.className = 'spin-embed';
+    widget.id = embedId;
+    widget.innerHTML = `
+      <div class="spin-viewport">
+        <div class="spin-track" id="${trackId}"></div>
+        <div class="spin-pointer"></div>
+      </div>
+    `;
+    matrix.appendChild(widget);
   }
-  const track = document.getElementById(`spinTrack_${setId}`);
-  const dThumb = document.getElementById('detailThumb');
-  const viewport = dThumb && dThumb.querySelector('.spin-viewport');
-  if(!viewport || !track) return;
+}
+
+/* === ID-хелперы под множественные виджеты === */
+function trackIdByKey(key){ return `spinTrack_${key}`; }
+function embedByKey(key){ return document.getElementById(`spinEmbed_${key}`); }
+
+/* === Групповой запуск N спинов + блокировка кнопки «КРУТИТЬ» === */
+function beginGroupSpin(setId){
+  if (IS_SPINNING) return;   // защита от дабл-клика
+  IS_SPINNING = true;
 
   hideSpinActions();
+
+  const qty = getSelectedQty();
+  renderSpinMatrix(setId, qty);
+
+  const spinStartBtn = document.getElementById('spinStartBtn');
+  if (spinStartBtn) spinStartBtn.disabled = true;
+
+  let finished = 0;
+
+  for (let i = 0; i < qty; i++) {
+    const key = `${setId}__${i}`;
+    startSpinSingle(key, () => {
+      finished++;
+      if (finished === qty) {
+        if (spinStartBtn) spinStartBtn.disabled = false; // вернуть кнопку
+        showSpinActions();                                // показать «Забрать» и «Ещё раз»
+        IS_SPINNING = false;                              // снять блокировку
+      }
+    });
+  }
+}
+
+/* === 12) СТАРТ СПИНА — ДИНАМИЧЕСКИ ГЕНЕРИМ И КРУТИМ ================== */
+
+function startSpinSingle(key, onDone){
+  ensureSpinState(key);
+  const state = SPIN_STATE.get(key);
+
+  const track = document.getElementById(trackIdByKey(key));
+  const embed = embedByKey(key);
+  const viewport = embed && embed.querySelector('.spin-viewport');
+  if(!viewport || !track){ onDone && onDone(); return; }
 
   if(state.lastWinEl){
     state.lastWinEl.classList.remove('hot');
@@ -887,8 +1034,8 @@ function startSpin(setId){
   }
   cancelAnimationFrame(state.rafId);
 
-  const { winnerEl } = buildDynamicTrack(setId);
-  if(!winnerEl) return;
+  const { winnerEl } = buildDynamicTrack(key);
+  if(!winnerEl){ onDone && onDone(); return; }
 
   const tiles = Array.from(track.querySelectorAll('.slot'));
   const viewportCenter = viewport.getBoundingClientRect().width / 2;
@@ -909,7 +1056,7 @@ function startSpin(setId){
     const e = easeOutCubic(p);
     state.currentX = from + (to - from) * e;
     track.style.transform = `translateX(${state.currentX}px)`;
-    highlightTileUnderPointer(setId);
+    highlightTileUnderPointer(key);
 
     if(p < 1){
       state.rafId = requestAnimationFrame(frame);
@@ -917,8 +1064,8 @@ function startSpin(setId){
       state.lastWinEl = winnerEl;
       state.lastWinEl.classList.add('hot');
       state.lastWinEl.style.transform = 'scale(1.03)';
-      showSpinActions();
       state.rafId = 0;
+      onDone && onDone();
     }
   }
   state.rafId = requestAnimationFrame(frame);
@@ -928,3 +1075,5 @@ function startSpin(setId){
 
 </body>
 </html>
+
+
