@@ -616,6 +616,21 @@ function openDetail({title, price, setId}) {
   renderLoot(images, setId);
 hideSpinActions();
 
+function openDetail({title, price, setId}) {
+  window.currentSetId = setId; // <— вставить СРАЗУ в начале
+
+  dTitle.textContent = title;
+  dPrice.textContent = String(price || '—');
+
+  dThumb.textContent = 'Заглушка';
+
+  const images = LOOT_SETS[setId] || null;
+  renderLoot(images, setId);
+  hideSpinActions();
+
+  renderPreview(setId); // <— вставить после hideSpinActions
+
+
  const spinStartBtn = document.getElementById('spinStartBtn');
 const spinOkBtn    = document.getElementById('spinOkBtn');
 const spinAgainBtn = document.getElementById('spinAgainBtn');
@@ -662,6 +677,8 @@ qtyWrap.addEventListener('click', e=>{
 
   qtyWrap.querySelectorAll('.q').forEach(el => el.classList.remove('active'));
   q.classList.add('active');
+  if (window.currentSetId) renderPreview(window.currentSetId);
+
 });
 
 
@@ -984,6 +1001,48 @@ function renderSpinMatrix(setId, qty){
   }
 }
 
+/* ===== PREVIEW: статичная лента без анимации ======================= */
+function fillTrackForPreview(key){
+  const setId  = key.split('__')[0];
+  const track  = document.getElementById(trackIdByKey(key));
+  if(!track) return;
+
+  const imgs =
+    (SPIN_IMAGES[setId] && SPIN_IMAGES[setId].length && SPIN_IMAGES[setId]) ||
+    (LOOT_SETS[setId]    && LOOT_SETS[setId].length    && LOOT_SETS[setId]) ||
+    [];
+
+  const arr = Array.from({length:11}, (_,i)=> imgs[i] ?? "");
+  track.innerHTML = "";
+
+  const state = ensureSpinState(key);
+  arr.forEach((_,i)=> track.appendChild(createTileEl(key, i)));
+
+  const embed    = embedByKey(key);
+  const viewport = embed && embed.querySelector('.spin-viewport');
+  if(!viewport) return;
+
+  const viewportCenter       = viewport.getBoundingClientRect().width / 2;
+  const idx                  = 5;                // центрируем 6-й тайл
+  const targetLeftInTrack    = idx * TILE_FULL;
+  const targetCenterInTrack  = targetLeftInTrack + TILE_W/2;
+  state.currentX             = viewportCenter - targetCenterInTrack;
+  track.style.transform      = `translateX(${state.currentX}px)`;
+  highlightTileUnderPointer(key);
+}
+
+/* перерисовка превью для текущего количества */
+function renderPreview(setId){
+  const qty = getSelectedQty();
+  renderSpinMatrix(setId, qty);  // рисуем сетку виджетов
+  for(let i=0;i<qty;i++){
+    const key = `${setId}__${i}`;
+    fillTrackForPreview(key);    // заполняем треки «картинками»
+  }
+}
+
+
+
 /* === ID-хелперы под множественные виджеты === */
 function trackIdByKey(key){ return `spinTrack_${key}`; }
 function embedByKey(key){ return document.getElementById(`spinEmbed_${key}`); }
@@ -1075,5 +1134,3 @@ function startSpinSingle(key, onDone){
 
 </body>
 </html>
-
-
