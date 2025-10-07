@@ -603,51 +603,43 @@ function renderLoot(images, setId){
 }
 
 function openDetail({title, price, setId}) {
+  // запоминаем текущий сет
+  window.currentSetId = setId;
+
+  // заголовки/цена
   dTitle.textContent = title;
   dPrice.textContent = String(price || '—');
 
-  // !!! вот эту строку нужно УБРАТЬ, чтобы до клика ленты не было:
-  // mountSpinInThumb();
-
-  // вместо этого – показываем чистую заглушку:
+  // чистая заглушка сверху
   dThumb.textContent = 'Заглушка';
 
+  // лут снизу
   const images = LOOT_SETS[setId] || null;
   renderLoot(images, setId);
-hideSpinActions();
 
-function openDetail({title, price, setId}) {
-  window.currentSetId = setId; // <— вставить СРАЗУ в начале
-
-  dTitle.textContent = title;
-  dPrice.textContent = String(price || '—');
-
-  dThumb.textContent = 'Заглушка';
-
-  const images = LOOT_SETS[setId] || null;
-  renderLoot(images, setId);
+  // скрыть кнопки «Забрать/Ещё раз»
   hideSpinActions();
 
-  renderPreview(setId); // <— вставить после hideSpinActions
+  // НАРИСОВАТЬ ПРЕВЬЮ ЛЕНТ сразу под выбранное количество
+  renderPreview(setId);
 
+  // подготовка кнопок
+  const spinStartBtn = document.getElementById('spinStartBtn');
+  const spinOkBtn    = document.getElementById('spinOkBtn');
+  const spinAgainBtn = document.getElementById('spinAgainBtn');
 
- const spinStartBtn = document.getElementById('spinStartBtn');
-const spinOkBtn    = document.getElementById('spinOkBtn');
-const spinAgainBtn = document.getElementById('spinAgainBtn');
-if (spinStartBtn) spinStartBtn.disabled = false; // вдруг осталась выключенной
-IS_SPINNING = false;                              // на всякий случай снимаем блок
+  if (spinStartBtn) spinStartBtn.disabled = false;
+  IS_SPINNING = false;
 
+  // запуск N спинов
+  if (spinStartBtn) spinStartBtn.onclick  = () => beginGroupSpin(setId);
+  if (spinOkBtn)    spinOkBtn.onclick     = () => { hideSpinActions(); /* тут начисляй приз */ };
+  if (spinAgainBtn) spinAgainBtn.onclick  = () => { beginGroupSpin(setId); };
+  if (spinAgainBtn) spinAgainBtn.textContent = 'Ещё раз';
 
-// ГРУППОВОЙ спин по выбранному количеству (1–5)
-spinStartBtn.onclick  = () => beginGroupSpin(setId);
-spinOkBtn.onclick     = () => { hideSpinActions(); /* TODO: начислить приз */ };
-spinAgainBtn.onclick  = () => { beginGroupSpin(setId); }; // повторяет группу
-if (spinAgainBtn) spinAgainBtn.textContent = 'Ещё раз';
-
+  // показать деталку
   detail.classList.add('show');
   detail.scrollTop = 0;
-
-  // остальное оставьте как есть
 }
 
 
