@@ -261,50 +261,6 @@
 }
 .hide{ display:none !important; }
 
-/* ===== ИММЕРСИВНЫЙ РЕЖИМ СПИНА ===== */
-.detail.immersive { pointer-events: none; }
-
-.detail.immersive .d-topbar,
-.detail.immersive .panel,
-.detail.immersive .subhead,
-.detail.immersive #lootGrid,
-.detail.immersive .d-actions .pill,
-.detail.immersive #spinStartBtn,
-.detail.immersive #demoToggle,
-.detail.immersive #qtyWrap {
-  display: none !important;
-}
-
-.detail.immersive .d-hero {
-  position: relative;
-  height: calc(100vh - 10px);
-}
-
-.spin-viewport {
-  transition: transform .35s ease, height .35s ease, box-shadow .35s ease;
-}
-
-.detail.zooming .spin-viewport {
-  height: 70vh;
-  transform: scale(1.06);
-  box-shadow: 0 20px 60px rgba(10,20,60,.55), 0 0 60px rgba(22,241,255,.18), inset 0 0 24px rgba(22,241,255,.12);
-}
-
-.detail.await-choice .d-actions {
-  position: absolute;
-  left: 0; right: 0; bottom: 16px;
-  display: flex !important;
-  justify-content: center;
-  gap: 10px;
-}
-
-.detail.immersive .spin-embed,
-.detail.await-choice #spinOkBtn,
-.detail.await-choice #spinAgainBtn {
-  pointer-events: auto;
-}
-
-
 </style>
 
 </head>
@@ -476,11 +432,6 @@ const lootGrid = document.getElementById('lootGrid');
 const demoToggle = document.getElementById('demoToggle');
 const qtyWrap  = document.getElementById('qtyWrap');
 
-// ===== Иммерсивный режим: флаги и длительность зума =====
-const ZOOM_DURATION_MS = 350; // длительность приближения (мс)
-let isSpinning = false;       // true — пока идёт зум/спин/ожидание выбора
-
-
 // ====== Рендер карточек ======
 sections.forEach(sec=>{
   // чип
@@ -650,21 +601,13 @@ hideSpinActions();
 const spinOkBtn    = document.getElementById('spinOkBtn');
 const spinAgainBtn = document.getElementById('spinAgainBtn');
 
-// вторую кнопку заранее называем «Продать»
-if (spinAgainBtn) spinAgainBtn.textContent = 'Продать';
+// обычный старт спина без зума/иммерсива
+spinStartBtn.onclick  = () => startSpin(setId);
+spinOkBtn.onclick     = () => { hideSpinActions(); /* TODO: начислить приз */ };
+spinAgainBtn.onclick  = () => { startSpin(setId);  /* «Ещё раз» */ };
 
-// Стартовый флоу: зум -> спин -> показ «Забрать/Продать»
-spinStartBtn.onclick = () => beginSpinFlow(setId);
-
-// Клик «Забрать» / «Продать» — выходим из иммерсива и возвращаем UI
-spinOkBtn.onclick = () => {
-  // TODO: начислить приз здесь
-  exitImmersive();
-};
-spinAgainBtn.onclick = () => {
-  // TODO: логика продажи здесь
-  exitImmersive();
-};
+// подписи кнопок — стандартные
+if (spinAgainBtn) spinAgainBtn.textContent = 'Ещё раз';
 
 
   detail.classList.add('show');
@@ -709,21 +652,6 @@ qtyWrap.addEventListener('click', e=>{
     fallback.style.display = 'none';
   }
 })();
-
-document.getElementById('detail').addEventListener('click', (e)=>{
-  if (!isSpinning) return;
-  const detail = document.getElementById('detail');
-
-  // Разрешаем клики только по «Забрать/Продать», когда ждём выбор
-  if (detail.classList.contains('await-choice')) {
-    if (e.target && (e.target.id === 'spinOkBtn' || e.target.id === 'spinAgainBtn')) return;
-  }
-
-  // Иначе — блокируем всё
-  e.stopPropagation();
-  e.preventDefault();
-}, true);
-
 
 </script>
 
@@ -891,38 +819,6 @@ function showSpinActions(){
   document.getElementById('spinAgainBtn')?.classList.remove('hide');
 }
 
-function enterImmersive() {
-  const detail = document.getElementById('detail');
-  detail.classList.add('immersive', 'zooming');
-  isSpinning = true;
-}
-
-function exitImmersive() {
-  const detail = document.getElementById('detail');
-  detail.classList.remove('immersive', 'zooming', 'await-choice');
-  isSpinning = false;
-  hideSpinActions();
-  const spinAgainBtn = document.getElementById('spinAgainBtn');
-  if (spinAgainBtn) spinAgainBtn.textContent = 'Продать';
-}
-
-function showSpinChoices() {
-  const detail = document.getElementById('detail');
-  detail.classList.add('await-choice');
-
-  const spinOkBtn = document.getElementById('spinOkBtn');
-  const spinSellBtn = document.getElementById('spinAgainBtn');
-  if (spinOkBtn) {
-    spinOkBtn.textContent = 'Забрать';
-    spinOkBtn.classList.remove('hide');
-  }
-  if (spinSellBtn) {
-    spinSellBtn.textContent = 'Продать';
-    spinSellBtn.classList.remove('hide');
-  }
-}
-
-
 /* === 7) ВСТАВЛЯЕМ ОБЁРТКУ ЛЕНТЫ В detailThumb ====================== */
 function mountSpinInThumb(setId){
   const dThumb = document.getElementById('detailThumb');
@@ -1033,25 +929,6 @@ function buildDynamicTrack(setId){
   return { winnerEl };
 }
 
-function beginSpinFlow(setId){
-  if (isSpinning) return;
-
-  // вставим ленту, если её ещё нет
-  if(!document.getElementById(`spinTrack_${setId}`)){
-    mountSpinInThumb(setId);
-  }
-
-  // уходим в иммерсив: скрываем остальной UI и начинаем зум
-  enterImmersive();
-
-  // ждём окончание зума и только затем крутим
-  setTimeout(()=>{
-    document.getElementById('detail')?.classList.remove('zooming');
-    startSpin(setId);
-  }, ZOOM_DURATION_MS);
-}
-
-
 /* === 12) СТАРТ СПИНА — ДИНАМИЧЕСКИ ГЕНЕРИМ И КРУТИМ ================== */
 function startSpin(setId){
   ensureSpinState(setId);
@@ -1107,15 +984,12 @@ function startSpin(setId){
     if(p < 1){
       state.rafId = requestAnimationFrame(frame);
     } else {
-      state.lastWinEl = winnerEl;
-state.lastWinEl.classList.add('hot');
-state.lastWinEl.style.transform = 'scale(1.03)';
-
-// показываем только «Забрать» и «Продать» в иммерсиве
-showSpinChoices();
-
-state.rafId = 0;
-    }
+  state.lastWinEl = winnerEl;
+  state.lastWinEl.classList.add('hot');
+  state.lastWinEl.style.transform = 'scale(1.03)';
+  showSpinActions();
+  state.rafId = 0;
+}
   }
 
   state.rafId = requestAnimationFrame(frame);
