@@ -124,7 +124,7 @@
     .d-title{font-weight:900}
     .d-body{padding:16px; max-width:1100px; margin:0 auto; width:100%}
     .d-hero{display:grid; grid-template-columns:1fr; gap:14px; margin-bottom:10px;}
-    .d-thumb{ height:200px; border-radius:16px; border:1px dashed rgba(180,210,255,.35);
+    .d-thumb{ min-height:200px; height:auto; border-radius:16px; border:1px dashed rgba(180,210,255,.35);
       background: radial-gradient(160px 110px at 20% 20%, rgba(22,241,255,.12), transparent 60%), radial-gradient(160px 110px at 80% 80%, rgba(255,62,208,.10), transparent 60%), linear-gradient(180deg,#0c1230,#0a1028);
       display:grid; place-items:center; color:#a9c2ff; text-transform:uppercase; letter-spacing:1px; }
     .d-actions{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
@@ -263,13 +263,17 @@
 
 /* ===== Матрица из нескольких виджетов прокрута ===== */
 .spin-matrix{
+
   display:grid;
   gap:10px;
   grid-template-columns: repeat(var(--cols,1), 1fr);
 }
-.spin-matrix .spin-viewport{
-  height: var(--cell-h, 200px); /* динамически уменьшаем из JS */
-}
+
+/* каждая ячейка матрицы имеет свою высоту */
+.spin-cell{ height: var(--cell-h, 200px); }
+
+/* матрица на всю ширину заглушки */
+.d-thumb > .spin-matrix{ width:100%; }
 
 /* Кнопка «КРУТИТЬ» недоступна во время прокрута */
 .btn-spin:disabled{
@@ -980,6 +984,12 @@ function renderSpinMatrix(setId, qty){
     const key = `${setId}__${i}`;
     const embedId = `spinEmbed_${key}`;
     const trackId = `spinTrack_${key}`;
+
+    // обёртка-ячейка с высотой
+    const cell = document.createElement('div');
+    cell.className = 'spin-cell';
+
+    // сам виджет
     const widget = document.createElement('div');
     widget.className = 'spin-embed';
     widget.id = embedId;
@@ -989,9 +999,12 @@ function renderSpinMatrix(setId, qty){
         <div class="spin-pointer"></div>
       </div>
     `;
-    matrix.appendChild(widget);
+
+    cell.appendChild(widget);
+    matrix.appendChild(cell);
   }
 }
+
 
 /* ===== PREVIEW: статичная лента без анимации ======================= */
 function fillTrackForPreview(key){
