@@ -262,13 +262,27 @@
   backface-visibility:hidden; -webkit-backface-visibility:hidden;
 }
 
+/* контейнер вкладки с картинкой */
 .slice .img{
   width:100%; height:100%;
   display:grid; place-items:center;
+  padding:8px;                /* чтобы миниатюра не упиралась в края */
   border-bottom:1px solid var(--border);
   background: radial-gradient(80px 60px at 50% 50%, rgba(22,241,255,.10), transparent 60%);
 }
-.slice .img img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+/* картинка строго 1:1 и полностью влезает */
+.slice .img img{
+  aspect-ratio: 1 / 1;        /* квадрат независимо от исходных пропорций */
+  object-fit: contain;        /* вписываем без обрезки */
+  display:block;
+
+  max-height: 90%;
+  max-width: 90%;
+  width: auto;                /* ширина считается из aspect-ratio */
+  border-radius: 12px;        /* опционально: скругление миниатюры */
+}
+
 
 .slice .meta{
   width:100%; padding:8px 10px;
