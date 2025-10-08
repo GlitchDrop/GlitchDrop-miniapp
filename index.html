@@ -656,6 +656,13 @@ function openDetail({title, price, setId}) {
   // скрыть кнопки «Забрать/Ещё раз»
   hideSpinActions();
 
+const key = `${setId}__0`;
+const st  = ensureSpinState(key);
+st.currentAngle = 0; // каждый заход начинаем с нулевого угла
+// размеры фиксированные; если где-то менялись — вернём их
+setReelSize({ sliceW: 210, sliceH: 128, minH: 360 });
+
+
   // НАРИСОВАТЬ ПРЕВЬЮ ЛЕНТ сразу под выбранное количество
   renderPreview(setId);
 
@@ -679,18 +686,22 @@ function openDetail({title, price, setId}) {
   detail.scrollTop = 0;
 }
 
-
-// ====== Кнопки и переключатели в деталке ======
 backBtn.addEventListener('click', ()=>{
-  // Стопаем любые активные анимации, если пользователь уходит
+  // Стопаем любые активные анимации
   SPIN_STATE.forEach(st=>{
     if (st.rafId) cancelAnimationFrame(st.rafId);
     st.rafId = 0;
   });
+
+  // Сброс inline-transform у барабана
+  const drum = document.querySelector('.d-thumb .drum');
+  if (drum) drum.style.transform = '';
+
   window.IS_SPINNING = false;
   document.getElementById('spinStartBtn')?.removeAttribute('disabled');
   detail.classList.remove('show');
 });
+
 
 // ====== Telegram WebApp ======
 (()=>{
@@ -789,11 +800,8 @@ function ensureSpinState(key){
 
     SPIN_STATE.set(key, {
       currentAngle: 0,
-      currentX: 0,
       rafId: 0,
-      lastWinEl: null,
-      weights, labels: L, values: V,
-      baseOffsetDeg: 0, // базовый наклон .drum-tilt на спин
+      weights, labels: L, values: V
     });
   }
   return SPIN_STATE.get(key);
@@ -814,8 +822,6 @@ if (typeof window.IS_SPINNING === 'undefined') window.IS_SPINNING = false;
 
 // Параметры барабана
 const DRUM_ITEM_COUNT = 11;          // число граней
-const SPIN_DURATION_MS = 3800;
-const EXTRA_TURNS = 3.5;
 
 /* Геометрия/размер */
 function getReelMetrics(){
@@ -833,10 +839,6 @@ function setReelSize({sliceW, sliceH, minH} = {}){
   if(sliceW) root.setProperty('--reel-slice-w', `${sliceW}px`);
   if(sliceH) root.setProperty('--reel-slice-h', `${sliceH}px`);
   if(minH)   root.setProperty('--reel-min-h',   `${minH}px`);
-}
-function setReelScale(k=1){
-  const baseW=210, baseH=128, baseMin=360;
-  setReelSize({ sliceW: Math.round(baseW*k), sliceH: Math.round(baseH*k), minH: Math.round(baseMin*k) });
 }
 
 /* Состояние с углом */
@@ -868,13 +870,6 @@ function render3DReel(setId){
   const drum = document.getElementById(`drum_${key}`);
   drum.innerHTML = "";
 
-// применяем базовый наклон контейнера (сдвигаем «стрелку» визуально)
-const tilt = parent.querySelector('.drum-tilt');
-if (tilt) {
-  tilt.style.transform = `rotateX(${st.baseOffsetDeg}deg)`;
-}
-
-
   const imgs = (SPIN_IMAGES[setId]?.length ? SPIN_IMAGES[setId] : LOOT_SETS[setId] || []).slice(0, DRUM_ITEM_COUNT);
   while(imgs.length < DRUM_ITEM_COUNT) imgs.push("");
 
@@ -899,66 +894,68 @@ if (tilt) {
   }
 }
 
-/* Запуск спина */
 function start3DSpin(setId, onDone){
   const key  = `${setId}__0`;
   const drum = document.getElementById(`drum_${key}`);
   if(!drum){ onDone && onDone(); return; }
 
-  const st = ensureSpinStateWithAngle(key);
+  const st = ensureSpinState(key);
   const { step, r } = getReelMetrics();
 
   drum.querySelectorAll('.slice').forEach(s=> s.classList.remove('win'));
 
-  // выбираем победный индекс по весам
   const idx = pickIndexByWeights(st.weights);
+  const current  = Number.isFinite(st.currentAngle) ? st.currentAngle : 0;
+  const curSteps = Math.round(current / step);
+  const curMod   = ((curSteps % 11) + 11) % 11;
 
-  const current = st.currentAngle || 0;
-  
-// учитываем базовый наклон: выравниваем относительно (current + baseOffsetDeg)
-const base = st.baseOffsetDeg || 0;
-const target = current + EXTRA_TURNS*360 + idx*step - ((current + base) % step);
+  const need = ((idx - curMod) + 11) % 11;
+  const EXTRA_TURNS_INT = 3;
+  const deltaSteps = EXTRA_TURNS_INT * 11 + need;
+  const target = (curSteps + deltaSteps) * step;
 
-
+  const SPIN_DURATION_MS = 3800;
   const t0 = performance.now();
-  const dur = SPIN_DURATION_MS;
   const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
 
   function frame(now){
-    const p = Math.min(1, (now - t0) / dur);
-    const ang = current + (target - current)*easeOutCubic(p);
+    const p = Math.min(1, (now - t0) / SPIN_DURATION_MS);
+    const ang = current + (target - current) * easeOutCubic(p);
     drum.style.transform = `translateZ(${-r}px) rotateX(${ang}deg)`;
+
     if(p < 1){
-      SPIN_STATE.get(key).rafId = requestAnimationFrame(frame);
+      st.rafId = requestAnimationFrame(frame);
     } else {
-      st.currentAngle = ang;
+      const snapped = Math.round(target / step) * step;
+      drum.style.transform = `translateZ(${-r}px) rotateX(${snapped}deg)`;
+      st.currentAngle = snapped;
+
       const slices = drum.querySelectorAll('.slice');
-      slices[idx]?.classList.add('win'); // мягкий подскок только у победной
-      SPIN_STATE.get(key).rafId = 0;
+      slices[idx]?.classList.add('win');
+
+      st.rafId = 0;
       onDone && onDone();
     }
   }
-  cancelAnimationFrame(SPIN_STATE.get(key).rafId);
-  SPIN_STATE.get(key).rafId = requestAnimationFrame(frame);
+
+  cancelAnimationFrame(st.rafId);
+  st.rafId = requestAnimationFrame(frame);
 }
 
-/* Хуки твоей деталки */
-function renderPreview(setId){ render3DReel(setId); }
+// превью барабана
+function renderPreview(setId){
+  render3DReel(setId);
+}
+
+// запуск спина
 function beginSpin(setId){
   if (window.IS_SPINNING) return;
   window.IS_SPINNING = true;
   hideSpinActions();
 
-  // задаём случайный базовый наклон на целое число граней
-  const { step } = getReelMetrics();
-  const key = `${setId}__0`;
-  const st  = ensureSpinStateWithAngle(key);
-  const randomSteps = Math.floor(Math.random() * DRUM_ITEM_COUNT); // 0..10
-  st.baseOffsetDeg = randomSteps * step;
-
   render3DReel(setId);
-  const btn = document.getElementById('spinStartBtn');
 
+  const btn = document.getElementById('spinStartBtn');
   if (btn) btn.disabled = true;
 
   start3DSpin(setId, ()=>{
@@ -968,8 +965,6 @@ function beginSpin(setId){
   });
 }
 
-// Пример: можно увеличить барабан
-// setReelScale(1.15);
 
 </script>
 
