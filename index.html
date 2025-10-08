@@ -202,64 +202,115 @@
 
 <style>
 
-/* ===== Прокрутка в d-thumb ===== */
-.spin-embed{ width:100%; height:100%; display:flex; }
-.spin-viewport{
-  height:100%; width:100%;
-  border-radius:16px; border:1px solid var(--border);
-  background:linear-gradient(180deg,#0c1230,#0a1028);
-  overflow:hidden; box-shadow:inset 0 0 24px rgba(22,241,255,.12);
+.hide { display: none !important; }
+
+/* === 3D барабан (фронтально, одна ячейка) === */
+:root{
+  /* размеры можно менять из JS */
+  --reel-slice-w: 210px;
+  --reel-slice-h: 128px;
+  --reel-min-h:   360px;
+}
+
+.drum-wrap{
   position:relative;
+  width:100%;
+  height:100%;
+  min-height: var(--reel-min-h);
+  display:grid; place-items:center;
+  perspective: 1200px;
 }
-/* ВАЖНО: трек во всю высоту viewport */
-.spin-track{
-  position:absolute; top:0; left:0; height:100%;
-  display:flex; align-items:stretch; gap:12px;
+
+.drum-stage{
+  position:relative;
+  width:min(560px, 92%);
+  height:100%;
+  border-radius:16px;
+  border:1px solid var(--border);
+  background:linear-gradient(180deg,#0c1230,#0a1028);
+  box-shadow:inset 0 0 24px rgba(22,241,255,.12);
+  overflow:hidden;
+}
+
+/* фронтально, без наклона */
+.drum-tilt{
+  position:absolute; inset:18px;
+  transform-style:preserve-3d;
+}
+
+.drum{
+  position:absolute; left:50%; top:50%;
+  transform-style:preserve-3d;
   will-change:transform;
-  transform:translateX(0);
 }
-.spin-pointer{
-  position:absolute; top:0; bottom:0; left:50%; width:2px; transform:translateX(-50%);
-  background:linear-gradient(180deg, var(--neon-cyan), var(--neon-pink));
-  box-shadow:0 0 14px rgba(22,241,255,.55), 0 0 22px rgba(255,62,208,.35);
+
+/* «вкладки» барабана */
+.slice{
+  position:absolute; left:50%; top:50%;
+  width: var(--reel-slice-w);
+  height: var(--reel-slice-h);
+  margin: calc(-1 * var(--reel-slice-h) / 2) calc(-1 * var(--reel-slice-w) / 2);
+  border-radius:14px;
+  border:1px dashed rgba(180,210,255,.35);
+  background:
+    radial-gradient(120px 80px at 20% 20%, rgba(22,241,255,.10), transparent 60%),
+    radial-gradient(120px 80px at 80% 80%, rgba(255,62,208,.08), transparent 60%),
+    linear-gradient(180deg,#0b1030,#0a1028);
+  box-shadow:0 8px 26px rgba(10,20,60,.35);
+  display:grid; grid-template-rows:1fr auto; align-items:center; justify-items:center;
+  overflow:hidden;
+  backface-visibility:hidden; -webkit-backface-visibility:hidden;
+}
+
+.slice .img{
+  width:100%; height:100%;
+  display:grid; place-items:center;
+  border-bottom:1px solid var(--border);
+  background: radial-gradient(80px 60px at 50% 50%, rgba(22,241,255,.10), transparent 60%);
+}
+.slice .img img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+.slice .meta{
+  width:100%; padding:8px 10px;
+  font-weight:900; letter-spacing:.3px; font-size:12px; color:#a9c2ff;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.slice .value{
+  color:var(--neon-yellow); text-shadow:0 0 12px rgba(255,228,122,.25);
+  font-weight:900; font-size:14px;
+}
+
+/* центральная линия выигрыша */
+.drum-pointer{
+  position:absolute; left:0; right:0; top:50%;
+  transform:translateY(-50%); height:2px;
+  background:linear-gradient(90deg, transparent, var(--neon-cyan), var(--neon-pink), transparent);
+  box-shadow:0 0 14px rgba(22,241,255,.45), 0 0 20px rgba(255,62,208,.25);
   pointer-events:none;
 }
 
-/* плитка ровно по высоте viewport */
-.slot{
-  width:110px; height:100%;
-  border-radius:14px; border:1px dashed rgba(180,210,255,.35);
-  background:
-    radial-gradient(120px 80px at 20% 20%, rgba(22,241,255,.12), transparent 60%),
-    radial-gradient(120px 80px at 80% 80%, rgba(255,62,208,.10), transparent 60%),
-    linear-gradient(180deg,#0c1230,#0a1028);
-  display:grid; grid-template-rows: 1fr auto auto; align-items:center; justify-items:center; padding:8px;
-  box-shadow:0 10px 30px rgba(10,20,60,.35);
+/* лёгкая виньетка для глубины */
+.drum-stage:before, .drum-stage:after{
+  content:""; position:absolute; left:0; right:0; height:22%;
+  pointer-events:none; z-index:5;
+  background:linear-gradient(180deg, rgba(8,14,36,.8), transparent);
 }
-.slot-img{
-  height:70%; aspect-ratio:1/1; border-radius:12px; overflow:hidden; border:1px solid var(--border);
-  background: radial-gradient(80px 60px at 50% 50%, rgba(22,241,255,.10), transparent 60%);
-  display:grid; place-items:center;
-}
-.slot-img img{ width:100%; height:100%; object-fit:cover; display:block; }
-.slot-label{ margin-top:6px; font-size:12px; font-weight:800; color:#a9c2ff; text-transform:uppercase; letter-spacing:.4px; text-align:center; }
-.slot-value{ font-size:14px; font-weight:900; color:var(--neon-yellow); text-shadow:0 0 12px rgba(255,228,122,.25); }
+.drum-stage:after{ bottom:0; top:auto; transform:rotate(180deg); }
 
-.slot.hot{ outline:2px solid var(--neon-cyan); box-shadow:0 0 24px rgba(22,241,255,.25), inset 0 0 12px rgba(22,241,255,.12); }
+/* ОЧЕНЬ ПЛАВНЫЙ пружинный подскок только выигрышной вкладки */
+.slice.win{
+  outline:2px solid var(--neon-cyan);
+  box-shadow:0 0 30px rgba(22,241,255,.28), inset 0 0 14px rgba(22,241,255,.12);
+  animation:win-spring 800ms cubic-bezier(.17,.84,.44,1) 1;
+}
+@keyframes win-spring{
+  0%   { transform: translateZ(var(--_rz)) rotateX(var(--_deg)) scale(1); }
+  35%  { transform: translateZ(calc(var(--_rz) + 6px)) rotateX(var(--_deg)) scale(1.022); }
+  60%  { transform: translateZ(var(--_rz)) rotateX(var(--_deg)) scale(0.997); }
+  82%  { transform: translateZ(calc(var(--_rz) + 3px)) rotateX(var(--_deg)) scale(1.010); }
+  100% { transform: translateZ(var(--_rz)) rotateX(var(--_deg)) scale(1); }
+}
 
-/* CTA */
-.spin-cta{
-  appearance:none; cursor:pointer; border:none;
-  padding:12px 16px; border-radius:14px; font-weight:900; color:#081121;
-  background:linear-gradient(135deg,#ffe28a,#ffc13a);
-  box-shadow:0 10px 28px rgba(255,209,102,.35), 0 0 30px rgba(255,209,102,.25);
-}
-.spin-cta.secondary{
-  background:transparent; color:#e8efff;
-  border:1px solid var(--border);
-  box-shadow:none;
-}
-.hide{ display:none !important; }
 
 </style>
 
@@ -564,6 +615,15 @@ function renderLoot(images, setId){
   });
 }
 
+function hideSpinActions(){
+  document.getElementById('spinOkBtn')?.classList.add('hide');
+  document.getElementById('spinAgainBtn')?.classList.add('hide');
+}
+function showSpinActions(){
+  document.getElementById('spinOkBtn')?.classList.remove('hide');
+  document.getElementById('spinAgainBtn')?.classList.remove('hide');
+}
+
 function openDetail({title, price, setId}) {
   // запоминаем текущий сет
   window.currentSetId = setId;
@@ -591,7 +651,7 @@ function openDetail({title, price, setId}) {
   const spinAgainBtn = document.getElementById('spinAgainBtn');
 
   if (spinStartBtn) spinStartBtn.disabled = false;
-  IS_SPINNING = false;
+  window.IS_SPINNING = false;
 
   // запуск N спинов
   
@@ -613,7 +673,7 @@ backBtn.addEventListener('click', ()=>{
     if (st.rafId) cancelAnimationFrame(st.rafId);
     st.rafId = 0;
   });
-  IS_SPINNING = false;
+  window.IS_SPINNING = false;
   document.getElementById('spinStartBtn')?.removeAttribute('disabled');
   detail.classList.remove('show');
 });
@@ -641,148 +701,47 @@ backBtn.addEventListener('click', ()=>{
     fallback.style.display = 'none';
   }
 })();
-</script>
 
-<script>
-/* ===== КАРТИНКИ ДЛЯ ПРОКРУТА (11 слотов на каждый setId) ===== */
 
-// Глобальный флажок «идёт прокрут»
-let IS_SPINNING = false;
 
-const SPIN_IMAGES = {
-  cheap_1:        ["","","","","","","","","","",""],
-  cheap_2:        ["","","","","","","","","","",""],
-  cheap_3:        ["","","","","","","","","","",""],
-  cheap_4:        ["","","","","","","","","","",""],
+// --- Support для 3D барабана: состояние, веса, лейблы ---
 
-  nft_1:          ["","","","","","","","","","",""],
-  nft_2:          ["","","","","","","","","","",""],
-  nft_3:          ["","","","","","","","","","",""],
-  nft_4:          ["","","","","","","","","","",""],
+// Пустой реестр картинок (если не используешь отдельные спрайты барабана)
+window.SPIN_IMAGES = window.SPIN_IMAGES || {}; // { setId: [url,url,...] }
 
-  exclusive_1:    ["","","","","","","","","","",""],
-  exclusive_2:    ["","","","","","","","","","",""],
-  exclusive_3:    ["","","","","","","","","","",""],
-  exclusive_4:    ["","","","","","","","","","",""],
+// Общий state по ключу (setId__index)
+window.SPIN_STATE = window.SPIN_STATE || new Map();
 
-  standard_1:     ["","","","","","","","","","",""],
-  standard_2:     ["","","","","","","","","","",""],
-  standard_3:     ["","","","","","","","","","",""],
-  standard_4:     ["","","","","","","","","","",""],
-
-  gold_1:         ["","","","","","","","","","",""],
-  gold_2:         ["","","","","","","","","","",""],
-  gold_3:         ["","","","","","","","","","",""],
-  gold_4:         ["","","","","","","","","","",""],
-
-  allornothing_1: ["","","","","","","","","","",""],
-  allornothing_2: ["","","","","","","","","","",""],
-  allornothing_3: ["","","","","","","","","","",""],
-  allornothing_4: ["","","","","","","","","","",""],
-
-  expensive_1:    ["","","","","","","","","","",""],
-  expensive_2:    ["","","","","","","","","","",""],
-  expensive_3:    ["","","","","","","","","","",""],
-  expensive_4:    ["","","","","","","","","","",""],
-};
-
-/* ========= “ЖИВАЯ” ЛЕНТА СПИНА С ПРОЦЕНТАМИ ПО КАЖДОМУ ТАЙЛУ =========
-   Как пользоваться:
-   1) Картинки тайлов: редактируй в объекте SPIN_IMAGES (у тебя выше).
-      На каждый setId — 11 строк-URL.
-   2) Проценты выпадения: редактируй ниже в SPIN_CONFIGS_PERCENT.
-      На каждый setId — 11 чисел (в процентах). Сумма может быть любой —
-      мы нормализуем автоматически.
-   3) Подписи/значения на тайлах: в SPIN_LABELS (необязательно).
-====================================================================== */
-
-/* === 1) ПРОЦЕНТЫ ПО ВКЛАДКАМ (11 штук на каждый setId) ============== */
-/* Пример заполнен для cheap_1 и nft_2, остальные — шаблон из нулей.
-   Меняй проценты как тебе нужно. */
+// Проценты выпадения по наборам (11 значений на setId). Пока нули — равновероятно.
 const SPIN_CONFIGS_PERCENT = {
-  cheap_1:        [0,0,0,0,0,0,0,0,0,0,0],
-  cheap_2:        [0,0,0,0,0,0,0,0,0,0,0],
-  cheap_3:        [0,0,0,0,0,0,0,0,0,0,0],
-  cheap_4:        [0,0,0,0,0,0,0,0,0,0,0],
-
-  nft_1:          [0,0,0,0,0,0,0,0,0,0,0],
-  nft_2:          [0,0,0,0,0,0,0,0,0,0,0],
-  nft_3:          [0,0,0,0,0,0,0,0,0,0,0],
-  nft_4:          [0,0,0,0,0,0,0,0,0,0,0],
-
-  exclusive_1:    [0,0,0,0,0,0,0,0,0,0,0],
-  exclusive_2:    [0,0,0,0,0,0,0,0,0,0,0],
-  exclusive_3:    [0,0,0,0,0,0,0,0,0,0,0],
-  exclusive_4:    [0,0,0,0,0,0,0,0,0,0,0],
-
-  standard_1:     [0,0,0,0,0,0,0,0,0,0,0],
-  standard_2:     [0,0,0,0,0,0,0,0,0,0,0],
-  standard_3:     [0,0,0,0,0,0,0,0,0,0,0],
-  standard_4:     [0,0,0,0,0,0,0,0,0,0,0],
-
-  gold_1:         [0,0,0,0,0,0,0,0,0,0,0],
-  gold_2:         [0,0,0,0,0,0,0,0,0,0,0],
-  gold_3:         [0,0,0,0,0,0,0,0,0,0,0],
-  gold_4:         [0,0,0,0,0,0,0,0,0,0,0],
-
-  allornothing_1: [0,0,0,0,0,0,0,0,0,0,0],
-  allornothing_2: [0,0,0,0,0,0,0,0,0,0,0],
-  allornothing_3: [0,0,0,0,0,0,0,0,0,0,0],
-  allornothing_4: [0,0,0,0,0,0,0,0,0,0,0],
-
-  expensive_1:    [0,0,0,0,0,0,0,0,0,0,0],
-  expensive_2:    [0,0,0,0,0,0,0,0,0,0,0],
-  expensive_3:    [0,0,0,0,0,0,0,0,0,0,0],
-  expensive_4:    [0,0,0,0,0,0,0,0,0,0,0],
+  cheap_1: Array(11).fill(0), cheap_2: Array(11).fill(0), cheap_3: Array(11).fill(0), cheap_4: Array(11).fill(0),
+  nft_1: Array(11).fill(0),   nft_2: Array(11).fill(0),   nft_3: Array(11).fill(0),   nft_4: Array(11).fill(0),
+  exclusive_1: Array(11).fill(0), exclusive_2: Array(11).fill(0), exclusive_3: Array(11).fill(0), exclusive_4: Array(11).fill(0),
+  standard_1: Array(11).fill(0),  standard_2: Array(11).fill(0),  standard_3: Array(11).fill(0),  standard_4: Array(11).fill(0),
+  gold_1: Array(11).fill(0), gold_2: Array(11).fill(0), gold_3: Array(11).fill(0), gold_4: Array(11).fill(0),
+  allornothing_1: Array(11).fill(0), allornothing_2: Array(11).fill(0),
+  allornothing_3: Array(11).fill(0), allornothing_4: Array(11).fill(0),
+  expensive_1: Array(11).fill(0), expensive_2: Array(11).fill(0),
+  expensive_3: Array(11).fill(0), expensive_4: Array(11).fill(0),
 };
 
-/* === 2) ТЕКСТЫ НА ТАЙЛАХ (необязательно; 11 штук на setId) ========== */
-/* Если не укажешь — подставятся дефолтные label/value. */
+// Необязательные подписи/значения
 const SPIN_LABELS = {
-  // пример: CHEAP #1
   cheap_1: {
     labels: ["CHEAP#1","CHEAP#1","CHEAP#1","CHEAP#1","CHEAP#1","CHEAP#1","CHEAP#1","CHEAP#1","CHEAP#1","CHEAP#1","CHEAP#1"],
     values: ["10 ⭐","25 ⭐","50 ⭐","100 ⭐","3 ⭐","5 ⭐","8 ⭐","15 ⭐","20 ⭐","30 ⭐","60 ⭐"]
-  },
-  // пример: NFT #2
-  nft_2: {
-    labels: ["NFT#2","NFT#2","NFT#2","NFT#2","NFT#2","NFT#2","NFT#2","NFT#2","NFT#2","NFT#2","NFT#2"],
-    values: ["🔷 1","🔷 2","🔷 3","🔷 5","🔷 8","🔷 13","🔷 21","🔷 34","🔷 55","🔷 89","🔷 144"]
-  },
-  // остальные можешь не заполнять — возьмутся дефолты
+  }
 };
-
-/* === 3) ДЕФОЛТНЫЕ ПОДПИСИ/ЗНАЧЕНИЯ, ЕСЛИ НЕТ В SPIN_LABELS ========= */
-const DEFAULT_LABELS = ["ПРИЗ","ПРИЗ","ПРИЗ","ПРИЗ","ПРИЗ","ПРИЗ","ПРИЗ","ПРИЗ","ПРИЗ","ПРИЗ","ПРИЗ"];
+const DEFAULT_LABELS = Array(11).fill("ПРИЗ");
 const DEFAULT_VALUES = ["10 ⭐","25 ⭐","50 ⭐","100 ⭐","3 ⭐","5 ⭐","8 ⭐","15 ⭐","20 ⭐","30 ⭐","60 ⭐"];
 
-/* === 4) ПАРАМЕТРЫ АНИМАЦИИ ========================================= */
-const TILE_W = 110;           // ширина тайла (как в CSS)
-const TILE_GAP = 12;          // зазор между тайлами (как в CSS)
-const TILE_FULL = TILE_W + TILE_GAP;
-const SPIN_TIME_MS = 4000;    // длительность анимации
-const PRE_BUFFER_TILES = 16;  // случайных тайлов ДО выигрыша
-const POST_BUFFER_TILES = 6;  // «хвост» ПОСЛЕ выигрыша
-
-/* === 5) СОСТОЯНИЕ ПО КЕЙСАМ ========================================= */
-const SPIN_STATE = new Map();
-/* state:
-{
-  currentX: number,
-  rafId: number|0,
-  lastWinEl: HTMLElement|null,
-  weights: number[11],      // нормализованные веса 0..1
-  labels: string[11],
-  values: string[11]
-}
-*/
+// Нормализация весов и подготовка лейблов
 function ensureSpinState(key){
   if(!SPIN_STATE.has(key)){
-    // key имеет вид: setId__index
     const setId = key.split('__')[0];
-    const weightsRaw = (SPIN_CONFIGS_PERCENT[setId] && SPIN_CONFIGS_PERCENT[setId].slice(0,11)) || Array(11).fill(0);
-    const sum = weightsRaw.reduce((a,b)=>a+b,0) || 1;
-    const weights = weightsRaw.map(w=> Math.max(0,w) / sum);
+    const raw = (SPIN_CONFIGS_PERCENT[setId]?.slice(0,11)) || Array(11).fill(0);
+    const sum = raw.reduce((a,b)=>a+b,0) || 1;
+    const weights = raw.map(w => Math.max(0,w)/sum);
 
     const L = (SPIN_LABELS[setId]?.labels || DEFAULT_LABELS).slice(0,11);
     const V = (SPIN_LABELS[setId]?.values || DEFAULT_VALUES).slice(0,11);
@@ -790,234 +749,169 @@ function ensureSpinState(key){
     while(V.length<11) V.push("—");
 
     SPIN_STATE.set(key, {
+      currentAngle: 0,
       currentX: 0,
       rafId: 0,
       lastWinEl: null,
-      weights,
-      labels: L,
-      values: V
+      weights, labels: L, values: V
     });
   }
   return SPIN_STATE.get(key);
 }
 
-/* === 6) UI-хелперы ================================================== */
-function hideSpinActions(){
-  document.getElementById('spinOkBtn')?.classList.add('hide');
-  document.getElementById('spinAgainBtn')?.classList.add('hide');
-}
-function showSpinActions(){
-  document.getElementById('spinOkBtn')?.classList.remove('hide');
-  document.getElementById('spinAgainBtn')?.classList.remove('hide');
-}
-
-
-
-/* === 8) Выбор индекса по весам (из 11) ============================== */
+// Выбор индекса по весам
 function pickIndexByWeights(weights){
-  let r = Math.random();
-  let acc = 0;
-  for(let i=0;i<weights.length;i++){
-    acc += weights[i];
-    if(r <= acc) return i;
-  }
+  let r = Math.random(), acc = 0;
+  for(let i=0;i<weights.length;i++){ acc += weights[i]; if(r <= acc) return i; }
   return weights.length-1;
 }
 
-/* === 9) Создаём один тайл по индексу (берём картинку из SPIN_IMAGES) == */
-function createTileEl(key, baseIndex){
-  const setId = key.split('__')[0];
-  const FALLBACK = "https://via.placeholder.com/512?text=%F0%9F%8E%81";
-  const state = ensureSpinState(key);
-  const imgUrl = (SPIN_IMAGES[setId] && SPIN_IMAGES[setId][baseIndex]) || "";
+/* ===== 3D барабан для detailThumb ===== */
 
-  const el = document.createElement('div');
-  el.className = 'slot';
-  el.dataset.baseIndex = String(baseIndex);
-  el.innerHTML = `
-    <div class="slot-img">
-      ${imgUrl ? `<img src="${imgUrl}" alt="" onerror="this.src='${FALLBACK}'">` : '—'}
-    </div>
-    <div class="slot-label">№${baseIndex+1} ${state.labels[baseIndex] || ''}</div>
-    <div class="slot-value">${state.values[baseIndex] || ''}</div>
-  `;
-  return el;
+// Глобальный флажок «идёт прокрут»
+if (typeof window.IS_SPINNING === 'undefined') window.IS_SPINNING = false;
+
+// Параметры барабана
+const DRUM_ITEM_COUNT = 11;          // число граней
+const SPIN_DURATION_MS = 3800;
+const EXTRA_TURNS = 3.5;
+
+/* Геометрия/размер */
+function getReelMetrics(){
+  const cs = getComputedStyle(document.documentElement);
+  const w = parseFloat(cs.getPropertyValue('--reel-slice-w')) || 210;
+  const h = parseFloat(cs.getPropertyValue('--reel-slice-h')) || 128;
+  const step = 360 / DRUM_ITEM_COUNT;
+  const r = Math.round( (h / 2) / Math.tan(Math.PI / DRUM_ITEM_COUNT) );
+  return { w, h, step, r };
 }
 
-/* === 10) Подсветка тайла под указателем ============================== */
-function highlightTileUnderPointer(key){
-  const track = document.getElementById(trackIdByKey(key));
-  const embed = embedByKey(key);
-  const viewport = embed && embed.querySelector('.spin-viewport');
-  if(!viewport || !track) return;
-
-  const state = ensureSpinState(key);
-  const tiles = Array.from(track.querySelectorAll('.slot'));
-  const viewportCenter = viewport.getBoundingClientRect().width / 2;
-  const pointerInTrack = (viewportCenter - state.currentX);
-  const idx = Math.round((pointerInTrack - TILE_W/2) / TILE_FULL);
-  const clamped = Math.max(0, Math.min(tiles.length-1, idx));
-
-  tiles.forEach(t=>t.classList.remove('hot'));
-  tiles[clamped]?.classList.add('hot');
+/* Публичные функции изменения размера */
+function setReelSize({sliceW, sliceH, minH} = {}){
+  const root = document.documentElement.style;
+  if(sliceW) root.setProperty('--reel-slice-w', `${sliceW}px`);
+  if(sliceH) root.setProperty('--reel-slice-h', `${sliceH}px`);
+  if(minH)   root.setProperty('--reel-min-h',   `${minH}px`);
+}
+function setReelScale(k=1){
+  const baseW=210, baseH=128, baseMin=360;
+  setReelSize({ sliceW: Math.round(baseW*k), sliceH: Math.round(baseH*k), minH: Math.round(baseMin*k) });
 }
 
-/* === 11) СБОРКА ДИНАМИЧЕСКОЙ ЛЕНТЫ ПЕРЕД СТАРТОМ ===================== */
-/* Генерируем:
-   - PRE_BUFFER_TILES случайных по весам
-   - 1 «выигрышный» по весам (winnerIndex)
-   - POST_BUFFER_TILES случайных по весам
-   Победный — точно последний из основного блока перед хвостом,
-   анимация остановится ровно на нём.                       */
-function buildDynamicTrack(key){
-  const track = document.getElementById(trackIdByKey(key));
-  if(!track) return { winnerEl:null };
-
-  const state = ensureSpinState(key);
-  track.innerHTML = '';
-
-  for(let i=0;i<PRE_BUFFER_TILES;i++){
-    const idx = pickIndexByWeights(state.weights);
-    track.appendChild(createTileEl(key, idx));
-  }
-  const winnerIndex = pickIndexByWeights(state.weights);
-  const winnerEl = createTileEl(key, winnerIndex);
-  track.appendChild(winnerEl);
-
-  for(let i=0;i<POST_BUFFER_TILES;i++){
-    const idx = pickIndexByWeights(state.weights);
-    track.appendChild(createTileEl(key, idx));
-  }
-
-  state.currentX = 0;
-  track.style.transform = `translateX(${state.currentX}px)`;
-
-  return { winnerEl };
+/* Состояние с углом */
+function ensureSpinStateWithAngle(key){
+  const st = ensureSpinState(key);
+  if(typeof st.currentAngle !== 'number') st.currentAngle = 0;
+  return st;
 }
 
-/* ===== PREVIEW: статичная лента без анимации ======================= */
-function fillTrackForPreview(key){
-  const setId  = key.split('__')[0];
-  const track  = document.getElementById(trackIdByKey(key));
-  if(!track) return;
-
-  const imgs =
-    (SPIN_IMAGES[setId] && SPIN_IMAGES[setId].length && SPIN_IMAGES[setId]) ||
-    (LOOT_SETS[setId]    && LOOT_SETS[setId].length    && LOOT_SETS[setId]) ||
-    [];
-
-  const arr = Array.from({length:11}, (_,i)=> imgs[i] ?? "");
-  track.innerHTML = "";
-
-  const state = ensureSpinState(key);
-  arr.forEach((_,i)=> track.appendChild(createTileEl(key, i)));
-
-  const embed    = embedByKey(key);
-  const viewport = embed && embed.querySelector('.spin-viewport');
-  if(!viewport) return;
-
-  const viewportCenter       = viewport.getBoundingClientRect().width / 2;
-  const idx                  = 5;                // центрируем 6-й тайл
-  const targetLeftInTrack    = idx * TILE_FULL;
-  const targetCenterInTrack  = targetLeftInTrack + TILE_W/2;
-  state.currentX             = viewportCenter - targetCenterInTrack;
-  track.style.transform      = `translateX(${state.currentX}px)`;
-  highlightTileUnderPointer(key);
-}
-
-/* === ID-хелперы под множественные виджеты === */
-function trackIdByKey(key){ return `spinTrack_${key}`; }
-function embedByKey(key){ return document.getElementById(`spinEmbed_${key}`); }
-
-/* === 12) СТАРТ СПИНА — ДИНАМИЧЕСКИ ГЕНЕРИМ И КРУТИМ ================== */
-
-function renderSingleSpin(setId){
+/* Рендер барабана в d-thumb */
+function render3DReel(setId){
   const parent = document.getElementById('detailThumb');
   if(!parent) return;
   const key = `${setId}__0`;
+  const st  = ensureSpinStateWithAngle(key);
+  const { step, r } = getReelMetrics();
+
   parent.innerHTML = `
-    <div class="spin-embed" id="spinEmbed_${key}" style="height:100%">
-      <div class="spin-viewport">
-        <div class="spin-track" id="spinTrack_${key}"></div>
-        <div class="spin-pointer"></div>
+    <div class="drum-wrap">
+      <div class="drum-stage">
+        <div class="drum-tilt">
+          <div class="drum" id="drum_${key}" style="transform:translateZ(${-r}px) rotateX(${st.currentAngle}deg)"></div>
+        </div>
+        <div class="drum-pointer"></div>
       </div>
     </div>
   `;
-  fillTrackForPreview(key);
-}
 
-function renderPreview(setId){ renderSingleSpin(setId); }
+  const drum = document.getElementById(`drum_${key}`);
+  drum.innerHTML = "";
 
-function beginSpin(setId){
-  if (IS_SPINNING) return;
-  IS_SPINNING = true;
-  hideSpinActions();
-  renderSingleSpin(setId);
-  const spinStartBtn = document.getElementById('spinStartBtn');
-  if (spinStartBtn) spinStartBtn.disabled = true;
-  const key = `${setId}__0`;
-  startSpinSingle(key, ()=>{
-    if (spinStartBtn) spinStartBtn.disabled = false;
-    showSpinActions();
-    IS_SPINNING = false;
-  });
-}
+  const imgs = (SPIN_IMAGES[setId]?.length ? SPIN_IMAGES[setId] : LOOT_SETS[setId] || []).slice(0, DRUM_ITEM_COUNT);
+  while(imgs.length < DRUM_ITEM_COUNT) imgs.push("");
 
+  for(let i=0;i<DRUM_ITEM_COUNT;i++){
+    const deg = -i * step; // фронтально, вращаем вниз
+    const url   = imgs[i] || "";
+    const label = (SPIN_STATE.get(key)?.labels?.[i]) ?? "ПРИЗ";
+    const value = (SPIN_STATE.get(key)?.values?.[i]) ?? "—";
 
-function startSpinSingle(key, onDone){
-  ensureSpinState(key);
-  const state = SPIN_STATE.get(key);
-
-  const track = document.getElementById(trackIdByKey(key));
-  const embed = embedByKey(key);
-  const viewport = embed && embed.querySelector('.spin-viewport');
-  if(!viewport || !track){ onDone && onDone(); return; }
-
-  if(state.lastWinEl){
-    state.lastWinEl.classList.remove('hot');
-    state.lastWinEl.style.transform = '';
-    state.lastWinEl = null;
+    const el = document.createElement('div');
+    el.className = 'slice';
+    el.style.setProperty('--_deg', `${deg}deg`);
+    el.style.setProperty('--_rz',  `${r}px`);
+    el.style.transform = `rotateX(${deg}deg) translateZ(${r}px)`;
+    el.innerHTML = `
+      <div class="img">
+        ${url ? `<img src="${url}" onerror="this.src='${FALLBACK_IMG}'" alt="">` : '—'}
+      </div>
+      <div class="meta"><span>${label}</span><span class="value">${value}</span></div>
+    `;
+    drum.appendChild(el);
   }
-  cancelAnimationFrame(state.rafId);
+}
 
-  const { winnerEl } = buildDynamicTrack(key);
-  if(!winnerEl){ onDone && onDone(); return; }
+/* Запуск спина */
+function start3DSpin(setId, onDone){
+  const key  = `${setId}__0`;
+  const drum = document.getElementById(`drum_${key}`);
+  if(!drum){ onDone && onDone(); return; }
 
-  const tiles = Array.from(track.querySelectorAll('.slot'));
-  const viewportCenter = viewport.getBoundingClientRect().width / 2;
-  const indexInTrack = tiles.indexOf(winnerEl);
-  const targetLeftInTrack = indexInTrack * TILE_FULL;
-  const targetCenterInTrack = targetLeftInTrack + TILE_W/2;
-  const targetX = viewportCenter - targetCenterInTrack;
+  const st = ensureSpinStateWithAngle(key);
+  const { step, r } = getReelMetrics();
 
-  const from = state.currentX;
-  const to = targetX;
+  drum.querySelectorAll('.slice').forEach(s=> s.classList.remove('win'));
+
+  // выбираем победный индекс по весам
+  const idx = pickIndexByWeights(st.weights);
+
+  const current = st.currentAngle || 0;
+  const target  = current + EXTRA_TURNS*360 + idx*step - (current % step);
+
   const t0 = performance.now();
-  const dur = SPIN_TIME_MS;
-
-  function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
+  const dur = SPIN_DURATION_MS;
+  const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
 
   function frame(now){
     const p = Math.min(1, (now - t0) / dur);
-    const e = easeOutCubic(p);
-    state.currentX = from + (to - from) * e;
-    track.style.transform = `translateX(${state.currentX}px)`;
-    highlightTileUnderPointer(key);
-
+    const ang = current + (target - current)*easeOutCubic(p);
+    drum.style.transform = `translateZ(${-r}px) rotateX(${ang}deg)`;
     if(p < 1){
-      state.rafId = requestAnimationFrame(frame);
+      SPIN_STATE.get(key).rafId = requestAnimationFrame(frame);
     } else {
-      state.lastWinEl = winnerEl;
-      state.lastWinEl.classList.add('hot');
-      state.lastWinEl.style.transform = 'scale(1.03)';
-      state.rafId = 0;
+      st.currentAngle = ang;
+      const slices = drum.querySelectorAll('.slice');
+      slices[idx]?.classList.add('win'); // мягкий подскок только у победной
+      SPIN_STATE.get(key).rafId = 0;
       onDone && onDone();
     }
   }
-  state.rafId = requestAnimationFrame(frame);
+  cancelAnimationFrame(SPIN_STATE.get(key).rafId);
+  SPIN_STATE.get(key).rafId = requestAnimationFrame(frame);
 }
 
+/* Хуки твоей деталки */
+function renderPreview(setId){ render3DReel(setId); }
+function beginSpin(setId){
+  if (window.IS_SPINNING) return;
+  window.IS_SPINNING = true;
+  hideSpinActions();
+  render3DReel(setId);
+  const btn = document.getElementById('spinStartBtn');
+  if (btn) btn.disabled = true;
+
+  start3DSpin(setId, ()=>{
+    if (btn) btn.disabled = false;
+    showSpinActions();
+    window.IS_SPINNING = false;
+  });
+}
+
+// Пример: можно увеличить барабан
+// setReelScale(1.15);
+
 </script>
+
 
 </body>
 </html>
