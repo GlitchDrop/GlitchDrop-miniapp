@@ -728,15 +728,41 @@ window.SPIN_STATE = window.SPIN_STATE || new Map();
 
 // Проценты выпадения по наборам (11 значений на setId). Пока нули — равновероятно.
 const SPIN_CONFIGS_PERCENT = {
-  cheap_1: Array(11).fill(0), cheap_2: Array(11).fill(0), cheap_3: Array(11).fill(0), cheap_4: Array(11).fill(0),
-  nft_1: Array(11).fill(0),   nft_2: Array(11).fill(0),   nft_3: Array(11).fill(0),   nft_4: Array(11).fill(0),
-  exclusive_1: Array(11).fill(0), exclusive_2: Array(11).fill(0), exclusive_3: Array(11).fill(0), exclusive_4: Array(11).fill(0),
-  standard_1: Array(11).fill(0),  standard_2: Array(11).fill(0),  standard_3: Array(11).fill(0),  standard_4: Array(11).fill(0),
-  gold_1: Array(11).fill(0), gold_2: Array(11).fill(0), gold_3: Array(11).fill(0), gold_4: Array(11).fill(0),
-  allornothing_1: Array(11).fill(0), allornothing_2: Array(11).fill(0),
-  allornothing_3: Array(11).fill(0), allornothing_4: Array(11).fill(0),
-  expensive_1: Array(11).fill(0), expensive_2: Array(11).fill(0),
-  expensive_3: Array(11).fill(0), expensive_4: Array(11).fill(0),
+ 
+cheap_1: [100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+cheap_2: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+cheap_3: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+cheap_4: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  
+nft_1: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  
+nft_2: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],   
+nft_3: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],   
+nft_4: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  
+exclusive_1: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+exclusive_2: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+exclusive_3: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+exclusive_4: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  
+standard_1: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  
+standard_2: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  
+standard_3: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  
+standard_4: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  
+gold_1: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+gold_2: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+gold_3: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+gold_4: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  
+allornothing_1: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+allornothing_2: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+allornothing_3: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+allornothing_4: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+ 
+expensive_1: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+expensive_2: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+expensive_3: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+expensive_4: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 };
 
 // Необязательные подписи/значения
