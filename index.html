@@ -18,8 +18,8 @@
 
     *{box-sizing:border-box}
     html,body{height:100%;margin:0;font-family:'Inter',system-ui,Segoe UI,Roboto,Arial,sans-serif}
-    html{scroll-behavior:smooth}
-    body{ color:var(--text); overflow-x:hidden; background:#0e1b25; }
+    html{scroll-behavior:smooth; scrollbar-gutter: stable;}
+    body{ color:var(--text); overflow-x:hidden; background:#0e1b25; overflow-y:scroll; }
     .cyber-bg{
       position:fixed; inset:0; z-index:0; pointer-events:none;
       background:
@@ -198,11 +198,40 @@
       color:#79c6ff;
       text-shadow:0 0 12px rgba(22,241,255,.22);
     }
+
+/* подсветка выигрыша без трансформаций */
+.slice.win{
+  outline:2px solid var(--neon-cyan);
+  box-shadow:0 0 30px rgba(22,241,255,.28), inset 0 0 14px rgba(22,241,255,.12);
+  animation:win-glow 900ms ease-out 1;
+}
+
+/* мягкий импульс свечения */
+@keyframes win-glow{
+  0%   { box-shadow:0 0 0 rgba(22,241,255,0), inset 0 0 0 rgba(22,241,255,0); }
+  25%  { box-shadow:0 0 34px rgba(22,241,255,.35), inset 0 0 16px rgba(22,241,255,.14); }
+  60%  { box-shadow:0 0 26px rgba(22,241,255,.28), inset 0 0 14px rgba(22,241,255,.12); }
+  100% { box-shadow:0 0 30px rgba(22,241,255,.28), inset 0 0 14px rgba(22,241,255,.12); }
+}
+
+
   </style>
 
 <style>
 
 .hide { display: none !important; }
+
+/* CTA-кнопки: не ломаем layout, скрываем через visibility */
+.spin-cta{
+  visibility: hidden;         /* невидимы, но место занято */
+  display: inline-flex;       /* фиксированный тип отображения */
+  align-items: center;
+  gap: 8px;
+}
+.spin-cta.show{
+  visibility: visible;        /* показываем без изменения размеров родителя */
+}
+
 
 /* === 3D барабан (фронтально, одна ячейка) === */
 :root{
@@ -310,22 +339,6 @@
   background:linear-gradient(180deg, rgba(8,14,36,.8), transparent);
 }
 .drum-stage:after{ bottom:0; top:auto; transform:rotate(180deg); }
-
-/* ОЧЕНЬ ПЛАВНЫЙ пружинный подскок только выигрышной вкладки */
-.slice.win{
-  outline:2px solid var(--neon-cyan);
-  box-shadow:0 0 30px rgba(22,241,255,.28), inset 0 0 14px rgba(22,241,255,.12);
-  animation:win-spring 800ms cubic-bezier(.17,.84,.44,1) 1;
-}
-@keyframes win-spring{
-  0%   { transform: translateZ(var(--_rz)) rotateX(var(--_deg)) scale(1); }
-  35%  { transform: translateZ(calc(var(--_rz) + 6px)) rotateX(var(--_deg)) scale(1.022); }
-  60%  { transform: translateZ(var(--_rz)) rotateX(var(--_deg)) scale(0.997); }
-  82%  { transform: translateZ(calc(var(--_rz) + 3px)) rotateX(var(--_deg)) scale(1.010); }
-  100% { transform: translateZ(var(--_rz)) rotateX(var(--_deg)) scale(1); }
-}
-
-
 </style>
 
 </head>
@@ -376,8 +389,8 @@
         <div id="detailThumb" class="d-thumb">Заглушка</div>
         <div class="d-actions">
   <button class="btn-spin" id="spinStartBtn">КРУТИТЬ</button>
-  <button class="spin-cta hide" id="spinOkBtn">Забрать</button>
-  <button class="spin-cta secondary hide" id="spinAgainBtn">Ещё раз</button>
+<button class="spin-cta" id="spinOkBtn">Забрать</button>
+<button class="spin-cta secondary" id="spinAgainBtn">Ещё раз</button>
   <div class="pill"><span>Цена:</span><span class="num" id="detailPrice">—</span></div>
 </div>
 
@@ -630,13 +643,34 @@ function renderLoot(images, setId){
 }
 
 function hideSpinActions(){
-  document.getElementById('spinOkBtn')?.classList.add('hide');
-  document.getElementById('spinAgainBtn')?.classList.add('hide');
+  document.getElementById('spinOkBtn')?.classList.remove('show');
+  document.getElementById('spinAgainBtn')?.classList.remove('show');
 }
 function showSpinActions(){
-  document.getElementById('spinOkBtn')?.classList.remove('hide');
-  document.getElementById('spinAgainBtn')?.classList.remove('hide');
+  document.getElementById('spinOkBtn')?.classList.add('show');
+  document.getElementById('spinAgainBtn')?.classList.add('show');
 }
+
+function lockBody(locked){
+  if (locked){
+    const y = window.scrollY || 0;
+    document.body.dataset.scrollY = String(y);
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${y}px`;
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+    document.body.style.width = '100%';
+  } else {
+    const y = parseInt(document.body.dataset.scrollY || '0', 10);
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    document.body.style.right = '';
+    document.body.style.width = '';
+    window.scrollTo(0, y);
+  }
+}
+
 
 function openDetail({title, price, setId}) {
   // запоминаем текущий сет
@@ -681,27 +715,12 @@ setReelSize({ sliceW: 210, sliceH: 128, minH: 360 });
   if (spinOkBtn)    spinOkBtn.onclick     = () => { hideSpinActions(); /* тут начисляй приз */ };
   if (spinAgainBtn) spinAgainBtn.textContent = 'Ещё раз';
 
-  // показать деталку
-  detail.classList.add('show');
-  detail.scrollTop = 0;
-}
+ lockBody(true);
+detail.classList.add('show');
+detail.setAttribute('aria-hidden','false');
+detail.scrollTop = 0;
 
-backBtn.addEventListener('click', ()=>{
-  // Стопаем любые активные анимации
-  SPIN_STATE.forEach(st=>{
-    if (st.rafId) cancelAnimationFrame(st.rafId);
-    st.rafId = 0;
-  });
-
-  // Сброс inline-transform у барабана
-  const drum = document.querySelector('.d-thumb .drum');
-  if (drum) drum.style.transform = '';
-
-  window.IS_SPINNING = false;
-  document.getElementById('spinStartBtn')?.removeAttribute('disabled');
-  detail.classList.remove('show');
-});
-
+  }
 
 // ====== Telegram WebApp ======
 (()=>{
@@ -964,6 +983,26 @@ function beginSpin(setId){
     window.IS_SPINNING = false;
   });
 }
+
+backBtn.addEventListener('click', ()=>{
+  // Остановить активные анимации барабана
+  SPIN_STATE.forEach(st=>{
+    if (st.rafId) cancelAnimationFrame(st.rafId);
+    st.rafId = 0;
+  });
+
+  // Сброс трансформа барабана
+  const drum = document.querySelector('.d-thumb .drum');
+  if (drum) drum.style.transform = '';
+
+  window.IS_SPINNING = false;
+  document.getElementById('spinStartBtn')?.removeAttribute('disabled');
+
+  // Закрыть деталку и вернуть скролл
+  detail.classList.remove('show');
+  detail.setAttribute('aria-hidden','true');
+  lockBody(false);
+});
 
 
 </script>
