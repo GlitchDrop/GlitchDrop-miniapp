@@ -872,9 +872,6 @@ function openDetail({title, price, setId}) {
   const images = LOOT_SETS[setId] || null;
   renderLoot(images, setId);
 
-  // скрыть кнопки «Забрать/Ещё раз»
-  hideSpinActions();
-
 const key = `${setId}__0`;
 const st  = ensureSpinState(key);
 st.currentAngle = 0; // каждый заход начинаем с нулевого угла
@@ -1156,7 +1153,6 @@ function renderPreview(setId){
 function beginSpin(setId){
   if (window.IS_SPINNING) return;
   window.IS_SPINNING = true;
-  hideSpinActions();
 
   render3DReel(setId);
 
@@ -1165,7 +1161,6 @@ function beginSpin(setId){
 
   start3DSpin(setId, ({ imgSrc })=>{
   if (btn) btn.disabled = false;
-  showSpinActions();          // можно убрать, если хочешь оставить только модалку
   window.IS_SPINNING = false;
 
   // Показать модалку с выигрышем
