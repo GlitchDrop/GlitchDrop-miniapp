@@ -486,8 +486,6 @@
         <div id="detailThumb" class="d-thumb">Заглушка</div>
         <div class="d-actions">
   <button class="btn-spin" id="spinStartBtn">КРУТИТЬ</button>
-<button class="spin-cta" id="spinOkBtn">Забрать</button>
-<button class="spin-cta secondary" id="spinAgainBtn">Ещё раз</button>
   <div class="pill"><span>Цена:</span><span class="num" id="detailPrice">—</span></div>
 </div>
 
@@ -753,15 +751,6 @@ function renderLoot(images, setId){
   });
 }
 
-function hideSpinActions(){
-  document.getElementById('spinOkBtn')?.classList.remove('show');
-  document.getElementById('spinAgainBtn')?.classList.remove('show');
-}
-function showSpinActions(){
-  document.getElementById('spinOkBtn')?.classList.add('show');
-  document.getElementById('spinAgainBtn')?.classList.add('show');
-}
-
 // ===== DROP MODAL LOGIC =====
 const dropModal = document.getElementById('dropModal');
 const dropImg   = document.getElementById('dropImg');
@@ -898,19 +887,14 @@ setReelSize({ sliceW: 210, sliceH: 128, minH: 360 });
 
   // подготовка кнопок
   const spinStartBtn = document.getElementById('spinStartBtn');
-  const spinOkBtn    = document.getElementById('spinOkBtn');
-  const spinAgainBtn = document.getElementById('spinAgainBtn');
-
+  
   if (spinStartBtn) spinStartBtn.disabled = false;
   window.IS_SPINNING = false;
 
   // запуск N спинов
   
   if (spinStartBtn) spinStartBtn.onclick  = () => beginSpin(setId);
-  if (spinAgainBtn) spinAgainBtn.onclick  = () => beginSpin(setId);
-  if (spinOkBtn)    spinOkBtn.onclick     = () => { hideSpinActions(); /* тут начисляй приз */ };
-  if (spinAgainBtn) spinAgainBtn.textContent = 'Ещё раз';
-
+  
  lockBody(true);
 detail.classList.add('show');
 detail.setAttribute('aria-hidden','false');
