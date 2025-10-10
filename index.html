@@ -342,7 +342,99 @@
   max-width: none;
   max-height: none;
   border-radius: 12px;
+} /* ← вот этой скобки не хватало */
+
+/* === Оверрайды ТОЛЬКО для барабана === */
+.drum .slice {
+  grid-template-rows: 1fr;
 }
+
+/* рамка 1:1 + центрирование */
+.drum .slice .img{
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-bottom: none;
+  background: radial-gradient(80px 60px at 50% 50%, rgba(22,241,255,.10), transparent 60%);
+}
+
+/* картинка по центру, без обрезания краёв */
+.drum .slice .img img{
+  position: static !important;
+  inset: auto !important;
+  width: 88%;
+  height: 88%;
+  object-fit: contain;
+  border-radius: 12px;
+  display: block;
+}
+
+/* ===== DROP MODAL ===== */
+.modal{
+  position:fixed; inset:0; z-index:90;   /* выше detail */
+  display:none; align-items:center; justify-content:center;
+}
+.modal.show{ display:flex; }
+.modal::before{
+  content:""; position:absolute; inset:0;
+  background:linear-gradient(180deg, rgba(8,14,36,.75), rgba(6,10,26,.85));
+  backdrop-filter: blur(8px);
+  /* блокируем взаимодействие с фоном */
+}
+
+.modal-card{
+  position:relative; z-index:1;
+  width:min(520px, 92%); padding:16px;
+  border-radius:20px; border:1px solid var(--border);
+  background:linear-gradient(180deg, rgba(20,26,62,.75), rgba(14,18,40,.88));
+  box-shadow: var(--shadow-strong);
+  animation: modal-pop .22s cubic-bezier(.2,.7,.2,1) both;
+}
+@keyframes modal-pop{
+  from{ transform:translateY(12px) scale(.98); opacity:0 }
+  to  { transform:translateY(0)    scale(1);    opacity:1 }
+}
+
+.modal-title{
+  text-align:center; font-weight:900; letter-spacing:.8px;
+  margin-bottom:12px; color:#d7e6ff; text-shadow:0 0 16px rgba(22,241,255,.25);
+}
+
+.modal-image{
+  width:100%; aspect-ratio:1/1; border-radius:16px;
+  border:1px dashed rgba(180,210,255,.35);
+  background:
+    radial-gradient(120px 80px at 50% 50%, rgba(22,241,255,.10), transparent 60%),
+    linear-gradient(180deg,#0b1030,#0a1028);
+  display:grid; place-items:center; overflow:hidden; margin-bottom:12px;
+}
+.modal-image img{
+  width:88%; height:88%; object-fit:contain; border-radius:12px; display:block;
+}
+
+.modal-actions{
+  display:flex; gap:10px; justify-content:center; flex-wrap:wrap;
+}
+.modal-actions .btn{
+  appearance:none; cursor:pointer; border:none;
+  padding:12px 18px; border-radius:14px; font-weight:900;
+  box-shadow:var(--shadow-soft);
+}
+.modal-actions .btn.keep{
+  color:#081121; background:linear-gradient(135deg, var(--neon-cyan), var(--neon-pink));
+  border:1px solid transparent;
+}
+.modal-actions .btn.sell{
+  color:#e8efff; background:linear-gradient(135deg, rgba(15,20,48,.9), rgba(12,16,38,.9));
+  border:1px solid var(--border);
+}
+
 
 </style>
 
@@ -403,6 +495,20 @@
 <div class="subhead">СОДЕРЖИМОЕ КЕЙСА</div>
 <div id="lootGrid" class="loot-grid"></div>
 <div style="height:40px"></div>
+
+<!-- DROP MODAL -->
+<div id="dropModal" class="modal" aria-hidden="true" aria-modal="true" role="dialog">
+  <div class="modal-card" role="document">
+    <div class="modal-title">ПРЕДМЕТ ПОЛУЧЕН</div>
+    <div class="modal-image">
+      <img id="dropImg" alt="Выпавший предмет">
+    </div>
+    <div class="modal-actions">
+      <button id="keepBtn" class="btn keep">ОСТАВИТЬ</button>
+      <button id="sellBtn" class="btn sell">ПРОДАТЬ</button>
+    </div>
+  </div>
+</div>
 
 
   <button id="backTop" class="backtop" aria-label="Вверх">ВВЕРХ ↑</button>
@@ -656,6 +762,91 @@ function showSpinActions(){
   document.getElementById('spinAgainBtn')?.classList.add('show');
 }
 
+// ===== DROP MODAL LOGIC =====
+const dropModal = document.getElementById('dropModal');
+const dropImg   = document.getElementById('dropImg');
+const keepBtn   = document.getElementById('keepBtn');
+const sellBtn   = document.getElementById('sellBtn');
+
+let _lastFocus = null;
+let _modalOpen = false;
+
+function openDropModal(imgSrc){
+  if (!dropModal) return;
+  _lastFocus = document.activeElement;
+
+  // картинка
+  dropImg.src = imgSrc || FALLBACK_IMG;
+  dropImg.onerror = () => { dropImg.src = FALLBACK_IMG; };
+
+  // показать модалку
+  dropModal.classList.add('show');
+  dropModal.setAttribute('aria-hidden','false');
+  _modalOpen = true;
+
+  // запретить прокрутку и взаимодействие со скроллом фона
+  lockBody(true);
+
+  // захват фокуса
+  setTimeout(()=> (keepBtn || dropModal).focus(), 0);
+
+  // блокируем фон, Esc и держим фокус
+  dropModal.addEventListener('click', blockBackdropClick, true);
+  document.addEventListener('keydown', blockEsc, true);
+  document.addEventListener('keydown', trapTab, true);
+} // ← ЭТА скобка закрывает openDropModal
+
+function closeDropModal(){
+  if (!dropModal) return;
+
+  dropModal.classList.remove('show');
+  dropModal.setAttribute('aria-hidden','true');
+  _modalOpen = false;
+
+  lockBody(false);
+
+  dropModal.removeEventListener('click', blockBackdropClick, true);
+  document.removeEventListener('keydown', blockEsc, true);
+  document.removeEventListener('keydown', trapTab, true);
+
+  if (_lastFocus && _lastFocus.focus) _lastFocus.focus();
+}
+
+function blockBackdropClick(e){
+  const card = dropModal.querySelector('.modal-card');
+  if (!card.contains(e.target)){
+    e.stopPropagation();
+    e.preventDefault();
+  }
+}
+function blockEsc(e){
+  if (e.key === 'Escape'){
+    e.stopPropagation();
+    e.preventDefault();
+    // закрываем ТОЛЬКО по кнопкам
+  }
+}
+function trapTab(e){
+  if (e.key !== 'Tab' || !_modalOpen) return;
+  const focusables = dropModal.querySelectorAll('button, [href], [tabindex]:not([tabindex="-1"])');
+  const list = Array.from(focusables).filter(el=>!el.disabled && el.offsetParent !== null);
+  if (!list.length) return;
+  const first = list[0], last = list[list.length-1];
+  if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+}
+
+// Кнопки (пока просто закрывают модалку)
+keepBtn?.addEventListener('click', () => {
+  // TODO: начислить предмет игроку
+  closeDropModal();
+});
+sellBtn?.addEventListener('click', () => {
+  // TODO: продать предмет/начислить валюту
+  closeDropModal();
+});
+
+
 function lockBody(locked){
   if (locked){
     const y = window.scrollY || 0;
@@ -908,12 +1099,14 @@ function render3DReel(setId){
     el.style.setProperty('--_deg', `${deg}deg`);
     el.style.setProperty('--_rz',  `${r}px`);
     el.style.transform = `rotateX(${deg}deg) translateZ(${r}px)`;
-    el.innerHTML = `
-      <div class="img">
-        ${url ? `<img src="${url}" onerror="this.src='${FALLBACK_IMG}'" alt="">` : '—'}
-      </div>
-      <div class="meta"><span>${label}</span><span class="value">${value}</span></div>
-    `;
+    
+// стало:
+el.innerHTML = `
+  <div class="img">
+    ${url ? `<img src="${url}" onerror="this.src='${FALLBACK_IMG}'" alt="">` : '—'}
+  </div>
+`;
+
     drum.appendChild(el);
   }
 }
@@ -921,7 +1114,8 @@ function render3DReel(setId){
 function start3DSpin(setId, onDone){
   const key  = `${setId}__0`;
   const drum = document.getElementById(`drum_${key}`);
-  if(!drum){ onDone && onDone(); return; }
+  if (!drum){ onDone && onDone({ idx:-1, imgSrc: FALLBACK_IMG }); return; }
+
 
   const st = ensureSpinState(key);
   const { step, r } = getReelMetrics();
@@ -950,15 +1144,18 @@ function start3DSpin(setId, onDone){
     if(p < 1){
       st.rafId = requestAnimationFrame(frame);
     } else {
-      const snapped = Math.round(target / step) * step;
+            const snapped = Math.round(target / step) * step;
       drum.style.transform = `translateZ(${-r}px) rotateX(${snapped}deg)`;
       st.currentAngle = snapped;
 
       const slices = drum.querySelectorAll('.slice');
-      slices[idx]?.classList.add('win');
+      const winEl = slices[idx];
+      winEl?.classList.add('win');
+      const winImg = winEl?.querySelector('img');
+      const imgSrc = winImg ? winImg.src : FALLBACK_IMG;
 
       st.rafId = 0;
-      onDone && onDone();
+      onDone && onDone({ idx, imgSrc });
     }
   }
 
@@ -982,11 +1179,14 @@ function beginSpin(setId){
   const btn = document.getElementById('spinStartBtn');
   if (btn) btn.disabled = true;
 
-  start3DSpin(setId, ()=>{
-    if (btn) btn.disabled = false;
-    showSpinActions();
-    window.IS_SPINNING = false;
-  });
+  start3DSpin(setId, ({ imgSrc })=>{
+  if (btn) btn.disabled = false;
+  showSpinActions();          // можно убрать, если хочешь оставить только модалку
+  window.IS_SPINNING = false;
+
+  // Показать модалку с выигрышем
+  openDropModal(imgSrc);
+});
 }
 
 backBtn.addEventListener('click', ()=>{
