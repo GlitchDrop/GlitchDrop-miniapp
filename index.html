@@ -490,6 +490,10 @@
     <div class="chipbar" id="chipbar"><div class="chip active" data-target="#top">Все</div></div>
     <div class="content" id="content"></div>
 
+<!-- ПУСТОЙ ЭКРАН ПРОФИЛЯ -->
+<div class="content hide" id="profileScreen" aria-hidden="true"></div>
+
+
     <nav class="tabbar">
       <div class="tab"><div class="ico">🏆</div>Конкурсы</div>
       <div class="tab"><div class="ico">⚡</div>Апгрейд</div>
@@ -1281,154 +1285,96 @@ backBtn.addEventListener('click', ()=>{
   lockBody(false);
 });
 
+// ===== Переключение между "Кейсы" и "Профиль" =====
+const profileScreen = document.getElementById('profileScreen');
+const tabsAll = Array.from(document.querySelectorAll('.tabbar .tab'));
+
+// Находим нужные вкладки по тексту
+const casesTab   = tabsAll.find(t => t.textContent.trim().includes('Кейсы'));
+const profileTab = tabsAll.find(t => t.textContent.trim().includes('Профиль'));
+
+// Делает таб активным визуально
+function setActiveTab(tab){
+  tabsAll.forEach(t => t.classList.remove('active'));
+  tab?.classList.add('active');
+}
+
+function hardCloseDetailAndModal(){
+  // Закрыть модалку дропа, если открыта
+  if (typeof _modalOpen !== 'undefined' && _modalOpen) {
+    try { closeDropModal(); } catch(e){}
+  }
+  // Закрыть detail, если открыт
+  if (detail?.classList.contains('show')) {
+    try {
+      SPIN_STATE.forEach(st=>{ if (st.rafId) cancelAnimationFrame(st.rafId); st.rafId = 0; });
+      detail.classList.remove('show');
+      detail.setAttribute('aria-hidden','true');
+    } catch(e){}
+  }
+  // Вернуть скролл, если был залочен
+  try { lockBody(false); } catch(e){}
+}
+
+// Показать экран кейсов (текущая главная)
+function showCases(){
+  hardCloseDetailAndModal();
+
+  // Показать каталог
+  chipbar.classList.remove('hide');
+  content.classList.remove('hide');
+  backTop.classList.remove('hide');
+
+  // Спрятать экран профиля
+  profileScreen.classList.add('hide');
+  profileScreen.setAttribute('aria-hidden', 'true');
+
+  // Активный таб
+  setActiveTab(casesTab);
+
+  // Скролл на сохранённую позицию/вверх по вкусу
+  // window.scrollTo({ top: 0, behavior: 'smooth' }); // если хочешь всегда наверх
+}
+
+// Показать экран профиля (пустой фон, баланс остаётся в пилюлях топбара)
+function showProfile(){
+  hardCloseDetailAndModal();
+
+  // Спрятать каталог
+  chipbar.classList.add('hide');
+  content.classList.add('hide');
+  backTop.classList.add('hide');
+
+  // Показать пустой экран (фон тот же, т.к. глобальный)
+  profileScreen.classList.remove('hide');
+  profileScreen.setAttribute('aria-hidden', 'false');
+
+  // Можно добавить небольшой отступ сверху, если нужно:
+  // profileScreen.innerHTML = '<div style="height:24px"></div>';
+
+  // Активный таб
+  setActiveTab(profileTab);
+
+  // На всякий случай к началу
+  profileScreen.scrollTop = 0;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Навешиваем клики
+if (casesTab){
+  casesTab.style.cursor = 'pointer';
+  casesTab.addEventListener('click', showCases);
+}
+if (profileTab){
+  profileTab.style.cursor = 'pointer';
+  profileTab.addEventListener('click', showProfile);
+}
+
+// Гарантируем, что при первой загрузке мы в "Кейсах"
+showCases();
+
 
 </script>
-
-<!-- =========================================================
-     КНОПКА ПРОФИЛЯ И ЕЁ ИНТЕРФЕЙС  (вставить перед </body>)
-     Делает вкладку "Профиль" рабочей. Открывается "пустая" страница
-     с тем же фоном (без интерфейса). Возврат: Esc или Back.
-========================================================= -->
-<script>
-(function ProfileTabInit(){
-  // Ждём DOM, если нужно
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', ProfileTabInit);
-    return;
-  }
-
-  // Находим таб "Профиль" по тексту
-  const tabs = Array.from(document.querySelectorAll('.tab'));
-  const profileTab = tabs.find(t => /(^|\s)Профиль(\s|$)/i.test((t.textContent||'').trim()));
-  if (!profileTab) return;
-
-  // Основные элементы
-  const appRoot   = document.querySelector('.app');        // весь интерфейс
-  const detail    = document.getElementById('detail');     // экран деталки (если открыт)
-  const dropModal = document.getElementById('dropModal');  // модалка дропа (если открыта)
-  let   profileShown = false;
-  let   profileScreen = null;
-
-  // Немного стилей для «экрана профиля» (пустой слой поверх фона)
-  (function injectProfileStyles(){
-    if (document.getElementById('profile-screen-style')) return;
-    const css = `
-      /* Пустой экран профиля: просто слой поверх фиксированного фона (.cyber-bg) */
-      .profile-screen{
-        position: fixed; inset: 0; z-index: 80;
-        /* Никакого контента и панелей — только фон из .cyber-bg */
-        background: transparent;
-      }
-      /* лёгкое появление/исчезновение */
-      .fade-enter{ opacity:0; }
-      .fade-enter.active{ transition:opacity .2s ease; opacity:1; }
-      .fade-leave{ opacity:1; }
-      .fade-leave.active{ transition:opacity .18s ease; opacity:0; }
-    `;
-    const style = document.createElement('style');
-    style.id = 'profile-screen-style';
-    style.textContent = css;
-    document.head.appendChild(style);
-  })();
-
-  // Показ «страницы» профиля (без интерфейса)
-  function openProfile(){
-    if (profileShown) return;
-
-    // Закрыть открытые слои, если были
-    try {
-      detail?.classList.remove('show');
-      dropModal?.classList.remove('show');
-      document.body.style.position = '';   // на случай lockBody(true)
-      document.body.style.top = '';
-      document.body.style.left = '';
-      document.body.style.right = '';
-      document.body.style.width = '';
-    } catch(_) {}
-
-    // Спрятать основной интерфейс
-    if (appRoot) appRoot.style.display = 'none';
-
-    // Создать пустой экран, если ещё нет
-    if (!profileScreen){
-      profileScreen = document.createElement('div');
-      profileScreen.id = 'profileScreen';
-      profileScreen.className = 'profile-screen fade-enter';
-      profileScreen.setAttribute('aria-label', 'Профиль');
-      profileScreen.tabIndex = -1; // фокус не нужен, но на всякий
-      document.body.appendChild(profileScreen);
-
-      // Запуск плавного появления
-      requestAnimationFrame(()=>{
-        profileScreen.classList.add('active');
-      });
-    } else {
-      profileScreen.classList.remove('fade-leave','active');
-      profileScreen.classList.add('fade-enter');
-      requestAnimationFrame(()=>{
-        profileScreen.classList.add('active');
-      });
-    }
-
-    // История — чтобы работала кнопка «Назад»
-    try {
-      history.pushState({ view:'profile' }, '', '#profile');
-    } catch(_) {}
-
-    profileShown = true;
-  }
-
-  // Возврат на главную (кейсы)
-  function closeProfile(){
-    if (!profileShown) return;
-
-    // Плавное исчезновение
-    if (profileScreen){
-      profileScreen.classList.remove('fade-enter','active');
-      profileScreen.classList.add('fade-leave');
-      requestAnimationFrame(()=>{
-        profileScreen.classList.add('active');
-      });
-      // Удалим слой после анимации
-      setTimeout(()=>{
-        profileScreen?.remove();
-        profileScreen = null;
-      }, 200);
-    }
-
-    // Показать основной интерфейс
-    if (appRoot) appRoot.style.display = '';
-
-    // Почистить хеш, где возможно
-    try {
-      if (location.hash === '#profile') history.replaceState(null,'',location.pathname+location.search);
-    } catch(_) {}
-
-    profileShown = false;
-  }
-
-  // Клик по табу «Профиль»
-  profileTab.addEventListener('click', (e)=>{
-    e.preventDefault();
-    openProfile();
-  }, { passive:true });
-
-  // Назад по Esc (интерфейса на экране нет — нужен способ вернуться)
-  document.addEventListener('keydown', (e)=>{
-    if (e.key === 'Escape' && profileShown){
-      e.preventDefault();
-      closeProfile();
-    }
-  });
-
-  // Кнопка «Назад» в браузере/внутренняя история
-  window.addEventListener('popstate', ()=>{
-    if (profileShown) closeProfile();
-  });
-})();
-</script>
-
-
 
 </body>
 </html>
