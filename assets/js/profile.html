@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+  <title>GLITCH DROP — Профиль</title>
+  <style>
+    :root{
+      --bg-top:#0c1822; --bg-bot:#0e2230; --grid:rgba(255,255,255,.035); --grid-gap:34px;
+      --panel:#0a0f1e; --panel2:#0a0d19; --card:#0e1330; --card2:#0b0f26;
+      --neon-cyan:#16f1ff; --neon-pink:#ff3ed0; --neon-yellow:#ffe47a;
+      --text:#e8efff; --muted:#9fb2d9; --border:rgba(120,180,255,.25);
+      --shadow-strong:0 20px 60px rgba(10,20,60,.55), 0 0 60px rgba(22,241,255,.08);
+      --shadow-soft:0 10px 30px rgba(10,20,60,.35);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:'Inter',system-ui,Segoe UI,Roboto,Arial,sans-serif}
+    html{scroll-behavior:smooth; scrollbar-gutter:stable}
+    body{color:var(--text); background:#0e1b25; overflow-x:hidden; overflow-y:scroll}
+    .cyber-bg{
+      position:fixed; inset:0; z-index:0; pointer-events:none;
+      background:
+        linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bot) 100%),
+        repeating-linear-gradient(0deg,  var(--grid) 0 1px,  transparent 1px var(--grid-gap)),
+        repeating-linear-gradient(90deg, var(--grid) 0 1px,  transparent 1px var(--grid-gap));
+      background-blend-mode: normal, overlay, overlay;
+    }
+    .app{min-height:100%; position:relative; z-index:1}
+  </style>
+</head>
+<body>
+  <div class="cyber-bg"></div>
+  <div class="app" id="profile-root"></div>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</body>
+</html>
