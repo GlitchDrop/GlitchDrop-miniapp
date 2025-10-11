@@ -1284,7 +1284,150 @@ backBtn.addEventListener('click', ()=>{
 
 </script>
 
-<script defer src="assets/js/profile-nav.js"></script>
+<!-- =========================================================
+     КНОПКА ПРОФИЛЯ И ЕЁ ИНТЕРФЕЙС  (вставить перед </body>)
+     Делает вкладку "Профиль" рабочей. Открывается "пустая" страница
+     с тем же фоном (без интерфейса). Возврат: Esc или Back.
+========================================================= -->
+<script>
+(function ProfileTabInit(){
+  // Ждём DOM, если нужно
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', ProfileTabInit);
+    return;
+  }
+
+  // Находим таб "Профиль" по тексту
+  const tabs = Array.from(document.querySelectorAll('.tab'));
+  const profileTab = tabs.find(t => /(^|\s)Профиль(\s|$)/i.test((t.textContent||'').trim()));
+  if (!profileTab) return;
+
+  // Основные элементы
+  const appRoot   = document.querySelector('.app');        // весь интерфейс
+  const detail    = document.getElementById('detail');     // экран деталки (если открыт)
+  const dropModal = document.getElementById('dropModal');  // модалка дропа (если открыта)
+  let   profileShown = false;
+  let   profileScreen = null;
+
+  // Немного стилей для «экрана профиля» (пустой слой поверх фона)
+  (function injectProfileStyles(){
+    if (document.getElementById('profile-screen-style')) return;
+    const css = `
+      /* Пустой экран профиля: просто слой поверх фиксированного фона (.cyber-bg) */
+      .profile-screen{
+        position: fixed; inset: 0; z-index: 80;
+        /* Никакого контента и панелей — только фон из .cyber-bg */
+        background: transparent;
+      }
+      /* лёгкое появление/исчезновение */
+      .fade-enter{ opacity:0; }
+      .fade-enter.active{ transition:opacity .2s ease; opacity:1; }
+      .fade-leave{ opacity:1; }
+      .fade-leave.active{ transition:opacity .18s ease; opacity:0; }
+    `;
+    const style = document.createElement('style');
+    style.id = 'profile-screen-style';
+    style.textContent = css;
+    document.head.appendChild(style);
+  })();
+
+  // Показ «страницы» профиля (без интерфейса)
+  function openProfile(){
+    if (profileShown) return;
+
+    // Закрыть открытые слои, если были
+    try {
+      detail?.classList.remove('show');
+      dropModal?.classList.remove('show');
+      document.body.style.position = '';   // на случай lockBody(true)
+      document.body.style.top = '';
+      document.body.style.left = '';
+      document.body.style.right = '';
+      document.body.style.width = '';
+    } catch(_) {}
+
+    // Спрятать основной интерфейс
+    if (appRoot) appRoot.style.display = 'none';
+
+    // Создать пустой экран, если ещё нет
+    if (!profileScreen){
+      profileScreen = document.createElement('div');
+      profileScreen.id = 'profileScreen';
+      profileScreen.className = 'profile-screen fade-enter';
+      profileScreen.setAttribute('aria-label', 'Профиль');
+      profileScreen.tabIndex = -1; // фокус не нужен, но на всякий
+      document.body.appendChild(profileScreen);
+
+      // Запуск плавного появления
+      requestAnimationFrame(()=>{
+        profileScreen.classList.add('active');
+      });
+    } else {
+      profileScreen.classList.remove('fade-leave','active');
+      profileScreen.classList.add('fade-enter');
+      requestAnimationFrame(()=>{
+        profileScreen.classList.add('active');
+      });
+    }
+
+    // История — чтобы работала кнопка «Назад»
+    try {
+      history.pushState({ view:'profile' }, '', '#profile');
+    } catch(_) {}
+
+    profileShown = true;
+  }
+
+  // Возврат на главную (кейсы)
+  function closeProfile(){
+    if (!profileShown) return;
+
+    // Плавное исчезновение
+    if (profileScreen){
+      profileScreen.classList.remove('fade-enter','active');
+      profileScreen.classList.add('fade-leave');
+      requestAnimationFrame(()=>{
+        profileScreen.classList.add('active');
+      });
+      // Удалим слой после анимации
+      setTimeout(()=>{
+        profileScreen?.remove();
+        profileScreen = null;
+      }, 200);
+    }
+
+    // Показать основной интерфейс
+    if (appRoot) appRoot.style.display = '';
+
+    // Почистить хеш, где возможно
+    try {
+      if (location.hash === '#profile') history.replaceState(null,'',location.pathname+location.search);
+    } catch(_) {}
+
+    profileShown = false;
+  }
+
+  // Клик по табу «Профиль»
+  profileTab.addEventListener('click', (e)=>{
+    e.preventDefault();
+    openProfile();
+  }, { passive:true });
+
+  // Назад по Esc (интерфейса на экране нет — нужен способ вернуться)
+  document.addEventListener('keydown', (e)=>{
+    if (e.key === 'Escape' && profileShown){
+      e.preventDefault();
+      closeProfile();
+    }
+  });
+
+  // Кнопка «Назад» в браузере/внутренняя история
+  window.addEventListener('popstate', ()=>{
+    if (profileShown) closeProfile();
+  });
+})();
+</script>
+
 
 
 </body>
