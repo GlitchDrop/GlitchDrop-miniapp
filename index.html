@@ -239,44 +239,6 @@
   text-rendering: optimizeLegibility;
 }
 
-/* =========================================================
-   ИНТЕРФЕЙС ВКЛАДКИ «ПРОФИЛЬ»: карточка шапки, аватар, имя
-   ========================================================= */
-.profile-wrap{
-  padding:16px; max-width:1100px; margin:0 auto; width:100%;
-}
-.profile-card{
-  display:flex; align-items:center; gap:12px;
-  padding:12px;
-  border:1px solid var(--border);
-  border-radius:16px;
-  background:linear-gradient(180deg, rgba(20,26,62,.55), rgba(14,18,40,.6));
-  box-shadow:var(--shadow-strong);
-}
-
-/* --- АВАТАР В ПРОФИЛЕ (без неоновой окантовки из топбара) --- */
-.pf-avatar{
-  width:56px; height:56px; border-radius:14px; overflow:hidden;
-  display:grid; place-items:center; flex:0 0 auto;
-  background:linear-gradient(135deg, rgba(22,241,255,.12), rgba(255,62,208,.12));
-  border:1px solid var(--border);
-}
-.pf-avatar img{width:100%;height:100%;object-fit:cover;display:block}
-.pf-fallback{
-  width:100%;height:100%;display:grid;place-items:center;
-  font-weight:900; letter-spacing:.3px; color:#081121;
-}
-
-/* --- ИМЯ В ПРОФИЛЕ (без глитча/подсветки и без автоскейла) --- */
-.pf-name{
-  font-weight:900; line-height:1.1; letter-spacing:.3px;
-  color:#d7e6ff; text-shadow:none;        /* отключаем подсветку */
-  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-  max-width: 70vw;                        /* безопасный коридор */
-  font-size:18px;
-}
-
-
   </style>
 
 <style>
@@ -1322,64 +1284,6 @@ backBtn.addEventListener('click', ()=>{
   lockBody(false);
 });
 
-/* =========================================================
-   АВАТАР И ИМЯ В ПРОФИЛЕ: подготовка данных пользователя
-   ========================================================= */
-function cutName18(str){
-  if (!str) return 'GLITCH DROP';
-  const s = String(str);
-  return s.length > 18 ? s.slice(0, 18) + '…' : s;   // жёстко режем >18
-}
-
-function getTGUser(){
-  const tg = window.Telegram && window.Telegram.WebApp;
-  if (!tg || !tg.initDataUnsafe || !tg.initDataUnsafe.user) return null;
-  return tg.initDataUnsafe.user;
-}
-
-/* =========================================================
-   ИНТЕРФЕЙС ВКЛАДКИ «ПРОФИЛЬ»: однократный рендер шапки
-   ========================================================= */
-let _profileRendered = false;
-function renderProfileOnce(){
-  if (_profileRendered) return; // рисуем только один раз
-  const u = getTGUser();
-
-  // исходное имя как в топбаре, но без глитча/скейла
-  const rawName = u?.username ? '@' + u.username
-    : [u?.first_name||'', u?.last_name||''].join(' ').trim() || 'GLITCH DROP';
-
-  const safeName = cutName18(rawName); // обрезаем, если >18
-
-  // буквы для заглушки-аватара
-  const initials = (() => {
-    const base = (u?.username || u?.first_name || 'GD').toUpperCase();
-    const letters = base.replace(/[^A-ZА-Я0-9@]/gi,'').replace(/^@/,'');
-    return (letters[0] || 'G') + (letters[1] || 'D');
-  })();
-
-  const avatarUrl = u?.photo_url || '';
-
-  const html = `
-    <div class="profile-wrap">
-      <div class="profile-card">
-        <div class="pf-avatar">
-          ${avatarUrl
-            ? `<img src="${avatarUrl}" alt="avatar" onerror="this.remove()">`
-            : `<div class="pf-fallback">${initials}</div>`}
-        </div>
-        <div class="pf-meta">
-          <div class="pf-name" title="${rawName.replace(/"/g,'&quot;')}">${safeName}</div>
-        </div>
-      </div>
-    </div>
-  `;
-
-  const host = document.getElementById('profileScreen');
-  host.innerHTML = html;
-  _profileRendered = true;
-}
-
 
 // ===== Переключение между "Кейсы" и "Профиль" =====
 const profileScreen = document.getElementById('profileScreen');
@@ -1433,7 +1337,7 @@ function showCases(){
 }
 
 /* =========================================================
-   ИНТЕРФЕЙС ВКЛАДКИ «ПРОФИЛЬ»: переключение на экран профиля
+   ИНТЕРФЕЙС ВКЛАДКИ «ПРОФИЛЬ»: пустой скелет без аватара/имени
    ========================================================= */
 function showProfile(){
   hardCloseDetailAndModal();
@@ -1443,10 +1347,11 @@ function showProfile(){
   content.classList.add('hide');
   backTop.classList.add('hide');
 
-  // >>> Рендер шапки профиля (аватар + имя, без подсветки/скейла)
-  renderProfileOnce();
+  // ⚠️ Больше НЕ рендерим карточку профиля
+  // renderProfileOnce();  // <-- УДАЛЕНО
 
-  // Показать экран профиля
+  // Оставляем пустой контейнер (скелет)
+  profileScreen.innerHTML = ''; // можно добавить отступ/разделители при желании
   profileScreen.classList.remove('hide');
   profileScreen.setAttribute('aria-hidden', 'false');
 
