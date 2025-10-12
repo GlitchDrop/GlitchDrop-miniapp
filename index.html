@@ -103,7 +103,10 @@
     .tabbar{ position:sticky; bottom:0; z-index:24; background:linear-gradient(180deg,rgba(8,14,36,.72),rgba(6,10,26,.62)); border-top:1px solid var(--border); backdrop-filter:blur(10px); display:grid; grid-template-columns:repeat(5,1fr); padding:8px 6px }
     .tab{display:flex; flex-direction:column; align-items:center; gap:4px; padding:6px 2px; color:#9fb2d9; font-size:12px; font-weight:800}
     .tab.active{color:#e8efff}
-    .ico{font-size:18px; text-shadow:0 0 10px rgba(22,241,255,.3)}
+    .ico{font-size:18px; text-shadow:0 0 10px rgba(22,241,255,.3)} .ico img{
+  width:18px; height:18px; display:block; object-fit:cover; border-radius:4px;
+}
+
 
     .backtop{ position:fixed; right:14px; bottom:90px; z-index:50; padding:9px 12px; border-radius:12px; font-weight:900; font-size:12px; letter-spacing:.3px; border:1px solid rgba(22,241,255,.45); color:#081121; background:linear-gradient(135deg, var(--neon-cyan), var(--neon-pink)); box-shadow:0 10px 28px rgba(22,241,255,.35), 0 0 36px rgba(255,62,208,.25); opacity:0; pointer-events:none; transform:translateY(8px); transition:opacity .2s, transform .2s; }
     .backtop.show{opacity:1; pointer-events:auto; transform:translateY(0)}
@@ -561,13 +564,17 @@
 
 
     <nav class="tabbar">
-      <div class="tab"><div class="ico">🏆</div>Конкурсы</div>
-      <div class="tab"><div class="ico">⚡</div>Апгрейд</div>
-      <div class="tab active"><div class="ico">🎁</div>Кейсы</div>
-      <div class="tab"><div class="ico">👥</div>Друзья</div>
-      <div class="tab"><div class="ico">👤</div>Профиль</div>
-    </nav>
+  <div class="tab"><div class="ico">🏆</div>Конкурсы</div>
+  <div class="tab"><div class="ico">⚡</div>Апгрейд</div>
+  <div class="tab active"><div class="ico">🎁</div>Кейсы</div>
+  <div class="tab"><div class="ico">👥</div>Друзья</div>
+
+  <!-- было: 👤 Профиль -->
+  <div class="tab" data-tab="inventory">
+    <div class="ico"><img src="assets/images/ChatGPT Image 12 окт. 2025 г., 11_12_45.png" alt="инвентарь"></div>
+    ИНВЕНТАРЬ
   </div>
+</nav>
 
   <!-- DETAIL VIEW -->
   <div id="detail" class="detail" aria-hidden="true">
@@ -1416,11 +1423,14 @@ function renderInventory(){
 
 // ===== Переключение между "Кейсы" и "Профиль" =====
 const profileScreen = document.getElementById('profileScreen');
+
 const tabsAll = Array.from(document.querySelectorAll('.tabbar .tab'));
 
-// Находим нужные вкладки по тексту
 const casesTab   = tabsAll.find(t => t.textContent.trim().includes('Кейсы'));
-const profileTab = tabsAll.find(t => t.textContent.trim().includes('Профиль'));
+const profileTab =
+  document.querySelector('.tabbar .tab[data-tab="inventory"]')
+  || tabsAll.find(t => /ИНВЕНТАРЬ|Профиль/i.test(t.textContent.trim()));
+
 
 // Делает таб активным визуально
 function setActiveTab(tab){
