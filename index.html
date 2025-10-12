@@ -65,7 +65,9 @@
     .pill--lg img{ width:24px; height:24px; }
 
     .chipbar{
-      position:sticky; top:64px; z-index:25;
+  position:sticky;
+  top: var(--topbar-h, 64px);   /* было 64px */
+  z-index:25;
       display:flex; gap:10px; padding:10px 14px; overflow-x:auto;
       background:linear-gradient(180deg,rgba(8,14,36,.72),rgba(6,10,26,.62));
       border-bottom:1px solid var(--border);
@@ -242,54 +244,39 @@
   text-rendering: optimizeLegibility;
 }
 
-/* =========================================================
-   ИНТЕРФЕЙС ВКЛАДКИ «ПРОФИЛЬ» — ИНВЕНТАРЬ (CSS)
-   ========================================================= */
-.profile-wrap{ padding:8px 8px 16px; max-width:1100px; margin:0 auto; width:100%; }
+/* ===== ИНВЕНТАРЬ — полноэкранная страница ===== */
+.inventory-page{
+  max-width:1100px;
+  margin:0 auto;
+  padding:0 12px 84px;            /* низ с запасом от таббара */
+}
 
-/* Заголовок сверху */
-.inventory-title{
-  margin:10px 8px 6px;
+.inventory-header{
+  position:sticky;
+ top: var(--topbar-h, 64px);
+  z-index:22;
+  padding:10px 8px 12px;
   text-align:center;
   font-weight:900;
-  letter-spacing:1.2px;
+  letter-spacing:1.4px;
+  font-size:clamp(24px, 8vw, 52px);
   color:#e8efff;
   text-shadow:0 0 16px rgba(22,241,255,.18);
+  background:linear-gradient(180deg,rgba(8,14,36,.78),rgba(6,10,26,.68));
+  border-bottom:1px solid var(--border);
+  backdrop-filter:blur(8px);
 }
 
-/* Тёмная панель (чуть темнее фона), ~чуть меньше половины экрана */
-.inventory-panel{
-  margin:0 8px;                                /* ~8–10px до краёв вкладки */
-  border:1px solid var(--border);
-  border-radius:16px;
-  background:linear-gradient(180deg, rgba(10,14,34,.85), rgba(7,10,26,.9)); /* темнее фона */
-  box-shadow:0 14px 40px rgba(10,20,60,.38), inset 0 0 22px rgba(22,241,255,.06);
-  height:clamp(240px, 45vh, 460px);            /* «чуть меньше половины» */
-  overflow:auto;                                /* прокрутка появится, когда нужно */
-  -webkit-overflow-scrolling:touch;
-  padding:10px 10px 7px;                        /* низ = 7px — фиксированный зазор */
-}
-
-/* пустое состояние */
-.inventory-empty{
-  height:100%;
-  display:grid; place-items:center;
-  color:#ffffff; opacity:.9;
-  font-weight:900; letter-spacing:.5px;
-}
-
-/* сетка 1:1 */
-.inv-grid{
+.inventory-grid{
   display:grid;
-  grid-template-columns:repeat(2, 1fr);         /* как на твоём мокапе */
-  gap:10px;
-  padding-bottom:0;                             /* зазор уже в .inventory-panel (7px) */
+  grid-template-columns:repeat(2, 1fr); /* ВСЕГДА 2 колонки */
+  gap:14px;
+  padding:12px 4px 0;
 }
 
-/* слот 1:1 */
-.inv-item{
+.inventory-card{
   position:relative;
-  aspect-ratio:1/1;
+  aspect-ratio:1 / 1;
   border-radius:14px;
   border:1px dashed rgba(180,210,255,.35);
   background:
@@ -299,15 +286,25 @@
   box-shadow:0 8px 26px rgba(10,20,60,.32);
   overflow:hidden;
   display:grid; place-items:center;
+  user-select:none;
 }
 
-/* картинка полностью в квадрате */
-.inv-item img{
+.inventory-card img{
   width:88%; height:88%;
   object-fit:contain;
   border-radius:12px;
   display:block;
 }
+
+/* пустое состояние */
+.inventory-empty{
+  min-height:40vh;
+  display:grid; place-items:center;
+  color:#ffffff; opacity:.9;
+  font-weight:900; letter-spacing:.6px;
+  text-align:center;
+}
+
 
   </style>
 
@@ -1034,6 +1031,9 @@ detail.scrollTop = 0;
     avatarImg.classList.remove('hidden');
     fallback.style.display = 'none';
   }
+
+  // Обновляем высоту topbar после загрузки имени/аватара
+  if (typeof syncTopbarOffset === 'function') syncTopbarOffset();
 })();
 
 // === Автоподгон ника под доступную ширину бренда ===
@@ -1092,8 +1092,6 @@ if (document.fonts && document.fonts.ready) {
   document.fonts.ready.then(() => fitUserName());
 }
 
-
-
 if ('ResizeObserver' in window){
   const ro = new ResizeObserver(fitUserName);
   const brandEl = document.querySelector('.brand');
@@ -1101,6 +1099,23 @@ if ('ResizeObserver' in window){
 }
 
 
+// === Синхронизация высоты топбара в CSS-переменную ===
+function syncTopbarOffset(){
+  const h = document.querySelector('.topbar')?.offsetHeight || 64;
+  document.documentElement.style.setProperty('--topbar-h', h + 'px');
+}
+
+// 1) Вызвать прямо сейчас
+syncTopbarOffset();
+
+// 2) Обновлять при ресайзе и перевороте экрана
+window.addEventListener('resize', syncTopbarOffset, {passive:true});
+window.addEventListener('orientationchange', syncTopbarOffset, {passive:true});
+
+// 3) Когда шрифты дорисовались (если влияет на высоту)
+if (document.fonts && document.fonts.ready) {
+  document.fonts.ready.then(syncTopbarOffset);
+}
 
 // --- Support для 3D барабана: состояние, веса, лейблы ---
 
@@ -1394,33 +1409,6 @@ function addToInventory(imgSrc){
   renderInventory();
 }
 
-
-function renderInventory(){
-  const grid  = document.getElementById('inventoryGrid');
-  const empty = document.getElementById('inventoryEmpty');
-  if(!grid || !empty) return;                 // не на экране профиля
-
-  grid.innerHTML = '';
-
-  if (!window.INVENTORY.length){
-    empty.style.display = 'grid';
-    grid.style.display  = 'none';
-    return;
-  }
-
-  empty.style.display = 'none';
-  grid.style.display  = 'grid';
-
-  window.INVENTORY.forEach(item=>{
-    const slot = document.createElement('div');
-    slot.className = 'inv-item';
-    slot.innerHTML = `<img src="${item.img}" alt="предмет" onerror="this.remove()">`;
-    grid.appendChild(slot);
-  });
-  // прокрутка включится автоматически, как только контента станет больше высоты панели
-}
-
-
 // ===== Переключение между "Кейсы" и "Профиль" =====
 const profileScreen = document.getElementById('profileScreen');
 
@@ -1475,10 +1463,6 @@ function showCases(){
   // window.scrollTo({ top: 0, behavior: 'smooth' }); // если хочешь всегда наверх
 }
 
-
-/* =========================================================
-   ИНТЕРФЕЙС ВКЛАДКИ «ПРОФИЛЬ» — каркас инвентаря
-   ========================================================= */
 function showProfile(){
   hardCloseDetailAndModal();
 
@@ -1487,25 +1471,48 @@ function showProfile(){
   content.classList.add('hide');
   backTop.classList.add('hide');
 
-  // каркас инвентаря
+  // новый полноэкранный инвентарь
   profileScreen.innerHTML = `
-    <div class="profile-wrap">
-      <div class="inventory-title">ИНВЕНТАРЬ</div>
-      <div class="inventory-panel">
-        <div id="inventoryEmpty" class="inventory-empty">ЗДЕСЬ ПОКА НИЧЕГО НЕТ</div>
-        <div id="inventoryGrid" class="inv-grid" style="display:none"></div>
-      </div>
+    <div class="inventory-page">
+      <div class="inventory-header">ИНВЕНТАРЬ</div>
+      <div id="inventoryEmpty" class="inventory-empty">ЗДЕСЬ ПОКА НИЧЕГО НЕТ</div>
+      <div id="inventoryGrid" class="inventory-grid" style="display:none"></div>
     </div>
   `;
   profileScreen.classList.remove('hide');
   profileScreen.setAttribute('aria-hidden','false');
 
   setActiveTab(profileTab);
-  profileScreen.scrollTop = 0;
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
-  // если предметы уже есть — отрисуем
   renderInventory();
+}
+
+function renderInventory(){
+  const grid  = document.getElementById('inventoryGrid');
+  const empty = document.getElementById('inventoryEmpty');
+  if(!grid || !empty) return;
+
+  grid.innerHTML = '';
+
+  // показываем новые предметы сверху
+  const list = (window.INVENTORY || []).slice().reverse();
+
+  if (!list.length){
+    empty.style.display = 'grid';
+    grid.style.display  = 'none';
+    return;
+  }
+
+  empty.style.display = 'none';
+  grid.style.display  = 'grid';
+
+  list.forEach(item=>{
+    const card = document.createElement('div');
+    card.className = 'inventory-card';
+    card.innerHTML = `<img src="${item.img}" alt="предмет" loading="lazy" onerror="this.remove()">`;
+    grid.appendChild(card);
+  });
 }
 
 
