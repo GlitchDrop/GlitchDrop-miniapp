@@ -239,6 +239,74 @@
   text-rendering: optimizeLegibility;
 }
 
+/* =========================================================
+   ИНТЕРФЕЙС ВКЛАДКИ «ПРОФИЛЬ» — ИНВЕНТАРЬ (CSS)
+   ========================================================= */
+.profile-wrap{ padding:8px 8px 16px; max-width:1100px; margin:0 auto; width:100%; }
+
+/* Заголовок сверху */
+.inventory-title{
+  margin:10px 8px 6px;
+  text-align:center;
+  font-weight:900;
+  letter-spacing:1.2px;
+  color:#e8efff;
+  text-shadow:0 0 16px rgba(22,241,255,.18);
+}
+
+/* Тёмная панель (чуть темнее фона), ~чуть меньше половины экрана */
+.inventory-panel{
+  margin:0 8px;                                /* ~8–10px до краёв вкладки */
+  border:1px solid var(--border);
+  border-radius:16px;
+  background:linear-gradient(180deg, rgba(10,14,34,.85), rgba(7,10,26,.9)); /* темнее фона */
+  box-shadow:0 14px 40px rgba(10,20,60,.38), inset 0 0 22px rgba(22,241,255,.06);
+  height:clamp(240px, 45vh, 460px);            /* «чуть меньше половины» */
+  overflow:auto;                                /* прокрутка появится, когда нужно */
+  -webkit-overflow-scrolling:touch;
+  padding:10px 10px 7px;                        /* низ = 7px — фиксированный зазор */
+}
+
+/* пустое состояние */
+.inventory-empty{
+  height:100%;
+  display:grid; place-items:center;
+  color:#ffffff; opacity:.9;
+  font-weight:900; letter-spacing:.5px;
+}
+
+/* сетка 1:1 */
+.inv-grid{
+  display:grid;
+  grid-template-columns:repeat(2, 1fr);         /* как на твоём мокапе */
+  gap:10px;
+  padding-bottom:0;                             /* зазор уже в .inventory-panel (7px) */
+}
+
+/* слот 1:1 */
+.inv-item{
+  position:relative;
+  aspect-ratio:1/1;
+  border-radius:14px;
+  border:1px dashed rgba(180,210,255,.35);
+  background:
+    radial-gradient(120px 80px at 20% 20%, rgba(22,241,255,.10), transparent 60%),
+    radial-gradient(120px 80px at 80% 80%, rgba(255,62,208,.08), transparent 60%),
+    linear-gradient(180deg,#0b1030,#0a1028);
+  box-shadow:0 8px 26px rgba(10,20,60,.32);
+  overflow:hidden;
+  display:grid; place-items:center;
+}
+
+/* картинка полностью в квадрате */
+.inv-item img{
+  width:88%; height:88%;
+  object-fit:contain;
+  border-radius:12px;
+  display:block;
+}
+
+
   </style>
 
 <style>
@@ -794,6 +862,8 @@ function openDropModal(imgSrc){
 
   // картинка
   dropImg.src = imgSrc || FALLBACK_IMG;
+window._lastDropImgSrc = dropImg.src;   // ИНВЕНТАРЬ: запомнили картинку дропа
+
   dropImg.onerror = () => { dropImg.src = FALLBACK_IMG; };
 
   // показать модалку
@@ -815,12 +885,14 @@ function openDropModal(imgSrc){
 
 function closeDropModal(){
   if (!dropModal) return;
-
   dropModal.classList.remove('show');
   dropModal.setAttribute('aria-hidden','true');
   _modalOpen = false;
 
-  lockBody(false);
+  // Разблокируем прокрутку только если экран detail закрыт
+  if (!detail.classList.contains('show')) {
+    lockBody(false); 
+}
 
   dropModal.removeEventListener('click', blockBackdropClick, true);
   document.removeEventListener('keydown', blockEsc, true);
@@ -853,11 +925,14 @@ function trapTab(e){
   else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
 }
 
-// Кнопки (пока просто закрывают модалку)
+/* =========================================================
+   ИНТЕРФЕЙС ВКЛАДКИ «ПРОФИЛЬ» — добавить предмет из модалки
+   ========================================================= */
 keepBtn?.addEventListener('click', () => {
-  // TODO: начислить предмет игроку
+  if (window._lastDropImgSrc) addToInventory(window._lastDropImgSrc);
   closeDropModal();
 });
+
 sellBtn?.addEventListener('click', () => {
   // TODO: продать предмет/начислить валюту
   closeDropModal();
@@ -1284,6 +1359,61 @@ backBtn.addEventListener('click', ()=>{
   lockBody(false);
 });
 
+/* =========================================================
+   ИНВЕНТАРЬ — PERSISTENCE (localStorage)
+   ========================================================= */
+function loadInventory(){
+  try{
+    const raw = localStorage.getItem('gd_inventory');
+    const arr = raw ? JSON.parse(raw) : [];
+    return Array.isArray(arr) ? arr : [];
+  }catch(e){
+    return [];
+  }
+}
+function saveInventory(){
+  try{
+    localStorage.setItem('gd_inventory', JSON.stringify(window.INVENTORY));
+  }catch(e){}
+}
+
+/* текущее состояние (подхватываем сохранённое) */
+window.INVENTORY = loadInventory();   // [{id, img}, ...]
+
+function addToInventory(imgSrc){
+  if(!imgSrc) return;
+  const id = `it_${Date.now()}_${Math.random().toString(36).slice(2,7)}`;
+  window.INVENTORY.push({ id, img: imgSrc });
+  saveInventory();         // ← сохраняем на диск
+  renderInventory();
+}
+
+
+function renderInventory(){
+  const grid  = document.getElementById('inventoryGrid');
+  const empty = document.getElementById('inventoryEmpty');
+  if(!grid || !empty) return;                 // не на экране профиля
+
+  grid.innerHTML = '';
+
+  if (!window.INVENTORY.length){
+    empty.style.display = 'grid';
+    grid.style.display  = 'none';
+    return;
+  }
+
+  empty.style.display = 'none';
+  grid.style.display  = 'grid';
+
+  window.INVENTORY.forEach(item=>{
+    const slot = document.createElement('div');
+    slot.className = 'inv-item';
+    slot.innerHTML = `<img src="${item.img}" alt="предмет" onerror="this.remove()">`;
+    grid.appendChild(slot);
+  });
+  // прокрутка включится автоматически, как только контента станет больше высоты панели
+}
+
 
 // ===== Переключение между "Кейсы" и "Профиль" =====
 const profileScreen = document.getElementById('profileScreen');
@@ -1336,31 +1466,37 @@ function showCases(){
   // window.scrollTo({ top: 0, behavior: 'smooth' }); // если хочешь всегда наверх
 }
 
+
 /* =========================================================
-   ИНТЕРФЕЙС ВКЛАДКИ «ПРОФИЛЬ»: пустой скелет без аватара/имени
+   ИНТЕРФЕЙС ВКЛАДКИ «ПРОФИЛЬ» — каркас инвентаря
    ========================================================= */
 function showProfile(){
   hardCloseDetailAndModal();
 
-  // Спрятать каталог кейсов
+  // спрятать каталог
   chipbar.classList.add('hide');
   content.classList.add('hide');
   backTop.classList.add('hide');
 
-  // ⚠️ Больше НЕ рендерим карточку профиля
-  // renderProfileOnce();  // <-- УДАЛЕНО
-
-  // Оставляем пустой контейнер (скелет)
-  profileScreen.innerHTML = ''; // можно добавить отступ/разделители при желании
+  // каркас инвентаря
+  profileScreen.innerHTML = `
+    <div class="profile-wrap">
+      <div class="inventory-title">ИНВЕНТАРЬ</div>
+      <div class="inventory-panel">
+        <div id="inventoryEmpty" class="inventory-empty">ЗДЕСЬ ПОКА НИЧЕГО НЕТ</div>
+        <div id="inventoryGrid" class="inv-grid" style="display:none"></div>
+      </div>
+    </div>
+  `;
   profileScreen.classList.remove('hide');
-  profileScreen.setAttribute('aria-hidden', 'false');
+  profileScreen.setAttribute('aria-hidden','false');
 
-  // Активный таб
   setActiveTab(profileTab);
-
-  // На всякий случай к началу
   profileScreen.scrollTop = 0;
   window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  // если предметы уже есть — отрисуем
+  renderInventory();
 }
 
 
