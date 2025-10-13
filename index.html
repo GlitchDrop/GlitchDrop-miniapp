@@ -244,27 +244,33 @@
   text-rendering: optimizeLegibility;
 }
 
+/* === Ник + ID (две строки) === */
+.brand-lines{
+  display:inline-flex;
+  flex-direction:column;
+  line-height:1.05;
+}
+
+.brand .glitch{
+  margin-bottom:2px; /* небольшой отступ между ником и ID */
+}
+
+.brand .uid{
+  font-size:12px;
+  font-weight:800;
+  color:rgba(255,255,255,.6); /* белый с прозрачностью */
+  letter-spacing:.4px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+
 /* ===== ИНВЕНТАРЬ — полноэкранная страница ===== */
 .inventory-page{
   max-width:1100px;
   margin:0 auto;
   padding:0 12px 84px;            /* низ с запасом от таббара */
-}
-
-.inventory-header{
-  position:sticky;
- top: var(--topbar-h, 64px);
-  z-index:22;
-  padding:10px 8px 12px;
-  text-align:center;
-  font-weight:900;
-  letter-spacing:1.4px;
-  font-size:clamp(24px, 8vw, 52px);
-  color:#e8efff;
-  text-shadow:0 0 16px rgba(22,241,255,.18);
-  background:linear-gradient(180deg,rgba(8,14,36,.78),rgba(6,10,26,.68));
-  border-bottom:1px solid var(--border);
-  backdrop-filter:blur(8px);
 }
 
 .inventory-grid{
@@ -320,12 +326,6 @@
   box-shadow: inset 0 30px 60px rgba(10,20,60,.35);
 }
 
-.inventory-header{
-  background: linear-gradient(180deg, rgba(12,16,38,.88), rgba(10,14,34,.82));
-  border-bottom:1px solid var(--border);
-  backdrop-filter: blur(8px);
-}
-
 .inventory-card{
   border:1px dashed rgba(180,210,255,.30);
   background:
@@ -337,6 +337,32 @@
 /* отступ снизу, чтобы не налезал таббар */
 .inventory-page{
   padding: 0 12px max(84px, env(safe-area-inset-bottom) + 16px);
+}
+
+/* === INVENTORY HEADER — full-bleed до краёв экрана === */
+.inventory-header{
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  position: sticky;
+  top: var(--topbar-h, 64px);
+  z-index: 22;
+
+  /* вот это добавляем */
+  overflow-x: hidden; /* фолбэк */
+  overflow-x: clip;   /* основной вариант */
+
+  /* остальное оставь как было */
+  padding: 10px max(12px, env(safe-area-inset-left)) 12px max(12px, env(safe-area-inset-right));
+  text-align:center;
+  font-weight:900;
+  letter-spacing:1.4px;
+  font-size:clamp(24px, 8vw, 52px);
+  color:#e8efff;
+  text-shadow:0 0 16px rgba(22,241,255,.18);
+  background: linear-gradient(180deg, rgba(12,16,38,.88), rgba(10,14,34,.82));
+  border-bottom:1px solid var(--border);
+  backdrop-filter: blur(8px);
 }
 
 
@@ -571,7 +597,13 @@
     <div class="topbar">
       <img id="userAvatar" class="avatar hidden" alt="avatar">
       <div id="avatarFallback" class="avatar-fallback">GD</div>
-      <div class="brand"><span id="userName" class="glitch" data-text="GLITCH&nbsp;DROP">GLITCH&nbsp;DROP</span></div>
+      <div class="brand">
+  <div class="brand-lines">
+    <span id="userName" class="glitch" data-text="GLITCH&nbsp;DROP">GLITCH&nbsp;DROP</span>
+    <span id="userId" class="uid" aria-label="User ID">ID 00000000</span>
+  </div>
+</div>
+
       <div class="grow"></div>
 
       <!-- Пилюля ГЛИТЧ-ТОКЕН слева -->
@@ -1055,6 +1087,60 @@ detail.scrollTop = 0;
   const display = u.username ? '@' + u.username : [u.first_name||'', u.last_name||''].join(' ').trim() || 'GLITCH DROP';
   nameEl.textContent = display;
   nameEl.setAttribute('data-text', display.replaceAll(' ', '\u00A0'));
+
+// === UID8 с сервера (уникально в проде) ===
+const idEl = document.getElementById('userId');
+
+// Если фронт и API на одном домене через прокси /api → оставь пустую строку.
+// Если на другом домене — укажи полный адрес, например:
+// const API_BASE = 'https://api.yourdomain.com';
+const API_BASE = 'https://glitchdrop-miniapp.onrender.com';
+
+
+function fnv1a(str){
+  let h = 0x811c9dc5;
+  for (let i = 0; i < str.length; i++){
+    h ^= str.charCodeAt(i);
+    h = (h >>> 0) * 0x01000193;
+  }
+  return h >>> 0;
+}
+function to8(n){ return String(n % 100000000).padStart(8,'0'); }
+
+async function getOrFetchUid8(tgUserId){
+  const cacheKey = 'gd_uid8';
+
+  // 1) локальный кеш
+  const cached = localStorage.getItem(cacheKey);
+  if (cached && /^\d{8}$/.test(cached)) return cached;
+
+  // 2) сервер (гарантированная уникальность)
+  try{
+    const resp = await fetch(`${API_BASE}/api/uid8`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ telegram_id: String(tgUserId) })
+
+
+    });
+    if (!resp.ok) throw new Error('bad status');
+    const { uid8 } = await resp.json();
+    if (!/^\d{8}$/.test(uid8)) throw new Error('bad uid');
+    localStorage.setItem(cacheKey, uid8);
+    return uid8;
+  }catch(e){
+    // 3) фолбэк (если API недоступен): детерминированно от tg.id
+    const fallback = to8( fnv1a(`GLITCHDROP:${tgUserId}`) );
+    localStorage.setItem(cacheKey, fallback);
+    return fallback;
+  }
+}
+
+(async () => {
+  const uid8 = await getOrFetchUid8(u.id);
+  if (idEl) idEl.textContent = `ID ${uid8}`;
+})();
+
 
   // 👇 ДОБАВЬ ЭТО, чтобы сразу подогнать размер ника
   if (typeof fitUserName === 'function') fitUserName();
