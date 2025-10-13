@@ -296,7 +296,7 @@
   user-select:none;
 }
 
-.inventory-card img{
+.inventory-card img{ width:84%; height:84%; }
   width:88%; height:88%;
   object-fit:contain;
   border-radius:12px;
@@ -584,7 +584,55 @@
 .modal-actions .btn.sell{
   color:#e8efff; background:linear-gradient(135deg, rgba(15,20,48,.9), rgba(12,16,38,.9));
   border:1px solid var(--border);
+
 }
+
+/* текст в модалке подтверждения */
+.modal-text{
+  margin: 6px 0 12px;
+  text-align:center;
+  font-weight:800;
+  letter-spacing:.3px;
+  color:#d7e6ff;
+}
+
+/* зелёная "ДА" и красная "НЕТ" в глитч-стиле */
+.modal-actions .btn.btn-yes{
+  color:#081121;
+  background:linear-gradient(135deg, #54ffa8, #19e6ff);
+  border:1px solid transparent;
+  box-shadow:0 10px 28px rgba(25,230,255,.35), 0 0 30px rgba(84,255,168,.25);
+}
+.modal-actions .btn.btn-no{
+  color:#fff;
+  background:linear-gradient(135deg, #ff4d6d, #b3123e);
+  border:1px solid rgba(255,90,120,.45);
+  box-shadow:0 10px 22px rgba(255,77,109,.25);
+}
+
+/* ===== Кнопка ПРОДАТЬ в карточке инвентаря ===== */
+.inventory-card{
+  position:relative; /* уже есть, но пусть будет явно */
+}
+
+.inv-sell{
+  position:absolute;
+  left:50%;
+  bottom:10px;
+  transform:translateX(-50%);
+  appearance:none;
+  border:none;
+  padding:10px 18px;
+  border-radius:999px;
+  font-weight:900;
+  letter-spacing:.3px;
+  cursor:pointer;
+  color:#081121;
+  background:linear-gradient(135deg, var(--neon-cyan), var(--neon-pink));
+  border:1px solid rgba(22,241,255,.35);
+  box-shadow:0 8px 22px rgba(22,241,255,.28), 0 0 24px rgba(255,62,208,.22);
+}
+.inv-sell:active{ transform:translateX(-50%) translateY(1px); }
 
 
 </style>
@@ -669,6 +717,20 @@
     <div class="modal-actions">
       <button id="keepBtn" class="btn keep">ОСТАВИТЬ</button>
       <button id="sellBtn" class="btn sell">ПРОДАТЬ</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM SELL MODAL -->
+<div id="confirmModal" class="modal" aria-hidden="true" aria-modal="true" role="dialog">
+  <div class="modal-card" role="document">
+    <div class="modal-title">ПОДТВЕРДИТЬ ПРОДАЖУ</div>
+    <div id="confirmText" class="modal-text">
+      Вы уверены, что хотите продать этот предмет?
+    </div>
+    <div class="modal-actions">
+      <button id="confirmNo"  class="btn btn-no">НЕТ</button>
+      <button id="confirmYes" class="btn btn-yes">ДА</button>
     </div>
   </div>
 </div>
@@ -1631,9 +1693,127 @@ function renderInventory(){
   list.forEach(item=>{
     const card = document.createElement('div');
     card.className = 'inventory-card';
-    card.innerHTML = `<img src="${item.img}" alt="предмет" loading="lazy" onerror="this.remove()">`;
+    card.dataset.id = item.id;
+    card.innerHTML = `
+      <img src="${item.img}" alt="предмет" loading="lazy" onerror="this.remove()">
+      <button type="button" class="inv-sell">ПРОДАТЬ</button>
+    `;
     grid.appendChild(card);
   });
+
+  // делегирование на кнопки ПРОДАТЬ
+  grid.onclick = (e)=>{
+    const btn  = e.target.closest('.inv-sell');
+    if(!btn) return;
+    const card = btn.closest('.inventory-card');
+    const id   = card?.dataset.id;
+    if(!id) return;
+
+    openConfirmSell(() => sellFromInventory(id, card));
+  };
+}
+
+// ===== CONFIRM SELL MODAL =====
+const confirmModal = document.getElementById('confirmModal');
+const confirmYes   = document.getElementById('confirmYes');
+const confirmNo    = document.getElementById('confirmNo');
+const confirmText  = document.getElementById('confirmText');
+
+let _confirmOpen = false;
+let _confirmOnYes = null;
+let _confirmLastFocus = null;
+
+function openConfirmSell(onYesCb, text){
+  if (!confirmModal) return;
+  _confirmOnYes = typeof onYesCb === 'function' ? onYesCb : null;
+  if (text && confirmText) confirmText.textContent = text;
+
+  _confirmLastFocus = document.activeElement;
+
+  confirmModal.classList.add('show');
+  confirmModal.setAttribute('aria-hidden','false');
+  _confirmOpen = true;
+  lockBody(true);
+
+  // Фокус на "НЕТ"
+  setTimeout(()=> (confirmNo || confirmModal).focus(), 0);
+
+  confirmYes.onclick = ()=>{
+    closeConfirmModal();
+    if (_confirmOnYes) _confirmOnYes();
+  };
+  confirmNo.onclick = ()=> closeConfirmModal();
+
+  document.addEventListener('keydown', _confirmEsc, true);
+  confirmModal.addEventListener('click', _confirmBackdrop, true);
+  document.addEventListener('keydown', _confirmTrapTab, true);
+}
+
+function closeConfirmModal(){
+  if (!confirmModal) return;
+  confirmModal.classList.remove('show');
+  confirmModal.setAttribute('aria-hidden','true');
+  _confirmOpen = false;
+
+  // Разблокировать скролл, если нет других экранов/модалок
+  const dropIsOpen = typeof _modalOpen !== 'undefined' && _modalOpen;
+  if (!detail.classList.contains('show') && !dropIsOpen){
+    lockBody(false);
+  }
+
+  document.removeEventListener('keydown', _confirmEsc, true);
+  confirmModal.removeEventListener('click', _confirmBackdrop, true);
+  document.removeEventListener('keydown', _confirmTrapTab, true);
+
+  if (_confirmLastFocus && _confirmLastFocus.focus) _confirmLastFocus.focus();
+  _confirmOnYes = null;
+}
+
+function _confirmEsc(e){
+  if (e.key === 'Escape'){
+    e.stopPropagation();
+    e.preventDefault();
+    closeConfirmModal();
+  }
+}
+function _confirmBackdrop(e){
+  const card = confirmModal.querySelector('.modal-card');
+  if (!card.contains(e.target)){
+    e.stopPropagation();
+    e.preventDefault();
+    // не закрываем кликом по фону
+  }
+}
+function _confirmTrapTab(e){
+  if (e.key !== 'Tab' || !_confirmOpen) return;
+  const focusables = confirmModal.querySelectorAll('button, [href], [tabindex]:not([tabindex="-1"])');
+  const list = Array.from(focusables).filter(el=>!el.disabled && el.offsetParent !== null);
+  if (!list.length) return;
+  const first = list[0], last = list[list.length-1];
+  if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+}
+
+function sellFromInventory(id, cardEl){
+  // небольшая анимация исчезновения
+  if (cardEl){
+    cardEl.style.transition = 'transform 160ms ease, opacity 160ms ease';
+    cardEl.style.opacity = '0';
+    cardEl.style.transform = 'scale(.96)';
+  }
+
+  // удаляем элемент из массива
+  const arr = window.INVENTORY || [];
+  const idx = arr.findIndex(it => it.id === id);
+  if (idx !== -1){
+    arr.splice(idx, 1);
+    saveInventory();
+  }
+
+  // перерисовать сетку чуть позже, чтобы анимация успела проиграться
+  setTimeout(() => {
+    renderInventory();
+  }, 170);
 }
 
 
