@@ -296,8 +296,9 @@
   user-select:none;
 }
 
-.inventory-card img{ width:84%; height:84%; }
-  width:88%; height:88%;
+.inventory-card img{
+  width:88%;
+  height:88%;
   object-fit:contain;
   border-radius:12px;
   display:block;
@@ -363,6 +364,18 @@
   background: linear-gradient(180deg, rgba(12,16,38,.88), rgba(10,14,34,.82));
   border-bottom:1px solid var(--border);
   backdrop-filter: blur(8px);
+}
+
+/* —— жёстко поверх всего и без шанса быть перекрытой —— */
+.modal{
+  z-index: 99999 !important;
+  pointer-events: auto !important;
+}
+.modal.show{
+  display: flex !important;
+}
+.modal .modal-card{
+  z-index: 2;          /* поверх ::before */
 }
 
 
@@ -1725,29 +1738,37 @@ let _confirmLastFocus = null;
 
 function openConfirmSell(onYesCb, text){
   if (!confirmModal) return;
+
   _confirmOnYes = typeof onYesCb === 'function' ? onYesCb : null;
   if (text && confirmText) confirmText.textContent = text;
 
   _confirmLastFocus = document.activeElement;
 
+  // показать модалку
   confirmModal.classList.add('show');
   confirmModal.setAttribute('aria-hidden','false');
   _confirmOpen = true;
   lockBody(true);
 
-  // Фокус на "НЕТ"
+  // фокус на «НЕТ»
   setTimeout(()=> (confirmNo || confirmModal).focus(), 0);
 
-  confirmYes.onclick = ()=>{
-    closeConfirmModal();
-    if (_confirmOnYes) _confirmOnYes();
-  };
-  confirmNo.onclick = ()=> closeConfirmModal();
+  // навешиваем хэндлеры только если элементы найдены
+  if (confirmYes) {
+    confirmYes.onclick = ()=>{
+      closeConfirmModal();
+      if (_confirmOnYes) _confirmOnYes();
+    };
+  }
+  if (confirmNo) {
+    confirmNo.onclick = ()=> closeConfirmModal();
+  }
 
   document.addEventListener('keydown', _confirmEsc, true);
   confirmModal.addEventListener('click', _confirmBackdrop, true);
   document.addEventListener('keydown', _confirmTrapTab, true);
 }
+
 
 function closeConfirmModal(){
   if (!confirmModal) return;
