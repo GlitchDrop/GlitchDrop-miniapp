@@ -1,0 +1,13 @@
+{
+  "name": "gd-api",
+  "type": "module",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "pg": "^8.11.5",
+    "dotenv": "^16.4.5"
+  },
+  "scripts": {
+    "start": "node server.js"
+  }
+}
