@@ -366,19 +366,6 @@
   backdrop-filter: blur(8px);
 }
 
-/* —— жёстко поверх всего и без шанса быть перекрытой —— */
-.modal{
-  z-index: 99999 !important;
-  pointer-events: auto !important;
-}
-.modal.show{
-  display: flex !important;
-}
-.modal .modal-card{
-  z-index: 2;          /* поверх ::before */
-}
-
-
   </style>
 
 <style>
@@ -552,6 +539,18 @@
   /* блокируем взаимодействие с фоном */
 }
 
+/* —— жёстко поверх всего и без шанса быть перекрытой —— */
+.modal{
+  z-index: 99999 !important;
+  pointer-events: auto !important;
+}
+.modal.show{
+  display: flex !important;
+}
+.modal .modal-card{
+  z-index: 2;          /* поверх ::before */
+}
+
 .modal-card{
   position:relative; z-index:1;
   width:min(520px, 92%); padding:16px;
@@ -719,6 +718,8 @@
 <div class="subhead">СОДЕРЖИМОЕ КЕЙСА</div>
 <div id="lootGrid" class="loot-grid"></div>
 <div style="height:40px"></div>
+    </div> <!-- ←← закрыл .d-body -->
+  </div>   <!-- ←← закрыл #detail -->
 
 <!-- DROP MODAL -->
 <div id="dropModal" class="modal" aria-hidden="true" aria-modal="true" role="dialog">
@@ -748,10 +749,7 @@
   </div>
 </div>
 
-
-  <button id="backTop" class="backtop" aria-label="Вверх">ВВЕРХ ↑</button>
-
-
+<button id="backTop" class="backtop" aria-label="Вверх">ВВЕРХ ↑</button>
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
