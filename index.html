@@ -696,7 +696,6 @@ body.friends-active .friends-header{
   top: 0 !important;
 }
 
-
 .friends-empty{
   min-height:30vh;
   display:grid;
@@ -770,6 +769,114 @@ body.friends-active .friends-header{
   line-height:1;
 }
 .promo-delete:active{ transform:translateY(1px); }
+
+:root{
+  --friends-cta-h: 140px; /* высота фикс-подвала с кнопками (подхватится скриптом) */
+}
+
+/* верхняя зона со списком друзей */
+.friends-list-surface{
+  position: relative;
+  min-height: 100svh;
+  background:
+    radial-gradient(60% 40% at 50% -10%, rgba(22,241,255,.04), transparent 60%),
+    linear-gradient(180deg, #0b1030 0%, #0a1126 100%);
+  padding-bottom: calc(var(--friends-cta-h) + max(8px, env(safe-area-inset-bottom)));
+}
+
+/* маленький зазор сверху от списка до подвала */
+.friends-gap{ height: 8px; }
+
+/* фиксированный нижний блок с двумя кнопками на светлом фоне */
+.friends-cta{
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 999;
+  border-top: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(230,240,255,.06), rgba(230,240,255,.10));
+  backdrop-filter: blur(6px);
+  padding: 14px max(12px, env(safe-area-inset-left)) calc(14px + env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-right));
+}
+.friends-cta .friends-page{
+  display:grid; grid-template-columns:1fr; gap:12px;
+}
+
+/* кнопки в подвале (повторяем стиль) */
+.friends-cta .friends-btn{
+  appearance:none;
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:16px 18px;
+  font-weight:900;
+  letter-spacing:.3px;
+  cursor:pointer;
+  background:linear-gradient(135deg, rgba(15,20,48,.9), rgba(12,16,38,.9));
+  color:#e8efff;
+  box-shadow: var(--shadow-soft);
+}
+.friends-cta .friends-btn.primary{
+  color:#081121;
+  background:linear-gradient(135deg, var(--neon-cyan), var(--neon-pink));
+  border-color:transparent;
+}
+
+/* «ваш промокод» вместо кнопки */
+.friends-cta .friends-code-wrap{
+  display:flex; align-items:center; justify-content:center; gap:10px;
+}
+.friends-cta .friends-code{
+  border:1px dashed rgba(180,210,255,.35);
+  border-radius:16px; padding:16px 18px;
+  font-weight:900; letter-spacing:.3px; color:#d7e6ff;
+  background:
+    radial-gradient(120px 80px at 20% 20%, rgba(22,241,255,.08), transparent 60%),
+    radial-gradient(120px 80px at 80% 80%, rgba(255,62,208,.06), transparent 60%),
+    linear-gradient(180deg,#0b1030,#0a1028);
+}
+.friends-cta .promo-delete{
+  appearance:none; width:36px; height:36px; border-radius:999px;
+  border:1px solid rgba(255,90,120,.45);
+  background:linear-gradient(135deg, #ff4d6d, #b3123e); color:#fff; font-weight:900;
+  cursor:pointer; box-shadow:0 10px 22px rgba(255,77,109,.25);
+}
+
+/* список друзей (верхняя часть) */
+.friends-list{
+  display:flex; flex-direction:column; gap:10px;
+  padding: 10px 0 16px;
+}
+.friend-row{
+  display:grid;
+  grid-template-columns: 44px 1fr auto;
+  align-items:center;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(15,20,48,.72), rgba(12,16,38,.72));
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
+}
+.friend-num{
+  font-weight: 900;
+  font-size: clamp(16px, 6vw, 22px);
+  color: #e8efff;
+  text-shadow: 0 0 12px rgba(22,241,255,.20);
+}
+.friend-name{
+  font-weight: 900;
+  letter-spacing: .4px;
+  text-transform: uppercase;
+  color: #e8efff;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  font-size: clamp(14px, 4.2vw, 18px);
+}
+.fr-gain{
+  display:flex; align-items:center; gap:8px;
+  font-weight:900; color:#e8efff;
+  font-size: clamp(14px, 4vw, 18px);
+  white-space:nowrap;
+}
+.fr-gain .fr-token{ width:18px; height:18px; border-radius:4px; display:block; object-fit:cover; }
 
 
 /* ===== PROMO MODAL ===== */
@@ -1946,20 +2053,40 @@ function savePromoCode(code){
 function renderFriends(){
   if(!friendsScreen) return;
 
-  const promo = loadPromoCode();
-friendsScreen.innerHTML = `
-  <div class="friends-surface">
-    <div class="friends-page">
-      <div class="friends-header">ДРУЗЬЯ</div>
+  // когда появятся реальные данные — подставишь сюда массив
+  const users = []; // пример: [{name:'@friend1'}]
+  const list = users.length ? users : [{ name: 'USERNAME ДРУГА' }]; // всегда >= 1 строка
 
-      <div class="friends-empty">ВЫ НИКОГО НЕ ПРИГЛАСИЛИ</div>
+  const TOKEN_ICON = 'assets/images/20251005_0825_Яркое неоновое сияние_remix_01k6sd902pf03ah1w3cpkr66jz.png';
 
-      <div class="friends-actions">
+  friendsScreen.innerHTML = `
+    <div class="friends-list-surface">
+      <div class="friends-page">
+        <div class="friends-header">ДРУЗЬЯ</div>
+
+        <div class="friends-list" id="friendsList">
+          ${list.map((u, i) => `
+            <div class="friend-row" role="listitem">
+              <div class="friend-num">${i+1}.</div>
+              <div class="friend-name">${(u.name || 'USERNAME ДРУГА')}</div>
+              <div class="fr-gain">
+                <span>+1</span>
+                <img class="fr-token" src="${TOKEN_ICON}" alt="токен">
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      <div class="friends-gap"></div>
+    </div>
+
+    <div class="friends-cta" id="friendsCta">
+      <div class="friends-page">
         ${
-          promo
+          loadPromoCode()
             ? `
               <div class="friends-code-wrap">
-                <div class="friends-code" title="Ваш промокод">${promo}</div>
+                <div class="friends-code" title="Ваш промокод">${loadPromoCode()}</div>
                 <button type="button" class="promo-delete" id="btnDeletePromo" aria-label="Удалить промокод">✕</button>
               </div>
             `
@@ -1968,32 +2095,41 @@ friendsScreen.innerHTML = `
         <button type="button" id="btnEnterPromo" class="friends-btn">ВВЕСТИ ПРОМОКОД</button>
       </div>
     </div>
-  </div>
-`;
+  `;
 
+  // обработчики кнопок в подвале
   const btnCreate = document.getElementById('btnCreatePromo');
-if (btnCreate) btnCreate.addEventListener('click', openPromoModal);
+  if (btnCreate) btnCreate.addEventListener('click', openPromoModal);
 
-const btnEnter = document.getElementById('btnEnterPromo');
-if (btnEnter){
-  btnEnter.addEventListener('click', () => {
-    // пока заглушка (тут откроешь модалку «ввести чужой промо» при необходимости)
-    // openPromoInputModal();
-  });
+  const btnEnter = document.getElementById('btnEnterPromo');
+  if (btnEnter){
+    btnEnter.addEventListener('click', () => {
+      // TODO: сюда модалку "ввести промокод" (сейчас заглушка)
+    });
+  }
+
+  const btnDelete = document.getElementById('btnDeletePromo');
+  if (btnDelete){
+    btnDelete.addEventListener('click', () => {
+      openConfirmSell(() => {
+        savePromoCode('');
+        renderFriends();
+      }, 'Вы уверены, что хотите удалить промокод?');
+    });
+  }
+
+  // зафиксировать реальную высоту подвала, чтобы список не перекрывался
+  syncFriendsCtaHeight();
 }
 
-// обработчик удаления промокода — ВНЕ обработчика btnEnter!
-const btnDelete = document.getElementById('btnDeletePromo');
-if (btnDelete){
-  btnDelete.addEventListener('click', () => {
-    openConfirmSell(() => {
-      savePromoCode('');
-      renderFriends();
-    }, 'Вы уверены, что хотите удалить промокод?');
-  });
- }
-
+function syncFriendsCtaHeight(){
+  const el = document.getElementById('friendsCta');
+  const h = el?.offsetHeight || 140;
+  document.documentElement.style.setProperty('--friends-cta-h', h + 'px');
 }
+window.addEventListener('resize', syncFriendsCtaHeight, {passive:true});
+window.addEventListener('orientationchange', syncFriendsCtaHeight, {passive:true});
+
 
 // Показать экран друзей
 function showFriends(){
