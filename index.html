@@ -581,14 +581,30 @@
   width:88%; height:88%; object-fit:contain; border-radius:12px; display:block;
 }
 
-.modal-actions{
-  display:flex; gap:10px; justify-content:center; flex-wrap:wrap;
+/* === Кнопки действий в модалках (подтверждение и дроп) === */
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
 }
-.modal-actions .btn{
-  appearance:none; cursor:pointer; border:none;
-  padding:12px 18px; border-radius:14px; font-weight:900;
-  box-shadow:var(--shadow-soft);
+
+.modal-actions .btn {
+  appearance: none;
+  cursor: pointer;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 14px;
+  font-weight: 900;
+  box-shadow: var(--shadow-soft);
+
+  /* 💎 Новые свойства для одинаковой ширины */
+  flex: 1 1 0;           /* обе кнопки делят пространство поровну */
+  text-align: center;
+  min-width: 120px;       /* защита от сжатия */
+  max-width: 160px;       /* ограничение, чтобы не растягивались слишком сильно */
 }
+
 .modal-actions .btn.keep{
   color:#081121; background:linear-gradient(135deg, var(--neon-cyan), var(--neon-pink));
   border:1px solid transparent;
@@ -1742,20 +1758,19 @@ function openConfirmSell(onYesCb, text){
 
   _confirmLastFocus = document.activeElement;
 
-  // показать модалку
   confirmModal.classList.add('show');
   confirmModal.setAttribute('aria-hidden','false');
   _confirmOpen = true;
   lockBody(true);
 
-  // фокус на «НЕТ»
   setTimeout(()=> (confirmNo || confirmModal).focus(), 0);
 
-  // навешиваем хэндлеры только если элементы найдены
+  // колбэк вызываем ДО закрытия модалки
   if (confirmYes) {
     confirmYes.onclick = ()=>{
+      const cb = _confirmOnYes;
+      if (cb) cb();
       closeConfirmModal();
-      if (_confirmOnYes) _confirmOnYes();
     };
   }
   if (confirmNo) {
