@@ -662,6 +662,137 @@
 }
 .inv-sell:active{ transform:translateX(-50%) translateY(1px); }
 
+/* ===== FRIENDS PAGE ===== */
+.friends-surface{
+  position:relative;
+  min-height:100svh;
+  background:
+    radial-gradient(60% 40% at 50% -10%, rgba(22,241,255,.06), transparent 60%),
+    radial-gradient(60% 40% at 50% 110%, rgba(255,62,208,.05), transparent 60%),
+    linear-gradient(180deg, #0b1030 0%, #0a1028 100%);
+  border-top:1px solid var(--border);
+  box-shadow: inset 0 30px 60px rgba(10,20,60,.35);
+}
+
+.friends-page{
+  max-width:1100px;
+  margin:0 auto;
+  padding: 0 12px max(84px, env(safe-area-inset-bottom) + 16px);
+}
+
+.friends-header{
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  position: sticky;
+  top: var(--topbar-h, 64px);
+  z-index: 22;
+  padding: 10px max(12px, env(safe-area-inset-left)) 12px max(12px, env(safe-area-inset-right));
+  text-align:center;
+  font-weight:900;
+  letter-spacing:1.4px;
+  font-size:clamp(24px, 8vw, 52px);
+  color:#e8efff;
+  text-shadow:0 0 16px rgba(22,241,255,.18);
+  background: linear-gradient(180deg, rgba(12,16,38,.88), rgba(10,14,34,.82));
+  border-bottom:1px solid var(--border);
+  backdrop-filter: blur(8px);
+}
+
+.friends-empty{
+  min-height:30vh;
+  display:grid;
+  place-items:center;
+  text-align:center;
+  color:#ffffff;
+  opacity:.9;
+  font-weight:900;
+  letter-spacing:.6px;
+  margin-top: 8px;
+}
+
+/* Кнопки «Создать / Ввести промокод» */
+.friends-actions{
+  display:grid;
+  gap:12px;
+  margin-top:20px;
+}
+.friends-btn{
+  appearance:none;
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:16px 18px;
+  font-weight:900;
+  letter-spacing:.3px;
+  cursor:pointer;
+  background:linear-gradient(135deg, rgba(15,20,48,.9), rgba(12,16,38,.9));
+  color:#e8efff;
+  box-shadow: var(--shadow-soft);
+}
+.friends-btn.primary{
+  color:#081121;
+  background:linear-gradient(135deg, var(--neon-cyan), var(--neon-pink));
+  border-color:transparent;
+}
+
+/* Статика вместо кнопки после создания промокода */
+.friends-code{
+  border:1px dashed rgba(180,210,255,.35);
+  border-radius:16px;
+  padding:16px 18px;
+  font-weight:900;
+  letter-spacing:.3px;
+  color:#d7e6ff;
+  background:
+    radial-gradient(120px 80px at 20% 20%, rgba(22,241,255,.08), transparent 60%),
+    radial-gradient(120px 80px at 80% 80%, rgba(255,62,208,.06), transparent 60%),
+    linear-gradient(180deg,#0b1030,#0a1028);
+}
+
+/* ===== PROMO MODAL ===== */
+#promoModal .modal-card{
+  width:min(520px, 92%);
+}
+.promo-body{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin: 4px 0 6px;
+}
+.promo-input{
+  width:100%;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:rgba(15,20,48,.9);
+  color:#e8efff;
+  padding:12px 12px;
+  font-weight:800;
+  outline:none;
+}
+.promo-error{
+  min-height: 16px;
+  font-size:12px;
+  font-weight:800;
+  color:#ff6b7a;
+  text-align:center;
+}
+.promo-create{
+  appearance:none;
+  cursor:pointer;
+  border:none;
+  padding:12px 18px;
+  border-radius:14px;
+  font-weight:900;
+  color:#081121;
+  background:linear-gradient(135deg, var(--neon-cyan), var(--neon-pink));
+  border:1px solid transparent;
+  box-shadow: var(--shadow-soft);
+}
+.promo-create[disabled]{
+  opacity:.55;
+  cursor:not-allowed;
+  filter:saturate(.6);
+}
 
 </style>
 
@@ -700,6 +831,9 @@
 
 <!-- ПУСТОЙ ЭКРАН ПРОФИЛЯ -->
 <div class="hide" id="profileScreen" aria-hidden="true"></div>
+<!-- ПУСТОЙ ЭКРАН ДРУЗЕЙ -->
+<div class="hide" id="friendsScreen" aria-hidden="true"></div>
+
 
 
     <nav class="tabbar">
@@ -764,6 +898,22 @@
     </div>
   </div>
 </div>
+
+<!-- PROMO CREATE MODAL -->
+<div id="promoModal" class="modal" aria-hidden="true" aria-modal="true" role="dialog">
+  <div class="modal-card" role="document">
+    <div class="modal-title">СОЗДАТЬ ПРОМОКОД</div>
+    <div class="promo-body">
+      <input id="promoInput" class="promo-input" type="text"
+             placeholder="Введите промокод" maxlength="16" inputmode="text" autocomplete="off">
+      <div id="promoError" class="promo-error"></div>
+    </div>
+    <div class="modal-actions">
+      <button id="promoCreateBtn" class="promo-create" disabled>СОЗДАТЬ</button>
+    </div>
+  </div>
+</div>
+
 
 <button id="backTop" class="backtop" aria-label="Вверх">ВВЕРХ ↑</button>
 
@@ -1627,6 +1777,8 @@ const casesTab   = tabsAll.find(t => t.textContent.trim().includes('Кейсы')
 const profileTab =
   document.querySelector('.tabbar .tab[data-tab="inventory"]')
   || tabsAll.find(t => /ИНВЕНТАРЬ|Профиль/i.test(t.textContent.trim()));
+const friendsTab = tabsAll.find(t => /Друзья/i.test(t.textContent.trim()));
+
 
 
 // Делает таб активным визуально
@@ -1656,20 +1808,19 @@ function hardCloseDetailAndModal(){
 function showCases(){
   hardCloseDetailAndModal();
 
-  // Показать каталог
   chipbar.classList.remove('hide');
   content.classList.remove('hide');
   backTop.classList.remove('hide');
 
-  // Спрятать экран профиля
   profileScreen.classList.add('hide');
-  profileScreen.setAttribute('aria-hidden', 'true');
+  profileScreen.setAttribute('aria-hidden','true');
 
-  // Активный таб
+  friendsScreen.classList.add('hide');                 // ← добавить
+  friendsScreen.setAttribute('aria-hidden','true');    // ← добавить
+
   setActiveTab(casesTab);
 
-  // Скролл на сохранённую позицию/вверх по вкусу
-  // window.scrollTo({ top: 0, behavior: 'smooth' }); // если хочешь всегда наверх
+  restoreTopbarIfNeeded();                             // ← добавить
 }
 
 function showProfile(){
@@ -1680,15 +1831,18 @@ function showProfile(){
   content.classList.add('hide');
   backTop.classList.add('hide');
 
+  friendsScreen.classList.add('hide');              // ← прячем «Друзья»
+  friendsScreen.setAttribute('aria-hidden','true'); // ← aria
+
   profileScreen.innerHTML = `
-  <div class="inventory-surface">
-    <div class="inventory-page">
-      <div class="inventory-header">ИНВЕНТАРЬ</div>
-      <div id="inventoryEmpty" class="inventory-empty">ЗДЕСЬ ПОКА НИЧЕГО НЕТ</div>
-      <div id="inventoryGrid" class="inventory-grid" style="display:none"></div>
+    <div class="inventory-surface">
+      <div class="inventory-page">
+        <div class="inventory-header">ИНВЕНТАРЬ</div>
+        <div id="inventoryEmpty" class="inventory-empty">ЗДЕСЬ ПОКА НИЧЕГО НЕТ</div>
+        <div id="inventoryGrid" class="inventory-grid" style="display:none"></div>
+      </div>
     </div>
-  </div>
-`;
+  `;
   profileScreen.classList.remove('hide');
   profileScreen.setAttribute('aria-hidden','false');
 
@@ -1696,7 +1850,9 @@ function showProfile(){
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
   renderInventory();
+  restoreTopbarIfNeeded();                          // ← вернём верхний топбар
 }
+
 
 function renderInventory(){
   const grid  = document.getElementById('inventoryGrid');
@@ -1739,6 +1895,184 @@ function renderInventory(){
     openConfirmSell(() => sellFromInventory(id, card));
   };
 }
+
+/* =========================================================
+   ДРУЗЬЯ — экран, модалка промокода, persistence
+   ========================================================= */
+const friendsScreen = document.getElementById('friendsScreen');
+const topbarEl = document.querySelector('.topbar');
+
+function loadPromoCode(){
+  try { return localStorage.getItem('gd_promo_code') || ''; }
+  catch(e){ return ''; }
+}
+function savePromoCode(code){
+  try { localStorage.setItem('gd_promo_code', String(code || '')); }
+  catch(e){}
+}
+
+function renderFriends(){
+  if(!friendsScreen) return;
+
+  const promo = loadPromoCode();
+  friendsScreen.innerHTML = `
+    <div class="friends-surface">
+      <div class="friends-page">
+        <div class="friends-header">ДРУЗЬЯ</div>
+
+        <div class="friends-empty">ВЫ НИКОГО НЕ ПРИГЛАСИЛИ</div>
+
+        <div class="friends-actions">
+          ${
+            promo
+              ? `<div class="friends-code" title="Ваш промокод">${promo}</div>`
+              : `<button type="button" id="btnCreatePromo" class="friends-btn primary">СОЗДАТЬ ПРОМОКОД</button>`
+          }
+          <button type="button" id="btnEnterPromo" class="friends-btn">ВВЕСТИ ПРОМОКОД</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const btnCreate = document.getElementById('btnCreatePromo');
+  if (btnCreate) btnCreate.addEventListener('click', openPromoModal);
+
+  const btnEnter = document.getElementById('btnEnterPromo');
+  if (btnEnter){
+    btnEnter.addEventListener('click', () => {
+      // пока заглушка
+    });
+  }
+}
+
+// Показать экран друзей
+function showFriends(){
+  hardCloseDetailAndModal();
+
+  // спрятать каталог и инвентарь
+  chipbar.classList.add('hide');
+  content.classList.add('hide');
+  backTop.classList.add('hide');
+  profileScreen.classList.add('hide');
+  profileScreen.setAttribute('aria-hidden','true');
+
+  // показать friends
+  friendsScreen.classList.remove('hide');
+  friendsScreen.setAttribute('aria-hidden','false');
+
+  // прячем верхний топбар (аватар/пилюли)
+  topbarEl?.classList.add('hide');
+
+  setActiveTab(friendsTab);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  renderFriends();
+}
+
+// Вернуть топбар, когда уходим с «Друзей»
+function restoreTopbarIfNeeded(){
+  if (friendsScreen?.classList.contains('hide')){
+    topbarEl?.classList.remove('hide');
+  }
+}
+
+/* ===== PROMO MODAL ===== */
+const promoModal     = document.getElementById('promoModal');
+const promoInput     = document.getElementById('promoInput');
+const promoCreateBtn = document.getElementById('promoCreateBtn');
+const promoError     = document.getElementById('promoError');
+
+let _promoOpen = false;
+let _promoLastFocus = null;
+
+function openPromoModal(){
+  if (!promoModal) return;
+
+  // сброс
+  promoInput.value = '';
+  promoCreateBtn.disabled = true;
+  promoError.textContent = '';
+
+  _promoLastFocus = document.activeElement;
+
+  promoModal.classList.add('show');
+  promoModal.setAttribute('aria-hidden','false');
+  _promoOpen = true;
+  lockBody(true);
+
+  setTimeout(()=> promoInput.focus(), 0);
+
+  // интерактив + валидация: 1..16 символов
+  promoInput.oninput = () => {
+    let v = promoInput.value;
+    if (v.length > 16) v = v.slice(0, 16); // защита сверх maxlength (на всякий)
+    promoInput.value = v;
+    promoCreateBtn.disabled = v.trim().length === 0;
+    if (v.trim().length > 0) promoError.textContent = '';
+  };
+
+  // клик по СОЗДАТЬ
+  promoCreateBtn.onclick = () => {
+    const v = promoInput.value.trim();
+    if (!v){
+      promoError.textContent = 'введите промокод';
+      return;
+    }
+    // сохраняем и закрываем
+    savePromoCode(v);
+    closePromoModal();
+    renderFriends(); // заменит кнопку на статичный блок
+  };
+
+  // запрет клика по фону, Esc закрывает, таб-трап
+  promoModal.addEventListener('click', _promoBackdrop, true);
+  document.addEventListener('keydown', _promoKeydown, true);
+  document.addEventListener('keydown', _promoTrapTab, true);
+}
+
+function closePromoModal(){
+  if (!promoModal) return;
+  promoModal.classList.remove('show');
+  promoModal.setAttribute('aria-hidden','true');
+  _promoOpen = false;
+
+  // Разблокировать скролл, если нет других экранов/модалок
+  const dropIsOpen = typeof _modalOpen !== 'undefined' && _modalOpen;
+  if (!detail.classList.contains('show') && !dropIsOpen){
+    lockBody(false);
+  }
+
+  promoModal.removeEventListener('click', _promoBackdrop, true);
+  document.removeEventListener('keydown', _promoKeydown, true);
+  document.removeEventListener('keydown', _promoTrapTab, true);
+
+  if (_promoLastFocus && _promoLastFocus.focus) _promoLastFocus.focus();
+}
+
+function _promoBackdrop(e){
+  const card = promoModal.querySelector('.modal-card');
+  if (!card.contains(e.target)){
+    e.stopPropagation();
+    e.preventDefault();
+  }
+}
+function _promoKeydown(e){
+  if (e.key === 'Escape'){
+    e.stopPropagation();
+    e.preventDefault();
+    closePromoModal();
+  }
+}
+function _promoTrapTab(e){
+  if (e.key !== 'Tab' || !_promoOpen) return;
+  const focusables = promoModal.querySelectorAll('input, button, [href], [tabindex]:not([tabindex="-1"])');
+  const list = Array.from(focusables).filter(el=>!el.disabled && el.offsetParent !== null);
+  if (!list.length) return;
+  const first = list[0], last = list[list.length-1];
+  if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+}
+
 
 // ===== CONFIRM SELL MODAL =====
 const confirmModal = document.getElementById('confirmModal');
@@ -1859,6 +2193,10 @@ if (casesTab){
 if (profileTab){
   profileTab.style.cursor = 'pointer';
   profileTab.addEventListener('click', showProfile);
+}
+if (friendsTab){
+  friendsTab.style.cursor = 'pointer';
+  friendsTab.addEventListener('click', showFriends);
 }
 
 // Гарантируем, что при первой загрузке мы в "Кейсах"
