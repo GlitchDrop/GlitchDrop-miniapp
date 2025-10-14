@@ -266,12 +266,12 @@
 }
 
 
-/* ===== ИНВЕНТАРЬ — полноэкранная страница ===== */
 .inventory-page{
   max-width:1100px;
   margin:0 auto;
-  padding:0 12px 84px;            /* низ с запасом от таббара */
+  padding: 0 12px max(84px, env(safe-area-inset-bottom) + 16px); /* вместо 0 12px 84px */
 }
+
 
 .inventory-grid{
   display:grid;
@@ -333,11 +333,6 @@
     radial-gradient(120px 80px at 20% 20%, rgba(22,241,255,.08), transparent 60%),
     radial-gradient(120px 80px at 80% 80%, rgba(255,62,208,.06), transparent 60%),
     linear-gradient(180deg,#0b1030,#0a1028);
-}
-
-/* отступ снизу, чтобы не налезал таббар */
-.inventory-page{
-  padding: 0 12px max(84px, env(safe-area-inset-bottom) + 16px);
 }
 
 /* === INVENTORY HEADER — full-bleed до краёв экрана === */
@@ -666,12 +661,9 @@
 .friends-surface{
   position:relative;
   min-height:100svh;
-  background:
-    radial-gradient(60% 40% at 50% -10%, rgba(22,241,255,.06), transparent 60%),
-    radial-gradient(60% 40% at 50% 110%, rgba(255,62,208,.05), transparent 60%),
-    linear-gradient(180deg, #0b1030 0%, #0a1028 100%);
-  border-top:1px solid var(--border);
-  box-shadow: inset 0 30px 60px rgba(10,20,60,.35);
+  background: transparent;     /* фон как у кейсов */
+  border-top:1px solid var(--border); /* можно удалить, если не нужна разделительная линия */
+  box-shadow: none;
 }
 
 .friends-page{
@@ -698,6 +690,12 @@
   border-bottom:1px solid var(--border);
   backdrop-filter: blur(8px);
 }
+
+/* когда экран Друзья активен — заголовок у самого верха */
+body.friends-active .friends-header{
+  top: 0 !important;
+}
+
 
 .friends-empty{
   min-height:30vh;
@@ -748,6 +746,31 @@
     radial-gradient(120px 80px at 80% 80%, rgba(255,62,208,.06), transparent 60%),
     linear-gradient(180deg,#0b1030,#0a1028);
 }
+
+/* контейнер: промокод + крестик */
+.friends-code-wrap{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+}
+
+/* красный крестик */
+.promo-delete{
+  appearance:none;
+  border:1px solid rgba(255,90,120,.45);
+  background:linear-gradient(135deg, #ff4d6d, #b3123e);
+  color:#fff;
+  font-weight:900;
+  width:36px;
+  height:36px;
+  border-radius:999px;
+  cursor:pointer;
+  box-shadow:0 10px 22px rgba(255,77,109,.25);
+  line-height:1;
+}
+.promo-delete:active{ transform:translateY(1px); }
+
 
 /* ===== PROMO MODAL ===== */
 #promoModal .modal-card{
@@ -1821,6 +1844,11 @@ function showCases(){
   setActiveTab(casesTab);
 
   restoreTopbarIfNeeded();                             // ← добавить
+
+document.body.classList.remove('friends-active');
+// вернём корректную высоту настоящего топбара
+if (typeof syncTopbarOffset === 'function') syncTopbarOffset();
+
 }
 
 function showProfile(){
@@ -1851,6 +1879,10 @@ function showProfile(){
 
   renderInventory();
   restoreTopbarIfNeeded();                          // ← вернём верхний топбар
+
+document.body.classList.remove('friends-active');
+if (typeof syncTopbarOffset === 'function') syncTopbarOffset();
+
 }
 
 
@@ -1915,34 +1947,52 @@ function renderFriends(){
   if(!friendsScreen) return;
 
   const promo = loadPromoCode();
-  friendsScreen.innerHTML = `
-    <div class="friends-surface">
-      <div class="friends-page">
-        <div class="friends-header">ДРУЗЬЯ</div>
+friendsScreen.innerHTML = `
+  <div class="friends-surface">
+    <div class="friends-page">
+      <div class="friends-header">ДРУЗЬЯ</div>
 
-        <div class="friends-empty">ВЫ НИКОГО НЕ ПРИГЛАСИЛИ</div>
+      <div class="friends-empty">ВЫ НИКОГО НЕ ПРИГЛАСИЛИ</div>
 
-        <div class="friends-actions">
-          ${
-            promo
-              ? `<div class="friends-code" title="Ваш промокод">${promo}</div>`
-              : `<button type="button" id="btnCreatePromo" class="friends-btn primary">СОЗДАТЬ ПРОМОКОД</button>`
-          }
-          <button type="button" id="btnEnterPromo" class="friends-btn">ВВЕСТИ ПРОМОКОД</button>
-        </div>
+      <div class="friends-actions">
+        ${
+          promo
+            ? `
+              <div class="friends-code-wrap">
+                <div class="friends-code" title="Ваш промокод">${promo}</div>
+                <button type="button" class="promo-delete" id="btnDeletePromo" aria-label="Удалить промокод">✕</button>
+              </div>
+            `
+            : `<button type="button" id="btnCreatePromo" class="friends-btn primary">СОЗДАТЬ ПРОМОКОД</button>`
+        }
+        <button type="button" id="btnEnterPromo" class="friends-btn">ВВЕСТИ ПРОМОКОД</button>
       </div>
     </div>
-  `;
+  </div>
+`;
 
   const btnCreate = document.getElementById('btnCreatePromo');
-  if (btnCreate) btnCreate.addEventListener('click', openPromoModal);
+if (btnCreate) btnCreate.addEventListener('click', openPromoModal);
 
-  const btnEnter = document.getElementById('btnEnterPromo');
-  if (btnEnter){
-    btnEnter.addEventListener('click', () => {
-      // пока заглушка
-    });
-  }
+const btnEnter = document.getElementById('btnEnterPromo');
+if (btnEnter){
+  btnEnter.addEventListener('click', () => {
+    // пока заглушка (тут откроешь модалку «ввести чужой промо» при необходимости)
+    // openPromoInputModal();
+  });
+}
+
+// обработчик удаления промокода — ВНЕ обработчика btnEnter!
+const btnDelete = document.getElementById('btnDeletePromo');
+if (btnDelete){
+  btnDelete.addEventListener('click', () => {
+    openConfirmSell(() => {
+      savePromoCode('');
+      renderFriends();
+    }, 'Вы уверены, что хотите удалить промокод?');
+  });
+ }
+
 }
 
 // Показать экран друзей
@@ -1963,6 +2013,11 @@ function showFriends(){
   // прячем верхний топбар (аватар/пилюли)
   topbarEl?.classList.add('hide');
 
+  // режим «друзья»: заголовок прижат к верху
+  document.body.classList.add('friends-active');
+  // убираем отступ, который обычно даёт высота топбара
+  document.documentElement.style.setProperty('--topbar-h', '0px');
+
   setActiveTab(friendsTab);
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
@@ -1975,6 +2030,7 @@ function restoreTopbarIfNeeded(){
     topbarEl?.classList.remove('hide');
   }
 }
+
 
 /* ===== PROMO MODAL ===== */
 const promoModal     = document.getElementById('promoModal');
