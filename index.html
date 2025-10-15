@@ -425,6 +425,12 @@
   padding-bottom: max(84px, env(safe-area-inset-bottom) + 16px);
 }
 
+/* Лочим скролл без position:fixed у body */
+html.scroll-locked, html.scroll-locked body{
+  overflow: hidden;
+  overscroll-behavior: none; /* без резких пружин на iOS/Android */
+}
+
 
   </style>
 
@@ -1163,18 +1169,10 @@ function lockBody(locked){
   if (locked){
     const y = window.scrollY || 0;
     document.body.dataset.scrollY = String(y);
-    document.body.style.position = 'fixed';
-    document.body.style.top = `-${y}px`;
-    document.body.style.left = '0';
-    document.body.style.right = '0';
-    document.body.style.width = '100%';
+    document.documentElement.classList.add('scroll-locked');
   } else {
     const y = parseInt(document.body.dataset.scrollY || '0', 10);
-    document.body.style.position = '';
-    document.body.style.top = '';
-    document.body.style.left = '';
-    document.body.style.right = '';
-    document.body.style.width = '';
+    document.documentElement.classList.remove('scroll-locked');
     window.scrollTo(0, y);
   }
 }
