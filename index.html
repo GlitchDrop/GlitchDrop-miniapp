@@ -364,17 +364,9 @@
 /* ===== FRIENDS v2 (новый дизайн) ===== */
 .friends-wrap{
   max-width: 980px; margin: 12px auto 0; padding: 0 12px;
+  padding-bottom: max(84px, env(safe-area-inset-bottom) + 16px); /* ← добавь эту строку */
 }
-.fr-panel{
-  border:1px solid var(--border);
-  border-radius: 18px;
-  background:
-    radial-gradient(80% 60% at 100% 0%, rgba(22,241,255,.06), transparent 60%),
-    radial-gradient(60% 60% at 0% 100%, rgba(255,62,208,.05), transparent 60%),
-    linear-gradient(180deg, rgba(18,24,56,.78), rgba(12,16,40,.86));
-  box-shadow: var(--shadow-strong);
-  padding: 16px;
-}
+
 .friends-header{
   width:100%;
   position: sticky;
@@ -409,10 +401,6 @@
 .btn-icon{ display:grid; place-items:center; background:linear-gradient(135deg, rgba(15,20,48,.92), rgba(12,16,38,.92)); border:1px solid var(--border); color:#e8efff; width:44px; padding:0; }
 .btn-ghost{ color:#e8efff; background:linear-gradient(135deg, rgba(15,20,48,.9), rgba(12,16,38,.9)); border:1px solid var(--border); }
 
-.fr-badges{ display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin: 4px 0 10px; }
-.badge{ display:inline-flex; align-items:center; gap:7px; padding:8px 12px; border-radius:999px; font-weight:900; font-size:12px; border:1px solid var(--border); background:linear-gradient(135deg, rgba(22,241,255,.08), rgba(138,92,255,.10)); }
-.badge img{ width:18px; height:18px; border-radius:4px; object-fit:cover; display:block; }
-
 .fr-block-title{ font-weight:900; letter-spacing:.4px; color:#d7e6ff; margin: 4px 0 10px; text-shadow:0 0 12px rgba(22,241,255,.15); }
 .fr-promo{ display:grid; grid-template-columns:1fr; gap:10px; }
 .fr-input{ width:100%; border-radius:12px; border:1px solid var(--border); background:rgba(15,20,48,.9); color:#e8efff; padding:12px 12px; font-weight:800; outline:none; }
@@ -432,8 +420,10 @@
   .fr-actions{ grid-template-columns:1fr 1fr; }
 }
 
-/* прячем таббар на экране друзей (оставляем правило) */
-body.friends-active .tabbar{ display:none; }
+/* где угодно в CSS */
+.friends-page{
+  padding-bottom: max(84px, env(safe-area-inset-bottom) + 16px);
+}
 
 
   </style>
@@ -1692,6 +1682,7 @@ function addToInventory(imgSrc){
 
 // ===== Переключение между "Кейсы" и "Профиль" =====
 const profileScreen = document.getElementById('profileScreen');
+const friendsScreen  = document.getElementById('friendsScreen');
 
 const tabsAll = Array.from(document.querySelectorAll('.tabbar .tab'));
 
@@ -1828,65 +1819,58 @@ function renderInventory(){
 }
 
 /* ===================== FRIENDS v2 ===================== */
-const friendsScreen = document.getElementById('friendsScreen');
 const topbarEl = document.querySelector('.topbar');
 
 function renderFriends(){
   if(!friendsScreen) return;
 
   const TOKEN_ICON = 'assets/images/20251005_0825_Яркое неоновое сияние_remix_01k6sd902pf03ah1w3cpkr66jz.png';
-  const invited = []; // заглушка: массив ваших друзей
+  const invited = []; // TODO: реальные данные
 
   friendsScreen.innerHTML = `
     <div class="friends-header">ДРУЗЬЯ</div>
+
     <div class="friends-wrap">
-      <div class="fr-panel">
-        <div class="fr-title">Приглашай друзей — Получай награды!</div>
-        <div class="fr-sub">Каждый приглашённый друг = <strong>1</strong> <span class="bil">🎟️</span> билет</div>
+      <!-- Промо-блок во всю ширину, без «панели» -->
+      <div class="fr-title">Приглашай друзей — Получай награды!</div>
+      <div class="fr-sub">Каждый приглашённый друг = <strong>1</strong> <span class="bil">🎟️</span> билет</div>
 
-        <div class="fr-cta-row">
-          <button type="button" class="btn btn-primary" id="btnInvite">ПРИГЛАСИТЬ ДРУГА</button>
-          <button type="button" class="btn btn-icon" id="btnCopy" title="Скопировать ссылку">📋</button>
-          <button type="button" class="btn btn-ghost" id="btnPartner" style="display:none">СТАТЬ ПАРТНЁРОМ</button>
+      <div class="fr-cta-row">
+        <button type="button" class="btn btn-primary" id="btnInvite">ПРИГЛАСИТЬ ДРУГА</button>
+        <button type="button" class="btn btn-icon" id="btnCopy" title="Скопировать ссылку">📋</button>
+        <button type="button" class="btn btn-ghost" id="btnPartner" style="display:none">СТАТЬ ПАРТНЁРОМ</button>
+      </div>
+
+      <div class="fr-block-title">Создание промокода</div>
+      <div class="fr-promo">
+        <input class="fr-input" id="promoInput2" type="text" placeholder="Введите промокод (до 16 символов)" maxlength="16" />
+        <div class="fr-actions">
+          <button type="button" class="btn btn-primary" id="btnCreatePromo2">СОЗДАТЬ ПРОМОКОД</button>
+          <button type="button" class="btn btn-ghost" id="btnEnterPromo2">ВВЕСТИ ПРОМОКОД</button>
         </div>
+      </div>
 
-        <div class="fr-badges">
-          <span class="badge"><img src="${TOKEN_ICON}" alt="">За друга: +1 токен</span>
-          <span class="badge">Билет в розыгрыш</span>
-          <span class="badge">Прозрачные условия</span>
+      <div class="fr-list-wrap">
+        <div class="fr-list-head">
+          <span>Приглашённые друзья</span>
+          <span>(${invited.length})</span>
         </div>
-
-        <div class="fr-block-title">Создание промокода</div>
-        <div class="fr-promo">
-          <input class="fr-input" id="promoInput2" type="text" placeholder="Введите промокод (до 16 символов)" maxlength="16" />
-          <div class="fr-actions">
-            <button type="button" class="btn btn-primary" id="btnCreatePromo2">СОЗДАТЬ ПРОМОКОД</button>
-            <button type="button" class="btn btn-ghost" id="btnEnterPromo2">ВВЕСТИ ПРОМОКОД</button>
-          </div>
-        </div>
-
-        <div class="fr-list-wrap">
-          <div class="fr-list-head">
-            <span>Приглашённые друзья</span>
-            <span>(${invited.length})</span>
-          </div>
-          <div class="fr-list" id="frList">
-            ${
-              invited.length
+        <div class="fr-list" id="frList">
+          ${
+            invited.length
               ? invited.map((u,i)=>`
-                  <div class="fr-item" role="listitem">
-                    <div class="n">${i+1}.</div>
-                    <div class="nm">${u.name||'USERNAME'}</div>
-                    <div class="gain">+1 <img src="${TOKEN_ICON}" alt=""></div>
-                  </div>
-                `).join('')
+                <div class="fr-item" role="listitem">
+                  <div class="n">${i+1}.</div>
+                  <div class="nm">${u.name||'USERNAME'}</div>
+                  <div class="gain">+1 <img src="${TOKEN_ICON}" alt=""></div>
+                </div>
+              `).join('')
               : `<div class="fr-item" aria-hidden="true">
                    <div class="n">—</div>
                    <div class="nm" style="opacity:.8">Здесь появятся ваши друзья</div>
                    <div class="gain">+1 <img src="${TOKEN_ICON}" alt=""></div>
                  </div>`
-            }
-          </div>
+          }
         </div>
       </div>
     </div>
@@ -1899,13 +1883,14 @@ function renderFriends(){
   document.getElementById('btnCreatePromo2')?.addEventListener('click', ()=>noop('Создать промокод (заглушка)'));
   document.getElementById('btnEnterPromo2')?.addEventListener('click',  ()=>noop('Ввести промокод (заглушка)'));
 
-  // на широких экранах показываем "Стать партнёром"
+  // на широких экранах показываем «Стать партнёром»
   const partnerBtn = document.getElementById('btnPartner');
   if (window.matchMedia('(min-width:680px)').matches){
     partnerBtn.style.display = 'inline-block';
     partnerBtn.addEventListener('click', ()=> noop('Стать партнёром (заглушка)'));
   }
 }
+
 
 function showFriends(){
   hardCloseDetailAndModal();
@@ -1921,18 +1906,21 @@ function showFriends(){
   friendsScreen.classList.remove('hide');
   friendsScreen.setAttribute('aria-hidden','false');
 
-  // прячем верхний топбар; таббар скрывается CSS-ом по body.friends-active
+  // прячем только верхний топбар
   topbarEl?.classList.add('hide');
-  document.body.classList.add('friends-active');
+
+  // нижний таббар ОСТАЁТСЯ видимым — никаких body-классов
+  document.body.classList.remove('friends-active');
 
   setActiveTab(friendsTab);
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
-  // заголовок друзей прижат к самому верху → убираем отступ
+  // заголовок «Друзья» прижат к самому верху
   document.documentElement.style.setProperty('--topbar-h', '0px');
 
   renderFriends();
 }
+
 
 // вернуть топбар при уходе с «Друзей»
 function restoreTopbarIfNeeded(){
