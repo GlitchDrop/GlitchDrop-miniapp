@@ -361,6 +361,81 @@
   backdrop-filter: blur(8px);
 }
 
+/* ===== FRIENDS v2 (новый дизайн) ===== */
+.friends-wrap{
+  max-width: 980px; margin: 12px auto 0; padding: 0 12px;
+}
+.fr-panel{
+  border:1px solid var(--border);
+  border-radius: 18px;
+  background:
+    radial-gradient(80% 60% at 100% 0%, rgba(22,241,255,.06), transparent 60%),
+    radial-gradient(60% 60% at 0% 100%, rgba(255,62,208,.05), transparent 60%),
+    linear-gradient(180deg, rgba(18,24,56,.78), rgba(12,16,40,.86));
+  box-shadow: var(--shadow-strong);
+  padding: 16px;
+}
+.friends-header{
+  width:100%;
+  position: sticky;
+  top: 0;
+  z-index: 22;
+  padding: 10px max(12px, env(safe-area-inset-left)) 12px max(12px, env(safe-area-inset-right));
+  text-align:center;
+  font-weight:900;
+  letter-spacing:1.4px;
+  font-size:clamp(24px, 8vw, 52px);
+  color:#e8efff;
+  text-shadow:0 0 16px rgba(22,241,255,.18);
+  background: linear-gradient(180deg, rgba(12,16,38,.88), rgba(10,14,34,.82));
+  border-bottom:1px solid var(--border);
+  backdrop-filter: blur(8px);
+}
+.fr-title{
+  text-align:center; font-weight:900; letter-spacing:.6px;
+  font-size: clamp(18px, 4.6vw, 26px);
+  color:#e8efff; text-shadow:0 0 16px rgba(22,241,255,.2);
+  margin: 2px 0 6px;
+}
+.fr-sub{ text-align:center; color:#9fb2d9; font-weight:800; font-size:13px; margin-bottom:12px; }
+.fr-sub .bil{ filter: saturate(1.2); }
+
+.fr-cta-row{
+  display:grid; grid-template-columns:1fr 44px; gap:10px;
+  align-items:stretch; margin-bottom: 10px;
+}
+.btn{ appearance:none; border:none; cursor:pointer; border-radius:14px; padding:14px 16px; font-weight:900; letter-spacing:.3px; box-shadow: var(--shadow-soft); }
+.btn-primary{ color:#081121; background:linear-gradient(135deg, var(--neon-cyan), var(--neon-pink)); border:1px solid transparent; }
+.btn-icon{ display:grid; place-items:center; background:linear-gradient(135deg, rgba(15,20,48,.92), rgba(12,16,38,.92)); border:1px solid var(--border); color:#e8efff; width:44px; padding:0; }
+.btn-ghost{ color:#e8efff; background:linear-gradient(135deg, rgba(15,20,48,.9), rgba(12,16,38,.9)); border:1px solid var(--border); }
+
+.fr-badges{ display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin: 4px 0 10px; }
+.badge{ display:inline-flex; align-items:center; gap:7px; padding:8px 12px; border-radius:999px; font-weight:900; font-size:12px; border:1px solid var(--border); background:linear-gradient(135deg, rgba(22,241,255,.08), rgba(138,92,255,.10)); }
+.badge img{ width:18px; height:18px; border-radius:4px; object-fit:cover; display:block; }
+
+.fr-block-title{ font-weight:900; letter-spacing:.4px; color:#d7e6ff; margin: 4px 0 10px; text-shadow:0 0 12px rgba(22,241,255,.15); }
+.fr-promo{ display:grid; grid-template-columns:1fr; gap:10px; }
+.fr-input{ width:100%; border-radius:12px; border:1px solid var(--border); background:rgba(15,20,48,.9); color:#e8efff; padding:12px 12px; font-weight:800; outline:none; }
+.fr-actions{ display:grid; grid-template-columns:1fr; gap:10px; }
+
+.fr-list-wrap{ margin-top:14px; border:1px solid var(--border); border-radius:16px; background:linear-gradient(180deg, rgba(15,20,48,.72), rgba(12,16,38,.72)); }
+.fr-list-head{ display:flex; justify-content:space-between; align-items:center; padding:12px 14px; font-weight:900; color:#e8efff; border-bottom:1px solid var(--border); }
+.fr-list{ display:flex; flex-direction:column; gap:8px; padding:10px; }
+.fr-item{ display:grid; grid-template-columns: 28px 1fr auto; align-items:center; gap:10px; padding:12px; border-radius:12px; border:1px solid var(--border); background:linear-gradient(135deg, rgba(18,24,56,.7), rgba(12,16,38,.7)); }
+.fr-item .n{ font-weight:900; color:#e8efff; }
+.fr-item .nm{ font-weight:900; color:#e8efff; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+.fr-item .gain{ display:flex; align-items:center; gap:8px; font-weight:900; color:#e8efff; }
+.fr-item .gain img{ width:18px; height:18px; border-radius:4px; object-fit:cover; }
+
+@media (min-width: 680px){
+  .fr-cta-row{ grid-template-columns:1fr 48px 1fr; }
+  .fr-actions{ grid-template-columns:1fr 1fr; }
+}
+
+/* прячем таббар на экране друзей (оставляем правило) */
+body.friends-active .tabbar{ display:none; }
+
+
   </style>
 
 <style>
@@ -657,273 +732,6 @@
 }
 .inv-sell:active{ transform:translateX(-50%) translateY(1px); }
 
-/* ===== FRIENDS PAGE ===== */
-.friends-surface{
-  position:relative;
-  min-height:100svh;
-  background: transparent;     /* фон как у кейсов */
-  border-top:1px solid var(--border); /* можно удалить, если не нужна разделительная линия */
-  box-shadow: none;
-}
-
-.friends-page{
-  max-width:1100px;
-  margin:0 auto;
-  padding: 0 12px max(84px, env(safe-area-inset-bottom) + 16px);
-}
-
-.friends-header{
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
-  margin-right: calc(50% - 50vw);
-  position: sticky;
-  top: var(--topbar-h, 64px);
-  z-index: 22;
-  padding: 10px max(12px, env(safe-area-inset-left)) 12px max(12px, env(safe-area-inset-right));
-  text-align:center;
-  font-weight:900;
-  letter-spacing:1.4px;
-  font-size:clamp(24px, 8vw, 52px);
-  color:#e8efff;
-  text-shadow:0 0 16px rgba(22,241,255,.18);
-  background: linear-gradient(180deg, rgba(12,16,38,.88), rgba(10,14,34,.82));
-  border-bottom:1px solid var(--border);
-  backdrop-filter: blur(8px);
-}
-
-/* когда экран Друзья активен — заголовок у самого верха */
-body.friends-active .friends-header{
-  top: 0 !important;
-}
-
-.friends-empty{
-  min-height:30vh;
-  display:grid;
-  place-items:center;
-  text-align:center;
-  color:#ffffff;
-  opacity:.9;
-  font-weight:900;
-  letter-spacing:.6px;
-  margin-top: 8px;
-}
-
-/* Кнопки «Создать / Ввести промокод» */
-.friends-actions{
-  display:grid;
-  gap:12px;
-  margin-top:20px;
-}
-.friends-btn{
-  appearance:none;
-  border:1px solid var(--border);
-  border-radius:16px;
-  padding:16px 18px;
-  font-weight:900;
-  letter-spacing:.3px;
-  cursor:pointer;
-  background:linear-gradient(135deg, rgba(15,20,48,.9), rgba(12,16,38,.9));
-  color:#e8efff;
-  box-shadow: var(--shadow-soft);
-}
-.friends-btn.primary{
-  color:#081121;
-  background:linear-gradient(135deg, var(--neon-cyan), var(--neon-pink));
-  border-color:transparent;
-}
-
-/* Статика вместо кнопки после создания промокода */
-.friends-code{
-  border:1px dashed rgba(180,210,255,.35);
-  border-radius:16px;
-  padding:16px 18px;
-  font-weight:900;
-  letter-spacing:.3px;
-  color:#d7e6ff;
-  background:
-    radial-gradient(120px 80px at 20% 20%, rgba(22,241,255,.08), transparent 60%),
-    radial-gradient(120px 80px at 80% 80%, rgba(255,62,208,.06), transparent 60%),
-    linear-gradient(180deg,#0b1030,#0a1028);
-}
-
-/* контейнер: промокод + крестик */
-.friends-code-wrap{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:10px;
-}
-
-/* красный крестик */
-.promo-delete{
-  appearance:none;
-  border:1px solid rgba(255,90,120,.45);
-  background:linear-gradient(135deg, #ff4d6d, #b3123e);
-  color:#fff;
-  font-weight:900;
-  width:36px;
-  height:36px;
-  border-radius:999px;
-  cursor:pointer;
-  box-shadow:0 10px 22px rgba(255,77,109,.25);
-  line-height:1;
-}
-.promo-delete:active{ transform:translateY(1px); }
-
-:root{
-  --friends-cta-h: 140px; /* высота фикс-подвала с кнопками (подхватится скриптом) */
-}
-
-/* верхняя зона со списком друзей */
-.friends-list-surface{
-  position: relative;
-  min-height: 100svh;
-  background:
-    radial-gradient(60% 40% at 50% -10%, rgba(22,241,255,.04), transparent 60%),
-    linear-gradient(180deg, #0b1030 0%, #0a1126 100%);
-  padding-bottom: calc(var(--friends-cta-h) + max(8px, env(safe-area-inset-bottom)));
-}
-
-/* маленький зазор сверху от списка до подвала */
-.friends-gap{ height: 8px; }
-
-/* фиксированный нижний блок с двумя кнопками на светлом фоне */
-.friends-cta{
-  position: fixed;
-  left: 0; right: 0; bottom: 0;
-  z-index: 999;
-  border-top: 1px solid var(--border);
-  background: linear-gradient(180deg, rgba(230,240,255,.06), rgba(230,240,255,.10));
-  backdrop-filter: blur(6px);
-  padding: 14px max(12px, env(safe-area-inset-left)) calc(14px + env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-right));
-}
-.friends-cta .friends-page{
-  display:grid; grid-template-columns:1fr; gap:12px;
-}
-
-/* кнопки в подвале (повторяем стиль) */
-.friends-cta .friends-btn{
-  appearance:none;
-  border:1px solid var(--border);
-  border-radius:16px;
-  padding:16px 18px;
-  font-weight:900;
-  letter-spacing:.3px;
-  cursor:pointer;
-  background:linear-gradient(135deg, rgba(15,20,48,.9), rgba(12,16,38,.9));
-  color:#e8efff;
-  box-shadow: var(--shadow-soft);
-}
-.friends-cta .friends-btn.primary{
-  color:#081121;
-  background:linear-gradient(135deg, var(--neon-cyan), var(--neon-pink));
-  border-color:transparent;
-}
-
-/* «ваш промокод» вместо кнопки */
-.friends-cta .friends-code-wrap{
-  display:flex; align-items:center; justify-content:center; gap:10px;
-}
-.friends-cta .friends-code{
-  border:1px dashed rgba(180,210,255,.35);
-  border-radius:16px; padding:16px 18px;
-  font-weight:900; letter-spacing:.3px; color:#d7e6ff;
-  background:
-    radial-gradient(120px 80px at 20% 20%, rgba(22,241,255,.08), transparent 60%),
-    radial-gradient(120px 80px at 80% 80%, rgba(255,62,208,.06), transparent 60%),
-    linear-gradient(180deg,#0b1030,#0a1028);
-}
-.friends-cta .promo-delete{
-  appearance:none; width:36px; height:36px; border-radius:999px;
-  border:1px solid rgba(255,90,120,.45);
-  background:linear-gradient(135deg, #ff4d6d, #b3123e); color:#fff; font-weight:900;
-  cursor:pointer; box-shadow:0 10px 22px rgba(255,77,109,.25);
-}
-
-/* список друзей (верхняя часть) */
-.friends-list{
-  display:flex; flex-direction:column; gap:10px;
-  padding: 10px 0 16px;
-}
-.friend-row{
-  display:grid;
-  grid-template-columns: 44px 1fr auto;
-  align-items:center;
-  gap: 12px;
-  padding: 14px;
-  border-radius: 14px;
-  background: linear-gradient(180deg, rgba(15,20,48,.72), rgba(12,16,38,.72));
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-soft);
-}
-.friend-num{
-  font-weight: 900;
-  font-size: clamp(16px, 6vw, 22px);
-  color: #e8efff;
-  text-shadow: 0 0 12px rgba(22,241,255,.20);
-}
-.friend-name{
-  font-weight: 900;
-  letter-spacing: .4px;
-  text-transform: uppercase;
-  color: #e8efff;
-  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-  font-size: clamp(14px, 4.2vw, 18px);
-}
-.fr-gain{
-  display:flex; align-items:center; gap:8px;
-  font-weight:900; color:#e8efff;
-  font-size: clamp(14px, 4vw, 18px);
-  white-space:nowrap;
-}
-.fr-gain .fr-token{ width:18px; height:18px; border-radius:4px; display:block; object-fit:cover; }
-
-
-/* ===== PROMO MODAL ===== */
-#promoModal .modal-card{
-  width:min(520px, 92%);
-}
-.promo-body{
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-  margin: 4px 0 6px;
-}
-.promo-input{
-  width:100%;
-  border-radius:12px;
-  border:1px solid var(--border);
-  background:rgba(15,20,48,.9);
-  color:#e8efff;
-  padding:12px 12px;
-  font-weight:800;
-  outline:none;
-}
-.promo-error{
-  min-height: 16px;
-  font-size:12px;
-  font-weight:800;
-  color:#ff6b7a;
-  text-align:center;
-}
-.promo-create{
-  appearance:none;
-  cursor:pointer;
-  border:none;
-  padding:12px 18px;
-  border-radius:14px;
-  font-weight:900;
-  color:#081121;
-  background:linear-gradient(135deg, var(--neon-cyan), var(--neon-pink));
-  border:1px solid transparent;
-  box-shadow: var(--shadow-soft);
-}
-.promo-create[disabled]{
-  opacity:.55;
-  cursor:not-allowed;
-  filter:saturate(.6);
-}
-
 </style>
 
 </head>
@@ -1028,22 +836,6 @@ body.friends-active .friends-header{
     </div>
   </div>
 </div>
-
-<!-- PROMO CREATE MODAL -->
-<div id="promoModal" class="modal" aria-hidden="true" aria-modal="true" role="dialog">
-  <div class="modal-card" role="document">
-    <div class="modal-title">СОЗДАТЬ ПРОМОКОД</div>
-    <div class="promo-body">
-      <input id="promoInput" class="promo-input" type="text"
-             placeholder="Введите промокод" maxlength="16" inputmode="text" autocomplete="off">
-      <div id="promoError" class="promo-error"></div>
-    </div>
-    <div class="modal-actions">
-      <button id="promoCreateBtn" class="promo-create" disabled>СОЗДАТЬ</button>
-    </div>
-  </div>
-</div>
-
 
 <button id="backTop" class="backtop" aria-label="Вверх">ВВЕРХ ↑</button>
 
@@ -2035,103 +1827,86 @@ function renderInventory(){
   };
 }
 
-/* =========================================================
-   ДРУЗЬЯ — экран, модалка промокода, persistence
-   ========================================================= */
+/* ===================== FRIENDS v2 ===================== */
 const friendsScreen = document.getElementById('friendsScreen');
 const topbarEl = document.querySelector('.topbar');
-
-function loadPromoCode(){
-  try { return localStorage.getItem('gd_promo_code') || ''; }
-  catch(e){ return ''; }
-}
-function savePromoCode(code){
-  try { localStorage.setItem('gd_promo_code', String(code || '')); }
-  catch(e){}
-}
 
 function renderFriends(){
   if(!friendsScreen) return;
 
-  // когда появятся реальные данные — подставишь сюда массив
-  const users = []; // пример: [{name:'@friend1'}]
-  const list = users.length ? users : [{ name: 'USERNAME ДРУГА' }]; // всегда >= 1 строка
-
   const TOKEN_ICON = 'assets/images/20251005_0825_Яркое неоновое сияние_remix_01k6sd902pf03ah1w3cpkr66jz.png';
+  const invited = []; // заглушка: массив ваших друзей
 
   friendsScreen.innerHTML = `
-    <div class="friends-list-surface">
-      <div class="friends-page">
-        <div class="friends-header">ДРУЗЬЯ</div>
+    <div class="friends-header">ДРУЗЬЯ</div>
+    <div class="friends-wrap">
+      <div class="fr-panel">
+        <div class="fr-title">Приглашай друзей — Получай награды!</div>
+        <div class="fr-sub">Каждый приглашённый друг = <strong>1</strong> <span class="bil">🎟️</span> билет</div>
 
-        <div class="friends-list" id="friendsList">
-          ${list.map((u, i) => `
-            <div class="friend-row" role="listitem">
-              <div class="friend-num">${i+1}.</div>
-              <div class="friend-name">${(u.name || 'USERNAME ДРУГА')}</div>
-              <div class="fr-gain">
-                <span>+1</span>
-                <img class="fr-token" src="${TOKEN_ICON}" alt="токен">
-              </div>
-            </div>
-          `).join('')}
+        <div class="fr-cta-row">
+          <button type="button" class="btn btn-primary" id="btnInvite">ПРИГЛАСИТЬ ДРУГА</button>
+          <button type="button" class="btn btn-icon" id="btnCopy" title="Скопировать ссылку">📋</button>
+          <button type="button" class="btn btn-ghost" id="btnPartner" style="display:none">СТАТЬ ПАРТНЁРОМ</button>
         </div>
-      </div>
-      <div class="friends-gap"></div>
-    </div>
 
-    <div class="friends-cta" id="friendsCta">
-      <div class="friends-page">
-        ${
-          loadPromoCode()
-            ? `
-              <div class="friends-code-wrap">
-                <div class="friends-code" title="Ваш промокод">${loadPromoCode()}</div>
-                <button type="button" class="promo-delete" id="btnDeletePromo" aria-label="Удалить промокод">✕</button>
-              </div>
-            `
-            : `<button type="button" id="btnCreatePromo" class="friends-btn primary">СОЗДАТЬ ПРОМОКОД</button>`
-        }
-        <button type="button" id="btnEnterPromo" class="friends-btn">ВВЕСТИ ПРОМОКОД</button>
+        <div class="fr-badges">
+          <span class="badge"><img src="${TOKEN_ICON}" alt="">За друга: +1 токен</span>
+          <span class="badge">Билет в розыгрыш</span>
+          <span class="badge">Прозрачные условия</span>
+        </div>
+
+        <div class="fr-block-title">Создание промокода</div>
+        <div class="fr-promo">
+          <input class="fr-input" id="promoInput2" type="text" placeholder="Введите промокод (до 16 символов)" maxlength="16" />
+          <div class="fr-actions">
+            <button type="button" class="btn btn-primary" id="btnCreatePromo2">СОЗДАТЬ ПРОМОКОД</button>
+            <button type="button" class="btn btn-ghost" id="btnEnterPromo2">ВВЕСТИ ПРОМОКОД</button>
+          </div>
+        </div>
+
+        <div class="fr-list-wrap">
+          <div class="fr-list-head">
+            <span>Приглашённые друзья</span>
+            <span>(${invited.length})</span>
+          </div>
+          <div class="fr-list" id="frList">
+            ${
+              invited.length
+              ? invited.map((u,i)=>`
+                  <div class="fr-item" role="listitem">
+                    <div class="n">${i+1}.</div>
+                    <div class="nm">${u.name||'USERNAME'}</div>
+                    <div class="gain">+1 <img src="${TOKEN_ICON}" alt=""></div>
+                  </div>
+                `).join('')
+              : `<div class="fr-item" aria-hidden="true">
+                   <div class="n">—</div>
+                   <div class="nm" style="opacity:.8">Здесь появятся ваши друзья</div>
+                   <div class="gain">+1 <img src="${TOKEN_ICON}" alt=""></div>
+                 </div>`
+            }
+          </div>
+        </div>
       </div>
     </div>
   `;
 
-  // обработчики кнопок в подвале
-  const btnCreate = document.getElementById('btnCreatePromo');
-  if (btnCreate) btnCreate.addEventListener('click', openPromoModal);
+  // заглушки
+  const noop = msg => alert(msg);
+  document.getElementById('btnInvite')?.addEventListener('click', ()=>noop('Пригласить друга (заглушка)'));
+  document.getElementById('btnCopy')?.addEventListener('click',   ()=>noop('Ссылка скопирована (заглушка)'));
+  document.getElementById('btnCreatePromo2')?.addEventListener('click', ()=>noop('Создать промокод (заглушка)'));
+  document.getElementById('btnEnterPromo2')?.addEventListener('click',  ()=>noop('Ввести промокод (заглушка)'));
 
-  const btnEnter = document.getElementById('btnEnterPromo');
-  if (btnEnter){
-    btnEnter.addEventListener('click', () => {
-      // TODO: сюда модалку "ввести промокод" (сейчас заглушка)
-    });
+  // на широких экранах показываем "Стать партнёром"
+  const partnerBtn = document.getElementById('btnPartner');
+  if (window.matchMedia('(min-width:680px)').matches){
+    partnerBtn.style.display = 'inline-block';
+    partnerBtn.addEventListener('click', ()=> noop('Стать партнёром (заглушка)'));
   }
-
-  const btnDelete = document.getElementById('btnDeletePromo');
-  if (btnDelete){
-    btnDelete.addEventListener('click', () => {
-      openConfirmSell(() => {
-        savePromoCode('');
-        renderFriends();
-      }, 'Вы уверены, что хотите удалить промокод?');
-    });
-  }
-
-  // зафиксировать реальную высоту подвала, чтобы список не перекрывался
-  syncFriendsCtaHeight();
 }
 
-function syncFriendsCtaHeight(){
-  const el = document.getElementById('friendsCta');
-  const h = el?.offsetHeight || 140;
-  document.documentElement.style.setProperty('--friends-cta-h', h + 'px');
-}
-window.addEventListener('resize', syncFriendsCtaHeight, {passive:true});
-window.addEventListener('orientationchange', syncFriendsCtaHeight, {passive:true});
-
-
-// Показать экран друзей
 function showFriends(){
   hardCloseDetailAndModal();
 
@@ -2146,123 +1921,24 @@ function showFriends(){
   friendsScreen.classList.remove('hide');
   friendsScreen.setAttribute('aria-hidden','false');
 
-  // прячем верхний топбар (аватар/пилюли)
+  // прячем верхний топбар; таббар скрывается CSS-ом по body.friends-active
   topbarEl?.classList.add('hide');
-
-  // режим «друзья»: заголовок прижат к верху
   document.body.classList.add('friends-active');
-  // убираем отступ, который обычно даёт высота топбара
-  document.documentElement.style.setProperty('--topbar-h', '0px');
 
   setActiveTab(friendsTab);
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
+  // заголовок друзей прижат к самому верху → убираем отступ
+  document.documentElement.style.setProperty('--topbar-h', '0px');
+
   renderFriends();
 }
 
-// Вернуть топбар, когда уходим с «Друзей»
+// вернуть топбар при уходе с «Друзей»
 function restoreTopbarIfNeeded(){
   if (friendsScreen?.classList.contains('hide')){
     topbarEl?.classList.remove('hide');
   }
-}
-
-
-/* ===== PROMO MODAL ===== */
-const promoModal     = document.getElementById('promoModal');
-const promoInput     = document.getElementById('promoInput');
-const promoCreateBtn = document.getElementById('promoCreateBtn');
-const promoError     = document.getElementById('promoError');
-
-let _promoOpen = false;
-let _promoLastFocus = null;
-
-function openPromoModal(){
-  if (!promoModal) return;
-
-  // сброс
-  promoInput.value = '';
-  promoCreateBtn.disabled = true;
-  promoError.textContent = '';
-
-  _promoLastFocus = document.activeElement;
-
-  promoModal.classList.add('show');
-  promoModal.setAttribute('aria-hidden','false');
-  _promoOpen = true;
-  lockBody(true);
-
-  setTimeout(()=> promoInput.focus(), 0);
-
-  // интерактив + валидация: 1..16 символов
-  promoInput.oninput = () => {
-    let v = promoInput.value;
-    if (v.length > 16) v = v.slice(0, 16); // защита сверх maxlength (на всякий)
-    promoInput.value = v;
-    promoCreateBtn.disabled = v.trim().length === 0;
-    if (v.trim().length > 0) promoError.textContent = '';
-  };
-
-  // клик по СОЗДАТЬ
-  promoCreateBtn.onclick = () => {
-    const v = promoInput.value.trim();
-    if (!v){
-      promoError.textContent = 'введите промокод';
-      return;
-    }
-    // сохраняем и закрываем
-    savePromoCode(v);
-    closePromoModal();
-    renderFriends(); // заменит кнопку на статичный блок
-  };
-
-  // запрет клика по фону, Esc закрывает, таб-трап
-  promoModal.addEventListener('click', _promoBackdrop, true);
-  document.addEventListener('keydown', _promoKeydown, true);
-  document.addEventListener('keydown', _promoTrapTab, true);
-}
-
-function closePromoModal(){
-  if (!promoModal) return;
-  promoModal.classList.remove('show');
-  promoModal.setAttribute('aria-hidden','true');
-  _promoOpen = false;
-
-  // Разблокировать скролл, если нет других экранов/модалок
-  const dropIsOpen = typeof _modalOpen !== 'undefined' && _modalOpen;
-  if (!detail.classList.contains('show') && !dropIsOpen){
-    lockBody(false);
-  }
-
-  promoModal.removeEventListener('click', _promoBackdrop, true);
-  document.removeEventListener('keydown', _promoKeydown, true);
-  document.removeEventListener('keydown', _promoTrapTab, true);
-
-  if (_promoLastFocus && _promoLastFocus.focus) _promoLastFocus.focus();
-}
-
-function _promoBackdrop(e){
-  const card = promoModal.querySelector('.modal-card');
-  if (!card.contains(e.target)){
-    e.stopPropagation();
-    e.preventDefault();
-  }
-}
-function _promoKeydown(e){
-  if (e.key === 'Escape'){
-    e.stopPropagation();
-    e.preventDefault();
-    closePromoModal();
-  }
-}
-function _promoTrapTab(e){
-  if (e.key !== 'Tab' || !_promoOpen) return;
-  const focusables = promoModal.querySelectorAll('input, button, [href], [tabindex]:not([tabindex="-1"])');
-  const list = Array.from(focusables).filter(el=>!el.disabled && el.offsetParent !== null);
-  if (!list.length) return;
-  const first = list[0], last = list[list.length-1];
-  if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
-  else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
 }
 
 
