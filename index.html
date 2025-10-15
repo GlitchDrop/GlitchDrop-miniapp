@@ -14,6 +14,7 @@
       --shadow-strong:0 20px 60px rgba(10,20,60,.55), 0 0 60px rgba(22,241,255,.08);
       --shadow-soft:0 10px 30px rgba(10,20,60,.35);
       --radius:18px;
+--tabbar-h: 84px;  /* дефолт, дальше пересчитаем JS-ом */
     }
 
     *{box-sizing:border-box}
@@ -83,9 +84,14 @@
     .chip:hover{ transform:translateY(-1px); box-shadow:0 8px 22px rgba(22,241,255,.12)}
     .chip.active{ color:#081121 !important; background:linear-gradient(135deg, var(--neon-cyan), var(--neon-pink)) !important; border-color:transparent !important; box-shadow:0 6px 28px rgba(22,241,255,.35), 0 0 44px rgba(255,62,208,.25) !important; }
 
-    .content{flex:1; padding:16px; max-width:1100px; margin:0 auto; width:100%}
-    h2.section{ margin:20px 0 12px; text-align:center; font-size:13px; letter-spacing:2px; opacity:.95; color:#d7e6ff; text-shadow:0 0 16px rgba(22,241,255,.25); scroll-margin-top:130px; }
-    .grid{display:grid; grid-template-columns:repeat(2,1fr); gap:14px}
+    .content{
+  flex:1;
+  padding:16px;
+  max-width:1100px;
+  margin:0 auto;
+  width:100%;
+  padding-bottom: max(var(--tabbar-h,84px), env(safe-area-inset-bottom) + 16px);
+}
 
     /* ====== CARD кейса (без флипа) ====== */
     .card{ position:relative; background:linear-gradient(180deg, rgba(20,26,62,.55), rgba(14,18,40,.6)); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow-strong); padding:12px; display:flex; flex-direction:column; gap:10px; overflow:hidden; cursor:pointer; }
@@ -102,7 +108,18 @@
     .desc{font-size:12px; color:#9fb2d9}
     .price{font-weight:900; color:var(--neon-yellow); text-shadow:0 0 12px rgba(255,228,122,.25)}
 
-    .tabbar{ position:sticky; bottom:0; z-index:24; background:linear-gradient(180deg,rgba(8,14,36,.72),rgba(6,10,26,.62)); border-top:1px solid var(--border); backdrop-filter:blur(10px); display:grid; grid-template-columns:repeat(5,1fr); padding:8px 6px }
+    .tabbar{
+  position: fixed;          /* было: sticky */
+  left: 0; right: 0; bottom: 0;
+  z-index: 80;              /* выше контента и detail, но ниже модалок */
+  background: linear-gradient(180deg,rgba(8,14,36,.72),rgba(6,10,26,.62));
+  border-top: 1px solid var(--border);
+  backdrop-filter: blur(10px);
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  padding: 8px 6px;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 6px); /* ДОБАВЬ ЭТО */
+}
     .tab{display:flex; flex-direction:column; align-items:center; gap:4px; padding:6px 2px; color:#9fb2d9; font-size:12px; font-weight:800}
     .tab.active{color:#e8efff}
     .ico{font-size:18px; text-shadow:0 0 10px rgba(22,241,255,.3)} .ico img{
@@ -110,7 +127,7 @@
 }
 
 
-    .backtop{ position:fixed; right:14px; bottom:90px; z-index:50; padding:9px 12px; border-radius:12px; font-weight:900; font-size:12px; letter-spacing:.3px; border:1px solid rgba(22,241,255,.45); color:#081121; background:linear-gradient(135deg, var(--neon-cyan), var(--neon-pink)); box-shadow:0 10px 28px rgba(22,241,255,.35), 0 0 36px rgba(255,62,208,.25); opacity:0; pointer-events:none; transform:translateY(8px); transition:opacity .2s, transform .2s; }
+    .backtop{ bottom: calc(var(--tabbar-h,84px) + 6px); position:fixed; right:14px; z-index:50; padding:9px 12px; border-radius:12px; font-weight:900; font-size:12px; letter-spacing:.3px; border:1px solid rgba(22,241,255,.45); color:#081121; background:linear-gradient(135deg, var(--neon-cyan), var(--neon-pink)); box-shadow:0 10px 28px rgba(22,241,255,.35), 0 0 36px rgba(255,62,208,.25); opacity:0; pointer-events:none; transform:translateY(8px); transition:opacity .2s, transform .2s; }
     .backtop.show{opacity:1; pointer-events:auto; transform:translateY(0)}
 
     /* ===== DETAIL VIEW ===== */
@@ -127,7 +144,7 @@
     .d-topbar{ position:sticky; top:0; z-index:61; display:flex; align-items:center; gap:10px; padding:10px 14px; background:linear-gradient(180deg,rgba(8,14,36,.82),rgba(6,10,26,.7)); border-bottom:1px solid var(--border); backdrop-filter:blur(10px); }
     .btn-back{ appearance:none; border:1px solid var(--border); background:transparent; color:var(--text); padding:8px 12px; border-radius:12px; font-weight:900; cursor:pointer; }
     .d-title{font-weight:900}
-    .d-body{padding:16px; max-width:1100px; margin:0 auto; width:100%}
+    .d-body{padding:16px; padding-bottom: max(var(--tabbar-h,84px), env(safe-area-inset-bottom) + 16px); max-width:1100px; margin:0 auto; width:100%}
     .d-hero{display:grid; grid-template-columns:1fr; gap:14px; margin-bottom:10px;}
     .d-thumb{ min-height:200px; height:auto; border-radius:16px; border:1px dashed rgba(180,210,255,.35);
       background: radial-gradient(160px 110px at 20% 20%, rgba(22,241,255,.12), transparent 60%), radial-gradient(160px 110px at 80% 80%, rgba(255,62,208,.10), transparent 60%), linear-gradient(180deg,#0c1230,#0a1028);
@@ -269,7 +286,7 @@
 .inventory-page{
   max-width:1100px;
   margin:0 auto;
-  padding: 0 12px max(84px, env(safe-area-inset-bottom) + 16px); /* вместо 0 12px 84px */
+  padding: 0 12px max(var(--tabbar-h,84px), env(safe-area-inset-bottom) + 16px);
 }
 
 
@@ -364,7 +381,7 @@
 /* ===== FRIENDS v2 (новый дизайн) ===== */
 .friends-wrap{
   max-width: 980px; margin: 12px auto 0; padding: 0 12px;
-  padding-bottom: max(84px, env(safe-area-inset-bottom) + 16px); /* ← добавь эту строку */
+  padding-bottom: max(var(--tabbar-h,84px), env(safe-area-inset-bottom) + 16px);
 }
 
 .friends-header{
@@ -422,7 +439,7 @@
 
 /* где угодно в CSS */
 .friends-page{
-  padding-bottom: max(84px, env(safe-area-inset-bottom) + 16px);
+  padding-bottom: max(var(--tabbar-h,84px), env(safe-area-inset-bottom) + 16px);
 }
 
 /* Лочим скролл без position:fixed у body */
@@ -1385,6 +1402,18 @@ window.addEventListener('orientationchange', syncTopbarOffset, {passive:true});
 if (document.fonts && document.fonts.ready) {
   document.fonts.ready.then(syncTopbarOffset);
 }
+
+function syncTabbarOffset(){
+  const h = document.querySelector('.tabbar')?.offsetHeight || 84;
+  document.documentElement.style.setProperty('--tabbar-h', h + 'px');
+}
+syncTabbarOffset();
+window.addEventListener('resize', syncTabbarOffset, {passive:true});
+window.addEventListener('orientationchange', syncTabbarOffset, {passive:true});
+if (document.fonts && document.fonts.ready) {
+  document.fonts.ready.then(syncTabbarOffset);
+}
+
 
 // --- Support для 3D барабана: состояние, веса, лейблы ---
 
