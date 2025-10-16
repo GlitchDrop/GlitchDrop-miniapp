@@ -1325,7 +1325,7 @@ const API_BASE = 'https://glitchdrop-miniapp.onrender.com';
 
 // === Настройки приглашения друзей ===
 // Укажи @username твоего бота БЕЗ знака @:
-const BOT_USERNAME = 'Glitchdrop_bot'; // ← ЗАМЕНИ на реальный username бота
+const BOT_USERNAME = 'Glitchdrop_bot';
 
 function getUid8() {
   try {
@@ -2157,58 +2157,58 @@ createBtn?.addEventListener('click', () => {
   // «Ввести промокод» — заглушка (как было)
   enterBtn?.addEventListener('click', () => alert('Ввести промокод (заглушка)'));
 
-  // ===== ДЕЙСТВИЯ КНОПОК ПРИГЛАШЕНИЯ/КОПИРОВАНИЯ =====
+// ===== ДЕЙСТВИЯ КНОПОК ПРИГЛАШЕНИЯ/КОПИРОВАНИЯ =====
 const tg = window.Telegram && window.Telegram.WebApp;
 
-// Пригласить друга → открыть встроенный Telegram sharing с выбором чата
+// Пригласить друга → встроенный Telegram sharing
 document.getElementById('btnInvite')?.addEventListener('click', () => {
-  const link = buildInviteLink();
+  const link = buildInviteLink(); // уже объявлена выше
   const text = 'Залетай в GLITCH DROP — ловим дропы вместе!';
-
-  // Системная страница шэринга Telegram
   const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`;
 
-  if (tg && typeof tg.openTelegramLink === 'function') {
+  if (tg?.openTelegramLink) {
     tg.openTelegramLink(shareUrl);
-    try { tg.HapticFeedback?.notificationOccurred('success'); } catch(_){}
+    try { tg.HapticFeedback?.notificationOccurred('success'); } catch(_) {}
   } else {
-    // Фолбэк, если кто-то открыл не в Telegram
+    // если открыто НЕ внутри Telegram WebApp
     window.open(shareUrl, '_blank');
+    alert(`Если окно не открылось, скопируй ссылку:\n\n${link}`);
   }
 });
 
-// Копировать ссылку
+// Копировать ссылку с многоступенчатым фолбэком
 document.getElementById('btnCopy')?.addEventListener('click', async () => {
   const link = buildInviteLink();
 
-  // 1) нативный способ внутри Telegram
-  if (tg && typeof tg.setClipboardText === 'function') {
+  // 1) внутри Telegram WebApp
+  if (tg?.setClipboardText) {
     tg.setClipboardText(link);
-    try { tg.HapticFeedback?.notificationOccurred('success'); } catch(_){}
-    alert('Ссылка скопирована');
+    try { tg.HapticFeedback?.notificationOccurred('success'); } catch(_) {}
+    tg.showAlert?.('Ссылка скопирована');
     return;
   }
 
-  // 2) Clipboard API (браузер)
+  // 2) Clipboard API (современные браузеры)
   try {
     await navigator.clipboard.writeText(link);
     alert('Ссылка скопирована');
-  } catch(e) {
-    // 3) Фолбэк для старых окружений
-    const ta = document.createElement('textarea');
-    ta.value = link;
-    ta.style.position = 'fixed';
-    ta.style.left = '-9999px';
-    document.body.appendChild(ta);
-    ta.select();
-    try {
-      document.execCommand('copy');
-      alert('Ссылка скопирована');
-    } catch(_) {
-      alert(link); // крайний случай — просто покажем ссылку
-    }
-    document.body.removeChild(ta);
+    return;
+  } catch(_) {}
+
+  // 3) Старый фолбэк
+  const ta = document.createElement('textarea');
+  ta.value = link;
+  ta.style.position = 'fixed';
+  ta.style.left = '-9999px';
+  document.body.appendChild(ta);
+  ta.select();
+  try {
+    document.execCommand('copy');
+    alert('Ссылка скопирована');
+  } catch {
+    alert(link); // крайний случай — просто покажем ссылку, её можно выделить вручную
   }
+  document.body.removeChild(ta);
 });
 
 // Партнёрская кнопка — оставим заглушкой (как и было)
@@ -2219,7 +2219,6 @@ if (window.matchMedia('(min-width:680px)').matches && partnerBtn){
 }
 
 }
-
 
 
 function showFriends(){
