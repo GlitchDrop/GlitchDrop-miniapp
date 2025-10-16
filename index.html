@@ -448,6 +448,45 @@ html.scroll-locked, html.scroll-locked body{
   overscroll-behavior: none; /* без резких пружин на iOS/Android */
 }
 
+/* ===== СЕТКА КАРТОЧЕК КЕЙСОВ ===== */
+.grid{
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr)); /* 2 колонки на мобиле */
+  align-items: start;
+}
+@media (min-width: 560px){
+  .grid{ grid-template-columns: repeat(3, minmax(0,1fr)); } /* планшет */
+}
+@media (min-width: 960px){
+  .grid{ grid-template-columns: repeat(4, minmax(0,1fr)); } /* десктоп */
+}
+
+/* ===== ПРЕВЬЮ В КАРТОЧКЕ — фиксированная высота/пропорции ===== */
+.card .thumb{
+  /* вариант 1: фикс по высоте (как было) */
+  height: 160px !important;
+
+  /* вариант 2: если хочешь пропорции вместо фикс. высоты — раскомментируй: */
+  /* aspect-ratio: 16 / 9; height: auto !important; */
+}
+.card .thumb img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;   /* картинка заполняет рамку, не тянется по высоте */
+  display: block;
+}
+
+/* чуть ограничим тексты, чтобы они не раздували карточку */
+.card .name{
+  display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.card .desc{
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 
   </style>
 
