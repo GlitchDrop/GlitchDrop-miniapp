@@ -2157,30 +2157,54 @@ createBtn?.addEventListener('click', () => {
   // «Ввести промокод» — заглушка (как было)
   enterBtn?.addEventListener('click', () => alert('Ввести промокод (заглушка)'));
 
-// ===== ДЕЙСТВИЯ КНОПОК ПРИГЛАШЕНИЯ/КОПИРОВАНИЯ =====
+// ===== ДЕЙСТВИЯ КНОПОК ПРИГЛАШЕНИЯ/КОПИРОВАНИЯ — ЖЕЛЕЗОБЕТОННЫЙ ВАРИАНТ =====
 const tg = window.Telegram && window.Telegram.WebApp;
 
-// Пригласить друга → встроенный Telegram sharing
+function showToast(msg){
+  if (tg?.showAlert) tg.showAlert(msg);
+  else alert(msg);
+}
+
+function safeOpen(url){
+  // 1) Внутри Telegram WebApp
+  if (tg?.openTelegramLink) {
+    tg.openTelegramLink(url);
+    try { tg.HapticFeedback?.notificationOccurred('success'); } catch(_) {}
+    setTimeout(()=>{ if (document.visibilityState === 'visible') showToast('Если окно не открылось — скопируй ссылку из блока ниже.'); }, 500);
+    return;
+  }
+  if (tg?.openLink) { // новый API
+    tg.openLink(url, { tryBrowser: true });
+    setTimeout(()=>{ if (document.visibilityState === 'visible') showToast('Если окно не открылось — скопируй ссылку из блока ниже.'); }, 500);
+    return;
+  }
+
+  // 2) Вне Telegram — пробуем открыть во вкладке
+  const w = window.open(url, '_blank', 'noopener,noreferrer');
+  if (!w || w.closed) {
+    // 3) Жёсткий фолбэк
+    window.location.href = url;
+  }
+}
+
 document.getElementById('btnInvite')?.addEventListener('click', () => {
-  const link = buildInviteLink(); // уже объявлена выше
+  const link = buildInviteLink(); // функция у тебя выше уже объявлена
   const text = 'Залетай в GLITCH DROP — ловим дропы вместе!';
   const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`;
 
-  if (tg?.openTelegramLink) {
-    tg.openTelegramLink(shareUrl);
-    try { tg.HapticFeedback?.notificationOccurred('success'); } catch(_) {}
-  } else {
-    // если открыто НЕ внутри Telegram WebApp
-    window.open(shareUrl, '_blank');
-    alert(`Если окно не открылось, скопируй ссылку:\n\n${link}`);
-  }
+  safeOpen(shareUrl);
+
+  // Показать ссылку на всякий случай (если окно не открылось)
+  setTimeout(() => {
+    const wasHidden = document.visibilityState !== 'visible';
+    if (!wasHidden) showToast(`Твоя ссылка:\n${link}`);
+  }, 700);
 });
 
-// Копировать ссылку с многоступенчатым фолбэком
 document.getElementById('btnCopy')?.addEventListener('click', async () => {
   const link = buildInviteLink();
 
-  // 1) внутри Telegram WebApp
+  // 1) Внутри Telegram
   if (tg?.setClipboardText) {
     tg.setClipboardText(link);
     try { tg.HapticFeedback?.notificationOccurred('success'); } catch(_) {}
@@ -2188,28 +2212,31 @@ document.getElementById('btnCopy')?.addEventListener('click', async () => {
     return;
   }
 
-  // 2) Clipboard API (современные браузеры)
+  // 2) Современный Clipboard API
   try {
     await navigator.clipboard.writeText(link);
-    alert('Ссылка скопирована');
+    showToast('Ссылка скопирована');
     return;
   } catch(_) {}
 
-  // 3) Старый фолбэк
-  const ta = document.createElement('textarea');
-  ta.value = link;
-  ta.style.position = 'fixed';
-  ta.style.left = '-9999px';
-  document.body.appendChild(ta);
-  ta.select();
+  // 3) Фолбэк через textarea
   try {
-    document.execCommand('copy');
-    alert('Ссылка скопирована');
-  } catch {
-    alert(link); // крайний случай — просто покажем ссылку, её можно выделить вручную
-  }
-  document.body.removeChild(ta);
+    const ta = document.createElement('textarea');
+    ta.value = link;
+    ta.setAttribute('readonly','');
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    if (ok) { showToast('Ссылка скопирована'); return; }
+  } catch(_) {}
+
+  // 4) Абсолютный фолбэк — просто показать ссылку
+  showToast(`Скопируй вручную:\n${link}`);
 });
+
 
 // Партнёрская кнопка — оставим заглушкой (как и было)
 const partnerBtn = document.getElementById('btnPartner');
