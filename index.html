@@ -487,6 +487,28 @@ html.scroll-locked, html.scroll-locked body{
   overflow: hidden;
 }
 
+/* Кнопка неактивна до валидного ввода */
+.btn:disabled{
+  opacity:.55;
+  filter: saturate(.7) brightness(.9);
+  cursor:not-allowed;
+}
+
+/* Бейдж с готовым промокодом */
+.promo-result{
+  display:grid; grid-template-columns:1fr auto; gap:10px; align-items:center;
+}
+.promo-badge{
+  padding:12px 14px;
+  border-radius:12px;
+  font-weight:900;
+  letter-spacing:.3px;
+  color:#081121;
+  background:linear-gradient(135deg, var(--neon-cyan), var(--neon-pink));
+  border:1px solid rgba(22,241,255,.35);
+  text-align:center;
+}
+
 
   </style>
 
@@ -1909,7 +1931,8 @@ function renderFriends(){
 
       <div class="fr-block-title">Создание промокода</div>
       <div class="fr-promo">
-        <input class="fr-input" id="promoInput2" type="text" placeholder="Введите промокод (до 16 символов)" maxlength="16" />
+        <input class="fr-input" id="promoInput2" type="text"
+  placeholder="Придумайте промокод (до 16 символов)" maxlength="16" />
         <div class="fr-actions">
           <button type="button" class="btn btn-primary" id="btnCreatePromo2">СОЗДАТЬ ПРОМОКОД</button>
           <button type="button" class="btn btn-ghost" id="btnEnterPromo2">ВВЕСТИ ПРОМОКОД</button>
@@ -1946,8 +1969,59 @@ function renderFriends(){
   const noop = msg => alert(msg);
   document.getElementById('btnInvite')?.addEventListener('click', ()=>noop('Пригласить друга (заглушка)'));
   document.getElementById('btnCopy')?.addEventListener('click',   ()=>noop('Ссылка скопирована (заглушка)'));
-  document.getElementById('btnCreatePromo2')?.addEventListener('click', ()=>noop('Создать промокод (заглушка)'));
-  document.getElementById('btnEnterPromo2')?.addEventListener('click',  ()=>noop('Ввести промокод (заглушка)'));
+  // ===== ПРОМОКОД: валидация и поведение =====
+const promoWrap   = document.querySelector('.fr-promo');
+const promoInput  = document.getElementById('promoInput2');
+const createBtn   = document.getElementById('btnCreatePromo2');
+const enterBtn    = document.getElementById('btnEnterPromo2'); // остаётся заглушкой
+const RE_PROMO    = /^[A-Za-z0-9_-]{4,16}$/;
+
+// старт: кнопка выключена
+if (createBtn) createBtn.disabled = true;
+
+// включать кнопку только при валидном вводе
+function syncPromoState(){
+  const val = (promoInput?.value || '').trim();
+  createBtn.disabled = !RE_PROMO.test(val);
+}
+promoInput?.addEventListener('input', syncPromoState);
+promoInput?.addEventListener('blur',  syncPromoState);
+syncPromoState();
+
+// клик по "Создать промокод"
+createBtn?.addEventListener('click', () => {
+  const val = (promoInput?.value || '').trim();
+  if (!RE_PROMO.test(val)){
+    alert('Придумайте промокод'); // та же заглушка, но с нужным текстом
+    return;
+  }
+
+  // заменяем поле ввода + кнопки на бейдж + копирование
+  if (promoWrap){
+    promoWrap.innerHTML = `
+      <div class="promo-result">
+        <div class="promo-badge">Ваш промокод: <strong>${val}</strong></div>
+        <button type="button" class="btn btn-ghost" id="copyPromoBtn">Скопировать</button>
+      </div>
+    `;
+
+    const copyBtn = document.getElementById('copyPromoBtn');
+    copyBtn?.addEventListener('click', async () => {
+      try{
+        await navigator.clipboard.writeText(val);
+        const old = copyBtn.textContent;
+        copyBtn.textContent = 'Скопировано!';
+        setTimeout(()=> copyBtn.textContent = old, 1400);
+      }catch(e){
+        alert('Не удалось скопировать');
+      }
+    });
+  }
+});
+
+// «Ввести промокод» оставляем заглушкой (как и было)
+enterBtn?.addEventListener('click', () => alert('Ввести промокод (заглушка)'));
+
 
   // на широких экранах показываем «Стать партнёром»
   const partnerBtn = document.getElementById('btnPartner');
