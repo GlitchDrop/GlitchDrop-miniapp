@@ -1785,6 +1785,25 @@ function clearPromo(){
   try{ localStorage.removeItem(LS_PROMO_KEY); }catch(e){}
 }
 
+// Флаг "сейчас редактируем промокод"
+const LS_PROMO_EDITING = 'gd_promo_editing';
+
+function setPromoEditing(on){
+  try{
+    if(on) localStorage.setItem(LS_PROMO_EDITING, '1');
+    else   localStorage.removeItem(LS_PROMO_EDITING);
+  }catch(e){}
+}
+function isPromoEditing(){
+  try{ return localStorage.getItem(LS_PROMO_EDITING) === '1'; }catch(e){ return false; }
+}
+
+// Сбросить черновик и выйти из режима редактирования
+function cancelPromoEditing(){
+  savePromoState({ draft: "" });
+  setPromoEditing(false);
+}
+
 
 function addToInventory(imgSrc){
   if(!imgSrc) return;
@@ -1834,6 +1853,8 @@ function hardCloseDetailAndModal(){
 // Показать экран кейсов (текущая главная)
 function showCases(){
   hardCloseDetailAndModal();
+cancelPromoEditing(); // если редактировал на вкладке "Друзья" — откатить черновик
+
 
   chipbar.classList.remove('hide');
   content.classList.remove('hide');
@@ -1857,6 +1878,8 @@ if (typeof syncTopbarOffset === 'function') syncTopbarOffset();
 
 function showProfile(){
   hardCloseDetailAndModal();
+cancelPromoEditing(); // если редактировал на вкладке "Друзья" — откатить черновик
+
 
   // спрятать каталог
   chipbar.classList.add('hide');
@@ -2001,29 +2024,85 @@ const RE_PROMO    = /^[A-Za-z0-9_-]{4,16}$/;
 const state = loadPromoState();
 
 if (state.created && state.code){
-  // Уже создан — сразу бейдж + копировать
-  promoWrap.innerHTML = `
-    <div class="promo-result">
-      <div class="promo-badge">Ваш промокод: <strong>${state.code}</strong></div>
-      <button type="button" class="btn btn-ghost" id="copyPromoBtn">Скопировать</button>
-    </div>
-  `;
-  const copyBtn = document.getElementById('copyPromoBtn');
-  copyBtn?.addEventListener('click', async () => {
-    try{
-      await navigator.clipboard.writeText(state.code);
-      const old = copyBtn.textContent;
-      copyBtn.textContent = 'Скопировано!';
-      setTimeout(()=> copyBtn.textContent = old, 1400);
-    }catch(e){
-      alert('Не удалось скопировать');
+  const editing = isPromoEditing();
+  const current = (state.code || "").trim();
+  const draft   = (state.draft || current);
+
+  // Общая вёрстка: строка + две кнопки (✏️ слева, ✅ справа)
+  if (!editing){
+    // Компактный бейдж + кнопки
+    promoWrap.innerHTML = `
+      <div class="promo-result">
+        <div class="promo-badge">Ваш промокод: <strong>${current}</strong></div>
+        <div style="display:flex; gap:8px">
+          <button type="button" class="btn btn-ghost" id="promoEditBtn"  aria-label="Редактировать">✏️</button>
+          <button type="button" class="btn btn-primary" id="promoOkBtn" aria-label="Подтвердить">✅</button>
+        </div>
+      </div>
+    `;
+
+    // ✏️ → включаем режим редактирования
+    document.getElementById('promoEditBtn')?.addEventListener('click', ()=>{
+      savePromoState({ draft: current }); // черновик = текущий код
+      setPromoEditing(true);
+      renderFriends();                    // перерисовать в режим ввода
+    });
+
+    // ✅ без изменений → просто выходим из "режима подтверждения" (по сути no-op)
+    document.getElementById('promoOkBtn')?.addEventListener('click', ()=>{
+      // Никаких всплывашек, просто гарантируем, что редактирования нет
+      cancelPromoEditing();
+      renderFriends();
+    });
+
+  } else {
+    // Режим редактирования: input с предзаполненным кодом + кнопки ✏️/✅
+    promoWrap.innerHTML = `
+      <div class="promo-result">
+        <input class="fr-input" id="promoEditInput" type="text"
+               placeholder="Промокод (4–16 символов)"
+               maxlength="16" value="${draft}">
+        <div style="display:flex; gap:8px">
+          <button type="button" class="btn btn-ghost"  id="promoEditFocus" aria-label="Редактировать">✏️</button>
+          <button type="button" class="btn btn-primary" id="promoEditSave"  aria-label="Подтвердить">✅</button>
+        </div>
+      </div>
+    `;
+
+    const RE_PROMO = /^[A-Za-z0-9_-]{4,16}$/;
+    const input    = document.getElementById('promoEditInput');
+    const btnSave  = document.getElementById('promoEditSave');
+
+    // Синхронизируем черновик и валидность
+    function sync(){
+      const val = (input.value || '').trim();
+      savePromoState({ draft: val });
+      btnSave.disabled = !RE_PROMO.test(val);
     }
-  });
-} else {
-  // Черновик — восстановим в input
-  if (promoInput && state.draft){
-    promoInput.value = state.draft;
+    input.addEventListener('input', sync);
+    input.addEventListener('blur',  sync);
+    sync();
+    input.focus();
+
+    // ✏️ в режиме редактирования — просто фокус на поле (по требованию кнопка остаётся)
+    document.getElementById('promoEditFocus')?.addEventListener('click', ()=>{
+      input?.focus();
+      input?.setSelectionRange(input.value.length, input.value.length);
+    });
+
+    // ✅ — подтвердить (даже если не изменилось)
+    btnSave.addEventListener('click', ()=>{
+      const val = (input.value || '').trim();
+      if (!RE_PROMO.test(val)) return;    // защита
+
+      // Сохраняем как подтверждённый, чистим черновик и выходим из редактирования
+      savePromoState({ code: val, created: true, draft: "" });
+      setPromoEditing(false);
+      renderFriends(); // покажем снова компактный бейдж + кнопки
+    });
   }
+}
+
 
   // Кнопка изначально выключена, если невалидно
   if (createBtn) createBtn.disabled = !RE_PROMO.test(promoInput?.value?.trim() || "");
@@ -2041,50 +2120,36 @@ if (state.created && state.code){
   syncPromoState();
 
   // Создать промокод
-  createBtn?.addEventListener('click', () => {
-    const val = (promoInput?.value || '').trim();
-    if (!RE_PROMO.test(val)){
-      alert('Придумайте промокод');
-      return;
-    }
-    savePromoState({ created:true, code:val, draft:"" });
+createBtn?.addEventListener('click', () => {
+  const val = (promoInput?.value || '').trim();
+  const RE_PROMO = /^[A-Za-z0-9_-]{4,16}$/;
+  if (!RE_PROMO.test(val)){
+    alert('Придумайте промокод');
+    return;
+  }
+  // сохраняем подтверждённый код и выходим из режима редактирования
+  savePromoState({ created: true, code: val, draft: "" });
+  setPromoEditing(false);
 
-    promoWrap.innerHTML = `
-      <div class="promo-result">
-        <div class="promo-badge">Ваш промокод: <strong>${val}</strong></div>
-        <button type="button" class="btn btn-ghost" id="copyPromoBtn">Скопировать</button>
-      </div>
-    `;
-    const copyBtn = document.getElementById('copyPromoBtn');
-    copyBtn?.addEventListener('click', async () => {
-      try{
-        await navigator.clipboard.writeText(val);
-        const old = copyBtn.textContent;
-        copyBtn.textContent = 'Скопировано!';
-        setTimeout(()=> copyBtn.textContent = old, 1400);
-      }catch(e){
-        alert('Не удалось скопировать');
-      }
-    });
-  });
+  // показываем единый компактный бейдж с ✏️/✅
+  renderFriends();
+});
 
   // «Ввести промокод» — заглушка (как было)
   enterBtn?.addEventListener('click', () => alert('Ввести промокод (заглушка)'));
-}
 
-
-  // заглушки
+  // ===== заглушки и партнёрская кнопка — ДОЛЖНЫ БЫТЬ ВНУТРИ renderFriends =====
   const noop = msg => alert(msg);
   document.getElementById('btnInvite')?.addEventListener('click', ()=>noop('Пригласить друга (заглушка)'));
   document.getElementById('btnCopy')?.addEventListener('click',   ()=>noop('Ссылка скопирована (заглушка)'));
 
-  // на широких экранах показываем «Стать партнёром»
   const partnerBtn = document.getElementById('btnPartner');
-  if (window.matchMedia('(min-width:680px)').matches){
+  if (window.matchMedia('(min-width:680px)').matches && partnerBtn){
     partnerBtn.style.display = 'inline-block';
     partnerBtn.addEventListener('click', ()=> noop('Стать партнёром (заглушка)'));
   }
-}
+} // ← тут закрывается renderFriends
+
 
 
 function showFriends(){
