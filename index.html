@@ -1323,6 +1323,25 @@ const idEl = document.getElementById('userId');
 // const API_BASE = 'https://api.yourdomain.com';
 const API_BASE = 'https://glitchdrop-miniapp.onrender.com';
 
+// === Настройки приглашения друзей ===
+// Укажи @username твоего бота БЕЗ знака @:
+const BOT_USERNAME = 'Glitchdrop_bot'; // ← ЗАМЕНИ на реальный username бота
+
+function getUid8() {
+  try {
+    const v = localStorage.getItem('gd_uid8');
+    return (v && /^\d{8}$/.test(v)) ? v : '00000000';
+  } catch(e) { return '00000000'; }
+}
+
+// Ссылка-приглашение в мини-апп (рекомендуется startapp)
+function buildInviteLink() {
+  const uid = getUid8();                 // используем твой uid8 как реф-метку
+  return `https://t.me/${BOT_USERNAME}?startapp=ref_${uid}`;
+  // Если нужен классический deep-link:
+  // return `https://t.me/${BOT_USERNAME}?start=ref_${uid}`;
+}
+
 
 function fnv1a(str){
   let h = 0x811c9dc5;
@@ -2138,17 +2157,68 @@ createBtn?.addEventListener('click', () => {
   // «Ввести промокод» — заглушка (как было)
   enterBtn?.addEventListener('click', () => alert('Ввести промокод (заглушка)'));
 
-  // ===== заглушки и партнёрская кнопка — ДОЛЖНЫ БЫТЬ ВНУТРИ renderFriends =====
-  const noop = msg => alert(msg);
-  document.getElementById('btnInvite')?.addEventListener('click', ()=>noop('Пригласить друга (заглушка)'));
-  document.getElementById('btnCopy')?.addEventListener('click',   ()=>noop('Ссылка скопирована (заглушка)'));
+  // ===== ДЕЙСТВИЯ КНОПОК ПРИГЛАШЕНИЯ/КОПИРОВАНИЯ =====
+const tg = window.Telegram && window.Telegram.WebApp;
 
-  const partnerBtn = document.getElementById('btnPartner');
-  if (window.matchMedia('(min-width:680px)').matches && partnerBtn){
-    partnerBtn.style.display = 'inline-block';
-    partnerBtn.addEventListener('click', ()=> noop('Стать партнёром (заглушка)'));
+// Пригласить друга → открыть встроенный Telegram sharing с выбором чата
+document.getElementById('btnInvite')?.addEventListener('click', () => {
+  const link = buildInviteLink();
+  const text = 'Залетай в GLITCH DROP — ловим дропы вместе!';
+
+  // Системная страница шэринга Telegram
+  const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`;
+
+  if (tg && typeof tg.openTelegramLink === 'function') {
+    tg.openTelegramLink(shareUrl);
+    try { tg.HapticFeedback?.notificationOccurred('success'); } catch(_){}
+  } else {
+    // Фолбэк, если кто-то открыл не в Telegram
+    window.open(shareUrl, '_blank');
   }
-} // ← тут закрывается renderFriends
+});
+
+// Копировать ссылку
+document.getElementById('btnCopy')?.addEventListener('click', async () => {
+  const link = buildInviteLink();
+
+  // 1) нативный способ внутри Telegram
+  if (tg && typeof tg.setClipboardText === 'function') {
+    tg.setClipboardText(link);
+    try { tg.HapticFeedback?.notificationOccurred('success'); } catch(_){}
+    alert('Ссылка скопирована');
+    return;
+  }
+
+  // 2) Clipboard API (браузер)
+  try {
+    await navigator.clipboard.writeText(link);
+    alert('Ссылка скопирована');
+  } catch(e) {
+    // 3) Фолбэк для старых окружений
+    const ta = document.createElement('textarea');
+    ta.value = link;
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand('copy');
+      alert('Ссылка скопирована');
+    } catch(_) {
+      alert(link); // крайний случай — просто покажем ссылку
+    }
+    document.body.removeChild(ta);
+  }
+});
+
+// Партнёрская кнопка — оставим заглушкой (как и было)
+const partnerBtn = document.getElementById('btnPartner');
+if (window.matchMedia('(min-width:680px)').matches && partnerBtn){
+  partnerBtn.style.display = 'inline-block';
+  partnerBtn.addEventListener('click', ()=> alert('Стать партнёром (заглушка)'));
+}
+
+}
 
 
 
