@@ -956,16 +956,23 @@ GD.ensureUid8 = async function(){
   const v = GD.getUid8();
   if (v && v !== '00000000') return v;
 
-  // пробуем «дотянуть» с сервера ещё раз (если функция доступна)
-  if (typeof getOrFetchUid8 === 'function'){
-    try{
-      const tgUserId = (Telegram?.WebApp?.initDataUnsafe?.user?.id) || '0';
-      const uid = await getOrFetchUid8(tgUserId);
+  try{
+    const tgUserId = (Telegram?.WebApp?.initDataUnsafe?.user?.id) || '0';
+    if (typeof GD.getOrFetchUid8 === 'function') {
+      const uid = await GD.getOrFetchUid8(tgUserId);
       return uid;
-    }catch(_){}
-  }
-  return GD.getUid8(); // что есть
+    }
+    // запасной путь — через глобал window (если вдруг GD не инициализировался)
+    if (typeof window.getOrFetchUid8 === 'function') {
+      const uid = await window.getOrFetchUid8(tgUserId);
+      return uid;
+    }
+  }catch(_){}
+
+  // последний фолбэк — что есть в localStorage (или "00000000")
+  return GD.getUid8();
 };
+
 
 async function fetchInvited(){
   const uid8 = await GD.ensureUid8();     // ты уже это используешь
@@ -1398,39 +1405,62 @@ function fnv1a(str){
 }
 function to8(n){ return String(n % 100000000).padStart(8,'0'); }
 
+// === ЕДИНЫЙ ИСТОЧНИК UID8 + КЭШ ПРОМИСА ===
+let _uid8Promise = null;
+
+/**
+ * Возвращает UID8: сначала localStorage, затем бэкенд, иначе детерминированный фолбэк.
+ * @param {string|number} tgUserId
+ * @returns {Promise<string>} 8-значная строка
+ */
 async function getOrFetchUid8(tgUserId){
   const cacheKey = 'gd_uid8';
 
-  // 1) локальный кеш
-  const cached = localStorage.getItem(cacheKey);
-  if (cached && /^\d{8}$/.test(cached)) return cached;
-
-  // 2) сервер (гарантированная уникальность)
+  // 1) мгновенно из localStorage, если уже есть валидное
   try{
-    const resp = await fetch(`${window.API_BASE}/api/referrals/hit`, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ telegram_id: String(tgUserId) })
+    const cached = localStorage.getItem(cacheKey);
+    if (cached && /^\d{8}$/.test(cached)) return cached;
+  }catch(_){}
 
+  // 2) если запрос уже идёт — вернём тот же промис (single-flight)
+  if (_uid8Promise) return _uid8Promise;
 
-    });
-    if (!resp.ok) throw new Error('bad status');
-    const { uid8 } = await resp.json();
-    if (!/^\d{8}$/.test(uid8)) throw new Error('bad uid');
-    localStorage.setItem(cacheKey, uid8);
-    return uid8;
-  }catch(e){
-    // 3) фолбэк (если API недоступен): детерминированно от tg.id
-    const fallback = to8( fnv1a(`GLITCHDROP:${tgUserId}`) );
-    localStorage.setItem(cacheKey, fallback);
-    return fallback;
+  _uid8Promise = (async () => {
+    // 2a) пробуем получить от бэка (гарантированно уникальный)
+    try{
+      const resp = await fetch(`${window.API_BASE}/api/referrals/hit`, {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json' },
+        body: JSON.stringify({ telegram_id: String(tgUserId || '') })
+      });
+      if (!resp.ok) throw new Error('bad status');
+      const { uid8 } = await resp.json();
+      if (!/^\d{8}$/.test(uid8)) throw new Error('bad uid');
+      try{ localStorage.setItem(cacheKey, uid8); }catch(_){}
+      return uid8;
+    }catch(_){
+      // 3) фолбэк: детерминированно от tgUserId
+      const h = (function fnv1aLocal(str){
+        let h = 0x811c9dc5;
+        for (let i=0; i<str.length; i++){ h ^= str.charCodeAt(i); h = (h>>>0)*0x01000193; }
+        return h>>>0;
+      })(`GLITCHDROP:${tgUserId||'0'}`);
+      const fallback = String(h % 100000000).padStart(8,'0');
+      try{ localStorage.setItem(cacheKey, fallback); }catch(__){}
+      return fallback;
+    }
+  })();
+
+  try{
+    return await _uid8Promise;
+  } finally {
+    _uid8Promise = null; // чтобы следующий реальный запрос мог стартовать при необходимости
   }
 }
 
-(async () => {
-  const uid8 = await getOrFetchUid8(u.id);
-  if (idEl) idEl.textContent = `ID ${uid8}`;
-})();
+// Делаем функцию видимой везде
+window.getOrFetchUid8 = getOrFetchUid8;
+GD.getOrFetchUid8 = getOrFetchUid8;
 
 // === РЕФЕРАЛКА: регистрация друга при первом запуске по ref_<uid8> ===
 (async () => {
