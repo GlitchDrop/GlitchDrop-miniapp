@@ -2195,17 +2195,17 @@ function showToast(msg){
 }
 
 function safeOpen(url){
+  const tg = window.Telegram && window.Telegram.WebApp;
+
   // 1) Внутри Telegram WebApp
   if (tg?.openTelegramLink) {
     tg.openTelegramLink(url);
     try { tg.HapticFeedback?.notificationOccurred('success'); } catch(_) {}
-    setTimeout(()=>{ if (document.visibilityState === 'visible') showToast('Если окно не открылось — скопируй ссылку из блока ниже.'); }, 500);
-    return;
+    return; // ← без fallback-тоста
   }
   if (tg?.openLink) { // новый API
     tg.openLink(url, { tryBrowser: true });
-    setTimeout(()=>{ if (document.visibilityState === 'visible') showToast('Если окно не открылось — скопируй ссылку из блока ниже.'); }, 500);
-    return;
+    return; // ← без fallback-тоста
   }
 
   // 2) Вне Telegram — пробуем открыть во вкладке
@@ -2221,11 +2221,7 @@ document.getElementById('btnInvite')?.addEventListener('click', async () => {
   const link = GD.buildInviteLink();
   const text = 'Залетай в GLITCH DROP — ловим дропы вместе!';
   const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`;
-  safeOpen(shareUrl);
-  setTimeout(() => {
-    const wasHidden = document.visibilityState !== 'visible';
-    if (!wasHidden) showToast('Твоя ссылка:\nhttps://t.me/Glitchdrop_bot');
-  }, 700);
+  safeOpen(shareUrl); // без любых setTimeout/alert/toast
 });
 
 document.getElementById('btnCopy')?.addEventListener('click', async () => {
