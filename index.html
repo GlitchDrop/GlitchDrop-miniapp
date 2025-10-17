@@ -916,6 +916,55 @@ html.scroll-locked, html.scroll-locked body{
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <script>
+// === App namespace (общие утилиты во всём приложении) ===
+window.GD = window.GD || {};
+
+// точный ник бота БЕЗ @
+GD.BOT_USERNAME = 'Glitchdrop_bot';
+
+// хеш + формат под 8 цифр (используется в фолбэках)
+GD._fnv1a = function(str){
+  let h = 0x811c9dc5;
+  for (let i = 0; i < str.length; i++){ h ^= str.charCodeAt(i); h = (h >>> 0) * 0x01000193; }
+  return h >>> 0;
+};
+GD._to8 = n => String(n % 100000000).padStart(8,'0');
+
+// читаем uid8 из localStorage (его кладёт getOrFetchUid8 ниже)
+GD.getUid8 = function(){
+  try{
+    const v = localStorage.getItem('gd_uid8');
+    return (v && /^\d{8}$/.test(v)) ? v : '00000000';
+  }catch(_){ return '00000000'; }
+};
+
+// строим ссылку-приглашение
+GD.buildInviteLink = function(){
+  const uid = GD.getUid8();
+  return `https://t.me/${GD.BOT_USERNAME}?startapp=ref_${uid}`;
+};
+
+// где-то рядом с GD.buildInviteLink (глобально)
+GD.ensureUid8 = async function(){
+  const v = GD.getUid8();
+  if (v && v !== '00000000') return v;
+
+  // пробуем «дотянуть» с сервера ещё раз (если функция доступна)
+  if (typeof getOrFetchUid8 === 'function'){
+    try{
+      const tgUserId = (Telegram?.WebApp?.initDataUnsafe?.user?.id) || '0';
+      const uid = await getOrFetchUid8(tgUserId);
+      return uid;
+    }catch(_){}
+  }
+  return GD.getUid8(); // что есть
+};
+
+
+</script>
+
+
+<script>
 // ====== ДАННЫЕ ======
 const LOOT_SETS = { /* <-- твои массивы, оставляю как есть */ 
   cheap_1:[ "assets/images/20251003_1635_Прозрачный фон_remix_01k6n4frmwe74ry17r7gszk6ef.png",
@@ -1322,26 +1371,6 @@ const idEl = document.getElementById('userId');
 // Если на другом домене — укажи полный адрес, например:
 // const API_BASE = 'https://api.yourdomain.com';
 const API_BASE = 'https://glitchdrop-miniapp.onrender.com';
-
-// === Настройки приглашения друзей ===
-// Укажи @username твоего бота БЕЗ знака @:
-const BOT_USERNAME = 'Glitchdrop_bot';
-
-function getUid8() {
-  try {
-    const v = localStorage.getItem('gd_uid8');
-    return (v && /^\d{8}$/.test(v)) ? v : '00000000';
-  } catch(e) { return '00000000'; }
-}
-
-// Ссылка-приглашение в мини-апп (рекомендуется startapp)
-function buildInviteLink() {
-  const uid = getUid8();                 // используем твой uid8 как реф-метку
-  return `https://t.me/${BOT_USERNAME}?startapp=ref_${uid}`;
-  // Если нужен классический deep-link:
-  // return `https://t.me/${BOT_USERNAME}?start=ref_${uid}`;
-}
-
 
 function fnv1a(str){
   let h = 0x811c9dc5;
@@ -2187,22 +2216,22 @@ function safeOpen(url){
   }
 }
 
-document.getElementById('btnInvite')?.addEventListener('click', () => {
-  const link = buildInviteLink(); // функция у тебя выше уже объявлена
+document.getElementById('btnInvite')?.addEventListener('click', async () => {
+  await GD.ensureUid8();
+  const link = GD.buildInviteLink();
   const text = 'Залетай в GLITCH DROP — ловим дропы вместе!';
   const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`;
-
   safeOpen(shareUrl);
-
-  // Показать ссылку на всякий случай (если окно не открылось)
   setTimeout(() => {
     const wasHidden = document.visibilityState !== 'visible';
-    if (!wasHidden) showToast(`Твоя ссылка:\n${link}`);
+    if (!wasHidden) showToast('Твоя ссылка:\nhttps://t.me/Glitchdrop_bot');
   }, 700);
 });
 
 document.getElementById('btnCopy')?.addEventListener('click', async () => {
-  const link = buildInviteLink();
+  await GD.ensureUid8();
+  const link = GD.buildInviteLink();
+  // остальной код копирования — без изменений
 
   // 1) Внутри Telegram
   if (tg?.setClipboardText) {
