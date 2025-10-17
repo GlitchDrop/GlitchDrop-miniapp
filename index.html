@@ -916,6 +916,13 @@ html.scroll-locked, html.scroll-locked body{
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <script>
+  window.GD = window.GD || {};
+  window.API_BASE = 'http://localhost:3000';
+  GD.API_BASE = window.API_BASE;
+</script>
+
+
+<script>
 // === App namespace (общие утилиты во всём приложении) ===
 window.GD = window.GD || {};
 
@@ -959,6 +966,16 @@ GD.ensureUid8 = async function(){
   }
   return GD.getUid8(); // что есть
 };
+
+async function fetchInvited(){
+  const uid8 = await GD.ensureUid8();     // ты уже это используешь
+  try{
+    const r = await fetch(`${window.API_BASE}/api/referrals?uid8=${uid8}`, { method:'GET' });
+    if(!r.ok) return [];
+    const data = await r.json();
+    return Array.isArray(data.items) ? data.items : [];
+  }catch(_){ return []; }
+}
 
 
 </script>
@@ -1370,7 +1387,6 @@ const idEl = document.getElementById('userId');
 // Если фронт и API на одном домене через прокси /api → оставь пустую строку.
 // Если на другом домене — укажи полный адрес, например:
 // const API_BASE = 'https://api.yourdomain.com';
-const API_BASE = 'https://glitchdrop-miniapp.onrender.com';
 
 function fnv1a(str){
   let h = 0x811c9dc5;
@@ -1391,7 +1407,7 @@ async function getOrFetchUid8(tgUserId){
 
   // 2) сервер (гарантированная уникальность)
   try{
-    const resp = await fetch(`${API_BASE}/api/uid8`, {
+    const resp = await fetch(`${window.API_BASE}/api/referrals/hit`, {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({ telegram_id: String(tgUserId) })
@@ -1414,6 +1430,45 @@ async function getOrFetchUid8(tgUserId){
 (async () => {
   const uid8 = await getOrFetchUid8(u.id);
   if (idEl) idEl.textContent = `ID ${uid8}`;
+})();
+
+// === РЕФЕРАЛКА: регистрация друга при первом запуске по ref_<uid8> ===
+(async () => {
+  const tg = window.Telegram && window.Telegram.WebApp;
+  if (!tg || !tg.initDataUnsafe) return;
+
+  const u = tg.initDataUnsafe.user;
+  const startParam = tg.initDataUnsafe.start_param; // ждём формат ref_XXXXXXXX
+  if (!startParam || !/^ref_\d{8}$/.test(startParam)) return;
+
+  const refUid8 = startParam.slice(4);
+
+  // флаг, чтобы не слать повторно
+  const FLAG = `gd_ref_registered_${refUid8}`;
+  try { if (localStorage.getItem(FLAG)) return; } catch(_) {}
+
+  // имя «как в аккаунте» (НЕ username)
+  const displayName = [u?.first_name||'', u?.last_name||''].join(' ').trim() || 'Без имени';
+
+  try{
+    const resp = await fetch(`${window.API_BASE}/api/referrals/hit`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        ref_uid8: refUid8,
+        initData: tg.initData || '',  // ВАЖНО: строка initData для проверки подписи на бэке
+        user: {
+          id: String(u?.id||''),
+          first_name: u?.first_name || '',
+          last_name:  u?.last_name  || '',
+          photo_url:  u?.photo_url  || ''
+        }
+      })
+    });
+    if (resp.ok){
+      localStorage.setItem(FLAG,'1');
+    }
+  }catch(e){}
 })();
 
 
@@ -2006,11 +2061,11 @@ function renderInventory(){
 /* ===================== FRIENDS v2 ===================== */
 const topbarEl = document.querySelector('.topbar');
 
-function renderFriends(){
+async function renderFriends(){
   if(!friendsScreen) return;
 
   const TOKEN_ICON = 'assets/images/20251005_0825_Яркое неоновое сияние_remix_01k6sd902pf03ah1w3cpkr66jz.png';
-  const invited = []; // TODO: реальные данные
+  const invited = await fetchInvited();
 
   friendsScreen.innerHTML = `
     <div class="friends-header">ДРУЗЬЯ</div>
@@ -2043,20 +2098,24 @@ function renderFriends(){
         </div>
         <div class="fr-list" id="frList">
           ${
-            invited.length
-              ? invited.map((u,i)=>`
-                <div class="fr-item" role="listitem">
-                  <div class="n">${i+1}.</div>
-                  <div class="nm">${u.name||'USERNAME'}</div>
-                  <div class="gain">+1 <img src="${TOKEN_ICON}" alt=""></div>
-                </div>
-              `).join('')
-              : `<div class="fr-item" aria-hidden="true">
-                   <div class="n">—</div>
-                   <div class="nm" style="opacity:.8">Здесь появятся ваши друзья</div>
-                   <div class="gain">+1 <img src="${TOKEN_ICON}" alt=""></div>
-                 </div>`
-          }
+  invited.length
+    ? invited.map((u,i)=>`
+      <div class="fr-item" role="listitem">
+        <div class="n">${i+1}.</div>
+        <div class="nm">
+          <span class="nm-txt">${(u.name||'Пользователь').replace(/</g,'&lt;')}</span>
+        </div>
+        <div class="gain">
+          +1 <img src="${u.photo_url || 'assets/images/20251005_0825_Яркое неоновое сияние_remix_01k6sd902pf03ah1w3cpkr66jz.png'}" alt="" onerror="this.src='assets/images/20251005_0825_Яркое неоновое сияние_remix_01k6sd902pf03ah1w3cpkr66jz.png'">
+        </div>
+      </div>
+    `).join('')
+    : `<div class="fr-item" aria-hidden="true">
+         <div class="n">—</div>
+         <div class="nm" style="opacity:.8">Здесь появятся ваши друзья</div>
+         <div class="gain">+1 <img src="assets/images/20251005_0825_Яркое неоновое сияние_remix_01k6sd902pf03ah1w3cpkr66jz.png" alt=""></div>
+       </div>`
+}
         </div>
       </div>
     </div>
