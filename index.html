@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="ru">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
@@ -951,26 +952,28 @@ GD.buildInviteLink = function(){
   return `https://t.me/${GD.BOT_USERNAME}?startapp=ref_${uid}`;
 };
 
-// где-то рядом с GD.buildInviteLink (глобально)
-GD.ensureUid8 = async function(){
-  const v = GD.getUid8();
-  if (v && v !== '00000000') return v;
+GD._uid8Promise = null;
 
-  try{
-    const tgUserId = (Telegram?.WebApp?.initDataUnsafe?.user?.id) || '0';
-    if (typeof GD.getOrFetchUid8 === 'function') {
-      const uid = await GD.getOrFetchUid8(tgUserId);
-      return uid;
-    }
-    // запасной путь — через глобал window (если вдруг GD не инициализировался)
-    if (typeof window.getOrFetchUid8 === 'function') {
-      const uid = await window.getOrFetchUid8(tgUserId);
-      return uid;
-    }
-  }catch(_){}
+GD.ensureUid8 = function(tgUserId){
+  // если уже идёт запрос — отдать тот же промис
+  if (GD._uid8Promise) return GD._uid8Promise;
 
-  // последний фолбэк — что есть в localStorage (или "00000000")
-  return GD.getUid8();
+  // если уже есть валидный кеш — мгновенно
+  const cached = GD.getUid8();
+  if (cached && cached !== '00000000') return Promise.resolve(cached);
+
+  // единый запрос на всех «ждущих»
+  GD._uid8Promise = (async () => {
+    try{
+      if (typeof window.getOrFetchUid8 === 'function'){
+        return await window.getOrFetchUid8(tgUserId);
+      }
+    }catch(_){}
+    // последний фолбэк — что есть в localStorage (или 00000000)
+    return GD.getUid8();
+  })();
+
+  return GD._uid8Promise;
 };
 
 
@@ -1388,6 +1391,12 @@ detail.scrollTop = 0;
   nameEl.textContent = display;
   nameEl.setAttribute('data-text', display.replaceAll(' ', '\u00A0'));
 
+(async () => {
+  const uid8 = await GD.ensureUid8(u.id);
+  const idEl = document.getElementById('userId');
+  if (idEl) idEl.textContent = `ID ${uid8}`;
+})();
+
 // === UID8 с сервера (уникально в проде) ===
 const idEl = document.getElementById('userId');
 
@@ -1413,54 +1422,41 @@ let _uid8Promise = null;
  * @param {string|number} tgUserId
  * @returns {Promise<string>} 8-значная строка
  */
-async function getOrFetchUid8(tgUserId){
-  const cacheKey = 'gd_uid8';
 
-  // 1) мгновенно из localStorage, если уже есть валидное
+// === UID8 из бэка с кэшем в localStorage ===
+const UID8_LS_KEY = 'gd_uid8';
+
+window.getOrFetchUid8 = async function(tgUserId){
+  // 1) cache
   try{
-    const cached = localStorage.getItem(cacheKey);
+    const cached = localStorage.getItem(UID8_LS_KEY);
     if (cached && /^\d{8}$/.test(cached)) return cached;
   }catch(_){}
 
-  // 2) если запрос уже идёт — вернём тот же промис (single-flight)
-  if (_uid8Promise) return _uid8Promise;
-
-  _uid8Promise = (async () => {
-    // 2a) пробуем получить от бэка (гарантированно уникальный)
-    try{
-      const resp = await fetch(`${window.API_BASE}/api/referrals/hit`, {
-        method: 'POST',
-        headers: { 'Content-Type':'application/json' },
-        body: JSON.stringify({ telegram_id: String(tgUserId || '') })
-      });
-      if (!resp.ok) throw new Error('bad status');
-      const { uid8 } = await resp.json();
-      if (!/^\d{8}$/.test(uid8)) throw new Error('bad uid');
-      try{ localStorage.setItem(cacheKey, uid8); }catch(_){}
-      return uid8;
-    }catch(_){
-      // 3) фолбэк: детерминированно от tgUserId
-      const h = (function fnv1aLocal(str){
-        let h = 0x811c9dc5;
-        for (let i=0; i<str.length; i++){ h ^= str.charCodeAt(i); h = (h>>>0)*0x01000193; }
-        return h>>>0;
-      })(`GLITCHDROP:${tgUserId||'0'}`);
-      const fallback = String(h % 100000000).padStart(8,'0');
-      try{ localStorage.setItem(cacheKey, fallback); }catch(__){}
-      return fallback;
-    }
-  })();
-
+  // 2) backend
   try{
-    return await _uid8Promise;
-  } finally {
-    _uid8Promise = null; // чтобы следующий реальный запрос мог стартовать при необходимости
+    const resp = await fetch(`${window.API_BASE}/api/referrals/hit`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ telegram_id: String(tgUserId || '') })
+    });
+    if (!resp.ok) throw new Error('bad status');
+    const { uid8 } = await resp.json();
+    if (!/^\d{8}$/.test(uid8)) throw new Error('bad uid');
+    try{ localStorage.setItem(UID8_LS_KEY, uid8); }catch(_){}
+    return uid8;
+  }catch(_){
+    // 3) fallback (детерминированный)
+    const h = GD._fnv1a(`GLITCHDROP:${tgUserId || '0'}`);
+    const fallback = GD._to8(h);
+    try{ localStorage.setItem(UID8_LS_KEY, fallback); }catch(_){}
+    return fallback;
   }
-}
+};
 
-// Делаем функцию видимой везде
-window.getOrFetchUid8 = getOrFetchUid8;
-GD.getOrFetchUid8 = getOrFetchUid8;
+// Экспорт в пространство GD
+GD.getOrFetchUid8 = window.getOrFetchUid8;
+
 
 // === РЕФЕРАЛКА: регистрация друга при первом запуске по ref_<uid8> ===
 (async () => {
