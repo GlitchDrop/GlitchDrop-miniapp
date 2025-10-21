@@ -510,6 +510,22 @@ html.scroll-locked, html.scroll-locked body{
   text-align:center;
 }
 
+/* Пустая страница под конкурсы — только фон и “воздух” снизу под таббар */
+.contests-page{
+  padding-bottom: max(var(--tabbar-h,84px), env(safe-area-inset-bottom) + 16px);
+}
+
+/* Та же фоновая поверхность, что в инвентаре, чтобы фон был идентичный */
+.contests-surface{
+  position:relative;
+  min-height:100svh;
+  background:
+    radial-gradient(60% 40% at 50% -10%, rgba(22,241,255,.06), transparent 60%),
+    radial-gradient(60% 40% at 50% 110%, rgba(255,62,208,.05), transparent 60%),
+    linear-gradient(180deg, #0b1030 0%, #0a1028 100%);
+  border-top:1px solid var(--border);
+  box-shadow: inset 0 30px 60px rgba(10,20,60,.35);
+}
 
   </style>
 
@@ -847,7 +863,8 @@ html.scroll-locked, html.scroll-locked body{
 <!-- ПУСТОЙ ЭКРАН ДРУЗЕЙ -->
 <div class="hide" id="friendsScreen" aria-hidden="true"></div>
 
-
+<!-- ПУСТОЙ ЭКРАН КОНКУРСОВ -->
+<div class="hide" id="contestsScreen" aria-hidden="true"></div>
 
     <nav class="tabbar">
   <div class="tab"><div class="ico">🏆</div>Конкурсы</div>
@@ -1945,6 +1962,7 @@ function addToInventory(imgSrc){
 // ===== Переключение между "Кейсы" и "Профиль" =====
 const profileScreen = document.getElementById('profileScreen');
 const friendsScreen  = document.getElementById('friendsScreen');
+const contestsScreen = document.getElementById('contestsScreen');
 
 const tabsAll = Array.from(document.querySelectorAll('.tabbar .tab'));
 
@@ -1953,8 +1971,7 @@ const profileTab =
   document.querySelector('.tabbar .tab[data-tab="inventory"]')
   || tabsAll.find(t => /ИНВЕНТАРЬ|Профиль/i.test(t.textContent.trim()));
 const friendsTab = tabsAll.find(t => /Друзья/i.test(t.textContent.trim()));
-
-
+const contestsTab = tabsAll.find(t => /Конкурсы/i.test(t.textContent.trim()));
 
 // Делает таб активным визуально
 function setActiveTab(tab){
@@ -1984,6 +2001,23 @@ function showCases(){
   hardCloseDetailAndModal();
 cancelPromoEditing(); // если редактировал на вкладке "Друзья" — откатить черновик
 
+contestsScreen.classList.add('hide');
+  contestsScreen.setAttribute('aria-hidden','true');
+
+  chipbar.classList.remove('hide');
+  content.classList.remove('hide');
+  backTop.classList.remove('hide');
+
+  profileScreen.classList.add('hide');
+  profileScreen.setAttribute('aria-hidden','true');
+
+  friendsScreen.classList.add('hide');
+  friendsScreen.setAttribute('aria-hidden','true');
+
+  setActiveTab(casesTab);
+  restoreTopbarIfNeeded();
+  document.body.classList.remove('friends-active');
+  if (typeof syncTopbarOffset === 'function') syncTopbarOffset();
 
   chipbar.classList.remove('hide');
   content.classList.remove('hide');
@@ -2009,6 +2043,15 @@ function showProfile(){
   hardCloseDetailAndModal();
 cancelPromoEditing(); // если редактировал на вкладке "Друзья" — откатить черновик
 
+contestsScreen.classList.add('hide');
+  contestsScreen.setAttribute('aria-hidden','true');
+
+  chipbar.classList.add('hide');
+  content.classList.add('hide');
+  backTop.classList.add('hide');
+
+  friendsScreen.classList.add('hide');
+  friendsScreen.setAttribute('aria-hidden','true');
 
   // спрятать каталог
   chipbar.classList.add('hide');
@@ -2361,6 +2404,16 @@ if (window.matchMedia('(min-width:680px)').matches && partnerBtn){
 function showFriends(){
   hardCloseDetailAndModal();
 
+contestsScreen.classList.add('hide');
+  contestsScreen.setAttribute('aria-hidden','true');
+
+  chipbar.classList.add('hide');
+  content.classList.add('hide');
+  backTop.classList.add('hide');
+  profileScreen.classList.add('hide');
+  profileScreen.setAttribute('aria-hidden','true');
+
+
   // спрятать каталог и инвентарь
   chipbar.classList.add('hide');
   content.classList.add('hide');
@@ -2393,6 +2446,42 @@ function restoreTopbarIfNeeded(){
   if (friendsScreen?.classList.contains('hide')){
     topbarEl?.classList.remove('hide');
   }
+}
+
+function showContests(){
+  hardCloseDetailAndModal();
+  cancelPromoEditing?.(); // если вдруг редактировали промо
+
+  // Прячем каталог кейсов и прочие экраны
+  chipbar.classList.add('hide');
+  content.classList.add('hide');
+  backTop.classList.add('hide');
+
+  profileScreen.classList.add('hide');
+  profileScreen.setAttribute('aria-hidden','true');
+
+  friendsScreen.classList.add('hide');
+  friendsScreen.setAttribute('aria-hidden','true');
+
+  // Вернём верхний топбар (в отличие от «Друзей», где он скрывается)
+  restoreTopbarIfNeeded();
+  document.body.classList.remove('friends-active');
+
+  // Рендерим пустую поверхность с фоном
+  contestsScreen.innerHTML = `
+    <div class="contests-surface contests-page"></div>
+  `;
+  contestsScreen.classList.remove('hide');
+  contestsScreen.setAttribute('aria-hidden','false');
+
+  // Подсветка активной вкладки
+  setActiveTab(contestsTab);
+
+  // На всякий случай корректируем отступы
+  if (typeof syncTopbarOffset === 'function') syncTopbarOffset();
+  if (typeof syncTabbarOffset === 'function') syncTabbarOffset();
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 
@@ -2519,6 +2608,10 @@ if (profileTab){
 if (friendsTab){
   friendsTab.style.cursor = 'pointer';
   friendsTab.addEventListener('click', showFriends);
+}
+if (contestsTab){
+  contestsTab.style.cursor = 'pointer';
+  contestsTab.addEventListener('click', showContests);
 }
 
 // Гарантируем, что при первой загрузке мы в "Кейсах"
