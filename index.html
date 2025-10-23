@@ -548,7 +548,7 @@ html.scroll-locked, html.scroll-locked body{
   top: var(--topbar-h, 64px);
   z-index: 22;
   padding: 12px max(12px, env(safe-area-inset-left)) 14px max(12px, env(safe-area-inset-right));
-  text-align:left;
+  text-align:center;
   font-weight: 900;
   letter-spacing: 1.2px;
   font-size: clamp(28px, 8vw, 56px);
@@ -566,16 +566,6 @@ html.scroll-locked, html.scroll-locked body{
   display:flex;
   flex-direction:column;
   gap: 0; /* разделители сами дадут ритм */
-}
-
-/* толстые тёмные разделители как на рефе */
-.cont-sep{
-  height: 22px;
-  background: linear-gradient(180deg, #0a0f18, #0a0f18);
-  border-top: 1px solid rgba(255,255,255,.04);
-  border-bottom: 1px solid rgba(255,255,255,.04);
-  margin: 8px 0;
-  border-radius: 6px;
 }
 
 /* карточка конкурса */
@@ -640,6 +630,7 @@ html.scroll-locked, html.scroll-locked body{
 }
 .cont-btn:active{ transform: translateY(1px); }
 
+.contests-list { gap: 10px; } /* вместо 0 */
 
   </style>
 
@@ -2588,13 +2579,14 @@ function renderContests(){
 
   const list = document.getElementById('contList');
 
-  // если link не указан — строим из username
-  const buildLink = (username, link) => {
-    const u = String(username || "").trim();
-    if (link) return link;
-    if (u.startsWith("@")) return `https://t.me/${u.slice(1)}`;
-    return "https://t.me/";
-  };
+  // заменяем buildLink:
+const buildLink = (username, link) => {
+  const u = String(username || "").trim();
+  if (link) return link;
+  if (u.startsWith("@")) return `https://t.me/${u.slice(1)}`;
+  return ""; // пустая строка — нет ссылки
+};
+
 
   CONTESTS_DATA.forEach((item, i) => {
     if (i > 0){
@@ -2607,21 +2599,19 @@ function renderContests(){
     card.className = 'cont-card';
     const imgUrl = item.img || FALLBACK_IMG;
     const uname  = item.username || "@username";
-    const href   = buildLink(uname, item.link);
-
-    // 🔒 экранируем username, чтобы не было XSS
-    card.innerHTML = `
-      <div class="cont-img">
-        <img src="${imgUrl}" alt="contest ${i+1}" onerror="this.src='${FALLBACK_IMG}'" loading="lazy">
-      </div>
-      <div class="cont-right">
-        <a class="cont-username" href="${href}" target="_blank" rel="noopener" title="${esc(uname)}">
-          ${esc(uname)}
-        </a>
-        <button type="button" class="cont-btn">Подробнее</button>
-      </div>
-    `;
-    list.appendChild(card);
+    const href = buildLink(uname, item.link);
+card.innerHTML = `
+  <div class="cont-img">
+    <img src="${imgUrl}" alt="${esc(uname)}" onerror="this.src='${FALLBACK_IMG}'">
+  </div>
+  <div class="cont-right">
+    ${href
+      ? `<a class="cont-username" href="${href}" target="_blank" rel="noopener" title="${esc(uname)}">${esc(uname)}</a>`
+      : `<span class="cont-username" title="${esc(uname)}">${esc(uname)}</span>`}
+    ${href ? `<button type="button" class="cont-btn">Подробнее</button>` : ``}
+  </div>
+`;
+  list.appendChild(card);
   });
 
   // единая делегация кликов
