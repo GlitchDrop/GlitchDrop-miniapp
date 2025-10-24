@@ -673,6 +673,22 @@ html.scroll-locked, html.scroll-locked body{
   overflow: hidden; /* даже если много карточек — сцена остаётся неподвижной */
 }
 
+/* === UPGRADES (fixed, no-scroll) === */
+.upgrades-fixed{
+  position: fixed;
+  left: 0; right: 0;
+  top: var(--topbar-h, 64px);
+  bottom: var(--tabbar-h, 84px);
+  z-index: 22;
+  overflow: hidden; /* без прокрутки */
+  background:
+    radial-gradient(60% 40% at 50% -10%, rgba(22,241,255,.06), transparent 60%),
+    radial-gradient(60% 40% at 50% 110%, rgba(255,62,208,.05), transparent 60%),
+    linear-gradient(180deg, #0b1030 0%, #0a1028 100%);
+  border-top:1px solid var(--border);
+  box-shadow: inset 0 30px 60px rgba(10,20,60,.35);
+}
+
 
   </style>
 
@@ -1007,6 +1023,10 @@ html.scroll-locked, html.scroll-locked body{
 
 <!-- ПУСТОЙ ЭКРАН КОНКУРСОВ -->
 <div class="hide" id="contestsScreen" aria-hidden="true"></div>
+
+<!-- ПУСТОЙ ЭКРАН АПГРЕЙДОВ -->
+<div class="hide" id="upgradesScreen" aria-hidden="true"></div>
+
 
     <nav class="tabbar">
   <div class="tab"><div class="ico">🏆</div>Конкурсы</div>
@@ -2140,6 +2160,8 @@ function addToInventory(imgSrc){
 const profileScreen = document.getElementById('profileScreen');
 const friendsScreen  = document.getElementById('friendsScreen');
 const contestsScreen = document.getElementById('contestsScreen');
+const upgradesScreen = document.getElementById('upgradesScreen');
+
 
 const tabsAll = Array.from(document.querySelectorAll('.tabbar .tab'));
 
@@ -2149,6 +2171,8 @@ const profileTab =
   || tabsAll.find(t => /ИНВЕНТАРЬ|Профиль/i.test(t.textContent.trim()));
 const friendsTab = tabsAll.find(t => /Друзья/i.test(t.textContent.trim()));
 const contestsTab = tabsAll.find(t => /Конкурсы/i.test(t.textContent.trim()));
+const upgradesTab = tabsAll.find(t => /Апгрейд/i.test(t.textContent.trim()));
+
 
 // Делает таб активным визуально
 function setActiveTab(tab){
@@ -2190,6 +2214,9 @@ contestsScreen.classList.add('hide');
 
   friendsScreen.classList.add('hide');
   friendsScreen.setAttribute('aria-hidden','true');
+  upgradesScreen.classList.add('hide');
+upgradesScreen.setAttribute('aria-hidden','true');
+
 
   setActiveTab(casesTab);
   restoreTopbarIfNeeded();
@@ -2211,6 +2238,9 @@ contestsScreen.classList.add('hide');
 
   friendsScreen.classList.add('hide');
   friendsScreen.setAttribute('aria-hidden','true');
+  upgradesScreen.classList.add('hide');
+upgradesScreen.setAttribute('aria-hidden','true');
+
 
   profileScreen.innerHTML = `
     <div class="inventory-surface">
@@ -2541,6 +2571,9 @@ contestsScreen.classList.add('hide');
   backTop.classList.add('hide');
   profileScreen.classList.add('hide');
   profileScreen.setAttribute('aria-hidden','true');
+  upgradesScreen.classList.add('hide');
+upgradesScreen.setAttribute('aria-hidden','true');
+
 
   // показать friends
   friendsScreen.classList.remove('hide');
@@ -2568,6 +2601,45 @@ function restoreTopbarIfNeeded(){
     topbarEl?.classList.remove('hide');
   }
 }
+
+function showUpgrades(){
+  hardCloseDetailAndModal();
+
+  // гарантируем видимый верхний топбар и корректные отступы
+  topbarEl?.classList.remove('hide');
+  restoreTopbarIfNeeded?.();
+  if (typeof syncTopbarOffset === 'function') syncTopbarOffset();
+  if (typeof syncTabbarOffset === 'function') syncTabbarOffset();
+
+  // прячем другие экраны
+  chipbar.classList.add('hide');
+  content.classList.add('hide');
+  backTop.classList.add('hide');
+
+  profileScreen.classList.add('hide');
+  profileScreen.setAttribute('aria-hidden','true');
+
+  friendsScreen.classList.add('hide');
+  friendsScreen.setAttribute('aria-hidden','true');
+  upgradesScreen.classList.add('hide');
+upgradesScreen.setAttribute('aria-hidden','true');
+
+
+  contestsScreen.classList.add('hide');
+  contestsScreen.setAttribute('aria-hidden','true');
+
+  // показать экран апгрейдов (чистый фон)
+  upgradesScreen.innerHTML = `<div class="upgrades-fixed"></div>`;
+  upgradesScreen.classList.remove('hide');
+  upgradesScreen.setAttribute('aria-hidden','false');
+
+  setActiveTab(upgradesTab);
+  document.body.classList.remove('friends-active');
+  if (typeof syncTopbarOffset === 'function') syncTopbarOffset();
+  if (typeof syncTabbarOffset === 'function') syncTabbarOffset();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 
 // === ПУСТОЙ РЕЖИМ ДЛЯ «КОНКУРСОВ» ===
 
@@ -2699,6 +2771,9 @@ if (typeof syncTabbarOffset === 'function') syncTabbarOffset();
 
   friendsScreen.classList.add('hide');
   friendsScreen.setAttribute('aria-hidden','true');
+  upgradesScreen.classList.add('hide');
+upgradesScreen.setAttribute('aria-hidden','true');
+
 
   // показываем экран конкурсов
   contestsScreen.classList.remove('hide');
@@ -2846,6 +2921,11 @@ if (contestsTab){
   contestsTab.style.cursor = 'pointer';
   contestsTab.addEventListener('click', showContests);
 }
+if (upgradesTab){
+  upgradesTab.style.cursor = 'pointer';
+  upgradesTab.addEventListener('click', showUpgrades);
+}
+
 
 // Гарантируем, что при первой загрузке мы в "Кейсах"
 showCases();
