@@ -345,14 +345,6 @@
   box-shadow: inset 0 30px 60px rgba(10,20,60,.35);
 }
 
-.inventory-card{
-  border:1px dashed rgba(180,210,255,.30);
-  background:
-    radial-gradient(120px 80px at 20% 20%, rgba(22,241,255,.08), transparent 60%),
-    radial-gradient(120px 80px at 80% 80%, rgba(255,62,208,.06), transparent 60%),
-    linear-gradient(180deg,#0b1030,#0a1028);
-}
-
 /* === INVENTORY HEADER — full-bleed до краёв экрана === */
 .inventory-header{
   width: 100vw;
@@ -904,11 +896,6 @@ html.scroll-locked, html.scroll-locked body{
   box-shadow:0 10px 22px rgba(255,77,109,.25);
 }
 
-/* ===== Кнопка ПРОДАТЬ в карточке инвентаря ===== */
-.inventory-card{
-  position:relative; /* уже есть, но пусть будет явно */
-}
-
 .inv-sell{
   position:absolute;
   left:50%;
@@ -1047,7 +1034,6 @@ html.scroll-locked, html.scroll-locked body{
 
 <script>
 // === App namespace (общие утилиты во всём приложении) ===
-window.GD = window.GD || {};
 
 // точный ник бота БЕЗ @
 GD.BOT_USERNAME = 'Glitchdrop_bot';
@@ -2160,24 +2146,6 @@ contestsScreen.classList.add('hide');
   document.body.classList.remove('friends-active');
   if (typeof syncTopbarOffset === 'function') syncTopbarOffset();
 
-  chipbar.classList.remove('hide');
-  content.classList.remove('hide');
-  backTop.classList.remove('hide');
-
-  profileScreen.classList.add('hide');
-  profileScreen.setAttribute('aria-hidden','true');
-
-  friendsScreen.classList.add('hide');                 // ← добавить
-  friendsScreen.setAttribute('aria-hidden','true');    // ← добавить
-
-  setActiveTab(casesTab);
-
-  restoreTopbarIfNeeded();                             // ← добавить
-
-document.body.classList.remove('friends-active');
-// вернём корректную высоту настоящего топбара
-if (typeof syncTopbarOffset === 'function') syncTopbarOffset();
-
 }
 
 function showProfile(){
@@ -2193,14 +2161,6 @@ contestsScreen.classList.add('hide');
 
   friendsScreen.classList.add('hide');
   friendsScreen.setAttribute('aria-hidden','true');
-
-  // спрятать каталог
-  chipbar.classList.add('hide');
-  content.classList.add('hide');
-  backTop.classList.add('hide');
-
-  friendsScreen.classList.add('hide');              // ← прячем «Друзья»
-  friendsScreen.setAttribute('aria-hidden','true'); // ← aria
 
   profileScreen.innerHTML = `
     <div class="inventory-surface">
@@ -2532,14 +2492,6 @@ contestsScreen.classList.add('hide');
   profileScreen.classList.add('hide');
   profileScreen.setAttribute('aria-hidden','true');
 
-
-  // спрятать каталог и инвентарь
-  chipbar.classList.add('hide');
-  content.classList.add('hide');
-  backTop.classList.add('hide');
-  profileScreen.classList.add('hide');
-  profileScreen.setAttribute('aria-hidden','true');
-
   // показать friends
   friendsScreen.classList.remove('hide');
   friendsScreen.setAttribute('aria-hidden','false');
@@ -2567,9 +2519,56 @@ function restoreTopbarIfNeeded(){
   }
 }
 
+// === ПУСТОЙ РЕЖИМ ДЛЯ «КОНКУРСОВ» ===
+
+// true — показываем заглушку «Здесь пока что пусто»; false — обычный интерфейс
+GD.contestsEmpty = true;
+
+/** Переключить пустой режим конкурсов.
+ * Примеры:
+ *   GD.setContestsEmpty(false) // показать полноценный интерфейс
+ *   GD.setContestsEmpty(true)  // снова показать заглушку
+ */
+GD.setContestsEmpty = function(on){
+  GD.contestsEmpty = !!on;
+  // если вкладка уже открыта — перерисуем
+  const scr = document.getElementById('contestsScreen');
+  if (scr && !scr.classList.contains('hide')) {
+    renderContests();
+  }
+};
+
 function renderContests(){
+  const contestsScreen = document.getElementById('contestsScreen');
   if (!contestsScreen) return;
 
+  // ——— ПУСТОЙ РЕЖИМ ———
+  if (GD.contestsEmpty){
+    contestsScreen.innerHTML = `
+      <div class="contests-wrap" style="
+        position:relative;
+        min-height:100svh;
+        display:grid;
+        place-items:center;
+        padding-bottom: max(var(--tabbar-h,84px), env(safe-area-inset-bottom) + 16px);
+      ">
+        <div style="
+          text-align:center;
+          font-weight:900;
+          letter-spacing:.6px;
+          font-size:clamp(22px, 6vw, 32px);
+          color:#e8efff;
+          text-shadow:0 0 16px rgba(22,241,255,.18);
+          opacity:.95;
+        ">
+          Здесь пока что пусто
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  // ——— ПОЛНЫЙ ИНТЕРФЕЙС ———
   contestsScreen.innerHTML = `
     <div class="contests-wrap">
       <div class="contests-header">КОНКУРСЫ</div>
@@ -2579,16 +2578,14 @@ function renderContests(){
 
   const list = document.getElementById('contList');
 
-  // заменяем buildLink:
-const buildLink = (username, link) => {
-  const u = String(username || "").trim();
-  if (link) return link;
-  if (u.startsWith("@")) return `https://t.me/${u.slice(1)}`;
-  return ""; // пустая строка — нет ссылки
-};
+  const buildLink = (username, link) => {
+    const u = String(username || "").trim();
+    if (link) return link;
+    if (u.startsWith("@")) return `https://t.me/${u.slice(1)}`;
+    return "";
+  };
 
-
-  CONTESTS_DATA.forEach((item, i) => {
+  (window.CONTESTS_DATA || []).forEach((item, i) => {
     if (i > 0){
       const sep = document.createElement('div');
       sep.className = 'cont-sep';
@@ -2597,43 +2594,40 @@ const buildLink = (username, link) => {
 
     const card = document.createElement('div');
     card.className = 'cont-card';
-    const imgUrl = item.img || FALLBACK_IMG;
+    const imgUrl = item.img || window.FALLBACK_IMG || 'https://via.placeholder.com/512?text=%F0%9F%8E%81';
     const uname  = item.username || "@username";
-    const href = buildLink(uname, item.link);
-card.innerHTML = `
-  <div class="cont-img">
-    <img src="${imgUrl}" alt="${esc(uname)}" onerror="this.src='${FALLBACK_IMG}'">
-  </div>
-  <div class="cont-right">
-    ${href
-      ? `<a class="cont-username" href="${href}" target="_blank" rel="noopener" title="${esc(uname)}">${esc(uname)}</a>`
-      : `<span class="cont-username" title="${esc(uname)}">${esc(uname)}</span>`}
-    ${href ? `<button type="button" class="cont-btn">Подробнее</button>` : ``}
-  </div>
-`;
-  list.appendChild(card);
+    const href   = buildLink(uname, item.link);
+
+    card.innerHTML = `
+      <div class="cont-img">
+        <img src="${imgUrl}" alt="${esc(uname)}"
+             onerror="this.src='${window.FALLBACK_IMG || 'https://via.placeholder.com/512?text=%F0%9F%8E%81'}'">
+      </div>
+      <div class="cont-right">
+        ${href
+          ? `<a class="cont-username" href="${href}" target="_blank" rel="noopener" title="${esc(uname)}">${esc(uname)}</a>`
+          : `<span class="cont-username" title="${esc(uname)}">${esc(uname)}</span>`}
+        ${href ? `<button type="button" class="cont-btn">Подробнее</button>` : ``}
+      </div>
+    `;
+    list.appendChild(card);
   });
 
-  // единая делегация кликов
   list.addEventListener('click', (e) => {
-  // клик по синей ссылке @username
-  const userLink = e.target.closest('.cont-username');
-  if (userLink) {
-    e.preventDefault();
-    safeOpen(userLink.href);
-    return;
-  }
-
-  // клик по кнопке «Подробнее»
-  const btn = e.target.closest('.cont-btn');
-  if (btn) {
-    e.preventDefault();
-    // ищем ссылку только в своей карточке
-    const card = btn.closest('.cont-card');
-    const link = card?.querySelector('.cont-username')?.href;
-    if (link) safeOpen(link);
-  }
-}, { passive:false });
+    const userLink = e.target.closest('.cont-username');
+    if (userLink && userLink.href){
+      e.preventDefault();
+      safeOpen(userLink.href);
+      return;
+    }
+    const btn = e.target.closest('.cont-btn');
+    if (btn){
+      e.preventDefault();
+      const card = btn.closest('.cont-card');
+      const link = card?.querySelector('.cont-username')?.href;
+      if (link) safeOpen(link);
+    }
+  }, { passive:false });
 }
 
 
