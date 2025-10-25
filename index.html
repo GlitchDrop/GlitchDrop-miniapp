@@ -882,21 +882,39 @@ html.scroll-locked, html.scroll-locked body{
 /* стрелка остаётся */
 .wheel-pointer{ z-index:6; }
 
-/* —— ЕДИНСТВЕННАЯ КАРТИНКА В ВЕРХНЕМ СЕКТОРЕ —— */
-.wheel-prize{
+/* контейнеры секторов (элементы внутри самого колеса) */
+.wheel{ position:relative; }
+
+/* один сектор, мы используем его только для того, чтобы разместить 1:1 картинку
+   центр колеса = точка вращения; сектор крутится вместе с колесом */
+.w-seg{
   position:absolute; left:50%; top:50%;
-  transform: translate(-50%,-50%);
-  width:88%; height:88%;
-  z-index:5;
-  /* клин верхнего сектора */
-  clip-path: polygon(50% 50%, 35% 9%, 65% 9%);
+  width:100%; height:100%;
+  transform-origin:50% 50%;
+  pointer-events:none;           /* внутри колеса кликов нет */
+}
+
+/* квадратная картинка в верхней части ячейки (как на твоём фото) */
+.w-seg .cell{
+  position:absolute; left:50%; top:50%;
+  width:22%;                     /* размер квадрата (подбери под дизайн) */
+  aspect-ratio:1/1;
+  transform:
+    rotate(var(--ang))           /* разворачиваем к центру сектора */
+    translateY(-44%)             /* выносим к ободу — «верх ячейки» */
+    /* не делаем обратный поворот, чтобы картинка реально "лежала в ячейке" и крутилась вместе с ней */;
+  transform-origin:50% 50%;
+  border-radius:10px;
+  overflow:hidden;
+  border:1px dashed rgba(180,210,255,.28); /* можно убрать */
+  background: radial-gradient(80px 60px at 50% 50%, rgba(22,241,255,.10), transparent 60%);
   filter: drop-shadow(0 2px 6px rgba(0,0,0,.25));
-  pointer-events:none;
 }
-.wheel-prize img{
-  width:100%; height:100%; object-fit:cover; display:block;
-  transform: translateY(-3%); border-radius:6px;
+
+.w-seg .cell img{
+  width:100%; height:100%; object-fit:contain; display:block;
 }
+
 
 /* старые .wheel-slot можно не удалять — они просто не будут создаваться */
 
@@ -3002,8 +3020,9 @@ upgradesScreen.setAttribute('aria-hidden','true');
 */
 const UPG_SEG_COUNT = 12;
 const UPG_SEG_ANGLE = 360 / UPG_SEG_COUNT;
-// ⬇️ ДОБАВЬ ЭТУ СТРОКУ СРАЗУ ПОСЛЕ UPG_SEG_ANGLE
-const UPG_OFFSET_DEG = 90; // 0° круга смотрит вправо, стрелка сверху — даём +90°
+const UPG_OFFSET_DEG = 90;   // стрелка сверху → даём +90°
+const IMAGE_AT = 0;          // 0 = верхняя ячейка под стрелкой
+
 
 
 // === EDIT HERE: URL картинок (1:1). Пустая строка = без картинки, покажется подпись.
@@ -3047,7 +3066,6 @@ function renderUpgrades(){
           <div id="upgWheel" class="wheel" aria-label="Колесо фортуны">
             <div class="wheel-hub"></div>
           </div>
-          <div class="wheel-prize"><img id="upgPrizeImg" alt=""></div>
           <div class="wheel-pointer" aria-hidden="true"></div>
         </div>
       </div>
@@ -3055,17 +3073,48 @@ function renderUpgrades(){
   `;
 
   const wheel    = document.getElementById('upgWheel');
-  const prizeImg = document.getElementById('upgPrizeImg');
   const btn      = document.getElementById('upgSpinBtn');
   const wrap     = document.getElementById('wheelWrap');
+
+ // очищаем (на случай повторного рендера) и оставляем ступицу
+wheel.innerHTML = `<div class="wheel-hub"></div>`;
+
+// рисуем все 12 сегментов: картинка (если есть) или текстовая метка
+for (let i = 0; i < UPG_SEG_COUNT; i++) {
+  const seg = document.createElement('div');
+  seg.className = 'w-seg';
+
+  const cell = document.createElement('div');
+  cell.className = 'cell';
+
+  // центр сектора
+  const centerDeg = i * UPG_SEG_ANGLE + UPG_SEG_ANGLE / 2;
+  cell.style.setProperty('--ang', `${centerDeg}deg`);
+
+  const imgUrl = UPG_WHEEL_IMAGES[i];
+  if (imgUrl) {
+    const imgEl = new Image();
+    imgEl.src = imgUrl;
+    imgEl.alt = '';
+    imgEl.onerror = () => { imgEl.src = FALLBACK_IMG; };
+    cell.appendChild(imgEl);
+  } else {
+    const label = document.createElement('div');
+    label.style.fontWeight = '900';
+    label.style.fontSize = '14px';
+    label.style.userSelect = 'none';
+    label.textContent = UPG_WHEEL_LABELS[i] ?? String(i + 1);
+    cell.appendChild(label);
+  }
+
+  seg.appendChild(cell);
+  wheel.appendChild(seg);
+}
 
   /* зафиксировать текущее положение без рывка */
   wheel.style.transition = 'none';
   wheel.style.transform  = `rotate(${_upgWheelAngle}deg)`;
   requestAnimationFrame(()=> wheel.style.transition = '');
-
-  /* стартовое изображение (если уже было) */
-  prizeImg.src = window._lastPrizeUrl || '';
 
   btn.addEventListener('click', ()=>{
     if (_upgSpinning) return;
@@ -3082,25 +3131,18 @@ function renderUpgrades(){
     wheel.style.transition = 'transform 4s cubic-bezier(.2,.8,.1,1)';
     wheel.style.transform  = `rotate(${target}deg)`;
 
-    /* по желанию: скрыть картинку на время спина */
-    prizeImg.src = '';
+   setTimeout(() => {
+  _upgSpinning = false;
+  btn.disabled = false;
+  wrap.classList.remove('spinning');
 
-    setTimeout(()=>{
-      _upgSpinning = false;
-      btn.disabled = false;
-      wrap.classList.remove('spinning');
-
-      /* картинка-победитель: показываем ЕЁ ровно в верхнем секторе */
-      const url = UPG_WHEEL_IMAGES[idx] || FALLBACK_IMG;
-      window._lastPrizeUrl = url;
-      prizeImg.src = url;
-
-      /* твоя модалка дропа */
-      openDropModal(url || FALLBACK_IMG);
-    }, 4050);
+  // победивший сектор → его изображение (или заглушка)
+  const url = UPG_WHEEL_IMAGES[idx] || FALLBACK_IMG;
+  window._lastPrizeUrl = url;
+  openDropModal(url);
+}, 4050);
   }, {passive:false});
 }
-
 
 // ===== CONFIRM SELL MODAL =====
 const confirmModal = document.getElementById('confirmModal');
