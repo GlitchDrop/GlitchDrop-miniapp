@@ -689,6 +689,112 @@ html.scroll-locked, html.scroll-locked body{
   box-shadow: inset 0 30px 60px rgba(10,20,60,.35);
 }
 
+/* ===== UPGRADES — Fortune Wheel (12) ===== */
+.upgrades-header{
+  width:100vw; margin-left:calc(50% - 50vw); margin-right:calc(50% - 50vw);
+  position:sticky; top: var(--topbar-h,64px); z-index:22;
+  padding:12px max(12px, env(safe-area-inset-left)) 14px max(12px, env(safe-area-inset-right));
+  text-align:center; font-weight:900; letter-spacing:1.2px;
+  font-size: clamp(26px, 7.5vw, 52px); color:#e8efff;
+  text-shadow:0 0 16px rgba(22,241,255,.2);
+  background: linear-gradient(180deg, rgba(12,16,38,.88), rgba(10,14,34,.82));
+  border-bottom:1px solid var(--border); backdrop-filter: blur(8px);
+}
+
+.upgrades-stage{
+  position:relative;
+  height:100%;
+  display:grid; place-items:center;
+  padding: 8px 0 calc(env(safe-area-inset-bottom) + 8px);
+  background:
+    radial-gradient(60% 40% at 50% -10%, rgba(22,241,255,.06), transparent 60%),
+    radial-gradient(60% 40% at 50% 110%, rgba(255,62,208,.05), transparent 60%),
+    linear-gradient(180deg, #0b1030 0%, #0a1028 100%);
+}
+
+/* колесо почти касается безопасной зоны между шапкой и таббаром */
+.wheel-wrap{
+  position:relative;
+  --usable-h: calc(100svh - var(--topbar-h,64px) - var(--tabbar-h,84px) - 26px);
+  width:  min(98vmin, var(--usable-h));
+  height: min(98vmin, var(--usable-h));
+  border-radius:50%;
+  display:grid; place-items:center;
+}
+
+.wheel{
+  position:relative;
+  width:100%; height:100%;
+  border-radius:50%;
+  background:
+    radial-gradient(closest-side, rgba(22,241,255,.06), transparent 45%),
+    conic-gradient(
+      rgba(20,26,62,.65) 0deg 30deg, rgba(12,16,38,.7) 30deg 60deg,
+      rgba(20,26,62,.65) 60deg 90deg, rgba(12,16,38,.7) 90deg 120deg,
+      rgba(20,26,62,.65) 120deg 150deg, rgba(12,16,38,.7) 150deg 180deg,
+      rgba(20,26,62,.65) 180deg 210deg, rgba(12,16,38,.7) 210deg 240deg,
+      rgba(20,26,62,.65) 240deg 270deg, rgba(12,16,38,.7) 270deg 300deg,
+      rgba(20,26,62,.65) 300deg 330deg, rgba(12,16,38,.7) 330deg 360deg
+    );
+  border:1px solid var(--border);
+  box-shadow:
+    0 12px 40px rgba(10,20,60,.5),
+    0 0 60px rgba(22,241,255,.08),
+    inset 0 0 28px rgba(22,241,255,.12);
+  overflow:visible;
+  transition: transform 4s cubic-bezier(.2,.8,.1,1);
+}
+
+.wheel::after{
+  content:"";
+  position:absolute; inset:6%;
+  border-radius:50%;
+  border:1px dashed rgba(180,210,255,.35);
+  pointer-events:none;
+}
+
+.wheel-pointer{
+  position:absolute; top:-16px; left:50%; transform:translateX(-50%);
+  width:0; height:0; border-left:16px solid transparent; border-right:16px solid transparent;
+  border-bottom:24px solid var(--neon-cyan);
+  filter: drop-shadow(0 0 12px rgba(22,241,255,.45));
+  z-index:5;
+}
+
+/* 12 невидимых 1:1 рамок под изображения (покажут контент сектора) */
+.wheel-slot{
+  position:absolute; left:50%; top:50%;
+  width: 22%; height: 22%;
+  transform-origin: -150% 50%;
+  display:grid; place-items:center;
+  /* outline:1px dashed rgba(22,241,255,.2);  ← включи при отладке */
+}
+.wheel-slot .img{
+  width:100%; aspect-ratio:1/1;
+  border-radius:12px; overflow:hidden;
+  display:grid; place-items:center;
+  background: radial-gradient(80px 60px at 50% 50%, rgba(22,241,255,.10), transparent 60%);
+  border:1px dashed rgba(180,210,255,.28);
+}
+.wheel-slot .img img{
+  width:88%; height:88%;
+  object-fit:contain; display:block; border-radius:10px;
+}
+
+/* кнопка запуска */
+.upg-spin{
+  margin-top:14px;
+  appearance:none; border:none; cursor:pointer;
+  padding:14px 18px; border-radius:14px; font-weight:900;
+  color:#081121; background:linear-gradient(135deg, var(--neon-cyan), var(--neon-pink));
+  border:1px solid transparent; box-shadow: var(--shadow-soft);
+}
+.upg-spin:disabled{ opacity:.6; cursor:not-allowed; }
+
+/* анти-спам: в момент спина — полностью блокируем взаимодействия */
+.wheel-wrap.spinning { pointer-events:none; }
+.wheel-wrap.spinning .wheel { cursor:progress; }
+
 
   </style>
 
@@ -2605,41 +2711,32 @@ function restoreTopbarIfNeeded(){
 function showUpgrades(){
   hardCloseDetailAndModal();
 
-  // гарантируем видимый верхний топбар и корректные отступы
+  // вернуть верхний топбар и корректные отступы
   topbarEl?.classList.remove('hide');
   restoreTopbarIfNeeded?.();
   if (typeof syncTopbarOffset === 'function') syncTopbarOffset();
   if (typeof syncTabbarOffset === 'function') syncTabbarOffset();
 
-  // прячем другие экраны
+  // спрятать остальные экраны
   chipbar.classList.add('hide');
   content.classList.add('hide');
   backTop.classList.add('hide');
 
-  profileScreen.classList.add('hide');
-  profileScreen.setAttribute('aria-hidden','true');
+  profileScreen.classList.add('hide');  profileScreen.setAttribute('aria-hidden','true');
+  friendsScreen.classList.add('hide');  friendsScreen.setAttribute('aria-hidden','true');
+  contestsScreen.classList.add('hide'); contestsScreen.setAttribute('aria-hidden','true');
 
-  friendsScreen.classList.add('hide');
-  friendsScreen.setAttribute('aria-hidden','true');
-  upgradesScreen.classList.add('hide');
-upgradesScreen.setAttribute('aria-hidden','true');
-
-
-  contestsScreen.classList.add('hide');
-  contestsScreen.setAttribute('aria-hidden','true');
-
-  // показать экран апгрейдов (чистый фон)
-  upgradesScreen.innerHTML = `<div class="upgrades-fixed"></div>`;
+  // показать апгрейды
   upgradesScreen.classList.remove('hide');
   upgradesScreen.setAttribute('aria-hidden','false');
 
+  // отрисовать колесо
+  renderUpgrades();
+
   setActiveTab(upgradesTab);
   document.body.classList.remove('friends-active');
-  if (typeof syncTopbarOffset === 'function') syncTopbarOffset();
-  if (typeof syncTabbarOffset === 'function') syncTabbarOffset();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-
 
 // === ПУСТОЙ РЕЖИМ ДЛЯ «КОНКУРСОВ» ===
 
@@ -2790,6 +2887,128 @@ upgradesScreen.setAttribute('aria-hidden','true');
   if (typeof syncTabbarOffset === 'function') syncTabbarOffset();
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ===== UPGRADES WHEEL (12) — КОНФИГ =====
+   👉 Редактируй массивы ниже:
+   - UPG_WHEEL_IMAGES   — URL картинок для каждого сектора (1:1 рамка)
+   - UPG_WHEEL_WEIGHTS  — «веса» (шансы). Любые числа, нормализуются автоматически.
+   - UPG_WHEEL_LABELS   — подписи, если картинка не задана.
+*/
+const UPG_SEG_COUNT = 12;
+const UPG_SEG_ANGLE = 360 / UPG_SEG_COUNT;
+// ⬇️ ДОБАВЬ ЭТУ СТРОКУ СРАЗУ ПОСЛЕ UPG_SEG_ANGLE
+const UPG_OFFSET_DEG = 90; // 0° круга смотрит вправо, стрелка сверху — даём +90°
+
+
+// === EDIT HERE: URL картинок (1:1). Пустая строка = без картинки, покажется подпись.
+const UPG_WHEEL_IMAGES = [
+  "", "", "", "", "", "", "", "", "", "", "", ""
+];
+
+// === EDIT HERE: Веса/шансы для 12 секторов.
+// Пример: [50,20,10,5,5,5,1,1,1,1,0.5,0.5]
+// Чем больше число — тем чаще выпадает.
+const UPG_WHEEL_WEIGHTS = [
+  1,1,1,1,1,1,1,1,1,1,1,1
+];
+
+// === EDIT HERE: Подписи, если нет картинки:
+const UPG_WHEEL_LABELS = [
+  "1","2","3","4","5","6","7","8","9","10","11","12"
+];
+
+let _upgWheelAngle = 0;   // текущий угол (чтобы следующий спин логично продолжался)
+let _upgSpinning   = false;
+
+// Нормализация весов и выбор индекса
+function pickIndexByWeightsUpg(weights){
+  const w = Array.from({length:UPG_SEG_COUNT}, (_,i)=> Math.max(0, Number(weights[i] ?? 0)));
+  const sum = w.reduce((a,b)=>a+b, 0) || 1;
+  let r = Math.random(), acc = 0;
+  for (let i=0; i<w.length; i++){
+    acc += w[i] / sum;
+    if (r <= acc) return i;
+  }
+  return w.length - 1;
+}
+
+// Рендер экрана апгрейдов (вызовется из showUpgrades)
+function renderUpgrades(){
+  upgradesScreen.innerHTML = `
+    <div class="upgrades-fixed">
+      <div class="upgrades-header">АПГРЕЙДЫ</div>
+      <div class="upgrades-stage">
+        <div class="wheel-wrap" id="wheelWrap">
+          <div id="upgWheel" class="wheel" aria-label="Колесо фортуны"></div>
+          <div class="wheel-pointer" aria-hidden="true"></div>
+        </div>
+        <button id="upgSpinBtn" class="upg-spin">КРУТИТЬ</button>
+      </div>
+    </div>
+  `;
+
+  const wheel = document.getElementById('upgWheel');
+  const wrap  = document.getElementById('wheelWrap');
+
+  // 12 слотов с невидимой 1:1 рамкой (картинка или подпись)
+  for (let i=0; i<UPG_SEG_COUNT; i++){
+    const slot = document.createElement('div');
+    slot.className = 'wheel-slot';
+    const angle = i * UPG_SEG_ANGLE;
+    slot.style.transform = `rotate(${angle}deg) translateX(50%) rotate(${-angle}deg)`;
+
+    const imgWrap = document.createElement('div');
+    imgWrap.className = 'img';
+    const url = UPG_WHEEL_IMAGES[i] || '';
+    if (url){
+      const img = document.createElement('img');
+      img.src = url; img.alt = `Сектор ${i+1}`;
+      img.loading = 'lazy';
+      img.onerror = ()=> img.remove();
+      imgWrap.appendChild(img);
+    } else {
+      const lbl = document.createElement('div');
+      lbl.style.cssText = "font-weight:900;color:#a9c2ff;font-size:12px;letter-spacing:.3px;opacity:.9;";
+      lbl.textContent = UPG_WHEEL_LABELS[i] || '';
+      imgWrap.appendChild(lbl);
+    }
+    slot.appendChild(imgWrap);
+    wheel.appendChild(slot);
+  }
+// зафиксировать текущее положение колеса при входе
+wheel.style.transition = 'none';
+wheel.style.transform  = `rotate(${_upgWheelAngle}deg)`;
+requestAnimationFrame(() => { wheel.style.transition = ''; });
+
+  // Анти-спам: блокируем повторный запуск, пока крутится
+  const btn = document.getElementById('upgSpinBtn');
+  btn.addEventListener('click', ()=>{
+    if (_upgSpinning) return;
+    _upgSpinning = true;
+    btn.disabled = true;
+    wrap.classList.add('spinning');   // CSS полностью гасит взаимодействия
+
+    const idx = pickIndexByWeightsUpg(UPG_WHEEL_WEIGHTS);
+    const turns = 6; // сколько полных оборотов докрутить «для красоты»
+    // ⬇️ ЗАМЕНИ ЭТИ ДВЕ СТРОКИ
+const targetCenter = idx * UPG_SEG_ANGLE + UPG_SEG_ANGLE/2;
+const target = _upgWheelAngle + turns*360 + (360 - ((targetCenter + UPG_OFFSET_DEG) % 360));
+    _upgWheelAngle = target % 360;
+
+    wheel.style.transition = 'transform 4s cubic-bezier(.2,.8,.1,1)';
+    wheel.style.transform  = `rotate(${target}deg)`;
+
+    setTimeout(()=>{
+      _upgSpinning = false;
+      btn.disabled = false;
+      wrap.classList.remove('spinning');
+
+      // Показать твою стандартную модалку дропа
+      const url = UPG_WHEEL_IMAGES[idx] || '';
+      openDropModal(url || FALLBACK_IMG);
+    }, 4050); // чуть больше, чем transition
+  }, { passive:false });
 }
 
 
