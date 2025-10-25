@@ -795,6 +795,111 @@ html.scroll-locked, html.scroll-locked body{
 .wheel-wrap.spinning { pointer-events:none; }
 .wheel-wrap.spinning .wheel { cursor:progress; }
 
+/* ==== UPGRADE WHEEL — OVERRIDES (вставить в самый конец CSS) ==== */
+
+/* прячем шапку */
+.upgrades-header{ display:none !important; }
+
+/* сцена: кнопка сверху, колесо ниже */
+.upgrades-stage{
+  position:relative;
+  height:100%;
+  display:grid;
+  grid-template-rows:auto 1fr;
+  gap:12px;
+  place-items:center;
+  padding: 8px 0 calc(env(safe-area-inset-bottom) + 8px);
+  background:
+    radial-gradient(60% 40% at 50% -10%, rgba(22,241,255,.06), transparent 60%),
+    radial-gradient(60% 40% at 50% 110%, rgba(255,62,208,.05), transparent 60%),
+    linear-gradient(180deg, #0b1030 0%, #0a1028 100%);
+}
+/* кнопка крутить выше */
+.upg-spin{ order:-1; }
+
+.wheel-wrap{
+  position:relative;
+  --usable-h: calc(100svh - var(--topbar-h,64px) - var(--tabbar-h,84px) - 26px);
+  width:  min(98vmin, var(--usable-h));
+  height: min(98vmin, var(--usable-h));
+  display:grid; place-items:center;
+}
+
+/* более объёмное колесо */
+.wheel{
+  position:relative;
+  width:100%; height:100%;
+  border-radius:50%;
+  background:
+    radial-gradient(closest-side, rgba(22,241,255,.08), transparent 46%),
+    conic-gradient(
+      rgba(20,26,62,.70) 0deg 30deg, rgba(12,16,38,.78) 30deg 60deg,
+      rgba(20,26,62,.70) 60deg 90deg, rgba(12,16,38,.78) 90deg 120deg,
+      rgba(20,26,62,.70) 120deg 150deg, rgba(12,16,38,.78) 150deg 180deg,
+      rgba(20,26,62,.70) 180deg 210deg, rgba(12,16,38,.78) 210deg 240deg,
+      rgba(20,26,62,.70) 240deg 270deg, rgba(12,16,38,.78) 270deg 300deg,
+      rgba(20,26,62,.70) 300deg 330deg, rgba(12,16,38,.78) 330deg 360deg
+    );
+  box-shadow:
+    0 18px 60px rgba(10,20,60,.55),
+    inset 0 14px 36px rgba(0,0,0,.35),
+    inset 0 -12px 28px rgba(255,255,255,.06);
+  border:1px solid rgba(180,210,255,.25);
+  will-change: transform;
+  transition: transform 4s cubic-bezier(.2,.8,.1,1);
+}
+
+/* внешний рим */
+.wheel::before{
+  content:""; position:absolute; inset:-10px; border-radius:50%;
+  background:
+    radial-gradient(closest-side, rgba(255,255,255,.08), transparent 40%),
+    radial-gradient(closest-side, rgba(0,0,0,.35), transparent 70%);
+  box-shadow:
+    inset 0 2px 0 rgba(255,255,255,.12),
+    inset 0 -2px 0 rgba(0,0,0,.35);
+  z-index:0;
+}
+
+/* болты + внутр. кольцо */
+.wheel::after{
+  content:""; position:absolute; inset:4%; border-radius:50%;
+  background:
+    repeating-conic-gradient(from 0deg, transparent 0 27.5deg, rgba(180,210,255,.18) 27.5deg 30deg),
+    radial-gradient(closest-side, transparent calc(100% - 18px), rgba(180,210,255,.25) calc(100% - 18px) 100%);
+  pointer-events:none; z-index:1;
+}
+
+/* центральная ступица */
+.wheel-hub{
+  position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  width:22%; height:22%; border-radius:50%;
+  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.18), rgba(12,16,38,.9));
+  box-shadow: inset 0 6px 16px rgba(255,255,255,.12), inset 0 -8px 18px rgba(0,0,0,.45);
+  border:1px solid rgba(180,210,255,.25); z-index:3;
+}
+
+/* стрелка остаётся */
+.wheel-pointer{ z-index:6; }
+
+/* —— ЕДИНСТВЕННАЯ КАРТИНКА В ВЕРХНЕМ СЕКТОРЕ —— */
+.wheel-prize{
+  position:absolute; left:50%; top:50%;
+  transform: translate(-50%,-50%);
+  width:88%; height:88%;
+  z-index:5;
+  /* клин верхнего сектора */
+  clip-path: polygon(50% 50%, 35% 9%, 65% 9%);
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,.25));
+  pointer-events:none;
+}
+.wheel-prize img{
+  width:100%; height:100%; object-fit:cover; display:block;
+  transform: translateY(-3%); border-radius:6px;
+}
+
+/* старые .wheel-slot можно не удалять — они просто не будут создаваться */
+
 
   </style>
 
@@ -2933,82 +3038,67 @@ function pickIndexByWeightsUpg(weights){
   return w.length - 1;
 }
 
-// Рендер экрана апгрейдов (вызовется из showUpgrades)
 function renderUpgrades(){
   upgradesScreen.innerHTML = `
     <div class="upgrades-fixed">
-      <div class="upgrades-header">АПГРЕЙДЫ</div>
       <div class="upgrades-stage">
+        <button id="upgSpinBtn" class="upg-spin">КРУТИТЬ</button>
         <div class="wheel-wrap" id="wheelWrap">
-          <div id="upgWheel" class="wheel" aria-label="Колесо фортуны"></div>
+          <div id="upgWheel" class="wheel" aria-label="Колесо фортуны">
+            <div class="wheel-hub"></div>
+          </div>
+          <div class="wheel-prize"><img id="upgPrizeImg" alt=""></div>
           <div class="wheel-pointer" aria-hidden="true"></div>
         </div>
-        <button id="upgSpinBtn" class="upg-spin">КРУТИТЬ</button>
       </div>
     </div>
   `;
 
-  const wheel = document.getElementById('upgWheel');
-  const wrap  = document.getElementById('wheelWrap');
+  const wheel    = document.getElementById('upgWheel');
+  const prizeImg = document.getElementById('upgPrizeImg');
+  const btn      = document.getElementById('upgSpinBtn');
+  const wrap     = document.getElementById('wheelWrap');
 
-  // 12 слотов с невидимой 1:1 рамкой (картинка или подпись)
-  for (let i=0; i<UPG_SEG_COUNT; i++){
-    const slot = document.createElement('div');
-    slot.className = 'wheel-slot';
-    const angle = i * UPG_SEG_ANGLE;
-    slot.style.transform = `rotate(${angle}deg) translateX(50%) rotate(${-angle}deg)`;
+  /* зафиксировать текущее положение без рывка */
+  wheel.style.transition = 'none';
+  wheel.style.transform  = `rotate(${_upgWheelAngle}deg)`;
+  requestAnimationFrame(()=> wheel.style.transition = '');
 
-    const imgWrap = document.createElement('div');
-    imgWrap.className = 'img';
-    const url = UPG_WHEEL_IMAGES[i] || '';
-    if (url){
-      const img = document.createElement('img');
-      img.src = url; img.alt = `Сектор ${i+1}`;
-      img.loading = 'lazy';
-      img.onerror = ()=> img.remove();
-      imgWrap.appendChild(img);
-    } else {
-      const lbl = document.createElement('div');
-      lbl.style.cssText = "font-weight:900;color:#a9c2ff;font-size:12px;letter-spacing:.3px;opacity:.9;";
-      lbl.textContent = UPG_WHEEL_LABELS[i] || '';
-      imgWrap.appendChild(lbl);
-    }
-    slot.appendChild(imgWrap);
-    wheel.appendChild(slot);
-  }
-// зафиксировать текущее положение колеса при входе
-wheel.style.transition = 'none';
-wheel.style.transform  = `rotate(${_upgWheelAngle}deg)`;
-requestAnimationFrame(() => { wheel.style.transition = ''; });
+  /* стартовое изображение (если уже было) */
+  prizeImg.src = window._lastPrizeUrl || '';
 
-  // Анти-спам: блокируем повторный запуск, пока крутится
-  const btn = document.getElementById('upgSpinBtn');
   btn.addEventListener('click', ()=>{
     if (_upgSpinning) return;
     _upgSpinning = true;
     btn.disabled = true;
-    wrap.classList.add('spinning');   // CSS полностью гасит взаимодействия
+    wrap.classList.add('spinning');
 
-    const idx = pickIndexByWeightsUpg(UPG_WHEEL_WEIGHTS);
-    const turns = 6; // сколько полных оборотов докрутить «для красоты»
-    // ⬇️ ЗАМЕНИ ЭТИ ДВЕ СТРОКИ
-const targetCenter = idx * UPG_SEG_ANGLE + UPG_SEG_ANGLE/2;
-const target = _upgWheelAngle + turns*360 + (360 - ((targetCenter + UPG_OFFSET_DEG) % 360));
+    const idx    = pickIndexByWeightsUpg(UPG_WHEEL_WEIGHTS);
+    const turns  = 6;                               // полных оборотов «для красоты»
+    const targetCenter = idx * UPG_SEG_ANGLE + UPG_SEG_ANGLE/2;
+    const target = _upgWheelAngle + turns*360 + (360 - ((targetCenter + UPG_OFFSET_DEG) % 360));
     _upgWheelAngle = target % 360;
 
     wheel.style.transition = 'transform 4s cubic-bezier(.2,.8,.1,1)';
     wheel.style.transform  = `rotate(${target}deg)`;
+
+    /* по желанию: скрыть картинку на время спина */
+    prizeImg.src = '';
 
     setTimeout(()=>{
       _upgSpinning = false;
       btn.disabled = false;
       wrap.classList.remove('spinning');
 
-      // Показать твою стандартную модалку дропа
-      const url = UPG_WHEEL_IMAGES[idx] || '';
+      /* картинка-победитель: показываем ЕЁ ровно в верхнем секторе */
+      const url = UPG_WHEEL_IMAGES[idx] || FALLBACK_IMG;
+      window._lastPrizeUrl = url;
+      prizeImg.src = url;
+
+      /* твоя модалка дропа */
       openDropModal(url || FALLBACK_IMG);
-    }, 4050); // чуть больше, чем transition
-  }, { passive:false });
+    }, 4050);
+  }, {passive:false});
 }
 
 
