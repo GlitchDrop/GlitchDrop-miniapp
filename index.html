@@ -673,6 +673,126 @@ html.scroll-locked, html.scroll-locked body{
   overflow: hidden; /* даже если много карточек — сцена остаётся неподвижной */
 }
 
+/* ===== UPGRADES (счётчик с кубиком) ===== */
+:root{
+  --upg-bar-h: 56px;
+  --upg-thumb: 24px;
+}
+
+.upg-surface{
+  position:relative;
+  min-height:100svh;
+  background:
+    radial-gradient(60% 40% at 50% -10%, rgba(22,241,255,.06), transparent 60%),
+    radial-gradient(60% 40% at 50% 110%, rgba(255,62,208,.05), transparent 60%),
+    linear-gradient(180deg, #0b1030 0%, #0a1028 100%);
+  border-top:1px solid var(--border);
+  box-shadow: inset 0 30px 60px rgba(10,20,60,.35);
+  padding: 18px 12px max(var(--tabbar-h,84px), env(safe-area-inset-bottom) + 16px);
+}
+
+.upg-wrap{
+  max-width: 980px;
+  margin: 0 auto;
+  display: grid;
+  gap: 18px;
+}
+
+/* Верхний счёт крупной цифрой */
+.upg-score{
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-weight: 900;
+  letter-spacing: .8px;
+  font-size: clamp(56px, 20vw, 120px);
+  color: #ffffff;
+  text-shadow: 0 0 16px rgba(22,241,255,.18);
+}
+
+/* картинка справа от большого счёта */
+.upg-art{
+  width: 1em;           /* ровно размер цифры «1» */
+  height: 1em;
+  object-fit: contain;
+  opacity: .7;          /* полупрозрачно */
+  mix-blend-mode: soft-light; /* «слить» с фоном */
+  filter: saturate(1.1) contrast(1.02);
+}
+
+/* Полоса */
+.upg-bar{
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #0b0c12;
+  box-shadow: inset 0 0 20px rgba(0,0,0,.35);
+  padding: 6px;
+}
+
+.upg-track{
+  position: relative;
+  height: var(--upg-bar-h);
+  border-radius: 10px;
+  background:
+    linear-gradient(180deg, rgba(20,26,62,.55), rgba(14,18,40,.6));
+  overflow: hidden;
+}
+
+/* левая «стартовая» подложка как на макете (бирюза) */
+.upg-start-bg{
+  position:absolute; left:0; top:0; bottom:0;
+  width: min(160px, 40%);
+  background: #29c9d2;
+  opacity: .85;
+}
+
+/* Кубик */
+.upg-thumb{
+  position:absolute; top: 50%; left: 0;
+  width: var(--upg-thumb); height: var(--upg-bar-h);
+  transform: translateY(-50%);
+  border-radius: 6px;
+  background: linear-gradient(180deg, #24d0d8, #21b8bf);
+  box-shadow: 0 0 22px rgba(33, 220, 230, .35);
+  cursor: grab;
+  touch-action: none;
+}
+
+/* Строки «500 = 1 (токен) / 5000 = 10 (звезда)» */
+.upg-rows{
+  display: grid; gap: 12px;
+  margin-top: 8px;
+}
+.upg-row{
+  display:flex; align-items:center; gap: 12px;
+  font-weight: 900;
+  letter-spacing: .4px;
+  color: #e8efff;
+  font-size: clamp(18px, 6vw, 28px);
+}
+.upg-row .ico{
+  width: 1em; height: 1em;
+  opacity: .75;
+  mix-blend-mode: soft-light;
+  object-fit: contain;
+  filter: saturate(1.05);
+}
+.upg-row .xart{
+  width: 1.4em; height: 1.4em;
+  opacity: .7; mix-blend-mode: soft-light;
+  margin-right: 2px;
+}
+
+/* маленькая подпись (опционально) */
+.upg-note{
+  text-align:center;
+  font-size: 12px;
+  color:#9fb2d9;
+  opacity:.9;
+}
+
   </style>
 
 <style>
@@ -2767,10 +2887,146 @@ upgradesScreen.setAttribute('aria-hidden','true');
 }
 
 function renderUpgrades(){
-  // можно использовать уже существующую поверхность, чтобы фон был единый
+  if (!upgradesScreen) return;
+
+  const TOKEN_URL = "assets/images/20251005_0825_Яркое неоновое сияние_remix_01k6sd902pf03ah1w3cpkr66jz.png"; // глитч-токен
+  const STAR_URL  = "assets/images/звезда.png";                                                                // звезда
+  const ART_URL   = "assets/images/20251028_1051_Космический неоновый отпечаток_simple_compose_01k8mwr9qzev3sczxr1rzxfm50.png";
+
   upgradesScreen.innerHTML = `
-    <div class="contests-surface"></div>
+    <div class="upg-surface">
+      <div class="upg-wrap">
+
+        <!-- Крупный счёт -->
+        <div class="upg-score">
+          <span id="upgCount">0</span>
+          <img class="upg-art" src="${ART_URL}" alt="">
+        </div>
+
+        <!-- Полоса с кубиком -->
+        <div class="upg-bar">
+          <div class="upg-track" id="upgTrack">
+            <div class="upg-start-bg"></div>
+            <div class="upg-thumb" id="upgThumb" aria-label="Перетаскиваемый кубик"></div>
+          </div>
+        </div>
+
+        <!-- Строки с курсами -->
+        <div class="upg-rows">
+          <div class="upg-row">
+            <img class="xart" src="${ART_URL}" alt="">
+            <img class="ico" src="${TOKEN_URL}" alt="">
+            <span>500 = 1</span>
+            <img class="ico" src="${TOKEN_URL}" alt="" style="width:1em;height:1em;">
+          </div>
+
+          <div class="upg-row">
+            <img class="xart" src="${ART_URL}" alt="">
+            <img class="ico" src="${TOKEN_URL}" alt="">
+            <span>5000 = 10</span>
+            <img class="ico" src="${STAR_URL}" alt="" style="width:1em;height:1em;">
+          </div>
+        </div>
+
+        <div class="upg-note">Счёт засчитывается только при полном круге: L→R (+1), затем нужно вернуться R→L и снова на R, чтобы получить следующий +1.</div>
+      </div>
+    </div>
   `;
+
+  // === ЛОГИКА ПЕРЕТАСКИВАНИЯ И СЧЁТА ===
+  const tg = window.Telegram?.WebApp;
+  const track = document.getElementById('upgTrack');
+  const thumb = document.getElementById('upgThumb');
+  const cntEl = document.getElementById('upgCount');
+
+  const state = {
+    dragging: false,
+    startX: 0,
+    left: 0,
+    min: 0,
+    max: 0,
+    count: Number(cntEl?.textContent || 0) || 0,
+    armedRight: true,   // можно засчитать правый край? (первый круг после старта да)
+    needLeft: false     // нужно ли сначала вернуться налево?
+  };
+
+  const setLeft = (x) => {
+    state.left = Math.min(state.max, Math.max(state.min, x));
+    thumb.style.left = `${state.left}px`;
+  };
+
+  const layout = () => {
+    const tr = track.getBoundingClientRect();
+    const th = thumb.getBoundingClientRect();
+    // thumb занимает всю высоту, считаем ширину с CSS, но берём из getComputed
+    const thumbW = parseFloat(getComputedStyle(thumb).width) || th.width || 24;
+    state.min = 0;
+    state.max = Math.max(0, tr.width - thumbW);
+    setLeft(state.min);               // ставим в самый левый край
+  };
+
+  const vibrate = () => {
+    try { tg?.HapticFeedback?.impactOccurred('heavy'); } catch(_) {}
+    if (navigator.vibrate) try{ navigator.vibrate(25); }catch(_){}
+  };
+
+  const onDown = (clientX) => {
+    state.dragging = true;
+    state.startX = clientX - state.left;
+    thumb.style.cursor = 'grabbing';
+  };
+  const onMove = (clientX) => {
+    if (!state.dragging) return;
+    setLeft(clientX - state.startX);
+
+    // проверка касаний краёв
+    const atLeft  = state.left <= state.min + 0.5;
+    const atRight = state.left >= state.max - 0.5;
+
+    // Вернулся влево → «зарядить» следующий right
+    if (atLeft){
+      state.armedRight = true;
+      state.needLeft   = false;
+    }
+
+    // Достиг правого края
+    if (atRight){
+      if (state.armedRight && !state.needLeft){
+        state.count += 1;
+        if (cntEl) cntEl.textContent = String(state.count);
+        vibrate();
+        // после правого нужно обязательно вернуться налево
+        state.armedRight = false;
+        state.needLeft   = true;
+      }
+    }
+  };
+  const onUp = () => {
+    state.dragging = false;
+    thumb.style.cursor = 'grab';
+  };
+
+  // Mouse
+  thumb.addEventListener('mousedown', e => { e.preventDefault(); onDown(e.clientX); });
+  window.addEventListener('mousemove', e => { onMove(e.clientX); });
+  window.addEventListener('mouseup',   onUp);
+
+  // Touch
+  thumb.addEventListener('touchstart', e => {
+    const t = e.touches[0]; if (!t) return;
+    onDown(t.clientX);
+  }, {passive:true});
+  window.addEventListener('touchmove', e => {
+    const t = e.touches[0]; if (!t) return;
+    onMove(t.clientX);
+  }, {passive:true});
+  window.addEventListener('touchend',   onUp);
+  window.addEventListener('touchcancel',onUp);
+
+  // Пересчёт геометрии
+  layout();
+  window.addEventListener('resize', layout, {passive:true});
+  window.addEventListener('orientationchange', layout, {passive:true});
 }
 
 // ===== CONFIRM SELL MODAL =====
