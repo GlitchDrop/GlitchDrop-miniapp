@@ -771,6 +771,29 @@ html.scroll-locked, html.scroll-locked body{
 .upg-wrap img,
 .upg-row img { display:none !important; }
 
+/* Круглая мини-капсула под плюсик — в едином неон-стиле */
+.pill--circle{
+  width: 40px; height: 40px; padding: 0;
+  border-radius: 999px;
+  display: grid; place-items: center;
+  border: 1px solid var(--border);
+  background: linear-gradient(135deg, rgba(22,241,255,.10), rgba(138,92,255,.12));
+  box-shadow: 0 0 18px rgba(22,241,255,.12) inset, var(--shadow-soft);
+  /* фиксируем визуальный ритм топбара */
+  margin-right: 8px;
+}
+.pill--circle .plus{
+  font-weight: 900;
+  font-size: 20px;
+  line-height: 1;
+  color: #cfe6ff;
+  text-shadow: 0 0 12px rgba(22,241,255,.6), 0 0 12px rgba(255,62,208,.35);
+  transform: translateY(-1px);
+}
+
+/* чтобы точно совпадало с высотой аватара/пилюль */
+.topbar .pill--circle { flex: 0 0 auto; }
+
   </style>
 
 <style>
@@ -1080,6 +1103,11 @@ html.scroll-locked, html.scroll-locked body{
 </div>
 
       <div class="grow"></div>
+
+<!-- Декоративный плюсик (круглая мини-капсула), без действий -->
+<div class="pill pill--circle topplus" aria-hidden="true" role="presentation" tabindex="-1">
+  <span class="plus">+</span>
+</div>
 
       <!-- Пилюля ГЛИТЧ-ТОКЕН слева -->
       <div class="pill pill--lg" title="Глитч-токен">
@@ -1638,8 +1666,12 @@ function openDetail({title, price, setId}) {
   // чистая заглушка сверху
   dThumb.textContent = 'Заглушка';
 
-  // лут снизу
+   // лут снизу
   const images = LOOT_SETS[setId] || null;
+
+  // 🔥 прелоад первых 11 картинок для барабана/лут-грида
+  preloadImages((images || []).slice(0, 11));
+
   renderLoot(images, setId);
 
 const key = `${setId}__0`;
@@ -1907,6 +1939,12 @@ window.SPIN_IMAGES = window.SPIN_IMAGES || {}; // { setId: [url,url,...] }
 
 // Общий state по ключу (setId__index)
 window.SPIN_STATE = window.SPIN_STATE || new Map();
+
+// === Прелоад изображений барабана ===
+function preloadImages(urls){
+  if (!Array.isArray(urls)) return;
+  urls.filter(Boolean).forEach(src => { const i = new Image(); i.src = src; });
+}
 
 // Проценты выпадения по наборам (11 значений на setId). Пока нули — равновероятно.
 const SPIN_CONFIGS_PERCENT = {
