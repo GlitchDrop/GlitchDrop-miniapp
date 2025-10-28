@@ -845,6 +845,12 @@ html.scroll-locked, html.scroll-locked body{
   flex: 0 0 auto;
 }
 
+/* анти-оверфлоу для топбара */
+.topbar{ overflow: hidden; }           /* обрезаем всё, что могло бы вылезти */
+.topbar > *{ min-width: 0; }           /* разрешаем ужиматься внутри flex */
+.brand{ flex-basis: 28vw; }            /* чутка меньше коридор ника */
+@media (max-width: 360px){ .brand{ flex-basis: 26vw; } } /* на очень узких */
+
   </style>
 
 <style>
