@@ -794,6 +794,57 @@ html.scroll-locked, html.scroll-locked body{
 /* чтобы точно совпадало с высотой аватара/пилюль */
 .topbar .pill--circle { flex: 0 0 auto; }
 
+/* ==== TOPBAR: фиксируем высоту и убираем переносы ==== */
+.topbar{
+  flex-wrap: nowrap;         /* всё в одну линию */
+  white-space: nowrap;       /* без переносов */
+}
+
+/* ник ужимается чуть сильнее на узких экранах */
+@media (max-width: 420px){
+  .brand{ flex: 0 1 32vw; }  /* было 38vw — даём больше места капсулам */
+}
+@media (max-width: 360px){
+  .brand{ flex: 0 1 28vw; }
+}
+
+/* ==== КРУГЛАЯ КАПСУЛА С ПЛЮСОМ — поменьше ==== */
+.pill--circle{
+  width: 32px;               /* было 40px */
+  height: 32px;              /* было 40px */
+  margin-right: 6px;         /* компактнее зазор перед глитч-капсулой */
+}
+.pill--circle .plus{
+  font-size: 16px;           /* было 20px */
+  transform: translateY(-0.5px);
+}
+
+/* ==== ОБЕ БОЛЬШИЕ КАПСУЛЫ (глитч-токен и звёзды) — слегка меньше, одинаковые ==== */
+.pill--lg{
+  padding: 8px 10px;         /* было 10px 14px */
+}
+.pill--lg img{
+  width: 22px;               /* было 24px */
+  height: 22px;
+}
+.pill--lg .num{
+  font-size: 13px;           /* немного ужмём цифры, чтобы капсулы не раздувались */
+  line-height: 1;
+}
+
+/* на очень узких — ещё каплю компактнее */
+@media (max-width: 360px){
+  .pill--lg{ padding: 7px 9px; }
+  .pill--lg img{ width: 20px; height: 20px; }
+  .pill--lg .num{ font-size: 12.5px; }
+}
+
+/* на всякий: элементы справа не растягивают строку */
+.topbar .pill,
+.topbar .pill--circle{
+  flex: 0 0 auto;
+}
+
   </style>
 
 <style>
