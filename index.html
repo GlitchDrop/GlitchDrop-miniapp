@@ -750,68 +750,6 @@ html.scroll-locked, html.scroll-locked body{
 .plus-wrap::after{ display:none; }
 .plus-wrap.open::after{ display:block; }
 
-/* === FIX: компактный топбар без «шатаний» === */
-
-/* не даём шапке разъезжаться по ширине, всё в одну строку */
-.topbar{
-  gap:8px;            /* было 12px */
-  overflow:hidden;    /* на всякий случай, чтобы не появлялся горизонтальный скролл */
-  flex-wrap: nowrap;
-}
-
-/* бренд может ужиматься сильнее, но без обрезания */
-.topbar .brand{
-  flex: 1 1 auto;     /* пусть берёт остаток, но умеет ужиматься */
-  min-width: 100px;
-  max-width: 48vw;    /* было 38vw — даём чуть больше свободы */
-}
-
-/* компактный плюсик */
-.pill-plus{
-  width:36px; height:36px;      /* было 42x42 */
-  margin-right:8px;             /* было 10px */
-}
-
-/* одинаковое уменьшение обеих пилюль в шапке */
-.topbar .pill.pill--lg{
-  height:36px;                  /* фиксированная высота — обе пилюли одинаковые */
-  padding:6px 10px;             /* было 10px 14px */
-  gap:8px;
-}
-.topbar .pill.pill--lg img{
-  width:20px; height:20px;      /* было 24x24 */
-}
-.topbar .pill .num{
-  font-size:13px;               /* чуть компактнее текста внутри */
-  line-height:1;
-  white-space:nowrap;
-}
-
-/* на очень узких экранах — ещё шаг компактности */
-@media (max-width: 380px){
-  .pill-plus{
-    width:32px; height:32px;
-    margin-right:6px;
-  }
-  .topbar .pill.pill--lg{
-    height:32px;
-    padding:6px 8px;
-    gap:6px;
-  }
-  .topbar .pill.pill--lg img{
-    width:18px; height:18px;
-  }
-  .topbar .pill .num{
-    font-size:12px;
-  }
-  /* ник может ужиматься сильнее */
-  .topbar .brand{ max-width: 44vw; }
-}
-
-/* подстрахуемся: любые элементы внутри топбара не должны тянуть ширину */
-.topbar > *{ min-width: 0; }
-
-
   </style>
 
 <style>
