@@ -1279,6 +1279,41 @@ html.scroll-locked, html.scroll-locked body{
   </div>
 </div>
 
+<!-- TOPUP MODAL - ДОБАВЛЯЕМ ЗДЕСЬ -->
+<div id="topupModal" class="modal modal-topup" aria-hidden="true" aria-modal="true" role="dialog">
+  <div class="topup-card" role="document">
+    <button class="topup-close" aria-label="Закрыть">✖</button>
+    <div class="topup-title">Выберите способ оплаты</div>
+
+    <div class="topup-slider" id="topupSlider" aria-roledescription="carousel">
+      <button class="nav prev" aria-label="Предыдущий">‹</button>
+
+      <div class="viewport">
+        <div class="track">
+          <!-- 5 слайдов-заглушек -->
+          <div class="slide"></div>
+          <div class="slide"></div>
+          <div class="slide"></div>
+          <div class="slide"></div>
+          <div class="slide"></div>
+        </div>
+      </div>
+
+      <button class="nav next" aria-label="Следующий">›</button>
+    </div>
+
+    <div class="topup-dots" id="topupDots" role="tablist" aria-label="Варианты оплаты">
+      <button class="dot" role="tab" aria-selected="true"></button>
+      <button class="dot" role="tab" aria-selected="false"></button>
+      <button class="dot" role="tab" aria-selected="false"></button>
+      <button class="dot" role="tab" aria-selected="false"></button>
+      <button class="dot" role="tab" aria-selected="false"></button>
+    </div>
+
+    <button class="btn topup-confirm" id="topupConfirm">ПОДТВЕРДИТЬ</button>
+  </div>
+</div>
+
 <button id="backTop" class="backtop" aria-label="Вверх">ВВЕРХ ↑</button>
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -3203,22 +3238,6 @@ console.log('Topup modal code loaded');
 const topupModal   = document.getElementById('topupModal');
 console.log('topupModal element:', topupModal);
 
-if (!topupModal) {
-    console.error('❌ ERROR: Topup modal element not found!');
-} else {
-    console.log('✅ Topup modal element found');
-}
-
-const topupCard    = topupModal?.querySelector('.topup-card');
-const topupClose   = topupModal?.querySelector('.topup-close');
-const topupSlider  = document.getElementById('topupSlider');
-const track        = topupSlider?.querySelector('.track');
-const dotsWrap     = document.getElementById('topupDots');
-const dots         = dotsWrap ? Array.from(dotsWrap.querySelectorAll('.dot')) : [];
-const prevBtn      = topupSlider?.querySelector('.nav.prev');
-const nextBtn      = topupSlider?.querySelector('.nav.next');
-const confirmBtn   = document.getElementById('topupConfirm');
-
 function topupOpen(){
   console.log('🔵 topupOpen() function called');
   
@@ -3228,6 +3247,7 @@ function topupOpen(){
     return;
   }
   console.log('✅ Topup modal found, opening...');
+  
   // стартовое состояние
   idx = 0;
   updateDots();
@@ -3238,118 +3258,9 @@ function topupOpen(){
   lockBody(true);
 
   // закрытие по фону
-  topupModal.addEventListener('click', onBackdrop, { once:false, passive:false });
+  topupModal.addEventListener('click', onBackdrop, { passive:false });
   document.addEventListener('keydown', onEscTopup, true);
 }
-function topupCloseModal(){
-  if(!topupModal) return;
-  topupModal.classList.remove('show');
-  topupModal.setAttribute('aria-hidden','true');
-  lockBody(false);
-
-  topupModal.removeEventListener('click', onBackdrop, { passive:false });
-  document.removeEventListener('keydown', onEscTopup, true);
-}
-function onBackdrop(e){
-  const card = topupCard;
-  if (!card || card.contains(e.target)) return;
-  e.preventDefault(); e.stopPropagation();
-  topupCloseModal();
-}
-function onEscTopup(e){
-  if (e.key === 'Escape'){ e.preventDefault(); topupCloseModal(); }
-}
-topupClose?.addEventListener('click', topupCloseModal);
-
-// стрелки
-prevBtn?.addEventListener('click', ()=> go(-1));
-nextBtn?.addEventListener('click', ()=> go(+1));
-
-function go(dir){
-  if (sliding) return;
-  const next = (idx + dir + COUNT) % COUNT; // кольцевой переход
-  moveTo(next, true);
-}
-
-function moveTo(n, animate=true){
-  if (!track) return;
-  sliding = true;
-
-  if (!animate){
-    track.style.transition = 'none';
-  } else {
-    track.style.transition = 'transform .26s cubic-bezier(.2,.7,.2,1)';
-  }
-
-  idx = ((n % COUNT) + COUNT) % COUNT;
-  updateDots();
-
-  const offset = -idx * 100; // проценты
-  track.style.transform = `translateX(${offset}%)`;
-
-  if (!animate){ 
-    // принудительный reflow, чтобы след. анимации работали
-    void track.offsetHeight;
-  }
-
-  // разблокируем по окончании
-  if (animate){
-    const onDone = () => { sliding = false; track.removeEventListener('transitionend', onDone); };
-    track.addEventListener('transitionend', onDone);
-  } else {
-    sliding = false;
-  }
-}
-
-function updateDots(){
-  dots.forEach((d,i)=>{
-    const active = (i === idx);
-    d.classList.toggle('active', active);
-    d.setAttribute('aria-selected', active ? 'true' : 'false');
-  });
-}
-dots.forEach((d,i)=> d.addEventListener('click', ()=> moveTo(i, true)));
-
-// свайпы
-if (topupSlider){
-  const vp = topupSlider.querySelector('.viewport');
-
-  vp.addEventListener('touchstart', (e)=>{
-    if (!e.touches || e.touches.length !== 1) return;
-    touchActive = true; sliding = false;
-    startX = e.touches[0].clientX;
-    curX = startX;
-    track.style.transition = 'none';
-  }, {passive:true});
-
-  vp.addEventListener('touchmove', (e)=>{
-    if (!touchActive) return;
-    curX = e.touches[0].clientX;
-    const dx = curX - startX;
-    const w = vp.clientWidth || 1;
-    const percent = (dx / w) * 100;
-    const base = -idx * 100;
-    track.style.transform = `translateX(${base + percent}%)`;
-  }, {passive:true});
-
-  vp.addEventListener('touchend', ()=>{
-    if (!touchActive) return;
-    touchActive = false;
-
-    const dx = curX - startX;
-    const threshold = 40; // px
-    if (Math.abs(dx) > threshold){
-      go(dx < 0 ? +1 : -1);
-    } else {
-      moveTo(idx, true); // откат
-    }
-  }, {passive:true});
-}
-
-// подтвердить — пока заглушка
-confirmBtn?.addEventListener('click', ()=> {
-  // ничего не делаем по ТЗ
-});
 
 function topupCloseModal(){
   const topupModal = document.getElementById('topupModal');
@@ -3393,6 +3304,8 @@ function moveTo(n, animate=true){
   const track = document.querySelector('#topupSlider .track');
   if (!track) return;
 
+  sliding = true;
+
   if (!animate){
     track.style.transition = 'none';
   } else {
@@ -3407,6 +3320,13 @@ function moveTo(n, animate=true){
 
   if (!animate){ 
     void track.offsetHeight; // принудительный reflow
+    sliding = false;
+  } else {
+    const onDone = () => { 
+      sliding = false; 
+      track.removeEventListener('transitionend', onDone); 
+    };
+    track.addEventListener('transitionend', onDone);
   }
 }
 
@@ -3416,8 +3336,8 @@ function go(dir){
   moveTo(next, true);
 }
 
-// Инициализация обработчиков для топап модалки
-document.addEventListener('DOMContentLoaded', function() {
+// Инициализация обработчиков после загрузки DOM
+function initTopupModal() {
   // Кнопка закрытия
   document.querySelector('.topup-close')?.addEventListener('click', topupCloseModal);
   
@@ -3434,44 +3354,51 @@ document.addEventListener('DOMContentLoaded', function() {
     alert('Функция пополнения баланса будет реализована позже');
     topupCloseModal();
   });
-});
+
+  // Свайпы
+  const topupSlider = document.getElementById('topupSlider');
+  if (topupSlider){
+    const vp = topupSlider.querySelector('.viewport');
+    const track = topupSlider.querySelector('.track');
+
+    vp.addEventListener('touchstart', (e)=>{
+      if (!e.touches || e.touches.length !== 1) return;
+      touchActive = true; 
+      sliding = false;
+      startX = e.touches[0].clientX;
+      curX = startX;
+      track.style.transition = 'none';
+    }, {passive:true});
+
+    vp.addEventListener('touchmove', (e)=>{
+      if (!touchActive) return;
+      curX = e.touches[0].clientX;
+      const dx = curX - startX;
+      const w = vp.clientWidth || 1;
+      const percent = (dx / w) * 100;
+      const base = -idx * 100;
+      track.style.transform = `translateX(${base + percent}%)`;
+    }, {passive:true});
+
+    vp.addEventListener('touchend', ()=>{
+      if (!touchActive) return;
+      touchActive = false;
+
+      const dx = curX - startX;
+      const threshold = 40; // px
+      if (Math.abs(dx) > threshold){
+        go(dx < 0 ? +1 : -1);
+      } else {
+        moveTo(idx, true); // откат
+      }
+    }, {passive:true});
+  }
+}
+
+// Вызов инициализации
+initTopupModal();
 
 </script>
-
-<!-- TOPUP MODAL -->
-<div id="topupModal" class="modal modal-topup" aria-hidden="true" aria-modal="true" role="dialog">
-  <div class="topup-card" role="document">
-    <button class="topup-close" aria-label="Закрыть">✖</button>
-    <div class="topup-title">Выберите способ оплаты</div>
-
-    <div class="topup-slider" id="topupSlider" aria-roledescription="carousel">
-      <button class="nav prev" aria-label="Предыдущий">‹</button>
-
-      <div class="viewport">
-        <div class="track">
-          <!-- 5 слайдов-заглушек -->
-          <div class="slide"></div>
-          <div class="slide"></div>
-          <div class="slide"></div>
-          <div class="slide"></div>
-          <div class="slide"></div>
-        </div>
-      </div>
-
-      <button class="nav next" aria-label="Следующий">›</button>
-    </div>
-
-    <div class="topup-dots" id="topupDots" role="tablist" aria-label="Варианты оплаты">
-      <button class="dot" role="tab" aria-selected="true"></button>
-      <button class="dot" role="tab" aria-selected="false"></button>
-      <button class="dot" role="tab" aria-selected="false"></button>
-      <button class="dot" role="tab" aria-selected="false"></button>
-      <button class="dot" role="tab" aria-selected="false"></button>
-    </div>
-
-    <button class="btn topup-confirm" id="topupConfirm">ПОДТВЕРДИТЬ</button>
-  </div>
-</div>
 
 </body>
 </html>
