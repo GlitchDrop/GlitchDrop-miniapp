@@ -3300,6 +3300,7 @@ async function payGo(dir){
 /* Открыть/закрыть */
 function openPayModal(){
   if (!payModal) return;
+  if (!paySlideEl) return; // защита, чтобы не уронить весь JS
 
   payFocusLast = document.activeElement;
 
@@ -3345,6 +3346,27 @@ document.addEventListener('keydown', (e)=>{
 }, true);
 
 </script>
+
+<!-- PAY MODAL -->
+<div id="payModal" class="modal" aria-hidden="true" aria-modal="true" role="dialog">
+  <div class="modal-card pay-card" role="document">
+    <button type="button" id="payClose" class="pay-close" aria-label="Закрыть">✕</button>
+    <div class="pay-title">Выберите способ оплаты</div>
+
+    <div class="pay-stage">
+      <button type="button" class="pay-nav" id="payPrev" aria-label="Назад">‹</button>
+
+      <div class="pay-viewport">
+        <div class="pay-slide center" id="paySlide"></div>
+      </div>
+
+      <button type="button" class="pay-nav" id="payNext" aria-label="Вперёд">›</button>
+    </div>
+
+    <div class="pay-dots" id="payDots"></div>
+    <button type="button" class="btn pay-confirm" id="payConfirm" disabled>ПОДТВЕРДИТЬ</button>
+  </div>
+</div>
 
 </body>
 </html>
