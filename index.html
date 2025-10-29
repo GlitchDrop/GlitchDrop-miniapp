@@ -1474,6 +1474,24 @@ const CONTESTS_DATA = [
   { img: "assets/images/contest4.png", username: "@Username4", link: "" },
 ];
 
+// ====== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ======
+// Функция блокировки скролла
+function lockBody(locked) {
+  if (locked) {
+    const scrollY = window.scrollY || document.documentElement.scrollTop;
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
+    document.body.style.overflow = 'hidden';
+  } else {
+    const scrollY = Math.abs(parseInt(document.body.style.top || '0', 10));
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.width = '';
+    document.body.style.overflow = '';
+    window.scrollTo(0, scrollY);
+  }
+}
 
 // ====== DOM-ссылки ======
 const chipbar  = document.getElementById('chipbar');
@@ -3187,19 +3205,20 @@ quickMenu?.addEventListener('click', (e)=>{
   toggleQuickMenu(false);
 
   switch(action){
-    case 'daily':
-      document.querySelector('.chipbar .chip')?.click();
-      window.scrollTo({ top: 0, behavior:'smooth' });
-      break;
+  case 'daily':
+    document.querySelector('.chipbar .chip')?.click();
+    window.scrollTo({ top: 0, behavior:'smooth' });
+    break;
 
-   case 'topup':
-  topupOpen();
-  break;
+  case 'topup':
+    console.log('🟢 Opening topup modal...');
+    topupOpen();
+    break;
 
-    case 'settings':
-      alert('Скоро — настройки профиля');
-      break;
-  }
+  case 'settings':
+    alert('Скоро — настройки профиля');
+    break;
+}
 });
 
 // ===== TOPUP MODAL LOGIC =====
@@ -3233,7 +3252,7 @@ function topupOpen(){
   topupModal.setAttribute('aria-hidden','false');
   lockBody(true);
 
-  topupModal.addEventListener('click', onBackdrop, { passive:false });
+  // Добавляем обработчики событий
   document.addEventListener('keydown', onEscTopup, true);
 }
 
@@ -3289,16 +3308,7 @@ function topupCloseModal(){
   topupModal.setAttribute('aria-hidden','true');
   lockBody(false);
 
-  topupModal.removeEventListener('click', onBackdrop, { passive:false });
   document.removeEventListener('keydown', onEscTopup, true);
-}
-
-function onBackdrop(e){
-  const card = document.querySelector('.topup-card');
-  if (!card || card.contains(e.target)) return;
-  e.preventDefault(); 
-  e.stopPropagation();
-  topupCloseModal();
 }
 
 function onEscTopup(e){
@@ -3310,12 +3320,20 @@ function onEscTopup(e){
 
 // Инициализация обработчиков событий
 function initTopupModal() {
+  console.log('🟢 Initializing topup modal...');
+  
   // Кнопка закрытия
-  topupClose?.addEventListener('click', topupCloseModal);
+  if (topupClose) {
+    topupClose.addEventListener('click', topupCloseModal);
+  }
   
   // Стрелки навигации
-  prevBtn?.addEventListener('click', prevSlide);
-  nextBtn?.addEventListener('click', nextSlide);
+  if (prevBtn) {
+    prevBtn.addEventListener('click', prevSlide);
+  }
+  if (nextBtn) {
+    nextBtn.addEventListener('click', nextSlide);
+  }
   
   // Точки навигации
   const dots = document.querySelectorAll('#topupDots .dot');
@@ -3324,57 +3342,21 @@ function initTopupModal() {
   });
   
   // Кнопка подтверждения
-  confirmBtn?.addEventListener('click', () => {
-    alert('Функция пополнения баланса будет реализована позже');
-    topupCloseModal();
-  });
+  if (confirmBtn) {
+    confirmBtn.addEventListener('click', () => {
+      alert('Функция пополнения баланса будет реализована позже');
+      topupCloseModal();
+    });
+  }
   
-  // Свайпы для мобильных устройств
-  initSwipe();
-}
-
-function initSwipe() {
-  const viewport = document.querySelector('#topupSlider .viewport');
-  if (!viewport) return;
-  
-  let startX = 0;
-  let currentX = 0;
-  let isSwiping = false;
-  
-  viewport.addEventListener('touchstart', (e) => {
-    if (e.touches.length !== 1) return;
-    startX = e.touches[0].clientX;
-    currentX = startX;
-    isSwiping = true;
-    track.style.transition = 'none';
-  }, { passive: true });
-  
-  viewport.addEventListener('touchmove', (e) => {
-    if (!isSwiping) return;
-    currentX = e.touches[0].clientX;
-    const diff = currentX - startX;
-    const offset = -currentSlide * 100 + (diff / viewport.clientWidth) * 100;
-    track.style.transform = `translateX(${offset}%)`;
-  }, { passive: true });
-  
-  viewport.addEventListener('touchend', () => {
-    if (!isSwiping) return;
-    isSwiping = false;
-    
-    const diff = currentX - startX;
-    const threshold = 50;
-    
-    if (Math.abs(diff) > threshold) {
-      if (diff > 0) {
-        prevSlide(); // Свайп вправо
-      } else {
-        nextSlide(); // Свайп влево
+  // Обработчик клика по фону модалки
+  if (topupModal) {
+    topupModal.addEventListener('click', function(e) {
+      if (e.target === topupModal) {
+        topupCloseModal();
       }
-    } else {
-      // Возврат к текущему слайду
-      updateSlider();
-    }
-  }, { passive: true });
+    });
+  }
 }
 
 // Инициализация при загрузке
