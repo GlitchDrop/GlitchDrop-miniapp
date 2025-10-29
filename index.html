@@ -750,6 +750,121 @@ html.scroll-locked, html.scroll-locked body{
 .plus-wrap::after{ display:none; }
 .plus-wrap.open::after{ display:block; }
 
+/* ===== TOPUP MODAL ===== */
+.modal-topup{ z-index: 120 !important; } /* выше detail (60) и confirm (90) */
+.modal-topup::before{
+  backdrop-filter: blur(8px);
+  background: linear-gradient(180deg, rgba(8,14,36,.60), rgba(6,10,26,.72));
+}
+
+/* карточка меньше половины 9:16, аккуратная */
+.topup-card{
+  position:relative;
+  width:min(520px, 92vw);
+  height:min(45vh, 520px);
+  max-height: 520px;
+  border-radius: 20px;
+  border:1px solid var(--border);
+  background: linear-gradient(180deg, rgba(20,26,62,.80), rgba(14,18,40,.90));
+  box-shadow: var(--shadow-strong);
+  padding: 14px 14px 16px;
+  display:flex; flex-direction:column; gap:10px;
+}
+
+/* заголовок */
+.topup-title{
+  text-align:left;
+  font-weight: 900;
+  letter-spacing: .6px;
+  font-size: clamp(18px, 5.6vw, 28px);
+  color: #e8efff;
+  text-shadow: 0 0 16px rgba(22,241,255,.18);
+  padding-right: 28px; /* место под крестик */
+}
+
+/* крестик */
+.topup-close{
+  position:absolute; top:10px; right:10px;
+  appearance:none; border:1px solid var(--border);
+  background:linear-gradient(135deg, rgba(15,20,48,.9), rgba(12,16,38,.9));
+  color:#e8efff; width:28px; height:28px; border-radius:10px;
+  font-weight:900; cursor:pointer; display:grid; place-items:center;
+}
+
+/* слайдер */
+.topup-slider{ position:relative; flex:1; display:grid; grid-template-columns: 1fr; align-items:center; }
+.topup-slider .viewport{
+  overflow:hidden; border-radius:18px; border:1px solid var(--border);
+  background:linear-gradient(180deg,#0c1230,#0a1028);
+  box-shadow: inset 0 0 18px rgba(22,241,255,.12);
+  height:100%;
+}
+.topup-slider .track{
+  display:flex; height:100%; will-change: transform;
+  transition: transform .26s cubic-bezier(.2,.7,.2,1);
+}
+.topup-slider .slide{
+  min-width: 100%;
+  padding: 10px;
+  display:grid; place-items:center;
+}
+
+/* сам «прямоугольник» внутри слайда — в твоём стиле */
+.topup-slider .slide::before{
+  content:"";
+  width: 86%;
+  height: 78%;
+  border-radius: 26px;
+  border:1px solid var(--border);
+  background:
+    linear-gradient(135deg, rgba(22,241,255,.14), rgba(138,92,255,.18)),
+    radial-gradient(160px 110px at 20% 20%, rgba(22,241,255,.12), transparent 60%),
+    radial-gradient(160px 110px at 80% 80%, rgba(255,62,208,.10), transparent 60%),
+    linear-gradient(180deg,#0c1230,#0a1028);
+  box-shadow:
+    inset 0 0 24px rgba(22,241,255,.12),
+    0 10px 30px rgba(10,20,60,.35);
+  display:block;
+}
+
+/* стрелки */
+.topup-slider .nav{
+  position:absolute; top:50%; transform:translateY(-50%);
+  width:38px; height:38px; border-radius:12px;
+  appearance:none; border:1px solid var(--border);
+  background:linear-gradient(135deg, rgba(15,20,48,.92), rgba(12,16,38,.92));
+  color:#e8efff; font-weight:900; font-size:22px; line-height:1;
+  display:grid; place-items:center; cursor:pointer;
+  box-shadow: var(--shadow-soft);
+}
+.topup-slider .nav.prev{ left:6px; }
+.topup-slider .nav.next{ right:6px; }
+
+/* точки */
+.topup-dots{ display:flex; justify-content:center; gap:8px; margin-top:4px; }
+.topup-dots .dot{
+  width:10px; height:10px; border-radius:999px; border:none; cursor:pointer;
+  background: rgba(255,255,255,.34);
+  box-shadow: none;
+}
+.topup-dots .dot.active{
+  background: #fff;
+  box-shadow: 0 0 10px rgba(255,255,255,.6), 0 0 16px rgba(22,241,255,.25);
+}
+.topup-dots .dot[aria-selected="true"]{ outline: none; }
+
+/* подтвердить */
+.topup-confirm{
+  width:100%;
+  margin-top: 4px;
+  color:#081121;
+  background:linear-gradient(135deg, var(--neon-cyan), var(--neon-pink));
+  border:1px solid transparent;
+  font-weight:900; letter-spacing:.3px;
+  border-radius:14px; padding:12px 16px;
+}
+
+
   </style>
 
 <style>
@@ -1066,9 +1181,9 @@ html.scroll-locked, html.scroll-locked body{
     <span class="plus-ico" aria-hidden="true">+</span>
   </button>
 
-   <div id="quickMenu" class="quickmenu" role="menu" aria-hidden="true">
+ <div id="quickMenu" class="quickmenu" role="menu" aria-hidden="true">
   <button class="qm-item" role="menuitem" data-action="daily">🎁 Ежедневный бонус</button>
-  <button class="qm-item" role="menuitem" data-action="topup">💰 Пополнить баланс</button>
+  <button class="qm-item" role="menuitem" data-action="topup">💳 Пополнить баланс</button>
   <button class="qm-item" role="menuitem" data-action="settings">⚙️ Настройки</button>
  </div>
 </div>
@@ -3058,9 +3173,9 @@ quickMenu?.addEventListener('click', (e)=>{
       window.scrollTo({ top: 0, behavior:'smooth' });
       break;
 
-    case 'topup':
-      // Ничего не делаем по ТЗ
-      break;
+   case 'topup':
+  topupOpen();
+  break;
 
     case 'settings':
       alert('Скоро — настройки профиля');
@@ -3068,7 +3183,189 @@ quickMenu?.addEventListener('click', (e)=>{
   }
 });
 
+// ===== TOPUP MODAL LOGIC =====
+const topupModal   = document.getElementById('topupModal');
+const topupCard    = topupModal?.querySelector('.topup-card');
+const topupClose   = topupModal?.querySelector('.topup-close');
+const topupSlider  = document.getElementById('topupSlider');
+const track        = topupSlider?.querySelector('.track');
+const dotsWrap     = document.getElementById('topupDots');
+const dots         = dotsWrap ? Array.from(dotsWrap.querySelectorAll('.dot')) : [];
+const prevBtn      = topupSlider?.querySelector('.nav.prev');
+const nextBtn      = topupSlider?.querySelector('.nav.next');
+const confirmBtn   = document.getElementById('topupConfirm');
+
+let idx = 0;                // активный слайд
+const COUNT = 5;            // всегда 5
+let sliding = false;        // блокируем повторные клики во время анимации
+let startX = 0, curX = 0;   // свайпы
+let touchActive = false;
+
+function topupOpen(){
+  if(!topupModal) return;
+  // стартовое состояние
+  idx = 0;
+  updateDots();
+  moveTo(idx, false);
+
+  topupModal.classList.add('show');
+  topupModal.setAttribute('aria-hidden','false');
+  lockBody(true);
+
+  // закрытие по фону
+  topupModal.addEventListener('click', onBackdrop, { once:false, passive:false });
+  document.addEventListener('keydown', onEscTopup, true);
+}
+function topupCloseModal(){
+  if(!topupModal) return;
+  topupModal.classList.remove('show');
+  topupModal.setAttribute('aria-hidden','true');
+  lockBody(false);
+
+  topupModal.removeEventListener('click', onBackdrop, { passive:false });
+  document.removeEventListener('keydown', onEscTopup, true);
+}
+function onBackdrop(e){
+  const card = topupCard;
+  if (!card || card.contains(e.target)) return;
+  e.preventDefault(); e.stopPropagation();
+  topupCloseModal();
+}
+function onEscTopup(e){
+  if (e.key === 'Escape'){ e.preventDefault(); topupCloseModal(); }
+}
+topupClose?.addEventListener('click', topupCloseModal);
+
+// стрелки
+prevBtn?.addEventListener('click', ()=> go(-1));
+nextBtn?.addEventListener('click', ()=> go(+1));
+
+function go(dir){
+  if (sliding) return;
+  const next = (idx + dir + COUNT) % COUNT; // кольцевой переход
+  moveTo(next, true);
+}
+
+function moveTo(n, animate=true){
+  if (!track) return;
+  sliding = true;
+
+  if (!animate){
+    track.style.transition = 'none';
+  } else {
+    track.style.transition = 'transform .26s cubic-bezier(.2,.7,.2,1)';
+  }
+
+  idx = ((n % COUNT) + COUNT) % COUNT;
+  updateDots();
+
+  const offset = -idx * 100; // проценты
+  track.style.transform = `translateX(${offset}%)`;
+
+  if (!animate){ 
+    // принудительный reflow, чтобы след. анимации работали
+    void track.offsetHeight;
+  }
+
+  // разблокируем по окончании
+  if (animate){
+    const onDone = () => { sliding = false; track.removeEventListener('transitionend', onDone); };
+    track.addEventListener('transitionend', onDone);
+  } else {
+    sliding = false;
+  }
+}
+
+function updateDots(){
+  dots.forEach((d,i)=>{
+    const active = (i === idx);
+    d.classList.toggle('active', active);
+    d.setAttribute('aria-selected', active ? 'true' : 'false');
+  });
+}
+dots.forEach((d,i)=> d.addEventListener('click', ()=> moveTo(i, true)));
+
+// свайпы
+if (topupSlider){
+  const vp = topupSlider.querySelector('.viewport');
+
+  vp.addEventListener('touchstart', (e)=>{
+    if (!e.touches || e.touches.length !== 1) return;
+    touchActive = true; sliding = false;
+    startX = e.touches[0].clientX;
+    curX = startX;
+    track.style.transition = 'none';
+  }, {passive:true});
+
+  vp.addEventListener('touchmove', (e)=>{
+    if (!touchActive) return;
+    curX = e.touches[0].clientX;
+    const dx = curX - startX;
+    const w = vp.clientWidth || 1;
+    const percent = (dx / w) * 100;
+    const base = -idx * 100;
+    track.style.transform = `translateX(${base + percent}%)`;
+  }, {passive:true});
+
+  vp.addEventListener('touchend', ()=>{
+    if (!touchActive) return;
+    touchActive = false;
+
+    const dx = curX - startX;
+    const threshold = 40; // px
+    if (Math.abs(dx) > threshold){
+      go(dx < 0 ? +1 : -1);
+    } else {
+      moveTo(idx, true); // откат
+    }
+  }, {passive:true});
+}
+
+// подтвердить — пока заглушка
+confirmBtn?.addEventListener('click', ()=> {
+  // ничего не делаем по ТЗ
+});
+
+// === Подключаем к пункту мини-меню «Пополнить баланс» ===
+// в твоём обработчике quickMenu кликов добавь новый case:
+
 </script>
+
+<!-- TOPUP MODAL -->
+<div id="topupModal" class="modal modal-topup" aria-hidden="true" aria-modal="true" role="dialog">
+  <div class="topup-card" role="document">
+    <button class="topup-close" aria-label="Закрыть">✖</button>
+    <div class="topup-title">Выберите способ оплаты</div>
+
+    <div class="topup-slider" id="topupSlider" aria-roledescription="carousel">
+      <button class="nav prev" aria-label="Предыдущий">‹</button>
+
+      <div class="viewport">
+        <div class="track">
+          <!-- 5 слайдов-заглушек (в твоём стиле) -->
+          <div class="slide"></div>
+          <div class="slide"></div>
+          <div class="slide"></div>
+          <div class="slide"></div>
+          <div class="slide"></div>
+        </div>
+      </div>
+
+      <button class="nav next" aria-label="Следующий">›</button>
+    </div>
+
+    <div class="topup-dots" id="topupDots" role="tablist" aria-label="Варианты оплаты">
+      <button class="dot" role="tab" aria-selected="true"></button>
+      <button class="dot" role="tab" aria-selected="false"></button>
+      <button class="dot" role="tab" aria-selected="false"></button>
+      <button class="dot" role="tab" aria-selected="false"></button>
+      <button class="dot" role="tab" aria-selected="false"></button>
+    </div>
+
+    <button class="btn topup-confirm" id="topupConfirm">ПОДТВЕРДИТЬ</button>
+  </div>
+</div>
+
 
 </body>
 </html>
