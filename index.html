@@ -2988,6 +2988,13 @@ let _confirmOpen = false;
 let _confirmOnYes = null;
 let _confirmLastFocus = null;
 
+// ===== TOPUP MODAL VARIABLES =====
+let idx = 0;                // активный слайд
+const COUNT = 5;            // всегда 5
+let sliding = false;        // блокируем повторные клики во время анимации
+let startX = 0, curX = 0;   // свайпы
+let touchActive = false;
+
 function openConfirmSell(onYesCb, text){
   if (!confirmModal) return;
 
@@ -3195,12 +3202,6 @@ const prevBtn      = topupSlider?.querySelector('.nav.prev');
 const nextBtn      = topupSlider?.querySelector('.nav.next');
 const confirmBtn   = document.getElementById('topupConfirm');
 
-let idx = 0;                // активный слайд
-const COUNT = 5;            // всегда 5
-let sliding = false;        // блокируем повторные клики во время анимации
-let startX = 0, curX = 0;   // свайпы
-let touchActive = false;
-
 function topupOpen(){
   if(!topupModal) return;
   // стартовое состояние
@@ -3326,8 +3327,90 @@ confirmBtn?.addEventListener('click', ()=> {
   // ничего не делаем по ТЗ
 });
 
-// === Подключаем к пункту мини-меню «Пополнить баланс» ===
-// в твоём обработчике quickMenu кликов добавь новый case:
+function topupCloseModal(){
+  const topupModal = document.getElementById('topupModal');
+  if(!topupModal) return;
+  
+  topupModal.classList.remove('show');
+  topupModal.setAttribute('aria-hidden','true');
+  lockBody(false);
+
+  topupModal.removeEventListener('click', onBackdrop, { passive:false });
+  document.removeEventListener('keydown', onEscTopup, true);
+}
+
+function onBackdrop(e){
+  const card = document.querySelector('.topup-card');
+  if (!card || card.contains(e.target)) return;
+  e.preventDefault(); 
+  e.stopPropagation();
+  topupCloseModal();
+}
+
+function onEscTopup(e){
+  if (e.key === 'Escape'){ 
+    e.preventDefault(); 
+    topupCloseModal(); 
+  }
+}
+
+function updateDots() {
+  const dotsWrap = document.getElementById('topupDots');
+  const dots = dotsWrap ? Array.from(dotsWrap.querySelectorAll('.dot')) : [];
+  
+  dots.forEach((d,i)=>{
+    const active = (i === idx);
+    d.classList.toggle('active', active);
+    d.setAttribute('aria-selected', active ? 'true' : 'false');
+  });
+}
+
+function moveTo(n, animate=true){
+  const track = document.querySelector('#topupSlider .track');
+  if (!track) return;
+
+  if (!animate){
+    track.style.transition = 'none';
+  } else {
+    track.style.transition = 'transform .26s cubic-bezier(.2,.7,.2,1)';
+  }
+
+  idx = ((n % COUNT) + COUNT) % COUNT;
+  updateDots();
+
+  const offset = -idx * 100;
+  track.style.transform = `translateX(${offset}%)`;
+
+  if (!animate){ 
+    void track.offsetHeight; // принудительный reflow
+  }
+}
+
+function go(dir){
+  if (sliding) return;
+  const next = (idx + dir + COUNT) % COUNT;
+  moveTo(next, true);
+}
+
+// Инициализация обработчиков для топап модалки
+document.addEventListener('DOMContentLoaded', function() {
+  // Кнопка закрытия
+  document.querySelector('.topup-close')?.addEventListener('click', topupCloseModal);
+  
+  // Стрелки слайдера
+  document.querySelector('#topupSlider .nav.prev')?.addEventListener('click', ()=> go(-1));
+  document.querySelector('#topupSlider .nav.next')?.addEventListener('click', ()=> go(+1));
+  
+  // Точки навигации
+  const dots = document.querySelectorAll('#topupDots .dot');
+  dots.forEach((d,i)=> d.addEventListener('click', ()=> moveTo(i, true)));
+  
+  // Подтверждение оплаты
+  document.getElementById('topupConfirm')?.addEventListener('click', ()=> {
+    alert('Функция пополнения баланса будет реализована позже');
+    topupCloseModal();
+  });
+});
 
 </script>
 
@@ -3342,7 +3425,7 @@ confirmBtn?.addEventListener('click', ()=> {
 
       <div class="viewport">
         <div class="track">
-          <!-- 5 слайдов-заглушек (в твоём стиле) -->
+          <!-- 5 слайдов-заглушек -->
           <div class="slide"></div>
           <div class="slide"></div>
           <div class="slide"></div>
@@ -3365,7 +3448,6 @@ confirmBtn?.addEventListener('click', ()=> {
     <button class="btn topup-confirm" id="topupConfirm">ПОДТВЕРДИТЬ</button>
   </div>
 </div>
-
 
 </body>
 </html>
