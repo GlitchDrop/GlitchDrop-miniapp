@@ -851,112 +851,6 @@ html.scroll-locked, html.scroll-locked body{
 .brand{ flex-basis: 28vw; }            /* чутка меньше коридор ника */
 @media (max-width: 360px){ .brand{ flex-basis: 26vw; } } /* на очень узких */
 
-/* ===== PAY MODAL ===== */
-#payModal{ z-index: 99990 !important; } /* ниже дропа, выше всего остального */
-
-.pay-card{
-  position:relative; z-index:2;
-  width:min(520px, 92%);
-  /* «небольшая»: около половины экрана 9:16 */
-  min-height: 48vh; max-height: 64vh;
-  padding:16px 16px 18px;
-  border-radius:20px;
-  border:1px solid var(--border);
-  background:linear-gradient(180deg, rgba(20,26,62,.78), rgba(14,18,40,.88));
-  box-shadow: var(--shadow-strong);
-  animation: modal-pop .22s cubic-bezier(.2,.7,.2,1) both;
-  display:grid; grid-template-rows:auto 1fr auto auto; gap:12px;
-}
-
-.pay-close{
-  position:absolute; left:10px; top:10px;
-  appearance:none; border:1px solid var(--border);
-  background:linear-gradient(135deg, rgba(15,20,48,.92), rgba(12,16,38,.92));
-  color:#e8efff; border-radius:10px; font-weight:900; padding:6px 9px; cursor:pointer;
-}
-
-.pay-title{
-  text-align:center; font-weight:900; letter-spacing:.8px;
-  font-size: clamp(18px, 5.8vw, 28px);
-  color:#e8efff; text-shadow:0 0 16px rgba(22,241,255,.22);
-  margin-top:8px;
-}
-
-.pay-stage{
-  position:relative; display:grid; grid-template-columns: 44px 1fr 44px; align-items:center; gap:8px;
-}
-
-.pay-nav{
-  appearance:none; border:1px solid var(--border);
-  background:linear-gradient(135deg, rgba(15,20,48,.9), rgba(12,16,38,.9));
-  color:#fff; font-weight:900; font-size:28px; line-height:1;
-  border-radius:12px; width:44px; height:44px; display:grid; place-items:center; cursor:pointer;
-  box-shadow: var(--shadow-soft);
-}
-.pay-nav:active{ transform: translateY(1px); }
-
-.pay-viewport{
-  position:relative; height:min(40vh, 320px);
-  border-radius:18px; border:1px solid var(--border);
-  background:linear-gradient(180deg,#0c1230,#0a1028);
-  overflow:hidden; box-shadow:inset 0 0 24px rgba(22,241,255,.12);
-}
-
-.pay-slide{
-  position:absolute; inset:0;
-  border-radius:18px;
-  background:
-    radial-gradient(60% 40% at 30% 20%, rgba(22,241,255,.14), transparent 60%),
-    radial-gradient(60% 40% at 70% 80%, rgba(255,62,208,.12), transparent 60%),
-    linear-gradient(135deg, #36d7ff 0%, #7a80ff 50%, #b085ff 100%);
-  box-shadow:
-    0 18px 46px rgba(10,20,60,.40),
-    0 0 34px rgba(22,241,255,.18);
-  /* glow активной карточки усиливаем при движении */
-  transition: box-shadow .18s ease;
-}
-.pay-slide.moving{
-  box-shadow:
-    0 22px 60px rgba(10,20,60,.55),
-    0 0 46px rgba(22,241,255,.28);
-}
-
-/* точки-индикаторы */
-.pay-dots{ display:flex; justify-content:center; gap:10px; padding-top:6px; }
-.pay-dot{
-  width:10px; height:10px; border-radius:999px;
-  background:#6f7c98; opacity:.9; box-shadow:none; transition:transform .15s ease, box-shadow .15s ease, background .15s ease;
-}
-.pay-dot.active{
-  background:#fff; transform:scale(1.12);
-  box-shadow:0 0 10px rgba(255,255,255,.75), 0 0 18px rgba(22,241,255,.35);
-}
-
-/* кнопка подтвердить (пока disabled) */
-.pay-confirm{
-  width:100%;
-  color:#081121;
-  background:linear-gradient(135deg, var(--neon-cyan), var(--neon-pink));
-  border:1px solid transparent;
-  border-radius:14px; padding:14px 16px; font-weight:900;
-}
-.pay-confirm:disabled{ opacity:.55; filter:saturate(.75) brightness(.95); cursor:not-allowed; }
-
-/* анимации слайда: вход/выход слева/справа */
-.pay-slide.enter-left   { transform: translateX(-100%); }
-.pay-slide.enter-right  { transform: translateX( 100%); }
-.pay-slide.center       { transform: translateX(0); }
-.pay-slide.leave-left   { transform: translateX(-100%); }
-.pay-slide.leave-right  { transform: translateX( 100%); }
-.pay-viewport .pay-slide{
-  transition: transform 0.075s cubic-bezier(.2,.7,.2,1); /* шаг для «сквозного» пролёта */
-}
-
-/* немного адаптивности */
-@media (min-width:680px){
-  .pay-card{ min-height: 46vh; max-height: 58vh; }
-}
-
   </style>
 
 <style>
@@ -1334,29 +1228,6 @@ html.scroll-locked, html.scroll-locked body{
 <div style="height:40px"></div>
     </div> <!-- ←← закрыл .d-body -->
   </div>   <!-- ←← закрыл #detail -->
-
-<!-- PAY MODAL -->
-<div id="payModal" class="modal" aria-hidden="true" aria-modal="true" role="dialog">
-  <div class="pay-card" role="document">
-    <button type="button" id="payClose" class="pay-close" aria-label="Закрыть">✕</button>
-    <div class="pay-title">Выберите способ оплаты</div>
-
-    <div class="pay-stage">
-      <button type="button" class="pay-nav pay-nav--left"  id="payPrev" aria-label="Назад">‹</button>
-
-      <div class="pay-viewport">
-        <!-- текущий слайд -->
-        <div class="pay-slide" id="paySlide"></div>
-      </div>
-
-      <button type="button" class="pay-nav pay-nav--right" id="payNext" aria-label="Вперёд">›</button>
-    </div>
-
-    <div class="pay-dots" id="payDots" aria-hidden="false"></div>
-
-    <button type="button" class="btn pay-confirm" id="payConfirm" disabled>ПОДТВЕРДИТЬ</button>
-  </div>
-</div>
 
 <!-- DROP MODAL -->
 <div id="dropModal" class="modal" aria-hidden="true" aria-modal="true" role="dialog">
@@ -3331,13 +3202,14 @@ const PAY_METHODS = [
 ];
 
 const payModal   = document.getElementById('payModal');
-const paySlideEl = document.getElementById('paySlide');
+let paySlideEl = document.getElementById('paySlide');
 const payDotsBox = document.getElementById('payDots');
 const payPrev    = document.getElementById('payPrev');
 const payNext    = document.getElementById('payNext');
 const payClose   = document.getElementById('payClose');
 const payConfirm = document.getElementById('payConfirm');
-const plusBtn    = document.getElementById('topPlusBtn');
+const plusBtn    = document.getElementById('topPlusBtn'); // ← твой реальный id
+plusBtn?.addEventListener('click', openPayModal);
 
 let payIndex = 0;                 // активная карточка [0..4]
 let payAnimating = false;         // защита от даблкликов
@@ -3362,52 +3234,40 @@ function mountCard(el, method){
 
 /* «Сквозной» пролёт: делим на серию коротких шагов.
    steps = абсолютное число шагов (>=1), dir = +1 (вправо) / -1 (влево) */
+
 function runThrough(dir, steps){
   return new Promise((resolve)=>{
     const doStep = (k)=>{
       if (k === steps){ resolve(); return; }
 
-      // создаём уходящий/приходящий
-      const leaving = paySlideEl;                     // текущий
-      const incoming = leaving.cloneNode(false);      // новый контейнер
-      incoming.className = 'pay-slide ' + (dir>0? 'enter-right':'enter-left');
-      leaving.classList.add(dir>0? 'leave-left':'leave-right');
+      const leaving  = paySlideEl;
+      const incoming = leaving.cloneNode(false);
+      incoming.className = 'pay-slide ' + (dir>0 ? 'enter-right' : 'enter-left');
+      leaving.classList.add(dir>0 ? 'leave-left' : 'leave-right');
       leaving.classList.add('moving');
 
-      // вычисляем следующий индекс
       const nextIndex = (payIndex + dir + PAY_METHODS.length) % PAY_METHODS.length;
       mountCard(incoming, PAY_METHODS[nextIndex]);
 
-      // вставляем incoming поверх
       leaving.parentNode.appendChild(incoming);
 
-      // микротик, чтобы transition отработал
       requestAnimationFrame(()=>{
-        // двигаем оба
         incoming.classList.add('center');
-        leaving.classList.add(dir>0? 'leave-left':'leave-right');
+        leaving.classList.add(dir>0 ? 'leave-left' : 'leave-right');
 
-        // завершение одного «шага»
         const onEnd = ()=>{
           incoming.removeEventListener('transitionend', onEnd);
-          // обновляем активный элемент — incoming становится основным
           leaving.remove();
-          incoming.id = 'paySlide';
-          // переназначаем ссылку на новый текущий элемент
-          Object.assign(paySlideEl, incoming); // не сработает — поэтому:
+          incoming.id = 'paySlide';                 // новый становится главным
         };
         incoming.addEventListener('transitionend', onEnd, { once:true });
 
-        // после транзишна фиксируем индекс и точки, и входим в след. шаг
         setTimeout(()=>{
-          // обновляем глобальные ссылки заново
-          const current = document.getElementById('paySlide') || incoming;
-          payIndex = nextIndex;
+          paySlideEl = document.getElementById('paySlide') || incoming; // ← обновили ссылку
+          payIndex   = nextIndex;
           renderPayDots();
-          // убрать «moving» подсветку со старого уже не нужно — его удалили
-          // повторяем шаг
-          doStep(k+1);
-        }, 80); // ~0.08s на шаг → 3 шага ≈ 0.24s, 4 шага ≈ 0.32s
+          doStep(k+1);                                // к следующему шагу
+        }, 80);
       });
     };
     doStep(0);
@@ -3416,33 +3276,40 @@ function runThrough(dir, steps){
 
 /* Переход на соседний слайд:
    dir = +1 вправо / -1 влево. На границе делаем «сквозной» пролёт через все промежуточные. */
+// СТАЛО
 async function payGo(dir){
-  if (payAnimating) return;
+  if (payAnimating) return;      // защита от даблкликов во время шага
   payAnimating = true;
 
   const atFirst = (payIndex === 0);
   const atLast  = (payIndex === PAY_METHODS.length - 1);
 
-  // сколько шагов пролетаем
-  let steps = 1;
-  if (dir < 0 && atFirst) steps = PAY_METHODS.length - 1;       // 0 -> 4 через 3..1
-  if (dir > 0 && atLast)  steps = PAY_METHODS.length - 1;       // 4 -> 0 через 0..3
+  // «сквозной» пролёт на границе (0↔последний)
+  const steps =
+    (dir < 0 && atFirst) || (dir > 0 && atLast)
+      ? PAY_METHODS.length - 1
+      : 1;
 
-  await runThrough(dir, steps);
-  payAnimating = false;
+  try {
+    await runThrough(dir, steps);
+  } finally {
+    payAnimating = false;        // ← ОБЯЗАТЕЛЬНО сбрасываем флаг
+  }
 }
 
 /* Открыть/закрыть */
 function openPayModal(){
   if (!payModal) return;
+
   payFocusLast = document.activeElement;
 
-  // подготовка стартового состояния
-  payIndex = 0;
+  // стартовое состояние
+  payIndex      = 0;
+  payAnimating  = false;                  // ← сброс флага!
   payConfirm.disabled = true;
   renderPayDots();
 
-  // подготовить стартовую карточку
+  // стартовая карточка
   paySlideEl.className = 'pay-slide center';
   mountCard(paySlideEl, PAY_METHODS[payIndex]);
 
@@ -3451,9 +3318,9 @@ function openPayModal(){
   payModal.setAttribute('aria-hidden','false');
   lockBody(true);
 
-  // фокус на «вперёд»
   setTimeout(()=> payNext?.focus(), 0);
 }
+
 
 function closePayModal(){
   payModal.classList.remove('show');
@@ -3463,10 +3330,11 @@ function closePayModal(){
 }
 
 /* Слушатели */
-topPlusBtn?.addEventListener('click', openPayModal);
+plusBtn?.addEventListener('click', openPayModal);
 payClose?.addEventListener('click', closePayModal);
-payPrev ?.addEventListener('click', ()=> payGo(-1));
-payNext ?.addEventListener('click', ()=> payGo(+1));
+payPrev ?.onclick = () => payGo(-1);   // левая стрелка
+payNext ?.onclick = () => payGo(+1);   // правая стрелка
+
 
 /* Закрытие по Esc/Back — ты разрешил Esc: да */
 document.addEventListener('keydown', (e)=>{
