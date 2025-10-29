@@ -1066,12 +1066,11 @@ html.scroll-locked, html.scroll-locked body{
     <span class="plus-ico" aria-hidden="true">+</span>
   </button>
 
-    <div id="quickMenu" class="quickmenu" role="menu" aria-hidden="true">
-    <button class="qm-item" role="menuitem" data-action="daily">🎁 Ежедневный бонус</button>
-    <button class="qm-item" role="menuitem" data-action="promo">✳️ Активировать промокод</button>
-    <button class="qm-item" role="menuitem" data-action="invite">👥 Пригласить друга</button>
-    <button class="qm-item" role="menuitem" data-action="settings">⚙️ Настройки</button>
-  </div>
+   <div id="quickMenu" class="quickmenu" role="menu" aria-hidden="true">
+  <button class="qm-item" role="menuitem" data-action="daily">🎁 Ежедневный бонус</button>
+  <button class="qm-item" role="menuitem" data-action="topup">💰 Пополнить баланс</button>
+  <button class="qm-item" role="menuitem" data-action="settings">⚙️ Настройки</button>
+ </div>
 </div>
 
       <!-- Пилюля ГЛИТЧ-ТОКЕН слева -->
@@ -3055,27 +3054,12 @@ quickMenu?.addEventListener('click', (e)=>{
 
   switch(action){
     case 'daily':
-      // Перейти к началу списка кейсов (например, к бесплатным)
       document.querySelector('.chipbar .chip')?.click();
       window.scrollTo({ top: 0, behavior:'smooth' });
       break;
 
-    case 'promo':
-      // Открыть вкладку «Друзья» и сфокусировать поле промокода
-      showFriends();
-      setTimeout(()=> document.getElementById('promoInput2')?.focus(), 50);
-      break;
-
-    case 'invite':
-      // Поделиться инвайт-ссылкой
-      (async ()=>{
-        await GD.ensureUid8();
-        const link = GD.buildInviteLink();
-        const tg = window.Telegram?.WebApp;
-        const url = `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent('Залетай в GLITCH DROP — ловим дропы вместе!')}`;
-        if (tg?.openTelegramLink) tg.openTelegramLink(url);
-        else safeOpen(url);
-      })();
+    case 'topup':
+      // Ничего не делаем по ТЗ
       break;
 
     case 'settings':
@@ -3083,7 +3067,6 @@ quickMenu?.addEventListener('click', (e)=>{
       break;
   }
 });
-
 
 </script>
 
