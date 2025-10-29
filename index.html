@@ -1336,21 +1336,25 @@ html.scroll-locked, html.scroll-locked body{
   </div>   <!-- ←← закрыл #detail -->
 
 <!-- PAY MODAL -->
-<div id="payModal" class="modal" ...>
+<div id="payModal" class="modal" aria-hidden="true" aria-modal="true" role="dialog">
   <div class="pay-card" role="document">
-    <button type="button" id="payClose" class="pay-close">✕</button>
+    <button type="button" id="payClose" class="pay-close" aria-label="Закрыть">✕</button>
     <div class="pay-title">Выберите способ оплаты</div>
 
     <div class="pay-stage">
-      <button type="button" class="pay-nav pay-nav--left"  id="payPrev">‹</button>
+      <button type="button" class="pay-nav pay-nav--left"  id="payPrev" aria-label="Назад">‹</button>
 
       <div class="pay-viewport">
+        <!-- текущий слайд -->
         <div class="pay-slide" id="paySlide"></div>
       </div>
 
-      <button type="button" class="pay-nav pay-nav--right" id="payNext">›</button>
+      <button type="button" class="pay-nav pay-nav--right" id="payNext" aria-label="Вперёд">›</button>
     </div>
-    ...
+
+    <div class="pay-dots" id="payDots" aria-hidden="false"></div>
+
+    <button type="button" class="btn pay-confirm" id="payConfirm" disabled>ПОДТВЕРДИТЬ</button>
   </div>
 </div>
 
@@ -3459,7 +3463,7 @@ function closePayModal(){
 }
 
 /* Слушатели */
-plusBtn?.addEventListener('click', openPayModal);
+topPlusBtn?.addEventListener('click', openPayModal);
 payClose?.addEventListener('click', closePayModal);
 payPrev ?.addEventListener('click', ()=> payGo(-1));
 payNext ?.addEventListener('click', ()=> payGo(+1));
