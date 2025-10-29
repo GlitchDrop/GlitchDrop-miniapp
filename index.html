@@ -3170,8 +3170,14 @@ function onMenuKeys(e){
 addBtn?.addEventListener('click', ()=> toggleQuickMenu());
 
 quickMenu?.addEventListener('click', (e)=>{
-  const btn = e.target.closest('.qm-item'); if (!btn) return;
+  console.log('🟡 Quick menu clicked');
+  const btn = e.target.closest('.qm-item'); 
+  if (!btn) {
+    console.log('No menu item clicked');
+    return;
+  }
   const action = btn.dataset.action;
+  console.log('Menu action:', action);
   toggleQuickMenu(false);
 
   switch(action){
@@ -3191,7 +3197,18 @@ quickMenu?.addEventListener('click', (e)=>{
 });
 
 // ===== TOPUP MODAL LOGIC =====
+console.log('=== TOPUP MODAL DEBUG ===');
+console.log('Topup modal code loaded');
+
 const topupModal   = document.getElementById('topupModal');
+console.log('topupModal element:', topupModal);
+
+if (!topupModal) {
+    console.error('❌ ERROR: Topup modal element not found!');
+} else {
+    console.log('✅ Topup modal element found');
+}
+
 const topupCard    = topupModal?.querySelector('.topup-card');
 const topupClose   = topupModal?.querySelector('.topup-close');
 const topupSlider  = document.getElementById('topupSlider');
@@ -3203,7 +3220,14 @@ const nextBtn      = topupSlider?.querySelector('.nav.next');
 const confirmBtn   = document.getElementById('topupConfirm');
 
 function topupOpen(){
-  if(!topupModal) return;
+  console.log('🔵 topupOpen() function called');
+  
+  const topupModal = document.getElementById('topupModal');
+  if(!topupModal) {
+    console.error('❌ ERROR: Topup modal not found in topupOpen!');
+    return;
+  }
+  console.log('✅ Topup modal found, opening...');
   // стартовое состояние
   idx = 0;
   updateDots();
