@@ -814,6 +814,76 @@ html.scroll-locked, html.scroll-locked body{
 /* на всякий случай, чтобы вообще не появлялся горизонтальный скролл */
 html, body{ overflow-x:hidden; }
 
+/* === 1) ШАПКА: обратно на FLEX и без «шатаний» === */
+.topbar{
+  display:flex !important;
+  flex-wrap:nowrap !important;
+  align-items:center !important;
+  gap:8px !important;
+  overflow:hidden !important; /* без горизонтальной прокрутки */
+}
+.grow{ flex:1 1 auto !important; display:block !important; }
+
+/* Бренд можно сжимать, чтобы не толкался с пилюлями */
+.topbar .brand{
+  flex:1 1 auto !important;
+  min-width:0 !important;
+  max-width:unset !important;
+  overflow:hidden !important;
+}
+
+/* Компактный плюсик (симметрично с пилюлями) */
+.pill-plus{
+  width:34px !important; height:34px !important;
+  margin-right:6px !important;
+  flex:0 0 auto !important;
+}
+
+/* ОДИНАКОВЫЕ пилюли справа, не растягиваются и не ломают ряд */
+.topbar .pill.pill--lg{
+  height:34px !important;
+  padding:6px 10px !important;
+  gap:8px !important;
+  flex:0 0 auto !important;
+}
+.topbar .pill.pill--lg img{
+  width:20px !important; height:20px !important;
+}
+.topbar .pill .num{
+  font-size:13px !important; line-height:1 !important; white-space:nowrap !important;
+}
+
+/* ещё компактнее на сверхузких экранах */
+@media (max-width:380px){
+  .pill-plus{ width:30px !important; height:30px !important; margin-right:6px !important; }
+  .topbar .pill.pill--lg{ height:30px !important; padding:6px 8px !important; gap:6px !important; }
+  .topbar .pill.pill--lg img{ width:18px !important; height:18px !important; }
+  .topbar .pill .num{ font-size:12px !important; }
+}
+
+/* === 2) Контент и сетка карточек — вернуть нормальную ширину === */
+.content{
+  max-width:1100px !important;
+  margin:0 auto !important;
+  width:100% !important;
+  padding-left:16px !important;
+  padding-right:16px !important;
+}
+.grid{ grid-template-columns:repeat(2, minmax(0,1fr)) !important; }
+
+/* === 3) Отключить full-bleed у «липких» заголовков (могли тянуть вбок) === */
+.inventory-header,
+.contests-header{
+  width:auto !important;
+  margin:0 !important;                 /* убираем calc(50% - 50vw) */
+}
+
+/* === 4) Страховка от горизонтального скролла вообще === */
+html, body{ overflow-x:hidden !important; }
+
+/* подстраховка: любое прямое потомство topbar не навязывает свои мин-ширины */
+.topbar > *{ min-width:0 !important; }
+
 
   </style>
 
