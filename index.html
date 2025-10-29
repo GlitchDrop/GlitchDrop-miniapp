@@ -673,183 +673,82 @@ html.scroll-locked, html.scroll-locked body{
   overflow: hidden; /* даже если много карточек — сцена остаётся неподвижной */
 }
 
-/* === UPGRADES — фиксированная сцена, без прокрутки === */
-.upg-fixed{
-  position: fixed;
-  left: 0; right: 0;
-  top: var(--topbar-h, 64px);
-  bottom: var(--tabbar-h, 84px);
-  z-index: 22;
-  overflow: hidden;                 /* полностью статично */
-  background:
-    radial-gradient(60% 40% at 50% -10%, rgba(22,241,255,.06), transparent 60%),
-    radial-gradient(60% 40% at 50% 110%, rgba(255,62,208,.05), transparent 60%),
-    linear-gradient(180deg, #0b1030 0%, #0a1028 100%);
-  border-top:1px solid var(--border);
-  box-shadow: inset 0 30px 60px rgba(10,20,60,.35);
-  display: grid;
-  place-items: center;              /* центрируем весь контент */
-}
+/* === ПЛЮС-КАПСУЛА В ТОПБАРЕ === */
+.plus-wrap{ position: relative; display: flex; align-items: center; }
 
-/* Внутренний контейнер — компактная колонка по центру */
-.upg-wrap{
-  width: min(720px, 92vw);
-  display: grid;
-  gap: 18px;
-  justify-items: center;            /* центрируем всё внутри */
-}
+.pill-plus{
+  appearance:none; cursor:pointer; border:none; outline:none;
+  width:42px; height:42px; border-radius:999px;  /* круглая капсула */
+  display:grid; place-items:center; flex:0 0 auto;
+  margin-right: 10px;  /* небольшой отступ от глитч-токена */
 
-/* Крупный счёт — по центру (оставалось и так, просто фиксируем) */
-.upg-score{
-  display:flex; align-items:center; justify-content:center;
-  gap: 10px;
-  font-weight: 900;
-  letter-spacing: .8px;
-  font-size: clamp(56px, 20vw, 120px);
-  color:#fff;
-  text-shadow:0 0 16px rgba(22,241,255,.18);
-}
-
-/* Полоса без большой бирюзовой подложки */
-.upg-bar{
+  /* капсула в стиле токенов */
+  background:linear-gradient(135deg, rgba(22,241,255,.12), rgba(138,92,255,.14));
   border:1px solid var(--border);
-  border-radius:12px;
-  background:#0b0c12;
-  box-shadow: inset 0 0 20px rgba(0,0,0,.35);
-  padding:6px;
-  width: min(640px, 92vw);
+  box-shadow:
+    inset 0 0 18px rgba(22,241,255,.12),
+    0 8px 22px rgba(10,20,60,.25);
+  transition: transform .15s ease, box-shadow .2s ease, border-color .2s ease;
 }
-.upg-track{
-  position: relative;
-  height: var(--upg-bar-h, 56px);
-  border-radius: 10px;
-  background: linear-gradient(180deg, rgba(20,26,62,.55), rgba(14,18,40,.6));
-  overflow: hidden;
-}
+.pill-plus:hover{ transform: translateY(-1px); box-shadow: 0 10px 26px rgba(22,241,255,.22); }
+.pill-plus:active{ transform: translateY(0); }
+.pill-plus:focus-visible{ outline:2px solid var(--neon-cyan); outline-offset:2px; }
 
-/* УДАЛИЛИ .upg-start-bg полностью */
-
-/* Маленький кубик внутри полосы */
-.upg-thumb{
-  position:absolute; top: 50%; left: 0;
-  width: var(--upg-thumb, 24px);
-  height: var(--upg-bar-h, 56px);
-  transform: translateY(-50%);
-  border-radius: 6px;
-  background: linear-gradient(180deg, #24d0d8, #21b8bf);
-  box-shadow: 0 0 22px rgba(33,220,230,.35);
-  cursor: grab;
-  touch-action: none;
-}
-
-/* Две строки «500 = 1» и «5000 = 10» — чистый текст, строго по центру */
-.upg-rows{
-  display:grid;
-  gap:10px;
-  justify-items:center;             /* центрируем строки */
-  text-align:center;
-}
-.upg-row{
-  display:inline-flex;
-  align-items:center;
-  gap:12px;
-  font-weight:900;
-  letter-spacing:.4px;
-  color:#e8efff;
-  font-size: clamp(18px, 6vw, 28px);
-}
-
-/* Маленькая подпись — по центру */
-.upg-note{
-  text-align:center;
-  font-size:12px;
-  color:#9fb2d9;
-  opacity:.9;
-}
-
-/* Убираем любые картинки на вкладке апгрейда */
-.upg-wrap img,
-.upg-row img { display:none !important; }
-
-/* Круглая мини-капсула под плюсик — в едином неон-стиле */
-.pill--circle{
-  width: 40px; height: 40px; padding: 0;
-  border-radius: 999px;
-  display: grid; place-items: center;
-  border: 1px solid var(--border);
-  background: linear-gradient(135deg, rgba(22,241,255,.10), rgba(138,92,255,.12));
-  box-shadow: 0 0 18px rgba(22,241,255,.12) inset, var(--shadow-soft);
-  /* фиксируем визуальный ритм топбара */
-  margin-right: 8px;
-}
-.pill--circle .plus{
-  font-weight: 900;
-  font-size: 20px;
-  line-height: 1;
-  color: #cfe6ff;
-  text-shadow: 0 0 12px rgba(22,241,255,.6), 0 0 12px rgba(255,62,208,.35);
+.plus-ico{
+  font-weight:900; font-size:22px; line-height:1;
+  color:#cfe6ff;
+  text-shadow:
+    0 0 12px rgba(22,241,255,.55),
+    0 0 12px rgba(255,62,208,.35);
   transform: translateY(-1px);
 }
 
-/* чтобы точно совпадало с высотой аватара/пилюль */
-.topbar .pill--circle { flex: 0 0 auto; }
+/* === ВЫПАДАЮЩЕЕ МИНИ-МЕНЮ === */
+.quickmenu{
+  position:absolute; top: calc(100% + 10px); right: 0;
+  min-width: 220px; padding:8px;
+  border-radius: 14px;
+  border:1px solid var(--border);
+  background:
+    linear-gradient(180deg, rgba(20,26,62,.92), rgba(12,16,38,.94));
+  box-shadow: var(--shadow-strong);
+  backdrop-filter: blur(10px);
+  display:none; z-index: 200;
+}
+.quickmenu.show{ display:block; animation: qk-pop .18s cubic-bezier(.2,.7,.2,1) both; }
 
-/* ==== TOPBAR: фиксируем высоту и убираем переносы ==== */
-.topbar{
-  flex-wrap: nowrap;         /* всё в одну линию */
-  white-space: nowrap;       /* без переносов */
-}
-
-/* ник ужимается чуть сильнее на узких экранах */
-@media (max-width: 420px){
-  .brand{ flex: 0 1 32vw; }  /* было 38vw — даём больше места капсулам */
-}
-@media (max-width: 360px){
-  .brand{ flex: 0 1 28vw; }
-}
-
-/* ==== КРУГЛАЯ КАПСУЛА С ПЛЮСОМ — поменьше ==== */
-.pill--circle{
-  width: 32px;               /* было 40px */
-  height: 32px;              /* было 40px */
-  margin-right: 6px;         /* компактнее зазор перед глитч-капсулой */
-}
-.pill--circle .plus{
-  font-size: 16px;           /* было 20px */
-  transform: translateY(-0.5px);
+@keyframes qk-pop{
+  from{ opacity:0; transform: translateY(6px) scale(.98); }
+  to  { opacity:1; transform: translateY(0)   scale(1); }
 }
 
-/* ==== ОБЕ БОЛЬШИЕ КАПСУЛЫ (глитч-токен и звёзды) — слегка меньше, одинаковые ==== */
-.pill--lg{
-  padding: 8px 10px;         /* было 10px 14px */
+.qm-item{
+  width:100%; text-align:left; cursor:pointer;
+  padding:10px 12px; margin:4px 0;
+  border-radius:12px; border:1px solid transparent;
+  background:linear-gradient(135deg, rgba(15,20,48,.86), rgba(12,16,38,.86));
+  color:#e8efff; font-weight:900; letter-spacing:.2px;
+  transition: background .15s ease, box-shadow .15s ease, border-color .15s ease;
 }
-.pill--lg img{
-  width: 22px;               /* было 24px */
-  height: 22px;
+.qm-item:hover{
+  border-color: var(--border);
+  box-shadow: 0 6px 20px rgba(22,241,255,.14);
 }
-.pill--lg .num{
-  font-size: 13px;           /* немного ужмём цифры, чтобы капсулы не раздувались */
-  line-height: 1;
+.qm-item:active{ transform: translateY(1px); }
+.qm-item:focus-visible{ outline:2px solid var(--neon-cyan); outline-offset:2px; }
+
+/* «хвостик» под меню */
+.plus-wrap::after{
+  content:""; position:absolute; top: calc(100% + 2px); right: 12px;
+  width: 10px; height: 10px; transform: rotate(45deg);
+  background: linear-gradient(180deg, rgba(20,26,62,.92), rgba(12,16,38,.94));
+  border-left:1px solid var(--border); border-top:1px solid var(--border);
+  filter: drop-shadow(0 2px 6px rgba(10,20,60,.35));
+  display:none; z-index: 201;
 }
 
-/* на очень узких — ещё каплю компактнее */
-@media (max-width: 360px){
-  .pill--lg{ padding: 7px 9px; }
-  .pill--lg img{ width: 20px; height: 20px; }
-  .pill--lg .num{ font-size: 12.5px; }
-}
-
-/* на всякий: элементы справа не растягивают строку */
-.topbar .pill,
-.topbar .pill--circle{
-  flex: 0 0 auto;
-}
-
-/* анти-оверфлоу для топбара */
-.topbar{ overflow: hidden; }           /* обрезаем всё, что могло бы вылезти */
-.topbar > *{ min-width: 0; }           /* разрешаем ужиматься внутри flex */
-.brand{ flex-basis: 28vw; }            /* чутка меньше коридор ника */
-@media (max-width: 360px){ .brand{ flex-basis: 26vw; } } /* на очень узких */
+.plus-wrap::after{ display:none; }
+.plus-wrap.open::after{ display:block; }
 
   </style>
 
@@ -1161,10 +1060,20 @@ html.scroll-locked, html.scroll-locked body{
 
       <div class="grow"></div>
 
-<!-- Декоративный плюсик (круглая мини-капсула), без действий -->
-<button id="topPlusBtn" class="pill pill--circle topplus" type="button" aria-label="Пополнить">
-  <span class="plus">+</span>
-</button>
+<!-- мини-меню "Плюс" — СТАВИМ ПЕРЕД глитч-токеном -->
+<div class="plus-wrap">
+  <button id="addBtn" class="pill-plus" aria-haspopup="true" aria-expanded="false" aria-controls="quickMenu" title="Быстрое действие">
+    <span class="plus-ico" aria-hidden="true">+</span>
+  </button>
+
+  <div id="quickMenu" class="quickmenu" role="menu" aria-hidden="true">
+    <button class="qm-item" role="menuitem" data-action="daily">🎁 Ежедневный бонус</button>
+    <button class="qm-item" role="menuitem" data-action="promo">✳️ Активировать промокод</button>
+    <button class="qm-item" role="menuitem" data-action="invite">👥 Пригласить друга</button>
+    <button class="qm-item" role="menuitem" data-action="settings">⚙️ Настройки</button>
+  </div>
+</div>
+
 
       <!-- Пилюля ГЛИТЧ-ТОКЕН слева -->
       <div class="pill pill--lg" title="Глитч-токен">
@@ -1723,12 +1632,8 @@ function openDetail({title, price, setId}) {
   // чистая заглушка сверху
   dThumb.textContent = 'Заглушка';
 
-   // лут снизу
+  // лут снизу
   const images = LOOT_SETS[setId] || null;
-
-  // 🔥 прелоад первых 11 картинок для барабана/лут-грида
-  preloadImages((images || []).slice(0, 11));
-
   renderLoot(images, setId);
 
 const key = `${setId}__0`;
@@ -1996,12 +1901,6 @@ window.SPIN_IMAGES = window.SPIN_IMAGES || {}; // { setId: [url,url,...] }
 
 // Общий state по ключу (setId__index)
 window.SPIN_STATE = window.SPIN_STATE || new Map();
-
-// === Прелоад изображений барабана ===
-function preloadImages(urls){
-  if (!Array.isArray(urls)) return;
-  urls.filter(Boolean).forEach(src => { const i = new Image(); i.src = src; });
-}
 
 // Проценты выпадения по наборам (11 значений на setId). Пока нули — равновероятно.
 const SPIN_CONFIGS_PERCENT = {
@@ -2959,96 +2858,11 @@ upgradesScreen.setAttribute('aria-hidden','true');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-window.__UPG = window.__UPG || { bound:false, handlers:{} };
-function unbindUpgrades(){
-  const H = window.__UPG.handlers;
-  if (!window.__UPG.bound) return;
-  window.removeEventListener('mousemove', H.mm);
-  window.removeEventListener('mouseup',   H.mu);
-  window.removeEventListener('touchmove', H.tm);
-  window.removeEventListener('touchend',  H.te);
-  window.removeEventListener('touchcancel', H.tc);
-  window.__UPG.bound = false;
-}
-
 function renderUpgrades(){
-  unbindUpgrades(); // снять прошлые, если были
-  if (!upgradesScreen) return;
-
-  const TOKEN_URL = "assets/images/20251005_0825_Яркое неоновое сияние_remix_01k6sd902pf03ah1w3cpkr66jz.png";
-  const STAR_URL  = "assets/images/звезда.png";
-  const ART_URL   = "assets/images/20251028_1051_Космический неоновый отпечаток_simple_compose_01k8mwr9qzev3sczxr1rzxfm50.png";
-
+  // можно использовать уже существующую поверхность, чтобы фон был единый
   upgradesScreen.innerHTML = `
-    <div class="upg-fixed">
-      <div class="upg-wrap">
-        <div class="upg-score"><span id="upgCount">0</span></div>
-        <div class="upg-bar">
-          <div class="upg-track" id="upgTrack">
-            <div class="upg-thumb" id="upgThumb" aria-label="Перетаскиваемый кубик"></div>
-          </div>
-        </div>
-        <div class="upg-rows">
-          <div class="upg-row">500 = 1</div>
-          <div class="upg-row">5000 = 10</div>
-        </div>
-        <div class="upg-note">Счёт засчитывается при полном круге: L→R (+1), затем вернись R→L и снова вправо для следующего +1.</div>
-      </div>
-    </div>
+    <div class="contests-surface"></div>
   `;
-
-  const tg = window.Telegram?.WebApp;
-  const track = document.getElementById('upgTrack');
-  const thumb = document.getElementById('upgThumb');
-  const cntEl = document.getElementById('upgCount');
-
-  const state = { dragging:false, startX:0, left:0, min:0, max:0, count:+(cntEl?.textContent||0)||0, armedRight:true, needLeft:false };
-
-  const setLeft = (x) => { state.left = Math.min(state.max, Math.max(state.min, x)); thumb.style.left = `${state.left}px`; };
-  const layout = () => {
-    const tr = track.getBoundingClientRect();
-    const th = thumb.getBoundingClientRect();
-    const thumbW = parseFloat(getComputedStyle(thumb).width) || th.width || 24;
-    state.min = 0; state.max = Math.max(0, tr.width - thumbW);
-    setLeft(state.min);
-  };
-  const vibrate = () => { try{ tg?.HapticFeedback?.impactOccurred('heavy'); }catch(_){} if (navigator.vibrate) try{ navigator.vibrate(25); }catch(_){ } };
-
-  const onDown = (clientX) => { state.dragging = true; state.startX = clientX - state.left; thumb.style.cursor='grabbing'; };
-  const onMove = (clientX) => {
-    if (!state.dragging) return;
-    setLeft(clientX - state.startX);
-    const atLeft  = state.left <= state.min + 0.5;
-    const atRight = state.left >= state.max - 0.5;
-    if (atLeft){ state.armedRight = true; state.needLeft = false; }
-    if (atRight && state.armedRight && !state.needLeft){
-      state.count += 1; if (cntEl) cntEl.textContent = String(state.count);
-      vibrate(); state.armedRight = false; state.needLeft = true;
-    }
-  };
-  const onUp = () => { state.dragging = false; thumb.style.cursor='grab'; };
-
-  const mm = e => onMove(e.clientX);
-  const mu = () => onUp();
-  const tm = e => { const t = e.touches[0]; if (t) onMove(t.clientX); };
-  const te = () => onUp();
-  const tc = () => onUp();
-
-  thumb.addEventListener('mousedown', e => { e.preventDefault(); onDown(e.clientX); });
-  thumb.addEventListener('touchstart', e => { const t = e.touches[0]; if (t) onDown(t.clientX); }, { passive:true });
-
-  window.addEventListener('mousemove', mm);
-  window.addEventListener('mouseup',   mu);
-  window.addEventListener('touchmove', tm, { passive:true });
-  window.addEventListener('touchend',  te);
-  window.addEventListener('touchcancel', tc);
-
-  window.__UPG.handlers = { mm, mu, tm, te, tc };
-  window.__UPG.bound = true;
-
-  layout();
-  window.addEventListener('resize', layout, {passive:true});
-  window.addEventListener('orientationchange', layout, {passive:true});
 }
 
 // ===== CONFIRM SELL MODAL =====
@@ -3188,200 +3002,92 @@ if (upgradesTab){
 // Гарантируем, что при первой загрузке мы в "Кейсах"
 showCases();
 
-/* ===================== PAY MODAL (выбор способа оплаты) ===================== */
 
-/** Порядок строго соответствует точкам:
- *  1 — СБП, 2 — Карта, 3 — Криптовалюта, 4 — Telegram Stars, 5 — TON
- */
-const PAY_METHODS = [
-  { id:'sbp',   title:'СБП' },
-  { id:'card',  title:'Карта' },
-  { id:'crypto',title:'Криптовалюта' },
-  { id:'stars', title:'Telegram Stars' },
-  { id:'ton',   title:'TON' },
-];
+// === Мини-меню "Плюс" в топбаре ===
+// сразу после existing const:
+const addBtn    = document.getElementById('addBtn');
+const quickMenu = document.getElementById('quickMenu');
+const plusWrap  = addBtn?.closest('.plus-wrap'); // ← ДОБАВЬ ЭТО
 
-const payModal   = document.getElementById('payModal');
-let   paySlideEl = document.getElementById('paySlide');
-let   payDotsBox = document.getElementById('payDots');
-let   payPrev    = null;    // <— перезапрашиваем после открытия
-let   payNext    = null;
-let   payClose   = null;
-let   payConfirm = document.getElementById('payConfirm');
-const plusBtn    = document.getElementById('topPlusBtn');
-plusBtn?.addEventListener('click', openPayModal);
+function toggleQuickMenu(show){
+  if (!quickMenu || !addBtn) return;
+  const on = (typeof show === 'boolean') ? show : !quickMenu.classList.contains('show');
+  quickMenu.classList.toggle('show', on);
+  quickMenu.setAttribute('aria-hidden', String(!on));
+  addBtn.setAttribute('aria-expanded', String(on));
+  plusWrap?.classList.toggle('open', on);     // ← ДОБАВЬ ЭТО
 
-let payIndex = 0;                 // активная карточка [0..4]
-let payAnimating = false;         // защита от даблкликов
-let payFocusLast = null;
-
-/* Рисуем точки */
-function renderPayDots(){
-  payDotsBox.innerHTML = '';
-  PAY_METHODS.forEach((_, i) => {
-    const d = document.createElement('div');
-    d.className = 'pay-dot' + (i === payIndex ? ' active' : '');
-    payDotsBox.appendChild(d);
-  });
-}
-
-/* Вставить визуал карточки (пока это просто градиент-плашка)
-   в будущем сюда легко добавится логотип/иконка/подписи по pay.id */
-function mountCard(el, method){
-  // можно менять градиент/фон в зависимости от method.id — оставлю базовый
-  el.textContent = ''; // пока пусто внутри
-}
-
-/* «Сквозной» пролёт: делим на серию коротких шагов.
-   steps = абсолютное число шагов (>=1), dir = +1 (вправо) / -1 (влево) */
-
-function runThrough(dir, steps){
-  return new Promise((resolve)=>{
-    const doStep = (k)=>{
-      if (k === steps){ resolve(); return; }
-
-      const leaving  = paySlideEl;
-      const incoming = leaving.cloneNode(false);
-      incoming.className = 'pay-slide ' + (dir>0 ? 'enter-right' : 'enter-left');
-      leaving.classList.add(dir>0 ? 'leave-left' : 'leave-right');
-      leaving.classList.add('moving');
-
-      const nextIndex = (payIndex + dir + PAY_METHODS.length) % PAY_METHODS.length;
-      mountCard(incoming, PAY_METHODS[nextIndex]);
-
-      leaving.parentNode.appendChild(incoming);
-
-      requestAnimationFrame(()=>{
-        incoming.classList.add('center');
-        leaving.classList.add(dir>0 ? 'leave-left' : 'leave-right');
-
-        const onEnd = ()=>{
-          incoming.removeEventListener('transitionend', onEnd);
-          leaving.remove();
-          incoming.id = 'paySlide';                 // новый становится главным
-        };
-        incoming.addEventListener('transitionend', onEnd, { once:true });
-
-        setTimeout(()=>{
-          paySlideEl = document.getElementById('paySlide') || incoming; // ← обновили ссылку
-          payIndex   = nextIndex;
-          renderPayDots();
-          doStep(k+1);                                // к следующему шагу
-        }, 80);
-      });
-    };
-    doStep(0);
-  });
-}
-
-/* Переход на соседний слайд:
-   dir = +1 вправо / -1 влево. На границе делаем «сквозной» пролёт через все промежуточные. */
-// СТАЛО
-async function payGo(dir){
-  if (payAnimating) return;      // защита от даблкликов во время шага
-  payAnimating = true;
-
-  const atFirst = (payIndex === 0);
-  const atLast  = (payIndex === PAY_METHODS.length - 1);
-
-  // «сквозной» пролёт на границе (0↔последний)
-  const steps =
-    (dir < 0 && atFirst) || (dir > 0 && atLast)
-      ? PAY_METHODS.length - 1
-      : 1;
-
-  try {
-    await runThrough(dir, steps);
-  } finally {
-    payAnimating = false;        // ← ОБЯЗАТЕЛЬНО сбрасываем флаг
+  if (on){
+    const first = quickMenu.querySelector('.qm-item');
+    setTimeout(()=> first?.focus(), 0);
+    document.addEventListener('click', onDocClick, true);
+    document.addEventListener('keydown', onMenuKeys, true);
+  } else {
+    document.removeEventListener('click', onDocClick, true);
+    document.removeEventListener('keydown', onMenuKeys, true);
+    addBtn.focus();
   }
 }
 
-/* Открыть/закрыть */
-function openPayModal(){
-  if (!payModal) return;
-  if (!paySlideEl) return; // защита, чтобы не уронить весь JS
 
-  payFocusLast = document.activeElement;
-
-  // стартовое состояние
-  payIndex      = 0;
-  payAnimating  = false;                  // ← сброс флага!
-  payConfirm.disabled = true;
-  renderPayDots();
-
-  // стартовая карточка
-  paySlideEl.className = 'pay-slide center';
-  mountCard(paySlideEl, PAY_METHODS[payIndex]);
-
-  // показать
-  payModal.classList.add('show');
-
-  
-// элементы уже в DOM — запрашиваем заново и вешаем обработчики
-paySlideEl = document.getElementById('paySlide');
-payDotsBox = document.getElementById('payDots');
-payPrev    = document.getElementById('payPrev');
-payNext    = document.getElementById('payNext');
-payClose   = document.getElementById('payClose');
-
-// очищать ничего не надо: вешаем безопасно каждый раз
-payPrev  && payPrev.addEventListener('click', () => payGo(-1), { once:false });
-payNext  && payNext.addEventListener('click', () => payGo(+1), { once:false });
-payClose && payClose.addEventListener('click', closePayModal, { once:false });
-
-
-  payModal.setAttribute('aria-hidden','false');
-  lockBody(true);
-
-  setTimeout(()=> payNext?.focus(), 0);
-}
-
-
-function closePayModal(){
-  payModal.classList.remove('show');
-  payModal.setAttribute('aria-hidden','true');
-  lockBody(false);
-  payFocusLast && payFocusLast.focus && payFocusLast.focus();
-}
-
-/* Слушатели */
-plusBtn?.addEventListener('click', openPayModal);
-payClose?.addEventListener('click', closePayModal);
-payPrev ?.onclick = () => payGo(-1);   // левая стрелка
-payNext ?.onclick = () => payGo(+1);   // правая стрелка
-
-
-/* Закрытие по Esc/Back — ты разрешил Esc: да */
-document.addEventListener('keydown', (e)=>{
-  if (payModal?.classList.contains('show') && e.key === 'Escape'){
-    e.preventDefault(); e.stopPropagation();
-    closePayModal();
+function onDocClick(e){
+  if (!quickMenu.contains(e.target) && e.target !== addBtn){
+    toggleQuickMenu(false);
   }
-}, true);
+}
+
+function onMenuKeys(e){
+  if (e.key === 'Escape'){ e.preventDefault(); toggleQuickMenu(false); }
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp'){
+    e.preventDefault();
+    const items = Array.from(quickMenu.querySelectorAll('.qm-item'));
+    const i = items.indexOf(document.activeElement);
+    const dir = e.key === 'ArrowDown' ? 1 : -1;
+    const next = items[(i + dir + items.length) % items.length] || items[0];
+    next?.focus();
+  }
+}
+
+addBtn?.addEventListener('click', ()=> toggleQuickMenu());
+
+quickMenu?.addEventListener('click', (e)=>{
+  const btn = e.target.closest('.qm-item'); if (!btn) return;
+  const action = btn.dataset.action;
+  toggleQuickMenu(false);
+
+  switch(action){
+    case 'daily':
+      // Перейти к началу списка кейсов (например, к бесплатным)
+      document.querySelector('.chipbar .chip')?.click();
+      window.scrollTo({ top: 0, behavior:'smooth' });
+      break;
+
+    case 'promo':
+      // Открыть вкладку «Друзья» и сфокусировать поле промокода
+      showFriends();
+      setTimeout(()=> document.getElementById('promoInput2')?.focus(), 50);
+      break;
+
+    case 'invite':
+      // Поделиться инвайт-ссылкой
+      (async ()=>{
+        await GD.ensureUid8();
+        const link = GD.buildInviteLink();
+        const tg = window.Telegram?.WebApp;
+        const url = `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent('Залетай в GLITCH DROP — ловим дропы вместе!')}`;
+        if (tg?.openTelegramLink) tg.openTelegramLink(url);
+        else safeOpen(url);
+      })();
+      break;
+
+    case 'settings':
+      alert('Скоро — настройки профиля');
+      break;
+  }
+});
+
 
 </script>
-
-<!-- PAY MODAL -->
-<div id="payModal" class="modal" aria-hidden="true" aria-modal="true" role="dialog">
-  <div class="modal-card pay-card" role="document">
-    <button type="button" id="payClose" class="pay-close" aria-label="Закрыть">✕</button>
-    <div class="pay-title">Выберите способ оплаты</div>
-
-    <div class="pay-stage">
-      <button type="button" class="pay-nav" id="payPrev" aria-label="Назад">‹</button>
-
-      <div class="pay-viewport">
-        <div class="pay-slide center" id="paySlide"></div>
-      </div>
-
-      <button type="button" class="pay-nav" id="payNext" aria-label="Вперёд">›</button>
-    </div>
-
-    <div class="pay-dots" id="payDots"></div>
-    <button type="button" class="btn pay-confirm" id="payConfirm" disabled>ПОДТВЕРДИТЬ</button>
-  </div>
-</div>
 
 </body>
 </html>
