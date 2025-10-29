@@ -827,6 +827,12 @@ html.scroll-locked, html.scroll-locked body{
   display:block;
 }
 
+/* ===== Уменьшаем ширину прямоугольника-слайда ===== */
+.topup-slider .slide::before {
+  width: calc(100% - 80px) !important;  /* 40px слева + 40px справа = 80px */
+  margin: 0 auto; /* центрируем */
+}
+
 /* стрелки */
 .topup-slider .nav{
   position:absolute; top:50%; transform:translateY(-50%);
