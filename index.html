@@ -994,6 +994,26 @@ html.scroll-locked, html.scroll-locked body{
   border-radius: 12px;
 } /* ← вот этой скобки не хватало */
 
+/* ===== TOPUP MODAL SHOW/HIDE ===== */
+.modal-topup {
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-topup.show {
+  display: flex;
+}
+
+.modal-topup::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(8,14,36,.75), rgba(6,10,26,.85));
+  backdrop-filter: blur(8px);
+  z-index: -1;
+}
+
 /* === Оверрайды ТОЛЬКО для барабана === */
 .drum .slice {
   grid-template-rows: 1fr;
@@ -2988,13 +3008,6 @@ let _confirmOpen = false;
 let _confirmOnYes = null;
 let _confirmLastFocus = null;
 
-// ===== TOPUP MODAL VARIABLES =====
-let idx = 0;                // активный слайд
-const COUNT = 5;            // всегда 5
-let sliding = false;        // блокируем повторные клики во время анимации
-let startX = 0, curX = 0;   // свайпы
-let touchActive = false;
-
 function openConfirmSell(onYesCb, text){
   if (!confirmModal) return;
 
@@ -3170,14 +3183,8 @@ function onMenuKeys(e){
 addBtn?.addEventListener('click', ()=> toggleQuickMenu());
 
 quickMenu?.addEventListener('click', (e)=>{
-  console.log('🟡 Quick menu clicked');
-  const btn = e.target.closest('.qm-item'); 
-  if (!btn) {
-    console.log('No menu item clicked');
-    return;
-  }
+  const btn = e.target.closest('.qm-item'); if (!btn) return;
   const action = btn.dataset.action;
-  console.log('Menu action:', action);
   toggleQuickMenu(false);
 
   switch(action){
@@ -3196,19 +3203,81 @@ quickMenu?.addEventListener('click', (e)=>{
   }
 });
 
-// ===== TOPUP MODAL LOGIC =====
-console.log('=== TOPUP MODAL DEBUG ===');
-console.log('Topup modal code loaded');
-
-const topupModal   = document.getElementById('topupModal');
-console.log('topupModal element:', topupModal);
-
-if (!topupModal) {
-    console.error('❌ ERROR: Topup modal element not found!');
-} else {
-    console.log('✅ Topup modal element found');
+// ===== TOPUP MODAL - OPEN/CLOSE FUNCTIONS =====
+function topupOpen(){
+  const topupModal = document.getElementById('topupModal');
+  if(!topupModal) return;
+  
+  topupModal.classList.add('show');
+  topupModal.setAttribute('aria-hidden','false');
+  lockBody(true);
+  
+  // Закрытие по ESC
+  document.addEventListener('keydown', handleTopupEsc, true);
+  // Закрытие по клику на фон
+  topupModal.addEventListener('click', handleTopupBackdrop, true);
 }
 
+function topupCloseModal(){
+  const topupModal = document.getElementById('topupModal');
+  if(!topupModal) return;
+  
+  topupModal.classList.remove('show');
+  topupModal.setAttribute('aria-hidden','true');
+  lockBody(false);
+  
+  document.removeEventListener('keydown', handleTopupEsc, true);
+  topupModal.removeEventListener('click', handleTopupBackdrop, true);
+}
+
+function handleTopupEsc(e){
+  if(e.key === 'Escape'){
+    e.preventDefault();
+    topupCloseModal();
+  }
+}
+
+function handleTopupBackdrop(e){
+  const card = document.querySelector('.topup-card');
+  if(!card.contains(e.target)){
+    e.preventDefault();
+    topupCloseModal();
+  }
+}
+
+// ===== TOPUP MODAL LOGIC =====
+const topupModal   = document.getElementById('topupModal');
+const topupCard    = topupModal?.querySelector('.topup-card');
+const topupClose   = topupModal?.querySelector('.topup-close');
+const topupSlider  = document.getElementById('topupSlider');
+const track        = topupSlider?.querySelector('.track');
+const dotsWrap     = document.getElementById('topupDots');
+const dots         = dotsWrap ? Array.from(dotsWrap.querySelectorAll('.dot')) : [];
+const prevBtn      = topupSlider?.querySelector('.nav.prev');
+const nextBtn      = topupSlider?.querySelector('.nav.next');
+const confirmBtn   = document.getElementById('topupConfirm');
+
+let idx = 0;                // активный слайд
+const COUNT = 5;            // всегда 5
+let sliding = false;        // блокируем повторные клики во время анимации
+let startX = 0, curX = 0;   // свайпы
+let touchActive = false;
+
+function topupOpen(){
+  if(!topupModal) return;
+  // стартовое состояние
+  idx = 0;
+  updateDots();
+  moveTo(idx, false);
+
+  topupModal.classList.add('show');
+  topupModal.setAttribute('aria-hidden','false');
+  lockBody(true);
+
+  // закрытие по фону
+  topupModal.addEventListener('click', onBackdrop, { once:false, passive:false });
+  document.addEventListener('keydown', onEscTopup, true);
+}
 function topupCloseModal(){
   if(!topupModal) return;
   topupModal.classList.remove('show');
@@ -3319,90 +3388,11 @@ confirmBtn?.addEventListener('click', ()=> {
   // ничего не делаем по ТЗ
 });
 
-function topupCloseModal(){
-  const topupModal = document.getElementById('topupModal');
-  if(!topupModal) return;
-  
-  topupModal.classList.remove('show');
-  topupModal.setAttribute('aria-hidden','true');
-  lockBody(false);
+// Обработчик закрытия модалки
+document.querySelector('.topup-close')?.addEventListener('click', topupCloseModal);
 
-  topupModal.removeEventListener('click', onBackdrop, { passive:false });
-  document.removeEventListener('keydown', onEscTopup, true);
-}
-
-function onBackdrop(e){
-  const card = document.querySelector('.topup-card');
-  if (!card || card.contains(e.target)) return;
-  e.preventDefault(); 
-  e.stopPropagation();
-  topupCloseModal();
-}
-
-function onEscTopup(e){
-  if (e.key === 'Escape'){ 
-    e.preventDefault(); 
-    topupCloseModal(); 
-  }
-}
-
-function updateDots() {
-  const dotsWrap = document.getElementById('topupDots');
-  const dots = dotsWrap ? Array.from(dotsWrap.querySelectorAll('.dot')) : [];
-  
-  dots.forEach((d,i)=>{
-    const active = (i === idx);
-    d.classList.toggle('active', active);
-    d.setAttribute('aria-selected', active ? 'true' : 'false');
-  });
-}
-
-function moveTo(n, animate=true){
-  const track = document.querySelector('#topupSlider .track');
-  if (!track) return;
-
-  if (!animate){
-    track.style.transition = 'none';
-  } else {
-    track.style.transition = 'transform .26s cubic-bezier(.2,.7,.2,1)';
-  }
-
-  idx = ((n % COUNT) + COUNT) % COUNT;
-  updateDots();
-
-  const offset = -idx * 100;
-  track.style.transform = `translateX(${offset}%)`;
-
-  if (!animate){ 
-    void track.offsetHeight; // принудительный reflow
-  }
-}
-
-function go(dir){
-  if (sliding) return;
-  const next = (idx + dir + COUNT) % COUNT;
-  moveTo(next, true);
-}
-
-// Инициализация обработчиков для топап модалки
-document.addEventListener('DOMContentLoaded', function() {
-  // Кнопка закрытия
-  document.querySelector('.topup-close')?.addEventListener('click', topupCloseModal);
-  
-  // Стрелки слайдера
-  document.querySelector('#topupSlider .nav.prev')?.addEventListener('click', ()=> go(-1));
-  document.querySelector('#topupSlider .nav.next')?.addEventListener('click', ()=> go(+1));
-  
-  // Точки навигации
-  const dots = document.querySelectorAll('#topupDots .dot');
-  dots.forEach((d,i)=> d.addEventListener('click', ()=> moveTo(i, true)));
-  
-  // Подтверждение оплаты
-  document.getElementById('topupConfirm')?.addEventListener('click', ()=> {
-    alert('Функция пополнения баланса будет реализована позже');
-    topupCloseModal();
-  });
-});
+// === Подключаем к пункту мини-меню «Пополнить баланс» ===
+// в твоём обработчике quickMenu кликов добавь новый case:
 
 </script>
 
