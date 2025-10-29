@@ -750,6 +750,71 @@ html.scroll-locked, html.scroll-locked body{
 .plus-wrap::after{ display:none; }
 .plus-wrap.open::after{ display:block; }
 
+/* === STABLE TOPBAR LAYOUT (grid, no shimmy) === */
+.topbar{
+  display:grid !important;
+  grid-template-columns:
+    auto                 /* avatar */
+    minmax(0,1fr)        /* brand (тянется) */
+    auto                 /* plus */
+    auto                 /* pill: glitch */
+    auto;                /* pill: stars */
+  align-items:center;
+  column-gap:8px;
+  overflow:hidden;       /* гарант без горизонт. скролла */
+  flex-wrap:unset !important;
+}
+
+/* grow больше не нужен */
+.grow{ display:none !important; }
+
+/* бренд может ужиматься, но без разъезда */
+.topbar .brand{
+  min-width:0;          /* разрешить сжатие колонки */
+  max-width:unset;
+  overflow:hidden;
+}
+.topbar .brand .glitch{
+  display:block;
+  max-width:100%;
+  white-space:nowrap;
+  transform-origin:left center;
+}
+
+/* компактный плюсик */
+.pill-plus{
+  width:36px; height:36px;
+  margin-right:8px;
+}
+
+/* обе пилюли — одинаковые, компактные */
+.topbar .pill.pill--lg{
+  height:36px;
+  padding:6px 10px;
+  gap:8px;
+}
+.topbar .pill.pill--lg img{
+  width:20px; height:20px;
+}
+.topbar .pill .num{
+  font-size:13px; line-height:1; white-space:nowrap;
+}
+
+/* очень узкие экраны — ещё шаг компактности */
+@media (max-width:380px){
+  .pill-plus{ width:32px; height:32px; margin-right:6px; }
+  .topbar .pill.pill--lg{ height:32px; padding:6px 8px; gap:6px; }
+  .topbar .pill.pill--lg img{ width:18px; height:18px; }
+  .topbar .pill .num{ font-size:12px; }
+}
+
+/* подстраховка от «растягивателей» ширины */
+.topbar > *{ min-width:0; }
+
+/* на всякий случай, чтобы вообще не появлялся горизонтальный скролл */
+html, body{ overflow-x:hidden; }
+
+
   </style>
 
 <style>
