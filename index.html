@@ -3273,7 +3273,15 @@ nextBtn?.addEventListener('click', ()=> go(+1));
 
 function go(dir){
   if (sliding) return;
-  const next = (idx + dir + COUNT) % COUNT; // кольцевой переход
+  let next = idx + dir;
+  
+  // Обрабатываем переход через границы
+  if (next < 0) {
+    next = COUNT - 1; // переходим к последнему слайду
+  } else if (next >= COUNT) {
+    next = 0; // переходим к первому слайду
+  }
+  
   moveTo(next, true);
 }
 
@@ -3399,13 +3407,15 @@ function moveTo(n, animate=true){
   const track = document.querySelector('#topupSlider .track');
   if (!track) return;
 
+  // Гарантируем, что индекс в допустимых пределах
+  idx = Math.max(0, Math.min(n, COUNT - 1));
+  
   if (!animate){
     track.style.transition = 'none';
   } else {
     track.style.transition = 'transform .26s cubic-bezier(.2,.7,.2,1)';
   }
 
-  idx = ((n % COUNT) + COUNT) % COUNT;
   updateDots();
 
   const offset = -idx * 100;
