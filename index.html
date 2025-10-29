@@ -3202,13 +3202,13 @@ const PAY_METHODS = [
 ];
 
 const payModal   = document.getElementById('payModal');
-let paySlideEl = document.getElementById('paySlide');
-const payDotsBox = document.getElementById('payDots');
-const payPrev    = document.getElementById('payPrev');
-const payNext    = document.getElementById('payNext');
-const payClose   = document.getElementById('payClose');
-const payConfirm = document.getElementById('payConfirm');
-const plusBtn    = document.getElementById('topPlusBtn'); // ← твой реальный id
+let   paySlideEl = document.getElementById('paySlide');
+let   payDotsBox = document.getElementById('payDots');
+let   payPrev    = null;    // <— перезапрашиваем после открытия
+let   payNext    = null;
+let   payClose   = null;
+let   payConfirm = document.getElementById('payConfirm');
+const plusBtn    = document.getElementById('topPlusBtn');
 plusBtn?.addEventListener('click', openPayModal);
 
 let payIndex = 0;                 // активная карточка [0..4]
@@ -3316,6 +3316,21 @@ function openPayModal(){
 
   // показать
   payModal.classList.add('show');
+
+  
+// элементы уже в DOM — запрашиваем заново и вешаем обработчики
+paySlideEl = document.getElementById('paySlide');
+payDotsBox = document.getElementById('payDots');
+payPrev    = document.getElementById('payPrev');
+payNext    = document.getElementById('payNext');
+payClose   = document.getElementById('payClose');
+
+// очищать ничего не надо: вешаем безопасно каждый раз
+payPrev  && payPrev.addEventListener('click', () => payGo(-1), { once:false });
+payNext  && payNext.addEventListener('click', () => payGo(+1), { once:false });
+payClose && payClose.addEventListener('click', closePayModal, { once:false });
+
+
   payModal.setAttribute('aria-hidden','false');
   lockBody(true);
 
