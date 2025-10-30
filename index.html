@@ -894,21 +894,35 @@ html.scroll-locked, html.scroll-locked body{
 }
 
 .topup-dots .dot {
-    width: 4px; /* уменьшил размер точек */
-    height: 4px;
-    border-radius: 50%;
-    border: 1.5px solid rgba(255, 255, 255, 0.4); /* тоньше обводка */
-    background: transparent;
+    width: 20px;           /* Длина линии */
+    height: 3px;           /* Толщина линии */
+    border-radius: 2px;    /* Слегка скругленные края */
+    background: rgba(255, 255, 255, 0.4);  /* Цвет неактивной линии */
+    border: none;          /* Убираем обводку */
+}
+
+.topup-dots .dot {
+    width: 20px;
+    height: 3px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.4);
+    border: none;
     cursor: pointer;
-    transition: all 0.2s ease; /* более быстрая анимация */
+    transition: all 0.2s ease;
     position: relative;
 }
 
 .topup-dots .dot.active {
     background: var(--neon-cyan);
-    border-color: var(--neon-cyan);
-    box-shadow: 0 0 8px rgba(22, 241, 255, 0.6); /* меньше свечение */
-    transform: scale(1.2); /* меньше увеличение при активности */
+    box-shadow: 0 0 8px rgba(22, 241, 255, 0.6);
+    transform: scaleX(1.2);
+}
+
+.topup-dots {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 10px;
 }
 
 .topup-dots .dot::after {
