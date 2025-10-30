@@ -885,30 +885,40 @@ html.scroll-locked, html.scroll-locked body{
     justify-content: center;
 }
 
-/* Улучшение для точек */
+/* Улучшение для точек - КОМПАКТНЫЙ ВАРИАНТ */
 .topup-dots {
     display: flex;
     justify-content: center;
-    gap: 10px;
-    margin-top: 12px;
+    gap: 6px; /* уменьшил расстояние между точками */
+    margin-top: 10px;
 }
 
 .topup-dots .dot {
-    width: 12px;
-    height: 12px;
+    width: 8px; /* уменьшил размер точек */
+    height: 8px;
     border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.4);
+    border: 1.5px solid rgba(255, 255, 255, 0.4); /* тоньше обводка */
     background: transparent;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease; /* более быстрая анимация */
     position: relative;
 }
 
 .topup-dots .dot.active {
     background: var(--neon-cyan);
     border-color: var(--neon-cyan);
-    box-shadow: 0 0 12px rgba(22, 241, 255, 0.6);
-    transform: scale(1.2);
+    box-shadow: 0 0 8px rgba(22, 241, 255, 0.6); /* меньше свечение */
+    transform: scale(1.1); /* меньше увеличение при активности */
+}
+
+.topup-dots .dot::after {
+    content: '';
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    right: -3px;
+    bottom: -3px;
+    border-radius: 50%;
 }
 
 .topup-dots .dot::after {
