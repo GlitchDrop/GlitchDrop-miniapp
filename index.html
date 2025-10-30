@@ -3305,40 +3305,59 @@ function updateDots() {
   });
 }
 
-function moveTo(n, animate=true){
+function moveTo(n, animate = true) {
+  // Защита от повторных вызовов
+  if (sliding) return;
+  
   const track = document.querySelector('#topupSlider .track');
   if (!track) return;
 
   sliding = true;
 
-  if (!animate){
+  // Принудительно сбрасываем анимацию если не нужно анимировать
+  if (!animate) {
     track.style.transition = 'none';
   } else {
-    track.style.transition = 'transform .26s cubic-bezier(.2,.7,.2,1)';
+    track.style.transition = 'transform 0.3s ease';
   }
 
-  idx = ((n % COUNT) + COUNT) % COUNT;
+  // Циклическая навигация
+  let newIndex = n;
+  if (newIndex < 0) newIndex = COUNT - 1;
+  else if (newIndex >= COUNT) newIndex = 0;
+  
+  idx = newIndex;
   updateDots();
 
   const offset = -idx * 100;
   track.style.transform = `translateX(${offset}%)`;
 
-  if (!animate){ 
-    void track.offsetHeight; // принудительный reflow
-    sliding = false;
+  // Автоматический сброс флага sliding через короткое время
+  if (!animate) {
+    setTimeout(() => { sliding = false; }, 50);
   } else {
-    const onDone = () => { 
-      sliding = false; 
-      track.removeEventListener('transitionend', onDone); 
+    const onTransitionEnd = () => {
+      sliding = false;
+      track.removeEventListener('transitionend', onTransitionEnd);
     };
-    track.addEventListener('transitionend', onDone);
+    
+    track.addEventListener('transitionend', onTransitionEnd);
+    
+    // Защита на случай если transitionend не сработает
+    setTimeout(() => {
+      if (sliding) {
+        sliding = false;
+        track.removeEventListener('transitionend', onTransitionEnd);
+      }
+    }, 400);
   }
 }
 
-function go(dir){
-  if (sliding) return;
-  let next = idx + dir;
+function go(dir) {
+  moveTo(idx + dir, true);
+}
   
+{
   // Обеспечиваем циклическое перелистывание
   if (next < 0) next = COUNT - 1;
   if (next >= COUNT) next = 0;
@@ -3352,8 +3371,16 @@ function initTopupModal() {
   document.querySelector('.topup-close')?.addEventListener('click', topupCloseModal);
   
   // Стрелки слайдера
-  document.querySelector('#topupSlider .nav.prev')?.addEventListener('click', ()=> go(-1));
-  document.querySelector('#topupSlider .nav.next')?.addEventListener('click', ()=> go(+1));
+  // В функции initTopupModal замените обработчики стрелок на:
+document.querySelector('#topupSlider .nav.prev')?.addEventListener('click', (e) => {
+  e.stopPropagation();
+  go(-1);
+});
+
+document.querySelector('#topupSlider .nav.next')?.addEventListener('click', (e) => {
+  e.stopPropagation();
+  go(1);
+});
   
   // Точки навигации
   const dots = document.querySelectorAll('#topupDots .dot');
