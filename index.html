@@ -993,6 +993,23 @@ html.scroll-locked, html.scroll-locked body{
     .topup-slider .nav.next { right: 6px; }
 }
 
+/* ===== СТИЛИ ДЛЯ ИЗОБРАЖЕНИЙ В СЛАЙДЕРЕ ===== */
+.topup-slider .slide-img {
+    position: absolute;
+    width: 76%;
+    height: 78%;
+    border-radius: 26px;
+    object-fit: cover;
+    display: block;
+    border: 2px solid transparent; /* Невидимая рамка */
+    background: transparent;
+}
+
+/* Убираем старый псевдоэлемент и заменяем на картинку */
+.topup-slider .slide::before {
+    display: none;
+}
+
   </style>
 
 <style>
@@ -3368,6 +3385,38 @@ let touchEndX = 0;
 
 function initTopupModal() {
     console.log('🔄 Инициализация топ-ап модалки');
+
+    // ===== МАССИВ С URL КАРТИНОК ДЛЯ СЛАЙДОВ =====
+    // ЗАМЕНИТЕ ЭТИ URL НА СВОИ ИЗОБРАЖЕНИЯ!
+    const slideImages = [
+    'assets/images/20251030_1526_Звезда Telegram_remix_01k8th8pspewrssgp8em8x6ycn.png',  // Первый слайд
+    'assets/images/topup/slide2.jpg',  // Второй слайд  
+    'assets/images/topup/slide3.jpg',  // Третий слайд
+    'assets/images/topup/slide4.jpg',  // Четвертый слайд
+    'assets/images/topup/slide5.jpg'   // Пятый слайд
+];
+    
+    // Добавляем изображения в слайды
+    const slides = document.querySelectorAll('#topupSlider .slide');
+    slides.forEach((slide, index) => {
+        // Создаем элемент изображения
+        const img = document.createElement('img');
+        img.className = 'slide-img';
+        img.src = slideImages[index];
+        img.alt = `Способ оплаты ${index + 1}`;
+        img.loading = 'lazy';
+        
+        // Обработчик ошибок загрузки изображения
+        img.onerror = function() {
+            console.error(`❌ Ошибка загрузки изображения для слайда ${index + 1}: ${this.src}`);
+            this.style.display = 'none'; // Скрываем если не загрузилось
+        };
+        
+        // Очищаем слайд и добавляем изображение
+        slide.innerHTML = '';
+        slide.appendChild(img);
+    });
+
     
     // Кнопка закрытия
     const closeBtn = document.querySelector('.topup-close');
