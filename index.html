@@ -869,6 +869,105 @@ html.scroll-locked, html.scroll-locked body{
   border-radius:14px; padding:12px 16px;
 }
 
+/* ===== TOPUP SLIDER - УЛУЧШЕННЫЕ СТИЛИ ===== */
+.topup-slider .track {
+    display: flex;
+    height: 100%;
+    will-change: transform;
+    transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.topup-slider .slide {
+    min-width: 100%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Улучшение для точек */
+.topup-dots {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.topup-dots .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.topup-dots .dot.active {
+    background: var(--neon-cyan);
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 12px rgba(22, 241, 255, 0.6);
+    transform: scale(1.2);
+}
+
+.topup-dots .dot::after {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    right: -4px;
+    bottom: -4px;
+    border-radius: 50%;
+}
+
+/* Улучшение стрелок */
+.topup-slider .nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    appearance: none;
+    border: 1px solid var(--border);
+    background: linear-gradient(135deg, rgba(15, 20, 48, 0.92), rgba(12, 16, 38, 0.92));
+    color: #e8efff;
+    font-weight: 900;
+    font-size: 20px;
+    line-height: 1;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    box-shadow: var(--shadow-soft);
+    z-index: 10;
+    transition: all 0.2s ease;
+}
+
+.topup-slider .nav:hover {
+    background: linear-gradient(135deg, rgba(22, 241, 255, 0.15), rgba(138, 92, 255, 0.15));
+    border-color: var(--neon-cyan);
+    transform: translateY(-50%) scale(1.05);
+}
+
+.topup-slider .nav:active {
+    transform: translateY(-50%) scale(0.95);
+}
+
+.topup-slider .nav.prev { left: 10px; }
+.topup-slider .nav.next { right: 10px; }
+
+/* Адаптивность */
+@media (max-width: 480px) {
+    .topup-slider .nav {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+    }
+    
+    .topup-slider .nav.prev { left: 6px; }
+    .topup-slider .nav.next { right: 6px; }
+}
 
   </style>
 
@@ -3236,204 +3335,223 @@ quickMenu?.addEventListener('click', (e)=>{
   }
 });
 
-// ===== TOPUP MODAL LOGIC =====
-console.log('=== TOPUP MODAL DEBUG ===');
-console.log('Topup modal code loaded');
+// ===== TOPUP MODAL - ИСПРАВЛЕННАЯ ВЕРСИЯ =====
+let currentSlide = 0;
+const totalSlides = 5;
+let isAnimating = false;
+let touchStartX = 0;
+let touchEndX = 0;
 
-const topupModal   = document.getElementById('topupModal');
-console.log('topupModal element:', topupModal);
+function initTopupModal() {
+    console.log('🔄 Инициализация топ-ап модалки');
+    
+    // Кнопка закрытия
+    const closeBtn = document.querySelector('.topup-close');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', topupCloseModal);
+        console.log('✅ Кнопка закрытия настроена');
+    }
 
-function topupOpen(){
-  console.log('🔵 topupOpen() function called');
-  
-  const topupModal = document.getElementById('topupModal');
-  if(!topupModal) {
-    console.error('❌ ERROR: Topup modal not found in topupOpen!');
-    return;
-  }
-  console.log('✅ Topup modal found, opening...');
-  
-  // стартовое состояние
-  idx = 0;
-  updateDots();
-  moveTo(idx, false);
+    // Стрелки навигации
+    const prevBtn = document.querySelector('#topupSlider .nav.prev');
+    const nextBtn = document.querySelector('#topupSlider .nav.next');
+    
+    if (prevBtn) {
+        prevBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            goToSlide(currentSlide - 1);
+        });
+        console.log('✅ Кнопка "назад" настроена');
+    }
+    
+    if (nextBtn) {
+        nextBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            goToSlide(currentSlide + 1);
+        });
+        console.log('✅ Кнопка "вперед" настроена');
+    }
 
-  topupModal.classList.add('show');
-  topupModal.setAttribute('aria-hidden','false');
-  lockBody(true);
+    // Точки навигации
+    const dots = document.querySelectorAll('#topupDots .dot');
+    dots.forEach((dot, index) => {
+        dot.addEventListener('click', () => {
+            if (!isAnimating) {
+                goToSlide(index);
+            }
+        });
+    });
+    console.log('✅ Точки навигации настроены');
 
-  // закрытие по фону
-  topupModal.addEventListener('click', onBackdrop, { passive:false });
-  document.addEventListener('keydown', onEscTopup, true);
+    // Кнопка подтверждения
+    const confirmBtn = document.getElementById('topupConfirm');
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', () => {
+            alert(`Выбран способ оплаты #${currentSlide + 1}. Функция пополнения баланса будет реализована позже`);
+            topupCloseModal();
+        });
+    }
+
+    // Инициализация свайпов
+    initSwipe();
+    
+    // Начальная позиция
+    updateSlider();
 }
 
-function topupCloseModal(){
-  const topupModal = document.getElementById('topupModal');
-  if(!topupModal) return;
-  
-  topupModal.classList.remove('show');
-  topupModal.setAttribute('aria-hidden','true');
-  lockBody(false);
+function initSwipe() {
+    const slider = document.querySelector('#topupSlider .viewport');
+    if (!slider) return;
 
-  topupModal.removeEventListener('click', onBackdrop, { passive:false });
-  document.removeEventListener('keydown', onEscTopup, true);
+    slider.addEventListener('touchstart', (e) => {
+        if (!e.touches || e.touches.length !== 1) return;
+        touchStartX = e.touches[0].clientX;
+        touchEndX = touchStartX;
+    }, { passive: true });
+
+    slider.addEventListener('touchmove', (e) => {
+        if (!e.touches || e.touches.length !== 1) return;
+        touchEndX = e.touches[0].clientX;
+    }, { passive: true });
+
+    slider.addEventListener('touchend', () => {
+        if (isAnimating) return;
+        
+        const diff = touchStartX - touchEndX;
+        const minSwipeDistance = 50;
+
+        if (Math.abs(diff) > minSwipeDistance) {
+            if (diff > 0) {
+                goToSlide(currentSlide + 1);
+            } else {
+                goToSlide(currentSlide - 1);
+            }
+        }
+    }, { passive: true });
 }
 
-function onBackdrop(e){
-  const card = document.querySelector('.topup-card');
-  if (!card || card.contains(e.target)) return;
-  e.preventDefault(); 
-  e.stopPropagation();
-  topupCloseModal();
+function goToSlide(slideIndex) {
+    if (isAnimating) {
+        console.log('⏳ Анимация уже выполняется, пропускаем');
+        return;
+    }
+
+    let newIndex = slideIndex;
+    if (newIndex < 0) newIndex = totalSlides - 1;
+    if (newIndex >= totalSlides) newIndex = 0;
+
+    if (newIndex === currentSlide) {
+        console.log('📍 Уже на этом слайде');
+        return;
+    }
+
+    console.log(`🔄 Переход со слайда ${currentSlide} на слайд ${newIndex}`);
+    currentSlide = newIndex;
+    updateSlider();
 }
 
-function onEscTopup(e){
-  if (e.key === 'Escape'){ 
-    e.preventDefault(); 
-    topupCloseModal(); 
-  }
-}
+function updateSlider() {
+    const track = document.querySelector('#topupSlider .track');
+    if (!track) {
+        console.error('❌ Трек слайдера не найден');
+        return;
+    }
 
-function updateDots() {
-  const dotsWrap = document.getElementById('topupDots');
-  const dots = dotsWrap ? Array.from(dotsWrap.querySelectorAll('.dot')) : [];
-  
-  dots.forEach((d,i)=>{
-    const active = (i === idx);
-    d.classList.toggle('active', active);
-    d.setAttribute('aria-selected', active ? 'true' : 'false');
-  });
-}
-
-function moveTo(n, animate = true) {
-  // Защита от повторных вызовов
-  if (sliding) return;
-  
-  const track = document.querySelector('#topupSlider .track');
-  if (!track) return;
-
-  sliding = true;
-
-  // Принудительно сбрасываем анимацию если не нужно анимировать
-  if (!animate) {
-    track.style.transition = 'none';
-  } else {
-    track.style.transition = 'transform 0.3s ease';
-  }
-
-  // Циклическая навигация
-  let newIndex = n;
-  if (newIndex < 0) newIndex = COUNT - 1;
-  else if (newIndex >= COUNT) newIndex = 0;
-  
-  idx = newIndex;
-  updateDots();
-
-  const offset = -idx * 100;
-  track.style.transform = `translateX(${offset}%)`;
-
-  // Автоматический сброс флага sliding через короткое время
-  if (!animate) {
-    setTimeout(() => { sliding = false; }, 50);
-  } else {
+    isAnimating = true;
+    
+    const offset = -currentSlide * 100;
+    track.style.transform = `translateX(${offset}%)`;
+    
+    updateDots();
+    
     const onTransitionEnd = () => {
-      sliding = false;
-      track.removeEventListener('transitionend', onTransitionEnd);
+        isAnimating = false;
+        track.removeEventListener('transitionend', onTransitionEnd);
     };
     
     track.addEventListener('transitionend', onTransitionEnd);
     
-    // Защита на случай если transitionend не сработает
     setTimeout(() => {
-      if (sliding) {
-        sliding = false;
-        track.removeEventListener('transitionend', onTransitionEnd);
-      }
-    }, 400);
-  }
+        if (isAnimating) {
+            isAnimating = false;
+            track.removeEventListener('transitionend', onTransitionEnd);
+        }
+    }, 500);
 }
 
-function go(dir) {
-  moveTo(idx + dir, true);
-}
-  
-{
-  // Обеспечиваем циклическое перелистывание
-  if (next < 0) next = COUNT - 1;
-  if (next >= COUNT) next = 0;
-  
-  moveTo(next, true);
+function updateDots() {
+    const dots = document.querySelectorAll('#topupDots .dot');
+    dots.forEach((dot, index) => {
+        const isActive = index === currentSlide;
+        dot.classList.toggle('active', isActive);
+        dot.setAttribute('aria-selected', isActive.toString());
+    });
 }
 
-// Инициализация обработчиков после загрузки DOM
-function initTopupModal() {
-  // Кнопка закрытия
-  document.querySelector('.topup-close')?.addEventListener('click', topupCloseModal);
-  
-  // Стрелки слайдера
-  // В функции initTopupModal замените обработчики стрелок на:
-document.querySelector('#topupSlider .nav.prev')?.addEventListener('click', (e) => {
-  e.stopPropagation();
-  go(-1);
-});
+function topupOpen() {
+    console.log('🔵 Открытие модалки пополнения баланса');
+    
+    const topupModal = document.getElementById('topupModal');
+    if (!topupModal) {
+        console.error('❌ Модалка не найдена');
+        return;
+    }
 
-document.querySelector('#topupSlider .nav.next')?.addEventListener('click', (e) => {
-  e.stopPropagation();
-  go(1);
-});
-  
-  // Точки навигации
-  const dots = document.querySelectorAll('#topupDots .dot');
-  dots.forEach((d,i)=> d.addEventListener('click', ()=> moveTo(i, true)));
-  
-  // Подтверждение оплаты
-  document.getElementById('topupConfirm')?.addEventListener('click', ()=> {
-    alert('Функция пополнения баланса будет реализована позже');
+    currentSlide = 0;
+    isAnimating = false;
+    
+    topupModal.classList.add('show');
+    topupModal.setAttribute('aria-hidden', 'false');
+    
+    lockBody(true);
+    
+    setTimeout(() => {
+        updateSlider();
+    }, 50);
+    
+    topupModal.addEventListener('click', onBackdropClick, { passive: false });
+    document.addEventListener('keydown', onEscKey, true);
+    
+    console.log('✅ Модалка открыта');
+}
+
+function topupCloseModal() {
+    console.log('🔴 Закрытие модалки пополнения баланса');
+    
+    const topupModal = document.getElementById('topupModal');
+    if (!topupModal) return;
+    
+    topupModal.classList.remove('show');
+    topupModal.setAttribute('aria-hidden', 'true');
+    
+    lockBody(false);
+    
+    topupModal.removeEventListener('click', onBackdropClick, { passive: false });
+    document.removeEventListener('keydown', onEscKey, true);
+}
+
+function onBackdropClick(e) {
+    const card = document.querySelector('.topup-card');
+    if (!card || card.contains(e.target)) return;
+    
+    e.preventDefault();
+    e.stopPropagation();
     topupCloseModal();
-  });
-
-  // Свайпы
-  const topupSlider = document.getElementById('topupSlider');
-  if (topupSlider){
-    const vp = topupSlider.querySelector('.viewport');
-    const track = topupSlider.querySelector('.track');
-
-    vp.addEventListener('touchstart', (e)=>{
-      if (!e.touches || e.touches.length !== 1) return;
-      touchActive = true; 
-      sliding = false;
-      startX = e.touches[0].clientX;
-      curX = startX;
-      track.style.transition = 'none';
-    }, {passive:true});
-
-    vp.addEventListener('touchmove', (e)=>{
-      if (!touchActive) return;
-      curX = e.touches[0].clientX;
-      const dx = curX - startX;
-      const w = vp.clientWidth || 1;
-      const percent = (dx / w) * 100;
-      const base = -idx * 100;
-      track.style.transform = `translateX(${base + percent}%)`;
-    }, {passive:true});
-
-    vp.addEventListener('touchend', ()=>{
-      if (!touchActive) return;
-      touchActive = false;
-
-      const dx = curX - startX;
-      const threshold = 40; // px
-      if (Math.abs(dx) > threshold){
-        go(dx < 0 ? +1 : -1);
-      } else {
-        moveTo(idx, true); // откат
-      }
-    }, {passive:true});
-  }
 }
 
-// Вызов инициализации
-initTopupModal();
+function onEscKey(e) {
+    if (e.key === 'Escape') {
+        e.preventDefault();
+        topupCloseModal();
+    }
+}
+
+// Автоматическая инициализация
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initTopupModal);
+} else {
+    initTopupModal();
+}
 
 </script>
 
