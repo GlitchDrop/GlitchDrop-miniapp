@@ -1010,6 +1010,11 @@ html.scroll-locked, html.scroll-locked body{
     display: none;
 }
 
+/* Чтобы модалка ввода суммы была поверх модалки выбора способа оплаты */
+#topupAmountModal {
+  z-index: 130;
+}
+
   </style>
 
 <style>
@@ -1331,20 +1336,14 @@ html.scroll-locked, html.scroll-locked body{
   opacity: 0.7;
 }
 
-/* Сообщение об ошибке */
+/* Сообщение об ошибке под полем ввода */
 .error-message {
-  background: linear-gradient(135deg, #ff4d6d, #b3123e);
-  color: white;
-  padding: 12px;
-  border-radius: 10px;
-  margin-bottom: 15px;
-  text-align: center;
+  color: #ff4d6d;
+  font-size: 14px;
   font-weight: 800;
-  letter-spacing: 0.3px;
-  box-shadow: 0 4px 15px rgba(255,77,109,.3);
-  transform: translateY(-10px);
-  opacity: 0;
-  transition: all 0.3s ease;
+  margin-top: 5px;
+  text-align: center;
+  display: none;
 }
 
 .error-message.show {
@@ -3553,16 +3552,13 @@ function initTopupModal() {
     });
     console.log('✅ Точки навигации настроены');
 
-    // Кнопка подтверждения
+ // Кнопка подтверждения
 const confirmBtn = document.getElementById('topupConfirm');
 if (confirmBtn) {
   confirmBtn.addEventListener('click', () => {
     // Для первого слайда (карточки №1) открываем модалку ввода суммы
     if (currentSlide === 0) {
-      topupCloseModal();
-      setTimeout(() => {
-        topupAmountOpenModal();
-      }, 300);
+      topupAmountOpenModal(); // Открываем сразу, не закрывая основную модалку
     } else {
       alert(`Выбран способ оплаты #${currentSlide + 1}. Функция пополнения баланса будет реализована позже`);
       topupCloseModal();
@@ -3759,20 +3755,20 @@ function showFloatingError(message) {
 function validateAmount(input) {
   const value = input.value.trim();
   
-  // Разрешаем только цифры
-  const onlyNumbers = /^\d*$/.test(value);
+  // Проверяем что введены только цифры и не пусто
+  const onlyNumbers = /^\d+$/.test(value);
   
-  if (!onlyNumbers) {
+  if (!onlyNumbers || value === '') {
     return {
       valid: false,
       message: "Некорректная сумма"
     };
   }
   
-  if (value === '' || parseInt(value) === 0) {
+  if (parseInt(value) === 0) {
     return {
       valid: false,
-      message: "Введите сумму"
+      message: "Сумма должна быть больше нуля"
     };
   }
   
@@ -3878,16 +3874,12 @@ function initAmountModal() {
   const confirmBtn = document.getElementById('confirmAmountBtn');
   const cancelBtn = document.getElementById('cancelAmountBtn');
   const errorEl = document.getElementById('amountError');
-  
+
   // Валидация в реальном времени
   if (input) {
     input.addEventListener('input', function(e) {
       const value = e.target.value;
-      
-      // Разрешаем только цифры
-      if (!/^\d*$/.test(value)) {
-        e.target.value = value.replace(/[^\d]/g, '');
-      }
+      const errorEl = document.getElementById('amountError');
       
       // Скрываем placeholder при вводе
       if (value.length > 0) {
@@ -3896,9 +3888,18 @@ function initAmountModal() {
         e.target.placeholder = 'Сумма пополнения';
       }
       
-      // Скрываем ошибку если она была
-      if (errorEl) {
-        errorEl.style.display = 'none';
+      // Проверяем на наличие не-цифр
+      if (value.length > 0 && !/^\d+$/.test(value)) {
+        // Показываем ошибку под полем
+        if (errorEl) {
+          errorEl.textContent = '*Некорректная Сумма';
+          errorEl.style.display = 'block';
+        }
+      } else {
+        // Скрываем ошибку если исправили
+        if (errorEl) {
+          errorEl.style.display = 'none';
+        }
       }
     });
     
