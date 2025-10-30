@@ -1301,6 +1301,79 @@ html.scroll-locked, html.scroll-locked body{
 }
 .inv-sell:active{ transform:translateX(-50%) translateY(1px); }
 
+/* Стили для модалки ввода суммы */
+.amount-input-wrapper {
+  margin: 20px 0;
+  position: relative;
+}
+
+.amount-input {
+  width: 100%;
+  padding: 16px;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  background: rgba(15,20,48,.9);
+  color: var(--text);
+  font-weight: 800;
+  font-size: 18px;
+  text-align: center;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.amount-input:focus {
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 20px rgba(22,241,255,.3);
+}
+
+.amount-input::placeholder {
+  color: #9fb2d9;
+  opacity: 0.7;
+}
+
+/* Сообщение об ошибке */
+.error-message {
+  background: linear-gradient(135deg, #ff4d6d, #b3123e);
+  color: white;
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 15px;
+  text-align: center;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  box-shadow: 0 4px 15px rgba(255,77,109,.3);
+  transform: translateY(-10px);
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.error-message.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* Анимированное сообщение вверху */
+.floating-error {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-100px);
+  background: linear-gradient(135deg, #ff4d6d, #b3123e);
+  color: white;
+  padding: 15px 25px;
+  border-radius: 12px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  text-align: center;
+  z-index: 1000;
+  box-shadow: 0 10px 30px rgba(255,77,109,.4);
+  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.floating-error.show {
+  transform: translateX(-50%) translateY(0);
+}
+
 </style>
 
 </head>
@@ -1443,6 +1516,30 @@ html.scroll-locked, html.scroll-locked body{
           <div class="slide"></div>
         </div>
       </div>
+
+      <!-- TOPUP AMOUNT MODAL -->
+<div id="topupAmountModal" class="modal" aria-hidden="true" aria-modal="true" role="dialog">
+  <div class="modal-card" role="document" style="max-width: 400px;">
+    <div class="modal-title">ПОПОЛНЕНИЕ БАЛАНСА</div>
+    
+    <!-- Контейнер для сообщений об ошибке -->
+    <div id="amountError" class="error-message" style="display: none;"></div>
+    
+    <div class="amount-input-wrapper">
+      <input type="text" 
+             id="amountInput" 
+             class="amount-input" 
+             placeholder="Сумма пополнения"
+             maxlength="10"
+             autocomplete="off">
+    </div>
+    
+    <div class="modal-actions">
+      <button id="cancelAmountBtn" class="btn btn-ghost">ОТМЕНА</button>
+      <button id="confirmAmountBtn" class="btn btn-primary">ПОПОЛНИТЬ</button>
+    </div>
+  </div>
+</div>
 
       <button class="nav next" aria-label="Следующий">›</button>
     </div>
@@ -3457,13 +3554,21 @@ function initTopupModal() {
     console.log('✅ Точки навигации настроены');
 
     // Кнопка подтверждения
-    const confirmBtn = document.getElementById('topupConfirm');
-    if (confirmBtn) {
-        confirmBtn.addEventListener('click', () => {
-            alert(`Выбран способ оплаты #${currentSlide + 1}. Функция пополнения баланса будет реализована позже`);
-            topupCloseModal();
-        });
+const confirmBtn = document.getElementById('topupConfirm');
+if (confirmBtn) {
+  confirmBtn.addEventListener('click', () => {
+    // Для первого слайда (карточки №1) открываем модалку ввода суммы
+    if (currentSlide === 0) {
+      topupCloseModal();
+      setTimeout(() => {
+        topupAmountOpenModal();
+      }, 300);
+    } else {
+      alert(`Выбран способ оплаты #${currentSlide + 1}. Функция пополнения баланса будет реализована позже`);
+      topupCloseModal();
     }
+  });
+}
 
     // Инициализация свайпов
     initSwipe();
@@ -3619,11 +3724,220 @@ function onEscKey(e) {
     }
 }
 
+// ===== TOPUP AMOUNT MODAL =====
+let isErrorVisible = false;
+let errorTimeout = null;
+
+function showFloatingError(message) {
+  if (isErrorVisible) return;
+  
+  isErrorVisible = true;
+  
+  // Удаляем существующее сообщение если есть
+  const existingError = document.querySelector('.floating-error');
+  if (existingError) existingError.remove();
+  
+  // Создаем новое сообщение
+  const errorEl = document.createElement('div');
+  errorEl.className = 'floating-error';
+  errorEl.textContent = message;
+  document.body.appendChild(errorEl);
+  
+  // Показываем с анимацией
+  setTimeout(() => errorEl.classList.add('show'), 10);
+  
+  // Скрываем через 3 секунды
+  errorTimeout = setTimeout(() => {
+    errorEl.classList.remove('show');
+    setTimeout(() => {
+      if (errorEl.parentNode) errorEl.parentNode.removeChild(errorEl);
+      isErrorVisible = false;
+    }, 400);
+  }, 3000);
+}
+
+function validateAmount(input) {
+  const value = input.value.trim();
+  
+  // Разрешаем только цифры
+  const onlyNumbers = /^\d*$/.test(value);
+  
+  if (!onlyNumbers) {
+    return {
+      valid: false,
+      message: "Некорректная сумма"
+    };
+  }
+  
+  if (value === '' || parseInt(value) === 0) {
+    return {
+      valid: false,
+      message: "Введите сумму"
+    };
+  }
+  
+  return {
+    valid: true,
+    value: parseInt(value)
+  };
+}
+
+function handleAmountSubmit() {
+  const input = document.getElementById('amountInput');
+  const errorEl = document.getElementById('amountError');
+  const validation = validateAmount(input);
+  
+  if (!validation.valid) {
+    // Показываем floating error
+    showFloatingError(validation.message);
+    return false;
+  }
+  
+  // Здесь будет логика пополнения
+  alert(`Заглушка: Пополнение на ${validation.value} единиц`);
+  topupAmountCloseModal();
+  return true;
+}
+
+function topupAmountOpenModal() {
+  console.log('🔵 Открытие модалки ввода суммы');
+  
+  const amountModal = document.getElementById('topupAmountModal');
+  if (!amountModal) {
+    console.error('❌ Модалка ввода суммы не найдена');
+    return;
+  }
+  
+  // Сбрасываем состояние
+  const input = document.getElementById('amountInput');
+  const errorEl = document.getElementById('amountError');
+  
+  if (input) {
+    input.value = '';
+    input.placeholder = 'Сумма пополнения';
+  }
+  
+  if (errorEl) {
+    errorEl.style.display = 'none';
+    errorEl.textContent = '';
+  }
+  
+  amountModal.classList.add('show');
+  amountModal.setAttribute('aria-hidden', 'false');
+  
+  // Фокус на поле ввода
+  setTimeout(() => {
+    if (input) input.focus();
+  }, 100);
+  
+  amountModal.addEventListener('click', onAmountBackdropClick, { passive: false });
+  document.addEventListener('keydown', onAmountEscKey, true);
+  
+  console.log('✅ Модалка ввода суммы открыта');
+}
+
+function topupAmountCloseModal() {
+  console.log('🔴 Закрытие модалки ввода суммы');
+  
+  const amountModal = document.getElementById('topupAmountModal');
+  if (!amountModal) return;
+  
+  amountModal.classList.remove('show');
+  amountModal.setAttribute('aria-hidden', 'true');
+  
+  amountModal.removeEventListener('click', onAmountBackdropClick, { passive: false });
+  document.removeEventListener('keydown', onAmountEscKey, true);
+  
+  // Очищаем таймер если есть
+  if (errorTimeout) {
+    clearTimeout(errorTimeout);
+    errorTimeout = null;
+  }
+}
+
+function onAmountBackdropClick(e) {
+  const card = document.querySelector('#topupAmountModal .modal-card');
+  if (!card || card.contains(e.target)) return;
+  
+  e.preventDefault();
+  e.stopPropagation();
+  topupAmountCloseModal();
+}
+
+function onAmountEscKey(e) {
+  if (e.key === 'Escape') {
+    e.preventDefault();
+    topupAmountCloseModal();
+  }
+}
+
+function initAmountModal() {
+  console.log('🔄 Инициализация модалки ввода суммы');
+  
+  const input = document.getElementById('amountInput');
+  const confirmBtn = document.getElementById('confirmAmountBtn');
+  const cancelBtn = document.getElementById('cancelAmountBtn');
+  const errorEl = document.getElementById('amountError');
+  
+  // Валидация в реальном времени
+  if (input) {
+    input.addEventListener('input', function(e) {
+      const value = e.target.value;
+      
+      // Разрешаем только цифры
+      if (!/^\d*$/.test(value)) {
+        e.target.value = value.replace(/[^\d]/g, '');
+      }
+      
+      // Скрываем placeholder при вводе
+      if (value.length > 0) {
+        e.target.placeholder = '';
+      } else {
+        e.target.placeholder = 'Сумма пополнения';
+      }
+      
+      // Скрываем ошибку если она была
+      if (errorEl) {
+        errorEl.style.display = 'none';
+      }
+    });
+    
+    // Обработка Enter
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleAmountSubmit();
+      }
+    });
+    
+    // Восстанавливаем placeholder при потере фокуса если пусто
+    input.addEventListener('blur', function(e) {
+      if (e.target.value === '') {
+        e.target.placeholder = 'Сумма пополнения';
+      }
+    });
+  }
+  
+  // Кнопка подтверждения
+  if (confirmBtn) {
+    confirmBtn.addEventListener('click', handleAmountSubmit);
+  }
+  
+  // Кнопка отмены
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', topupAmountCloseModal);
+  }
+  
+  console.log('✅ Модалка ввода суммы инициализирована');
+}
+
 // Автоматическая инициализация
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initTopupModal);
+    document.addEventListener('DOMContentLoaded', initAmountModal);
 } else {
     initTopupModal();
+    initAmountModal();
 }
 
 </script>
