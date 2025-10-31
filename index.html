@@ -2280,36 +2280,64 @@ GD.getOrFetchUid8 = window.getOrFetchUid8;
 
   const u = tg.initDataUnsafe.user;
   const startParam = tg.initDataUnsafe.start_param; // ждём формат ref_XXXXXXXX
-  if (!startParam || !/^ref_\d{8}$/.test(startParam)) return;
+  
+  console.log('🔍 Проверяем рефералку:', { 
+    hasUser: !!u, 
+    startParam, 
+    userData: u 
+  });
+
+  if (!startParam || !/^ref_\d{8}$/.test(startParam)) {
+    console.log('❌ Нет реферальной ссылки');
+    return;
+  }
 
   const refUid8 = startParam.slice(4);
+  console.log('🎯 Реферальная ссылка обнаружена:', refUid8);
 
   // флаг, чтобы не слать повторно
   const FLAG = `gd_ref_registered_${refUid8}`;
-  try { if (localStorage.getItem(FLAG)) return; } catch(_) {}
+  try { 
+    if (localStorage.getItem(FLAG)) {
+      console.log('⏩ Уже регистрировали этого реферала');
+      return;
+    }
+  } catch(_) {}
 
   // имя «как в аккаунте» (НЕ username)
   const displayName = [u?.first_name||'', u?.last_name||''].join(' ').trim() || 'Без имени';
 
+  console.log('📤 Отправляем данные реферала на сервер...');
+  
   try{
     const resp = await fetch(`${window.API_BASE}/api/referrals/hit`, {
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
         ref_uid8: refUid8,
-        initData: tg.initData || '',  // ВАЖНО: строка initData для проверки подписи на бэке
+        initData: tg.initData || '', 
         user: {
           id: String(u?.id||''),
           first_name: u?.first_name || '',
           last_name:  u?.last_name  || '',
+          username: u?.username || '',
           photo_url:  u?.photo_url  || ''
         }
       })
     });
+    
+    const result = await resp.json();
+    console.log('📥 Ответ сервера:', result);
+    
     if (resp.ok){
       localStorage.setItem(FLAG,'1');
+      console.log('✅ Реферал успешно зарегистрирован!');
+    } else {
+      console.log('❌ Ошибка регистрации реферала:', result);
     }
-  }catch(e){}
+  }catch(e){
+    console.error('❌ Ошибка отправки реферала:', e);
+  }
 })();
 
 
