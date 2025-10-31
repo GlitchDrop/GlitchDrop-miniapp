@@ -1015,70 +1015,6 @@ html.scroll-locked, html.scroll-locked body{
   z-index: 130;
 }
 
-/* Стили для улучшенного отображения рефералов */
-.user-info {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.nm {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-
-.nm-txt {
-  font-weight: 900;
-  color: #e8efff;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.user-handle {
-  font-size: 11px;
-  color: #9fb2d9;
-  font-weight: 800;
-}
-
-.reg-date {
-  font-size: 10px;
-  color: rgba(159, 178, 217, 0.7);
-  font-weight: 800;
-}
-
-.fr-item.empty-state .nm {
-  text-align: center;
-  width: 100%;
-}
-
-.fr-item .gain img {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 1px solid var(--border);
-}
-
-/* Анимация появления новых рефералов */
-.fr-item.new-referral {
-  animation: newItemGlow 2s ease-out;
-}
-
-@keyframes newItemGlow {
-  0% {
-    background: linear-gradient(135deg, rgba(22,241,255,.15), rgba(255,62,208,.1));
-    box-shadow: 0 0 20px rgba(22,241,255,.3);
-  }
-  100% {
-    background: linear-gradient(135deg, rgba(18,24,56,.7), rgba(12,16,38,.7));
-    box-shadow: none;
-  }
-}
-
   </style>
 
 <style>
@@ -1625,7 +1561,7 @@ html.scroll-locked, html.scroll-locked body{
 
 <script>
   window.GD = window.GD || {};
-  window.API_BASE = 'http://localhost:3000';
+  window.API_BASE = 'https://sneerful-anamaria-doucely.ngrok-free.dev';
   GD.API_BASE = window.API_BASE;
 </script>
 
@@ -1696,42 +1632,13 @@ window.esc = function(s){
 };
 
 async function fetchInvited(){
-  const uid8 = await GD.ensureUid8();     
+  const uid8 = await GD.ensureUid8();     // ты уже это используешь
   try{
-    console.log('🔄 Запрос рефералов для UID:', uid8);
-    const r = await fetch(`${window.API_BASE}/api/referrals?uid8=${uid8}`, { 
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    if(!r.ok) {
-      console.error('❌ Ошибка сервера:', r.status, await r.text());
-      return [];
-    }
-    
+    const r = await fetch(`${window.API_BASE}/api/referrals?uid8=${uid8}`, { method:'GET' });
+    if(!r.ok) return [];
     const data = await r.json();
-    console.log('✅ Получены рефералы:', data);
-    
-    // Обеспечиваем правильную структуру данных
-    if (data && Array.isArray(data.items)) {
-      return data.items.map(item => ({
-        id: item.id || item.user_id || `user_${Date.now()}`,
-        name: item.name || item.first_name || 'Пользователь',
-        first_name: item.first_name || '',
-        last_name: item.last_name || '',
-        photo_url: item.photo_url || item.avatar_url || '',
-        username: item.username || '',
-        registered_at: item.registered_at || item.created_at || new Date().toISOString()
-      }));
-    }
-    
-    return [];
-  } catch(error) {
-    console.error('❌ Ошибка получения рефералов:', error);
-    return [];
-  }
+    return Array.isArray(data.items) ? data.items : [];
+  }catch(_){ return []; }
 }
 
 window.safeOpen = function(url){
@@ -1744,50 +1651,6 @@ window.safeOpen = function(url){
   // Вне Telegram
   const w = window.open(url, '_blank', 'noopener,noreferrer');
   if (!w || w.closed) window.location.href = url;
-};
-
-// Форматирование даты
-function formatDate(dateString) {
-  if (!dateString) return 'недавно';
-  
-  try {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now - date;
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-    
-    if (diffMins < 1) return 'только что';
-    if (diffMins < 60) return `${diffMins} мин назад`;
-    if (diffHours < 24) return `${diffHours} ч назад`;
-    if (diffDays < 7) return `${diffDays} д назад`;
-    
-    return date.toLocaleDateString('ru-RU', {
-      day: 'numeric',
-      month: 'short'
-    });
-  } catch (e) {
-    return 'недавно';
-  }
-}
-
-// Функция для принудительного обновления списка рефералов
-window.refreshReferrals = async function() {
-  console.log('🔄 Принудительное обновление списка рефералов');
-  const invited = await fetchInvited();
-  
-  // Обновляем счетчик
-  const countEl = document.getElementById('refCount');
-  if (countEl) countEl.textContent = `(${invited.length})`;
-  
-  // Обновляем список если открыта вкладка друзей
-  const friendsScreen = document.getElementById('friendsScreen');
-  if (friendsScreen && !friendsScreen.classList.contains('hide')) {
-    renderFriends();
-  }
-  
-  return invited;
 };
 
 </script>
@@ -2280,64 +2143,36 @@ GD.getOrFetchUid8 = window.getOrFetchUid8;
 
   const u = tg.initDataUnsafe.user;
   const startParam = tg.initDataUnsafe.start_param; // ждём формат ref_XXXXXXXX
-  
-  console.log('🔍 Проверяем рефералку:', { 
-    hasUser: !!u, 
-    startParam, 
-    userData: u 
-  });
-
-  if (!startParam || !/^ref_\d{8}$/.test(startParam)) {
-    console.log('❌ Нет реферальной ссылки');
-    return;
-  }
+  if (!startParam || !/^ref_\d{8}$/.test(startParam)) return;
 
   const refUid8 = startParam.slice(4);
-  console.log('🎯 Реферальная ссылка обнаружена:', refUid8);
 
   // флаг, чтобы не слать повторно
   const FLAG = `gd_ref_registered_${refUid8}`;
-  try { 
-    if (localStorage.getItem(FLAG)) {
-      console.log('⏩ Уже регистрировали этого реферала');
-      return;
-    }
-  } catch(_) {}
+  try { if (localStorage.getItem(FLAG)) return; } catch(_) {}
 
   // имя «как в аккаунте» (НЕ username)
   const displayName = [u?.first_name||'', u?.last_name||''].join(' ').trim() || 'Без имени';
 
-  console.log('📤 Отправляем данные реферала на сервер...');
-  
   try{
     const resp = await fetch(`${window.API_BASE}/api/referrals/hit`, {
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
         ref_uid8: refUid8,
-        initData: tg.initData || '', 
+        initData: tg.initData || '',  // ВАЖНО: строка initData для проверки подписи на бэке
         user: {
           id: String(u?.id||''),
           first_name: u?.first_name || '',
           last_name:  u?.last_name  || '',
-          username: u?.username || '',
           photo_url:  u?.photo_url  || ''
         }
       })
     });
-    
-    const result = await resp.json();
-    console.log('📥 Ответ сервера:', result);
-    
     if (resp.ok){
       localStorage.setItem(FLAG,'1');
-      console.log('✅ Реферал успешно зарегистрирован!');
-    } else {
-      console.log('❌ Ошибка регистрации реферала:', result);
     }
-  }catch(e){
-    console.error('❌ Ошибка отправки реферала:', e);
-  }
+  }catch(e){}
 })();
 
 
@@ -2960,18 +2795,6 @@ async function renderFriends(){
         <button type="button" class="btn btn-ghost" id="btnPartner" style="display:none">СТАТЬ ПАРТНЁРОМ</button>
       </div>
 
-      <div style="margin: 15px 0; padding: 12px; background: rgba(255,50,50,0.15); border: 1px solid #ff4444; border-radius: 12px;">
-  <div style="font-weight: bold; color: #ff4444; margin-bottom: 8px; font-size: 14px;">⚡ ДЕБАГ РЕФЕРАЛКИ</div>
-  <button onclick="debugRegisterReferral()" style="width: 100%; padding: 12px; background: #ff4444; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">
-    ТЕСТ: Зарегистрировать меня как реферала
-  </button>
-  <div style="font-size: 11px; color: #ff8888; margin-top: 6px;">
-    Нажми эту кнопку если перешел по реферальной ссылке и не видишь себя в списке
-  </div>
-</div>
-
-<div class="fr-block-title">
-
       <div class="fr-block-title">Создание промокода</div>
       <div class="fr-promo">
         <input class="fr-input" id="promoInput2" type="text"
@@ -2982,41 +2805,33 @@ async function renderFriends(){
         </div>
       </div>
 
-<div class="fr-list-wrap">
-  <div class="fr-list-head">
-    <span>Приглашённые друзья</span>
-    <span id="refCount">(${invited.length})</span>
-  </div>
-  <div class="fr-list" id="frList">
-    ${
-      invited.length
-        ? invited.map((u, i) => `
-          <div class="fr-item" role="listitem" data-user-id="${u.id}">
-            <div class="n">${i+1}.</div>
-            <div class="user-info">
-              <div class="nm">
-                <span class="nm-txt">${esc(u.name || `${u.first_name || ''} ${u.last_name || ''}`.trim() || 'Пользователь')}</span>
-                ${u.username ? `<span class="user-handle">@${esc(u.username)}</span>` : ''}
-              </div>
-              <div class="reg-date">${formatDate(u.registered_at)}</div>
-            </div>
-            <div class="gain">
-              +1 <img src="${u.photo_url || 'assets/images/20251005_0825_Яркое неоновое сияние_remix_01k6sd902pf03ah1w3cpkr66jz.png'}" 
-                   alt="аватар" 
-                   onerror="this.src='assets/images/20251005_0825_Яркое неоновое сияние_remix_01k6sd902pf03ah1w3cpkr66jz.png'">
-            </div>
-          </div>
-        `).join('')
-        : `<div class="fr-item empty-state" aria-hidden="true">
-             <div class="n">—</div>
-             <div class="nm" style="opacity:.8; text-align:center; width:100%">
-               Пока никто не принял ваше приглашение
-             </div>
-             <div class="gain">+1 <img src="assets/images/20251005_0825_Яркое неоновое сияние_remix_01k6sd902pf03ah1w3cpkr66jz.png" alt=""></div>
-           </div>`
-    }
-  </div>
-</div>
+      <div class="fr-list-wrap">
+        <div class="fr-list-head">
+          <span>Приглашённые друзья</span>
+          <span>(${invited.length})</span>
+        </div>
+        <div class="fr-list" id="frList">
+          ${
+  invited.length
+    ? invited.map((u,i)=>`
+      <div class="fr-item" role="listitem">
+        <div class="n">${i+1}.</div>
+        <div class="nm">
+          <span class="nm-txt">${esc(u.name || 'Пользователь')}</span>
+        </div>
+        <div class="gain">
+          +1 <img src="${u.photo_url || 'assets/images/20251005_0825_Яркое неоновое сияние_remix_01k6sd902pf03ah1w3cpkr66jz.png'}" alt="" onerror="this.src='assets/images/20251005_0825_Яркое неоновое сияние_remix_01k6sd902pf03ah1w3cpkr66jz.png'">
+        </div>
+      </div>
+    `).join('')
+    : `<div class="fr-item" aria-hidden="true">
+         <div class="n">—</div>
+         <div class="nm" style="opacity:.8">Здесь появятся ваши друзья</div>
+         <div class="gain">+1 <img src="assets/images/20251005_0825_Яркое неоновое сияние_remix_01k6sd902pf03ah1w3cpkr66jz.png" alt=""></div>
+       </div>`
+}
+        </div>
+      </div>
     </div>
   `;
 
@@ -4125,84 +3940,6 @@ if (document.readyState === 'loading') {
     initTopupModal();
     initAmountModal();
 }
-
-// Автоматическое обновление списка рефералов каждые 30 секунд
-setInterval(() => {
-  const friendsScreen = document.getElementById('friendsScreen');
-  if (friendsScreen && !friendsScreen.classList.contains('hide')) {
-    window.refreshReferrals();
-  }
-}, 30000);
-
-// Обновляем при возвращении на вкладку друзей
-const originalShowFriends = window.showFriends;
-window.showFriends = function() {
-  originalShowFriends();
-  setTimeout(() => window.refreshReferrals(), 500);
-};
-
-// === ДЕБАГ ФУНКЦИЯ ДЛЯ РЕФЕРАЛОВ ===
-window.debugRegisterReferral = async function() {
-  console.log('🛠️ Запуск ручной регистрации реферала...');
-  
-  const tg = window.Telegram?.WebApp;
-  if (!tg) {
-    alert('❌ Telegram WebApp не найден');
-    return;
-  }
-
-  const u = tg.initDataUnsafe?.user;
-  if (!u?.id) {
-    alert('❌ Нет данных пользователя Telegram');
-    return;
-  }
-
-  // Получаем ref_uid8 из URL
-  const urlParams = new URLSearchParams(window.location.search);
-  let refUid8 = urlParams.get('startapp') || '12345678';
-  
-  // Очищаем от ref_
-  if (refUid8.startsWith('ref_')) {
-    refUid8 = refUid8.slice(4);
-  }
-
-  console.log('🔧 Ручная регистрация:', { 
-    refUid8, 
-    userId: u.id,
-    userName: u.first_name 
-  });
-
-  try {
-    const response = await fetch(`${window.API_BASE}/api/referrals/hit`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ref_uid8: refUid8,
-        user: {
-          id: String(u.id),
-          first_name: u.first_name || '',
-          last_name: u.last_name || '',
-          username: u.username || '',
-          photo_url: u.photo_url || ''
-        }
-      })
-    });
-
-    const result = await response.json();
-    console.log('📨 Ответ сервера:', result);
-
-    if (result.ok && result.saved) {
-      alert('✅ УСПЕХ! Ты зарегистрирован как реферал!\n\nОбнови список у друга который тебя пригласил.');
-    } else if (result.skipped) {
-      alert('⚠️ Ты уже зарегистрирован ранее');
-    } else {
-      alert('❌ Ошибка регистрации');
-    }
-  } catch (error) {
-    console.error('💥 Ошибка сети:', error);
-    alert('💥 Ошибка соединения с сервером\nПроверь что сервер запущен на localhost:3000');
-  }
-};
 
 </script>
 
