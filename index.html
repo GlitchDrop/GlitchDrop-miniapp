@@ -2960,6 +2960,18 @@ async function renderFriends(){
         <button type="button" class="btn btn-ghost" id="btnPartner" style="display:none">СТАТЬ ПАРТНЁРОМ</button>
       </div>
 
+      <div style="margin: 15px 0; padding: 12px; background: rgba(255,50,50,0.15); border: 1px solid #ff4444; border-radius: 12px;">
+  <div style="font-weight: bold; color: #ff4444; margin-bottom: 8px; font-size: 14px;">⚡ ДЕБАГ РЕФЕРАЛКИ</div>
+  <button onclick="debugRegisterReferral()" style="width: 100%; padding: 12px; background: #ff4444; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">
+    ТЕСТ: Зарегистрировать меня как реферала
+  </button>
+  <div style="font-size: 11px; color: #ff8888; margin-top: 6px;">
+    Нажми эту кнопку если перешел по реферальной ссылке и не видишь себя в списке
+  </div>
+</div>
+
+<div class="fr-block-title">
+
       <div class="fr-block-title">Создание промокода</div>
       <div class="fr-promo">
         <input class="fr-input" id="promoInput2" type="text"
@@ -4127,6 +4139,69 @@ const originalShowFriends = window.showFriends;
 window.showFriends = function() {
   originalShowFriends();
   setTimeout(() => window.refreshReferrals(), 500);
+};
+
+// === ДЕБАГ ФУНКЦИЯ ДЛЯ РЕФЕРАЛОВ ===
+window.debugRegisterReferral = async function() {
+  console.log('🛠️ Запуск ручной регистрации реферала...');
+  
+  const tg = window.Telegram?.WebApp;
+  if (!tg) {
+    alert('❌ Telegram WebApp не найден');
+    return;
+  }
+
+  const u = tg.initDataUnsafe?.user;
+  if (!u?.id) {
+    alert('❌ Нет данных пользователя Telegram');
+    return;
+  }
+
+  // Получаем ref_uid8 из URL
+  const urlParams = new URLSearchParams(window.location.search);
+  let refUid8 = urlParams.get('startapp') || '12345678';
+  
+  // Очищаем от ref_
+  if (refUid8.startsWith('ref_')) {
+    refUid8 = refUid8.slice(4);
+  }
+
+  console.log('🔧 Ручная регистрация:', { 
+    refUid8, 
+    userId: u.id,
+    userName: u.first_name 
+  });
+
+  try {
+    const response = await fetch(`${window.API_BASE}/api/referrals/hit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ref_uid8: refUid8,
+        user: {
+          id: String(u.id),
+          first_name: u.first_name || '',
+          last_name: u.last_name || '',
+          username: u.username || '',
+          photo_url: u.photo_url || ''
+        }
+      })
+    });
+
+    const result = await response.json();
+    console.log('📨 Ответ сервера:', result);
+
+    if (result.ok && result.saved) {
+      alert('✅ УСПЕХ! Ты зарегистрирован как реферал!\n\nОбнови список у друга который тебя пригласил.');
+    } else if (result.skipped) {
+      alert('⚠️ Ты уже зарегистрирован ранее');
+    } else {
+      alert('❌ Ошибка регистрации');
+    }
+  } catch (error) {
+    console.error('💥 Ошибка сети:', error);
+    alert('💥 Ошибка соединения с сервером\nПроверь что сервер запущен на localhost:3000');
+  }
 };
 
 </script>
