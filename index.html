@@ -1418,6 +1418,12 @@ html.scroll-locked, html.scroll-locked body{
       </div>
     </div>
 
+ <!-- === ВРЕМЕННАЯ КНОПКА ДЛЯ ТЕСТА ПЛАТЕЖЕЙ === -->
+      <button id="testPaymentBtn" class="pill" style="background: linear-gradient(135deg, #ff4444, #cc0000); color: white; margin-left: 8px; border: 1px solid rgba(255,100,100,0.5);">
+        ТЕСТ ПЛАТЕЖЕЙ
+      </button>
+    </div>
+
     <div class="chipbar" id="chipbar"><div class="chip active" data-target="#top">Все</div></div>
     <div class="content" id="content"></div>
 
@@ -3940,6 +3946,67 @@ if (document.readyState === 'loading') {
     initTopupModal();
     initAmountModal();
 }
+
+// ===== ТЕСТ ПЛАТЕЖЕЙ - ВРЕМЕННЫЙ КОД =====
+function testPayments() {
+    console.log('🔄 Тестируем платежи...');
+    
+    const amount = 100; // 100 звезд
+    
+    // Проверяем доступность функции
+    if (typeof Telegram.WebApp.openInvoice !== 'function') {
+        alert('❌ Telegram.WebApp.openInvoice не доступен');
+        return;
+    }
+    
+    // Проверяем объект Telegram
+    if (!window.Telegram || !window.Telegram.WebApp) {
+        alert('❌ Telegram WebApp не инициализирован');
+        return;
+    }
+    
+    try {
+        console.log('💰 Создаем инвойс на', amount, 'звезд');
+        
+        Telegram.WebApp.openInvoice({
+            title: "Тест платежа",
+            description: "Проверка работы платежей в GLITCH DROP",
+            payload: "test_payload_" + Date.now(), // Уникальный ID
+            currency: "XTR", // Telegram Stars
+            prices: [
+                { 
+                    label: "Stars", 
+                    amount: amount * 100 // В копейках (100 звезд = 10000)
+                }
+            ]
+        }, function(status) {
+            console.log('📊 Статус платежа:', status);
+            if (status === 'paid') {
+                alert('✅ Платеж успешен! Звезды должны быть начислены.');
+            } else if (status === 'failed') {
+                alert('❌ Платеж не прошел');
+            } else if (status === 'cancelled') {
+                alert('⚠️ Платеж отменен пользователем');
+            } else {
+                alert('📊 Статус платежа: ' + status);
+            }
+        });
+    } catch (error) {
+        console.error('❌ Ошибка:', error);
+        alert('Ошибка при открытии платежа: ' + error.message);
+    }
+}
+
+// Вешаем обработчик на кнопку после загрузки DOM
+document.addEventListener('DOMContentLoaded', function() {
+    const testBtn = document.getElementById('testPaymentBtn');
+    if (testBtn) {
+        testBtn.addEventListener('click', testPayments);
+        console.log('✅ Кнопка теста платежей инициализирована');
+    } else {
+        console.log('❌ Кнопка теста платежей не найдена');
+    }
+});
 
 </script>
 
