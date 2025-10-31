@@ -3961,8 +3961,11 @@ async function testPayments() {
             return;
         }
 
+        // === ЗАМЕНИ ЭТУ СТРОКУ НА СВОЙ НАСТОЯЩИЙ ТОКЕН ===
+        const BOT_TOKEN = '8422026798:AAFaIXR_iH4SkfUQa2iu7ibYgewlk1weWHo'; // ← ВСТАВЬ СВОЙ ТОКЕН ЗДЕСЬ
+
         // Создаем инвойс через Bot API
-        const response = await fetch('https://api.telegram.org/bot<8422026798:AAFaIXR_iH4SkfUQa2iu7ibYgewlk1weWHo>/createInvoiceLink', {
+        const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/createInvoiceLink`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -3999,14 +4002,6 @@ async function testPayments() {
         alert('Ошибка: ' + error.message);
     }
 }
-
-// Вешаем обработчик на кнопку
-document.addEventListener('DOMContentLoaded', function() {
-    const testBtn = document.getElementById('testPaymentBtn');
-    if (testBtn) {
-        testBtn.addEventListener('click', testPayments);
-    }
-});
 
 </script>
 
