@@ -3802,6 +3802,23 @@ function setStarsBalance(n) {
 //   чтобы если ранее уже пополняли, значение восстановилось
 setStarsBalance(getStarsBalance());
 
+// === Синхронизация баланса звёзд с сервером (поверх localStorage) ===
+(function(){
+  const tg = window.Telegram && window.Telegram.WebApp;
+  const userId = tg?.initDataUnsafe?.user?.id;
+  if (!userId) return;
+
+  fetch(`${window.API_BASE}/api/user-balance?user_id=${userId}`)
+    .then(r => r.json())
+    .then(data => {
+      if (data && typeof data.stars === 'number') {
+        // кладём серверный баланс в UI и localStorage твоими же функциями/ключами
+        setStarsBalance(data.stars);
+      }
+    })
+    .catch(err => console.warn('Balance fetch failed', err));
+})();
+
 // === После оплаты звёзд → увеличить баланс ===
 (function () {
   const tg = window.Telegram && window.Telegram.WebApp;
