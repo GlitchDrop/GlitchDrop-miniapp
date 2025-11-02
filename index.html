@@ -3823,48 +3823,27 @@ setStarsBalance(getStarsBalance());
 
 async function handleAmountSubmit() {
   const input = document.getElementById('amountInput');
-  const validation = validateAmount(input);
+  const validation = validateAmount(input); // у тебя уже есть
   if (!validation.valid) {
     showFloatingError(validation.message);
     return false;
   }
 
   const amount = validation.value;
+  try { localStorage.setItem('gd_last_topup_amount', String(amount)); } catch (_) {}
 
-  // сохраняем сумму, чтобы помнить её дальше
-  try { localStorage.setItem('gd_last_topup_amount', String(amount)); } catch(_) {}
-
-  // запрос к твоему бэку -> получаем invoice_url
-  try {
-    const resp = await fetch(`${window.API_BASE}/api/payments/create-stars-invoice`, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ amount })
-    });
-    const data = await resp.json();
-
-    if (!resp.ok || !data.invoice_url) {
-      console.error('Create invoice error:', data);
-      showFloatingError('Не удалось создать счёт');
-      return false;
-    }
-
-    // закрываем модалку суммы и открываем окно оплаты звёздами
-    topupAmountCloseModal();
-
-    const tg = window.Telegram && window.Telegram.WebApp;
-    if (tg?.openInvoice) {
-      tg.openInvoice(data.invoice_url);
-    } else {
-      // запасной вариант
-      window.open(data.invoice_url, '_blank');
-    }
-    return true;
-  } catch (e) {
-    console.error(e);
-    showFloatingError('Сеть недоступна');
+  // ⬇️ Вместо fetch к бэку — отправляем данные прямо боту
+  const tg = window.Telegram && window.Telegram.WebApp;
+  if (tg?.sendData) {
+    tg.sendData(JSON.stringify({ type: 'topup', amount }));
+    try { tg.HapticFeedback?.impactOccurred('light'); } catch(_) {}
+  } else {
+    showFloatingError('Telegram WebApp API недоступен');
     return false;
   }
+
+  topupAmountCloseModal();   // закрыть модалку
+  return true;
 }
 
 function topupAmountOpenModal() {
