@@ -2080,7 +2080,8 @@ const idEl = document.getElementById('userId');
 
 // Если фронт и API на одном домене через прокси /api → оставь пустую строку.
 // Если на другом домене — укажи полный адрес, например:
-// const API_BASE = 'https://api.yourdomain.com';
+// const API_BASE = "https://sneerful-anamaria-doucely.ngrok-free.dev";
+
 
 function fnv1a(str){
   let h = 0x811c9dc5;
@@ -3778,21 +3779,92 @@ function validateAmount(input) {
   };
 }
 
-function handleAmountSubmit() {
+// === Баланс звёзд в топбаре ===
+const LS_STARS_KEY = 'gd_stars_balance';
+const starsEl = document.getElementById('stars'); // <span id="stars">120</span>
+
+function getStarsBalance() {
+  // 1) localStorage если есть, иначе из DOM
+  try {
+    const v = parseInt(localStorage.getItem(LS_STARS_KEY) || '', 10);
+    if (Number.isFinite(v)) return v;
+  } catch (_) {}
+  return parseInt(starsEl?.textContent || '0', 10) || 0;
+}
+
+function setStarsBalance(n) {
+  const v = Math.max(0, parseInt(n, 10) || 0);
+  if (starsEl) starsEl.textContent = String(v);
+  try { localStorage.setItem(LS_STARS_KEY, String(v)); } catch (_) {}
+}
+
+// ← при загрузке синхронизируем DOM с localStorage,
+//   чтобы если ранее уже пополняли, значение восстановилось
+setStarsBalance(getStarsBalance());
+
+// === После оплаты звёзд → увеличить баланс ===
+(function () {
+  const tg = window.Telegram && window.Telegram.WebApp;
+  if (!tg || !tg.onEvent) return;
+
+  tg.onEvent('invoice-closed', (ev) => {
+    // ev: { status: 'paid' | 'cancelled' | 'failed', ... }
+    if (ev?.status === 'paid') {
+      const last = parseInt(localStorage.getItem('gd_last_topup_amount') || '0', 10) || 0;
+      if (last > 0) {
+        setStarsBalance(getStarsBalance() + last);
+        try { localStorage.removeItem('gd_last_topup_amount'); } catch (_) {}
+        try { tg.HapticFeedback?.notificationOccurred('success'); } catch (_) {}
+      }
+    }
+  });
+})();
+
+
+async function handleAmountSubmit() {
   const input = document.getElementById('amountInput');
-  const errorEl = document.getElementById('amountError');
   const validation = validateAmount(input);
-  
   if (!validation.valid) {
-    // Показываем floating error
     showFloatingError(validation.message);
     return false;
   }
-  
-  // Здесь будет логика пополнения
-  alert(`Заглушка: Пополнение на ${validation.value} единиц`);
-  topupAmountCloseModal();
-  return true;
+
+  const amount = validation.value;
+
+  // сохраняем сумму, чтобы помнить её дальше
+  try { localStorage.setItem('gd_last_topup_amount', String(amount)); } catch(_) {}
+
+  // запрос к твоему бэку -> получаем invoice_url
+  try {
+    const resp = await fetch(`${window.API_BASE}/api/payments/create-stars-invoice`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ amount })
+    });
+    const data = await resp.json();
+
+    if (!resp.ok || !data.invoice_url) {
+      console.error('Create invoice error:', data);
+      showFloatingError('Не удалось создать счёт');
+      return false;
+    }
+
+    // закрываем модалку суммы и открываем окно оплаты звёздами
+    topupAmountCloseModal();
+
+    const tg = window.Telegram && window.Telegram.WebApp;
+    if (tg?.openInvoice) {
+      tg.openInvoice(data.invoice_url);
+    } else {
+      // запасной вариант
+      window.open(data.invoice_url, '_blank');
+    }
+    return true;
+  } catch (e) {
+    console.error(e);
+    showFloatingError('Сеть недоступна');
+    return false;
+  }
 }
 
 function topupAmountOpenModal() {
