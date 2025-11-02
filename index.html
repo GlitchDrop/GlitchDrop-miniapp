@@ -3802,6 +3802,49 @@ function setStarsBalance(n) {
 //   чтобы если ранее уже пополняли, значение восстановилось
 setStarsBalance(getStarsBalance());
 
+// === Синхронизация баланса со сервером поверх localStorage ===
+(() => {
+  try {
+    const tg = window.Telegram && window.Telegram.WebApp;
+    const userId = tg?.initDataUnsafe?.user?.id;
+    if (!userId) return;
+
+    // ВАЖНО: у тебя API_BASE уже без /api на конце.
+    // Эндпоинт у нас /api/user-balance → добавляем его здесь.
+    fetch(`${window.API_BASE}/api/user-balance?user_id=${userId}`)
+      .then(r => r.ok ? r.json() : Promise.reject(r.status))
+      .then(data => {
+        if (data && typeof data.stars === 'number') {
+          // кладём серверный баланс и в DOM, и в localStorage
+          setStarsBalance(data.stars);
+        }
+      })
+      .catch(e => console.warn('Balance fetch failed:', e));
+  } catch (e) {
+    console.warn('Balance init failed:', e);
+  }
+})();
+
+// === Локальное мгновенное обновление баланса после успешной оплаты ===
+if (window.Telegram && window.Telegram.WebApp) {
+  Telegram.WebApp.onEvent('invoice-closed', (res) => {
+    try {
+      if (res && res.status === 'paid') {
+        // сумма, которую ты сохраняешь перед openInvoice
+        const last = Number(localStorage.getItem('gd_last_topup_amount') || 0);
+        if (last > 0) {
+          // прибавляем к текущему локальному и перерисовываем топбар
+          setStarsBalance(getStarsBalance() + last);
+          // чтобы не удвоилось при повторном событии
+          localStorage.removeItem('gd_last_topup_amount');
+        }
+      }
+    } catch (e) {
+      console.warn('invoice-closed handler error', e);
+    }
+  });
+}
+
 // === Синхронизация баланса звёзд с сервером (поверх localStorage) ===
 (function(){
   const tg = window.Telegram && window.Telegram.WebApp;
