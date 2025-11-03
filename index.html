@@ -1015,54 +1015,78 @@ html.scroll-locked, html.scroll-locked body{
   z-index: 130;
 }
 
-/* === TOPBAR PILLS — compact & equal (фикс переполнения) === */
+/* === TOPBAR PILLS — выше, уже; плюс — кругом; сдвиг влево === */
 :root{
-  /* Ширина обеих пилюль (одинаковая) — при желании подстрой тут одно число */
-  --topbar-pill-w: 96px;
+  --topbar-pill-w: 88px;   /* уже по ширине */
+  --topbar-pill-h: 40px;   /* выше по вертикали */
 }
 
-/* Чуть меньше внутренние отступы и правую «кромку» — визуально сдвигает группу влево */
+/* Чуть уменьшаем правую «кромку» и зазоры — группа уйдёт левее */
 .topbar{
-  padding: 10px 10px;      /* было 12px 14px */
-  gap: 10px;               /* было 12px */
+  padding: 10px 8px;   /* было больше справа — теперь компактнее и левее */
+  gap: 8px;            /* меньше щель между элементами */
 }
 
-/* Сжимаем ТОЛЬКО пилюли внутри топбара */
+/* Две пилюли: одинаковая фикс-ширина и высота, компактные паддинги */
 .topbar .pill{
-  padding: 6px 10px;       /* было 8–10px/12–14px */
+  padding: 6px 8px;
+  height: var(--topbar-pill-h);
+  flex: 0 0 var(--topbar-pill-w);
   min-width: var(--topbar-pill-w);
-  height: 34px;            /* фикс по высоте, чтобы равнялись */
+  justify-content: center;
   gap: 8px;
-  flex: 0 0 var(--topbar-pill-w); /* обе одинаковой ширины */
-  justify-content: center;        /* цифра по центру с иконкой */
 }
 
-/* Иконки компактнее */
+/* Иконки — чуть крупнее по высоте, но не широкие */
 .topbar .pill img{
-  width: 20px; height: 20px;      /* было 24px в .pill--lg */
+  width: 22px;
+  height: 22px;
   border-radius: 4px;
 }
 
-/* Цифры не «прыгают», помещаются стабильно */
+/* Текст не прыгает и влезает */
 .topbar .pill .num{
   font-weight: 900;
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* Сбиваем «увеличитель» только в топбаре, чтобы глобально .pill--lg не ломать в других местах */
+/* Переопределяем .pill--lg только в топбаре, чтобы не поломать глобально */
 .topbar .pill.pill--lg{
-  padding: 6px 10px;              /* переопределяем .pill--lg */
+  padding: 6px 8px;
 }
 .topbar .pill.pill--lg img{
-  width: 20px; height: 20px;
+  width: 22px; height: 22px;
 }
 
-/* Микро-зазор справа от крайней пилюли, чтобы не касалась бордера даже на узких экранах */
+/* Плюсик: такой же размер по высоте, круглый, и не шире пилюли */
+.topbar .pill-plus{
+  width: var(--topbar-pill-h);
+  height: var(--topbar-pill-h);
+  border-radius: 999px; /* круг */
+  flex: 0 0 var(--topbar-pill-h);
+  margin-right: 6px;    /* лёгкий отступ перед первой пилюлей */
+}
+
+/* Знак плюс — визуально по центру и читается */
+.topbar .pill-plus .plus-ico{
+  font-size: 20px;
+  line-height: 1;
+  transform: translateY(-1px); /* оптический центр */
+}
+
+/* На узких экранах подстрахуемся, чтобы не упиралось вправо */
 .topbar .pill:last-of-type{
   margin-right: 2px;
 }
+
+/* Если всё равно не влезает, последний шаг — ещё на 1–2px левее всю группу:
+.topbar { padding-right: 6px; }
+*/
+
 
   </style>
 
