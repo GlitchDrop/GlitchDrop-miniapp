@@ -1015,6 +1015,55 @@ html.scroll-locked, html.scroll-locked body{
   z-index: 130;
 }
 
+/* === TOPBAR PILLS — compact & equal (фикс переполнения) === */
+:root{
+  /* Ширина обеих пилюль (одинаковая) — при желании подстрой тут одно число */
+  --topbar-pill-w: 96px;
+}
+
+/* Чуть меньше внутренние отступы и правую «кромку» — визуально сдвигает группу влево */
+.topbar{
+  padding: 10px 10px;      /* было 12px 14px */
+  gap: 10px;               /* было 12px */
+}
+
+/* Сжимаем ТОЛЬКО пилюли внутри топбара */
+.topbar .pill{
+  padding: 6px 10px;       /* было 8–10px/12–14px */
+  min-width: var(--topbar-pill-w);
+  height: 34px;            /* фикс по высоте, чтобы равнялись */
+  gap: 8px;
+  flex: 0 0 var(--topbar-pill-w); /* обе одинаковой ширины */
+  justify-content: center;        /* цифра по центру с иконкой */
+}
+
+/* Иконки компактнее */
+.topbar .pill img{
+  width: 20px; height: 20px;      /* было 24px в .pill--lg */
+  border-radius: 4px;
+}
+
+/* Цифры не «прыгают», помещаются стабильно */
+.topbar .pill .num{
+  font-weight: 900;
+  font-size: 14px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* Сбиваем «увеличитель» только в топбаре, чтобы глобально .pill--lg не ломать в других местах */
+.topbar .pill.pill--lg{
+  padding: 6px 10px;              /* переопределяем .pill--lg */
+}
+.topbar .pill.pill--lg img{
+  width: 20px; height: 20px;
+}
+
+/* Микро-зазор справа от крайней пилюли, чтобы не касалась бордера даже на узких экранах */
+.topbar .pill:last-of-type{
+  margin-right: 2px;
+}
+
   </style>
 
 <style>
