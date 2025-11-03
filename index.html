@@ -41,6 +41,9 @@
       border-bottom:1px solid var(--border);
       backdrop-filter:blur(10px);
       box-shadow:var(--shadow-soft);
+      overflow: hidden;     /* не даём шапке создавать горизонтальный скролл */
+      flex-wrap: nowrap;    /* элементы в одну линию */
+
     }
     .avatar{ width:42px; height:42px; border-radius:50%; border:2px solid rgba(22,241,255,.55); box-shadow:0 0 18px rgba(22,241,255,.28), 0 0 28px rgba(255,62,208,.18); object-fit:cover; background:linear-gradient(135deg, rgba(22,241,255,.15), rgba(255,62,208,.15)); }
     .avatar.hidden{ display:none; }
@@ -254,7 +257,11 @@
   will-change: transform;
 }
 
-.topbar .pill{ flex: 0 0 auto; }
+.topbar .pill{
+  flex: 1 1 0;      /* обе пилюли делят доступное место поровну */
+  min-width: 0;     /* можно сжиматься без выдавливания шапки */
+  max-width: 100%;
+}
 
 /* Чуть лучше рендер шрифта при скейле */
 .brand .glitch{
@@ -283,6 +290,10 @@
   text-overflow:ellipsis;
 }
 
+.topbar .brand{
+  flex: 1 1 auto;   /* пусть занимает всё доступное между аватаром и метриками */
+  min-width: 0;     /* позволяет содержимому сжиматься и давать троеточие */
+}
 
 .inventory-page{
   max-width:1100px;
@@ -1015,6 +1026,29 @@ html.scroll-locked, html.scroll-locked body{
   z-index: 130;
 }
 
+/* Группа метрик (две пилюли) — может ужиматься */
+.metrics{
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex: 0 1 52%;   /* можно 48–56%, подгони при желании */
+  min-width: 0;
+}
+
+/* Снимаем случайные жесткие min-width внутри шапки */
+.topbar *{ min-width: 0; }
+
+/* Числа в пилюлях — не раздувают ширину */
+.pill .num{
+  display: inline-block;
+  max-width: 7ch;             /* ограничение ширины числа */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.1;
+  font-size: clamp(12px, 3.4vw, 15px);
+}
+
   </style>
 
 <style>
@@ -1390,6 +1424,23 @@ html.scroll-locked, html.scroll-locked body{
   </div>
 </div>
 
+<!-- ГРУППА МЕТРИК В ШАПКЕ -->
+<div class="metrics">
+  <!-- Пилюля ГЛИТЧ-ТОКЕН -->
+  <div class="pill pill--lg" title="Глитч-токен">
+    <img src="assets/images/20251005_0825_Яркое неоновое сияние_remix_01k6sd902pf03ah1w3cpkr66jz.png" alt="глитч-токен">
+    <span class="num" id="bonus">50</span>
+  </div>
+
+  <!-- Пилюля ЗВЕЗДА -->
+  <div class="pill pill--lg">
+    <img src="assets/images/звезда.png" alt="звезда">
+    <span class="num" id="stars">120</span>
+  </div>
+</div>
+<!-- /ГРУППА МЕТРИК -->
+
+
       <div class="grow"></div>
 
 <!-- мини-меню "Плюс" — СТАВИМ ПЕРЕД глитч-токеном -->
@@ -1404,19 +1455,6 @@ html.scroll-locked, html.scroll-locked body{
   <button class="qm-item" role="menuitem" data-action="settings">⚙️ Настройки</button>
  </div>
 </div>
-
-      <!-- Пилюля ГЛИТЧ-ТОКЕН слева -->
-      <div class="pill pill--lg" title="Глитч-токен">
-        <img src="assets/images/20251005_0825_Яркое неоновое сияние_remix_01k6sd902pf03ah1w3cpkr66jz.png" alt="глитч-токен">
-        <span class="num" id="bonus">50</span>
-      </div>
-
-      <!-- Пилюля со ЗВЕЗДОЙ справа (такой же размер) -->
-      <div class="pill pill--lg">
-        <img src="assets/images/звезда.png" alt="звезда">
-        <span class="num" id="stars">120</span>
-      </div>
-    </div>
 
     <div class="chipbar" id="chipbar"><div class="chip active" data-target="#top">Все</div></div>
     <div class="content" id="content"></div>
@@ -4077,3 +4115,4 @@ if (document.readyState === 'loading') {
 
 </body>
 </html>
+
