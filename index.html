@@ -4077,6 +4077,17 @@ if (document.readyState === 'loading') {
     initAmountModal();
 }
 
+  // Форсируем 0 звёзд всегда
+  window.setStarsBalance = function () {
+    localStorage.setItem('gd_stars_balance', '0');
+    var el = document.getElementById('stars');
+    if (el) el.textContent = '0';
+    return 0;
+  };
+
+  // На всякий случай — сразу выставим 0 при загрузке
+  window.setStarsBalance();
+
 </script>
 
 </body>
