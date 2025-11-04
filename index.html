@@ -487,21 +487,6 @@ html.scroll-locked, html.scroll-locked body{
   cursor:not-allowed;
 }
 
-/* Бейдж с готовым промокодом */
-.promo-result{
-  display:grid; grid-template-columns:1fr auto; gap:10px; align-items:center;
-}
-.promo-badge{
-  padding:12px 14px;
-  border-radius:12px;
-  font-weight:900;
-  letter-spacing:.3px;
-  color:#081121;
-  background:linear-gradient(135deg, var(--neon-cyan), var(--neon-pink));
-  border:1px solid rgba(22,241,255,.35);
-  text-align:center;
-}
-
 /* Пустая страница под конкурсы — только фон и “воздух” снизу под таббар */
 .contests-page{
   padding-bottom: max(var(--tabbar-h,84px), env(safe-area-inset-bottom) + 16px);
@@ -1144,6 +1129,31 @@ html.scroll-locked, html.scroll-locked body{
   color: #9fb2d9;
   opacity: .95;
 }
+
+/* Друзья — компактнее вертикальные интервалы без промокода */
+.friends-wrap{
+  display:flex;
+  flex-direction:column;
+  row-gap: 8px;                 /* общий «ритм» */
+}
+
+/* пара "текст сверху" */
+.fr-title{ margin-top: 6px; margin-bottom: 2px; }
+.fr-sub{   margin: 0 0 6px 0; }
+
+/* ряд с кнопками */
+.fr-cta-row{
+  gap: 8px;
+  margin: 0;                    /* убираем лишний отступ снизу */
+}
+
+/* сразу за кнопками идёт таблица — почти без верхнего зазора */
+.fr-list-wrap{ margin-top: 6px; }
+
+/* шапка списка и сам список — плотнее */
+.fr-list-head{ padding-top: 4px; padding-bottom: 6px; }
+.fr-list{ padding-top: 8px; padding-bottom: 10px; }
+
 
   </style>
 
@@ -2926,16 +2936,6 @@ async function renderFriends(){
         <button type="button" class="btn btn-ghost" id="btnPartner" style="display:none">СТАТЬ ПАРТНЁРОМ</button>
       </div>
 
-      <div class="fr-block-title">Создание промокода</div>
-      <div class="fr-promo">
-        <input class="fr-input" id="promoInput2" type="text"
-  placeholder="Придумайте промокод (до 16 символов)" maxlength="16" />
-        <div class="fr-actions">
-          <button type="button" class="btn btn-primary" id="btnCreatePromo2">СОЗДАТЬ ПРОМОКОД</button>
-          <button type="button" class="btn btn-ghost" id="btnEnterPromo2">ВВЕСТИ ПРОМОКОД</button>
-        </div>
-      </div>
-
       <div class="fr-list-wrap">
         <div class="fr-list-head">
           <span>Приглашённые друзья</span>
@@ -2963,130 +2963,6 @@ async function renderFriends(){
       </div>
     </div>
   `;
-
-// === ВОССТАНОВЛЕНИЕ СОСТОЯНИЯ ПРОМО ===
-const promoWrap   = document.querySelector('.fr-promo');
-let   promoInput  = document.getElementById('promoInput2');
-const createBtn   = document.getElementById('btnCreatePromo2');
-const enterBtn    = document.getElementById('btnEnterPromo2');
-const RE_PROMO    = /^[A-Za-z0-9_-]{4,16}$/;
-
-const state = loadPromoState();
-
-if (state.created && state.code){
-  const editing = isPromoEditing();
-  const current = (state.code || "").trim();
-  const draft   = (state.draft || current);
-
-  // Общая вёрстка: строка + две кнопки (✏️ слева, ✅ справа)
-  if (!editing){
-    // Компактный бейдж + кнопки
-    promoWrap.innerHTML = `
-      <div class="promo-result">
-        <div class="promo-badge">Ваш промокод: <strong>${current}</strong></div>
-        <div style="display:flex; gap:8px">
-          <button type="button" class="btn btn-ghost" id="promoEditBtn"  aria-label="Редактировать">✏️</button>
-          <button type="button" class="btn btn-primary" id="promoOkBtn" aria-label="Подтвердить">✅</button>
-        </div>
-      </div>
-    `;
-
-    // ✏️ → включаем режим редактирования
-    document.getElementById('promoEditBtn')?.addEventListener('click', ()=>{
-      savePromoState({ draft: current }); // черновик = текущий код
-      setPromoEditing(true);
-      renderFriends();                    // перерисовать в режим ввода
-    });
-
-    // ✅ без изменений → просто выходим из "режима подтверждения" (по сути no-op)
-    document.getElementById('promoOkBtn')?.addEventListener('click', ()=>{
-      // Никаких всплывашек, просто гарантируем, что редактирования нет
-      cancelPromoEditing();
-      renderFriends();
-    });
-
-  } else {
-    // Режим редактирования: input с предзаполненным кодом + кнопки ✏️/✅
-    promoWrap.innerHTML = `
-      <div class="promo-result">
-        <input class="fr-input" id="promoEditInput" type="text"
-               placeholder="Промокод (4–16 символов)"
-               maxlength="16" value="${draft}">
-        <div style="display:flex; gap:8px">
-          <button type="button" class="btn btn-ghost"  id="promoEditFocus" aria-label="Редактировать">✏️</button>
-          <button type="button" class="btn btn-primary" id="promoEditSave"  aria-label="Подтвердить">✅</button>
-        </div>
-      </div>
-    `;
-
-    const RE_PROMO = /^[A-Za-z0-9_-]{4,16}$/;
-    const input    = document.getElementById('promoEditInput');
-    const btnSave  = document.getElementById('promoEditSave');
-
-    // Синхронизируем черновик и валидность
-    function sync(){
-      const val = (input.value || '').trim();
-      savePromoState({ draft: val });
-      btnSave.disabled = !RE_PROMO.test(val);
-    }
-    input.addEventListener('input', sync);
-    input.addEventListener('blur',  sync);
-    sync();
-    input.focus();
-
-    // ✏️ в режиме редактирования — просто фокус на поле (по требованию кнопка остаётся)
-    document.getElementById('promoEditFocus')?.addEventListener('click', ()=>{
-      input?.focus();
-      input?.setSelectionRange(input.value.length, input.value.length);
-    });
-
-    // ✅ — подтвердить (даже если не изменилось)
-    btnSave.addEventListener('click', ()=>{
-      const val = (input.value || '').trim();
-      if (!RE_PROMO.test(val)) return;    // защита
-
-      // Сохраняем как подтверждённый, чистим черновик и выходим из редактирования
-      savePromoState({ code: val, created: true, draft: "" });
-      setPromoEditing(false);
-      renderFriends(); // покажем снова компактный бейдж + кнопки
-    });
-  }
-}
-
-
-  // Кнопка изначально выключена, если невалидно
-  if (createBtn) createBtn.disabled = !RE_PROMO.test(promoInput?.value?.trim() || "");
-
-  // Следим за вводом: валидируем и сохраняем draft
-  function syncPromoState(){
-    // авто-UPPERCASE по желанию:
-    // if (promoInput) promoInput.value = promoInput.value.toUpperCase();
-    const val = (promoInput?.value || '').trim();
-    savePromoState({ draft: val });
-    createBtn.disabled = !RE_PROMO.test(val);
-  }
-  promoInput?.addEventListener('input', syncPromoState);
-  promoInput?.addEventListener('blur',  syncPromoState);
-  syncPromoState();
-
-  // Создать промокод
-createBtn?.addEventListener('click', () => {
-  const val = (promoInput?.value || '').trim();
-  const RE_PROMO = /^[A-Za-z0-9_-]{4,16}$/;
-  if (!RE_PROMO.test(val)){
-    alert('Придумайте промокод');
-    return;
-  }
-  // сохраняем подтверждённый код и выходим из режима редактирования
-  savePromoState({ created: true, code: val, draft: "" });
-  setPromoEditing(false);
-
-  // показываем единый компактный бейдж с ✏️/✅
-  renderFriends();
-});
-
-  // «Ввести промокод» — заглушка (как было)
-  enterBtn?.addEventListener('click', () => alert('Ввести промокод (заглушка)'));
 
 // ===== ДЕЙСТВИЯ КНОПОК ПРИГЛАШЕНИЯ/КОПИРОВАНИЯ — ЖЕЛЕЗОБЕТОННЫЙ ВАРИАНТ =====
 const tg = window.Telegram && window.Telegram.WebApp;
