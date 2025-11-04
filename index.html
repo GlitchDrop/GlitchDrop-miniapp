@@ -1105,6 +1105,46 @@ html.scroll-locked, html.scroll-locked body{
 
 :root{ --topbar-pills-shift-x: 40px; } .topbar .pill:first-of-type{ margin-left: calc(var(--topbar-pills-shift-x) * -1); }
 
+/* Друзья: растяжка списка вниз при сохранении текущего верха */
+.friends-wrap{
+  /* превращаем обёртку в колонку, чтобы нижний блок мог занять остаток */
+  display: flex;
+  flex-direction: column;
+
+  /* тянем всю страницу друзей до 20px над таббаром */
+  min-height: calc(100vh - var(--tabbar-h, 84px) - 20px - env(safe-area-inset-bottom, 0px));
+}
+
+/* сама "таблица" (обёртка списка) занимает всё оставшееся место */
+.fr-list-wrap{
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0; /* важно, чтобы .fr-list могла расти внутри */
+}
+
+/* список внутри — на всю высоту .fr-list-wrap */
+.fr-list{
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+}
+
+/* пустое состояние по центру расширенной "таблицы" */
+.fr-empty{
+  flex: 1 1 auto;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 16px;
+  font-weight: 900;
+  letter-spacing: .4px;
+  color: #9fb2d9;
+  opacity: .95;
+}
+
   </style>
 
 <style>
@@ -2915,11 +2955,9 @@ async function renderFriends(){
         </div>
       </div>
     `).join('')
-    : `<div class="fr-item" aria-hidden="true">
-         <div class="n">—</div>
-         <div class="nm" style="opacity:.8">Здесь появятся ваши друзья</div>
-         <div class="gain">+1 <img src="assets/images/20251005_0825_Яркое неоновое сияние_remix_01k6sd902pf03ah1w3cpkr66jz.png" alt=""></div>
-       </div>`
+    
+    : `<div class="fr-empty">Вы пока никого не пригласили</div>`
+
 }
         </div>
       </div>
