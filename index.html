@@ -3867,6 +3867,19 @@ setStarsBalance(Math.max(getStarsBalance(), data.stars));
   });
 })();
 
+// === Инициализация баланса звёзд: первый запуск начинается с 0 ===
+(function ensureZeroFirstRun(){
+  const LS_KEY = 'gd_stars_balance';
+
+  // Если ключа ещё не было (первый запуск) — засеем 0
+  if (localStorage.getItem(LS_KEY) === null) {
+    localStorage.setItem(LS_KEY, '0');
+  }
+
+  // Нарисуем актуальное значение из localStorage (будет 0 на первом запуске)
+  const current = parseInt(localStorage.getItem(LS_KEY), 10) || 0;
+  setStarsBalance(current);
+})();
 
 async function handleAmountSubmit() {
   const input = document.getElementById('amountInput');
@@ -4059,17 +4072,6 @@ if (document.readyState === 'loading') {
     initTopupModal();
     initAmountModal();
 }
-
-  // Форсируем 0 звёзд всегда
-  window.setStarsBalance = function () {
-    localStorage.setItem('gd_stars_balance', '0');
-    var el = document.getElementById('stars');
-    if (el) el.textContent = '0';
-    return 0;
-  };
-
-  // На всякий случай — сразу выставим 0 при загрузке
-  window.setStarsBalance();
 
 </script>
 
