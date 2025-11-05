@@ -3821,7 +3821,7 @@ setStarsBalance(getStarsBalance());
         if (data && typeof data.stars === 'number') {
           // кладём серверный баланс и в DOM, и в localStorage
           // не уменьшаем локальный баланс, пока бэк не догонит
-setStarsBalance(Math.max(getStarsBalance(), data.stars));
+setStarsBalance(Math.max(getStarsBalance(), Number(data?.stars) || 0));
         }
       })
       .catch(e => console.warn('Balance fetch failed:', e));
@@ -3867,19 +3867,22 @@ setStarsBalance(Math.max(getStarsBalance(), data.stars));
   });
 })();
 
-// === Инициализация баланса звёзд: первый запуск начинается с 0 ===
-(function ensureZeroFirstRun(){
-  const LS_KEY = 'gd_stars_balance';
+// === Глобальный reset баланса до 0 для всех, затем обычная работа ===
+(function initStarsBalanceWithGlobalReset(){
+  const LS_BAL = 'gd_stars_balance';
+  const LS_RESET_FLAG = 'gd_balance_reset_v1'; // увеличить суффикс, если захочешь повторить сброс
 
-  // Если ключа ещё не было (первый запуск) — засеем 0
-  if (localStorage.getItem(LS_KEY) === null) {
-    localStorage.setItem(LS_KEY, '0');
+  // Один раз обнуляем баланс у всех
+  if (localStorage.getItem(LS_RESET_FLAG) !== 'done') {
+    localStorage.setItem(LS_BAL, '0');
+    localStorage.setItem(LS_RESET_FLAG, 'done');
   }
 
-  // Нарисуем актуальное значение из localStorage (будет 0 на первом запуске)
-  const current = parseInt(localStorage.getItem(LS_KEY), 10) || 0;
+  // Рисуем текущее значение (после сброса это 0; далее — сохранённые пополнения)
+  const current = parseInt(localStorage.getItem(LS_BAL), 10) || 0;
   setStarsBalance(current);
 })();
+
 
 async function handleAmountSubmit() {
   const input = document.getElementById('amountInput');
