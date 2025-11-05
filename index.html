@@ -3910,7 +3910,7 @@ async function handleAmountSubmit() {
 
     const tg = window.Telegram && window.Telegram.WebApp;
     if (tg?.openInvoice) {
-      tg.openInvoice(data.invoice_url);
+     Stars.open(amount, data.invoice_url);
     } else {
       // запасной вариант
       window.open(data.invoice_url, '_blank');
@@ -4096,6 +4096,77 @@ if (document.readyState === 'loading') {
   });
 })();
 
+</script>
+
+<script>
+// ====== КОНСТАНТЫ ======
+var tg = window.Telegram && window.Telegram.WebApp;
+var LS_BAL  = 'gd_stars_balance';
+var LS_LAST = 'gd_last_topup_amount';
+
+// ====== УТИЛИТЫ БАЛАНСА ======
+function getStarsBalance() {
+  var n = parseInt(localStorage.getItem(LS_BAL) || '0', 10);
+  return (isFinite(n) && n > 0) ? n : 0;
+}
+function setStarsBalance(n) {
+  n = Math.max(0, parseInt(n || 0, 10) || 0);
+  var el = document.getElementById('stars');
+  if (el) el.textContent = String(n);
+  localStorage.setItem(LS_BAL, String(n));
+  console.log('[stars] UI+LS =>', n);
+}
+
+// Восстановить цифру при загрузке
+document.addEventListener('DOMContentLoaded', function () {
+  setStarsBalance(getStarsBalance());
+});
+
+// ЕДИНАЯ ТОЧКА ПРИМЕНЕНИЯ ПОПОЛНЕНИЯ
+function applyTopup(amountMaybe) {
+  var stored = localStorage.getItem(LS_LAST);
+  var last = parseInt(((amountMaybe !== undefined && amountMaybe !== null) ? amountMaybe : stored) || '0', 10) || 0;
+  if (!last) return;
+  var next = getStarsBalance() + last;
+  setStarsBalance(next);
+  localStorage.removeItem(LS_LAST);
+  console.log('[stars] +', last, '=>', next);
+}
+
+// ОБЁРТКА ДЛЯ ОТКРЫТИЯ ИНВОЙСА
+function openStarsInvoice(amount, invoiceUrlOrSlug) {
+  amount = Math.max(0, parseInt(amount, 10) || 0);
+  localStorage.setItem(LS_LAST, String(amount));
+  console.log('[stars] saved last topup =', amount);
+
+  if (tg && typeof tg.openInvoice === 'function') {
+    tg.openInvoice(invoiceUrlOrSlug, function (status) {
+      console.log('[stars] openInvoice callback status =', status);
+      if (status === 'paid') applyTopup(amount);
+    });
+  } else {
+    console.warn('[stars] tg.openInvoice недоступен. Вероятно, запуск не внутри Telegram WebApp.');
+  }
+}
+
+// ДУБЛЁР: СОБЫТИЕ invoiceClosed
+if (tg && typeof tg.onEvent === 'function') {
+  tg.onEvent('invoiceClosed', function (ev) {
+    console.log('[stars] invoiceClosed event =', ev);
+    if (ev && ev.status === 'paid') applyTopup();
+  });
+}
+
+// Экспорт "API"
+window.Stars = {
+  get: getStarsBalance,
+  set: setStarsBalance,
+  open: openStarsInvoice,
+  apply: applyTopup
+};
+
+// Готовность WebApp
+try { if (tg && tg.ready) tg.ready(); } catch (e) {}
 </script>
 
 </body>
