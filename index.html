@@ -3835,7 +3835,7 @@ setStarsBalance(Math.max(getStarsBalance(), Number(data?.stars) || 0));
   const tg = window.Telegram && window.Telegram.WebApp;
   if (!tg || !tg.onEvent) return;
 
-  tg.onEvent('invoice-closed', (ev) => {
+ tg.onEvent('invoiceClosed', (ev) => {
     if (ev?.status === 'paid') {
       // Берём сумму последней оплаты (Telegram API перед этим сам выставляет)
       const last = parseInt(localStorage.getItem('gd_last_topup_amount') || '0', 10) || 0;
@@ -4074,7 +4074,7 @@ if (document.readyState === 'loading') {
   const tg = window.Telegram && window.Telegram.WebApp;
   if (!tg || !tg.onEvent) return;
 
-  tg.onEvent('invoice-closed', (ev) => {
+ tg.onEvent('invoiceClosed', (ev) => {
     if (ev?.status === 'paid') {
       // Сколько звёзд оплатили — хранится в этом ключе
       const last = parseInt(localStorage.getItem('gd_last_topup_amount') || '0', 10) || 0;
