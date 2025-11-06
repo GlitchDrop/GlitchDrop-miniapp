@@ -1154,6 +1154,15 @@ html.scroll-locked, html.scroll-locked body{
 .fr-list-head{ padding-top: 4px; padding-bottom: 6px; }
 .fr-list{ padding-top: 8px; padding-bottom: 10px; }
 
+.floating-error .err-topup{
+  background: transparent;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: #6fb1ff;           /* синий */
+  text-decoration: underline;
+  cursor: pointer;
+}
 
   </style>
 
@@ -2650,6 +2659,13 @@ function renderPreview(setId){
 
 // запуск спина
 function beginSpin(setId){
+  // 1) Оплата «прокрута»
+  if (!tryChargeSpin()) {
+    // Недостаточно звёзд — спин не запускаем
+    return;
+  }
+
+  // 2) Дальше — твоя старая логика спина
   if (window.IS_SPINNING) return;
   window.IS_SPINNING = true;
 
@@ -2658,13 +2674,13 @@ function beginSpin(setId){
   const btn = document.getElementById('spinStartBtn');
   if (btn) btn.disabled = true;
 
-  start3DSpin(setId, ({ imgSrc })=>{
-  if (btn) btn.disabled = false;
-  window.IS_SPINNING = false;
+  start3DSpin(setId, ({ imgSrc }) => {
+    if (btn) btn.disabled = false;
+    window.IS_SPINNING = false;
 
-  // Показать модалку с выигрышем
-  openDropModal(imgSrc);
-});
+    // Показать модалку с выигрышем
+    openDropModal(imgSrc);
+  });
 }
 
 backBtn.addEventListener('click', ()=>{
@@ -3805,6 +3821,62 @@ function setStarsBalance(n) {
 // ← при загрузке синхронизируем DOM с localStorage,
 //   чтобы если ранее уже пополняли, значение восстановилось
 setStarsBalance(getStarsBalance());
+
+// ===== Покупка "прокрута": парсинг цены, списание, алерт "Пополнить" =====
+function parseCasePriceStars() {
+  const el = document.getElementById('detailPrice');
+  const raw = (el?.textContent || '').trim().toUpperCase();
+  if (!raw || raw === '—') return 0;                 // нет цены — не списаем
+  if (raw.includes('БЕСПЛАТ')) return 0;            // "БЕСПЛАТНО" — не списаем
+  if (raw.includes('ЗОЛОТО'))  return 0;            // "за ЗОЛОТО" — пропускаем
+  // Ожидаем форматы вида "250 ⭐", "3500⭐", "2000 *" и т.п.
+  const m = raw.match(/\d+/);
+  return m ? parseInt(m[0], 10) : 0;
+}
+
+// Красное уведомление: "Недостаточно средств" + синяя "Пополнить"
+function showInsufficientFunds() {
+  const html = `Недостаточно средств · <button class="err-topup" type="button">Пополнить</button>`;
+
+  // Сносим предыдущее всплывающее, если есть
+  document.querySelectorAll('.floating-error').forEach(n => n.remove());
+
+  const box = document.createElement('div');
+  box.className = 'floating-error';
+  box.innerHTML = html;
+  document.body.appendChild(box);
+
+  // открыть модалку пополнения при клике
+  box.querySelector('.err-topup')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    try { topupOpen(); } catch(_) {}
+  });
+
+  // анимация появления/скрытия — как в showFloatingError()
+  requestAnimationFrame(() => box.classList.add('show'));
+  setTimeout(() => {
+    box.classList.remove('show');
+    setTimeout(() => box.remove(), 400);
+  }, 3000);
+}
+
+// Пытаемся списать со звёзд баланс — true если можно крутить
+function tryChargeSpin() {
+  const price = parseCasePriceStars();
+  if (price <= 0) return true;                       // бесплатный/золото — крутить можно
+
+  const bal = getStarsBalance();
+  if (bal < price) {
+    showInsufficientFunds();
+    return false;
+  }
+
+  setStarsBalance(bal - price);                      // мгновенное списание (DOM+LS)
+  // Если нужно — здесь добавь fetch на бэкенд для фиксации списания
+  // fetch(`${window.API_BASE}/api/spins/charge`, { ... })
+
+  return true;
+}
 
 // === Синхронизация баланса со сервером поверх localStorage ===
 (() => {
