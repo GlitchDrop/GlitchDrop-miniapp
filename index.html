@@ -4492,5 +4492,27 @@ window.Stars = {
 try { if (tg && tg.ready) tg.ready(); } catch (e) {}
 </script>
 
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.querySelector('.landing-login-btn');
+  const TELEGRAM_MINIAPP_URL = 'https://t.me/Glitchdrop_bot/GlitchDrop'; // <-- твоя рабочая ссылка
+
+  if (!btn) return;
+
+  // Прячем кнопку внутри Telegram mini-app
+  const isInTelegram = !!window.Telegram?.WebApp?.initDataUnsafe?.user;
+  if (isInTelegram) {
+    document.body.classList.add('in-telegram');
+    return;
+  }
+
+  // На сайте: обычный переход
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    window.location.href = TELEGRAM_MINIAPP_URL;
+  });
+});
+</script>
+
 </body>
 </html>
