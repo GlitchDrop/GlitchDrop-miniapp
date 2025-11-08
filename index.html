@@ -109,6 +109,11 @@
     .desc{font-size:12px; color:#9fb2d9}
     .price{font-weight:900; color:var(--neon-yellow); text-shadow:0 0 12px rgba(255,228,122,.25)}
 
+    /* На сайте (вне Telegram) прячем ценник под обложкой кейса */
+html:not(.in-telegram) .card .price{
+  display: none;
+}
+
     .tabbar{
   position: fixed;          /* было: sticky */
   left: 0; right: 0; bottom: 0;
@@ -152,6 +157,58 @@
       display:grid; place-items:center; color:#a9c2ff; text-transform:uppercase; letter-spacing:1px; }
     .d-actions{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
     .btn-spin{ appearance:none; border:none; cursor:pointer; padding:12px 18px; border-radius:14px; font-weight:900; color:#081121; background:linear-gradient(135deg,#ffe28a,#ffc13a); box-shadow:0 10px 28px rgba(255,209,102,.35), 0 0 30px rgba(255,209,102,.25); }
+
+    /* --- Предупреждение "Вы не авторизованы" (только на сайте) --- */
+
+/* по умолчанию скрыто, чтобы в Telegram не мешало */
+.d-auth-warning{
+  display: none;
+}
+
+/* В БРАУЗЕРЕ (html без класса .in-telegram) прячем кнопку "Крутить" и цену */
+html:not(.in-telegram) .d-actions{
+  display: none;
+}
+
+/* и вместо них показываем предупреждение */
+html:not(.in-telegram) .d-auth-warning{
+  display: flex;
+  margin-top: 8px;
+}
+
+/* рамка чуть темнее фона, чтобы блок бросался в глаза */
+.d-auth-warning .auth-box{
+  width: 100%;
+  border-radius: 16px;
+  padding: 12px 14px;
+  background: linear-gradient(
+    180deg,
+    rgba(8, 14, 36, 0.96),
+    rgba(4, 8, 20, 0.96)
+  );
+  border: 1px solid rgba(255, 77, 109, 0.6); /* тёмно-красная рамка */
+  box-shadow:
+    0 0 18px rgba(255, 77, 109, 0.25),
+    0 0 28px rgba(0, 0, 0, 0.6);
+  text-align: center;
+}
+
+/* красный жирный заголовок по центру */
+.d-auth-warning .auth-title{
+  font-weight: 900;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: #ff4d6d;
+  margin-bottom: 4px;
+}
+
+/* тонкий белый текст под заголовком */
+.d-auth-warning .auth-sub{
+  font-size: 13px;
+  font-weight: 400;
+  color: #e8efff;
+  opacity: 0.9;
+}
 
     .panel{ margin-top:14px; padding:12px; border:1px solid var(--border); border-radius:16px; background:linear-gradient(180deg, rgba(20,26,62,.55), rgba(14,18,40,.6)); }
     .panel h3{margin:0 0 10px; text-align:center}
@@ -1730,6 +1787,14 @@ html.scroll-locked, html.scroll-locked body{
   <button class="btn-spin" id="spinStartBtn">КРУТИТЬ</button>
   <div class="pill"><span>Цена:</span><span class="num" id="detailPrice">—</span></div>
 </div>
+
+        <!-- Предупреждение только для сайта (браузера) -->
+        <div class="d-auth-warning">
+          <div class="auth-box">
+            <div class="auth-title">Вы не авторизованы!</div>
+            <div class="auth-sub">Для открытия кейсов необходимо пройти авторизацию</div>
+          </div>
+        </div>
 
 </div> <!-- закрывает .d-hero -->
 <div class="subhead">СОДЕРЖИМОЕ КЕЙСА</div>
