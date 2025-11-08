@@ -1522,6 +1522,69 @@ html.scroll-locked, html.scroll-locked body{
   transform: translateX(-50%) translateY(0);
 }
 
+/* === КИБЕР-ЗАГРУЗКА ДЛЯ ПОПОЛНЕНИЯ === */
+
+.loader-overlay{
+  position: fixed;
+  inset: 0;
+  z-index: 140; /* выше всех модалок */
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(circle at 15% 0, rgba(22,241,255,.18), transparent 55%),
+    radial-gradient(circle at 85% 100%, rgba(255,62,208,.22), transparent 55%),
+    rgba(3,8,23,.92);
+  backdrop-filter: blur(12px);
+}
+
+.loader-overlay.show{
+  display: flex;
+}
+
+.loader-ring{
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+
+/* Внешнее неоновое кольцо */
+.loader-ring::before{
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    var(--neon-cyan),
+    var(--neon-pink),
+    var(--neon-yellow),
+    var(--neon-cyan)
+  );
+  /* вырезаем центр, чтобы получилось кольцо */
+  -webkit-mask: radial-gradient(farthest-side, transparent 58%, #000 60%);
+  mask: radial-gradient(farthest-side, transparent 58%, #000 60%);
+  animation: loader-spin 0.9s linear infinite;
+  box-shadow:
+    0 0 26px rgba(22,241,255,.55),
+    0 0 34px rgba(255,62,208,.35);
+}
+
+/* мягкое ядро в центре */
+.loader-ring::after{
+  content: '';
+  position: absolute;
+  inset: 20px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgba(22,241,255,.2), rgba(10,16,36,1));
+  box-shadow: inset 0 0 18px rgba(0,0,0,.7);
+}
+
+@keyframes loader-spin{
+  to { transform: rotate(360deg); }
+}
+
 </style>
 
 </head>
@@ -1705,6 +1768,11 @@ html.scroll-locked, html.scroll-locked body{
 </div>
 
 <button id="backTop" class="backtop" aria-label="Вверх">ВВЕРХ ↑</button>
+
+<!-- Глобальный лоадер для пополнения -->
+<div id="loaderOverlay" class="loader-overlay" aria-hidden="true">
+  <div class="loader-ring" role="status" aria-label="Загрузка…"></div>
+</div>
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
@@ -3965,6 +4033,7 @@ setStarsBalance(Math.max(getStarsBalance(), Number(data?.stars) || 0));
   if (!tg || !tg.onEvent) return;
 
  tg.onEvent('invoiceClosed', (ev) => {
+  if (typeof hideTopupLoader === 'function') hideTopupLoader();
     if (ev?.status === 'paid') {
       // Берём сумму последней оплаты (Telegram API перед этим сам выставляет)
       const last = parseInt(localStorage.getItem('gd_last_topup_amount') || '0', 10) || 0;
@@ -4005,6 +4074,20 @@ setStarsBalance(Math.max(getStarsBalance(), Number(data?.stars) || 0));
   setStarsBalance(current);
 })();
 
+// === Глобальный лоадер для пополнения ===
+function showTopupLoader(){
+  const el = document.getElementById('loaderOverlay');
+  if (!el) return;
+  el.classList.add('show');
+  el.setAttribute('aria-hidden', 'false');
+}
+
+function hideTopupLoader(){
+  const el = document.getElementById('loaderOverlay');
+  if (!el) return;
+  el.classList.remove('show');
+  el.setAttribute('aria-hidden', 'true');
+}
 
 async function handleAmountSubmit() {
   const input = document.getElementById('amountInput');
@@ -4015,6 +4098,9 @@ async function handleAmountSubmit() {
   }
 
   const amount = validation.value;
+
+  // показываем кибер-загрузку
+  showTopupLoader();
 
   // сохраняем сумму, чтобы помнить её дальше
   try { localStorage.setItem('gd_last_topup_amount', String(amount)); } catch(_) {}
@@ -4031,23 +4117,33 @@ async function handleAmountSubmit() {
     if (!resp.ok || !data.invoice_url) {
       console.error('Create invoice error:', data);
       showFloatingError('Не удалось создать счёт');
+      hideTopupLoader();          // ← прячем лоадер при ошибке
       return false;
     }
 
-    // закрываем модалку суммы и открываем окно оплаты звёздами
+    // закрываем модалку суммы
     topupAmountCloseModal();
 
     const tg = window.Telegram && window.Telegram.WebApp;
+
+    // как только вызываем окно оплаты — убираем лоадер,
+    // дальше уже работает интерфейс Telegram
+    hideTopupLoader();
+
     if (tg?.openInvoice) {
-     Stars.open(amount, data.invoice_url);
+      // твоя обёртка/Stars.open — оставляю как есть
+      Stars.open(amount, data.invoice_url);
+      // если хочешь через openInvoice напрямую:
+      // tg.openInvoice(data.invoice_url);
     } else {
-      // запасной вариант
+      // запасной вариант в браузере
       window.open(data.invoice_url, '_blank');
     }
     return true;
   } catch (e) {
     console.error(e);
     showFloatingError('Сеть недоступна');
+    hideTopupLoader();            // ← и тут тоже прячем
     return false;
   }
 }
