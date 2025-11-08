@@ -1867,6 +1867,53 @@ const CASE_THUMBS = {
   expensive:["","","",""],
 };
 
+// ===== Прелоад картинок кейсов и лута =====
+(function preloadCaseImages(){
+  try {
+    const urls = [];
+
+    // обложки кейсов
+    if (typeof CASE_THUMBS === 'object' && CASE_THUMBS) {
+      for (const key in CASE_THUMBS) {
+        const arr = CASE_THUMBS[key];
+        if (Array.isArray(arr)) {
+          arr.forEach(u => { if (u) urls.push(u); });
+        }
+      }
+    }
+
+    // картинки приза для барабана/лута
+    if (typeof LOOT_SETS === 'object' && LOOT_SETS) {
+      for (const key in LOOT_SETS) {
+        const arr = LOOT_SETS[key];
+        if (Array.isArray(arr)) {
+          arr.forEach(u => { if (u) urls.push(u); });
+        }
+      }
+    }
+
+    // если используешь SPIN_IMAGES, тоже можно прогреть
+    if (typeof SPIN_IMAGES === 'object' && SPIN_IMAGES) {
+      for (const key in SPIN_IMAGES) {
+        const arr = SPIN_IMAGES[key];
+        if (Array.isArray(arr)) {
+          arr.forEach(u => { if (u) urls.push(u); });
+        }
+      }
+    }
+
+    // убираем дубли, чтобы не спамить одинаковые запросы
+    const unique = Array.from(new Set(urls));
+
+    unique.forEach(src => {
+      const img = new Image();
+      img.src = src; // браузер сам закэширует
+    });
+  } catch (e) {
+    console.warn('preloadCaseImages error', e);
+  }
+})();
+
 const sections = [
   { id:'free',        title:'БЕСПЛАТНЫЕ КЕЙСЫ',  items:4, price:'БЕСПЛАТНО',
     descs:['Бонус за промокод','Ежедневный бонус','За подписку','За пополнение'] },
@@ -2932,11 +2979,19 @@ function renderInventory(){
 /* ===================== FRIENDS v2 ===================== */
 const topbarEl = document.querySelector('.topbar');
 
-async function renderFriends(){
-  if(!friendsScreen) return;
+// флаг «уже нарисовали один раз»
+let friendsLoaded = false;
+
+async function renderFriends(forceReload = false){
+  if (!friendsScreen) return;
+
+  // если уже загружено и не просили форс-обновление — просто выходим
+  if (friendsLoaded && !forceReload) return;
 
   const TOKEN_ICON = 'assets/images/20251005_0825_Яркое неоновое сияние_remix_01k6sd902pf03ah1w3cpkr66jz.png';
   const invited = await fetchInvited();
+
+  friendsLoaded = true;
 
   friendsScreen.innerHTML = `
     <div class="friends-header">ДРУЗЬЯ</div>
@@ -3419,6 +3474,8 @@ if (upgradesTab){
 // Гарантируем, что при первой загрузке мы в "Кейсах"
 showCases();
 
+// заранее подгружаем экран "Друзья" в фоне
+renderFriends().catch(()=>{});
 
 // сразу после existing const:
 const addBtn    = document.getElementById('addBtn');
@@ -4243,4 +4300,3 @@ try { if (tg && tg.ready) tg.ready(); } catch (e) {}
 
 </body>
 </html>
-
