@@ -1338,9 +1338,9 @@ html.scroll-locked, html.scroll-locked body{
 }
 
 /* —— жёстко поверх всего и без шанса быть перекрытой —— */
-.modal{
-  z-index: 99999 !important;
-  pointer-events: auto !important;
+.loader-overlay{
+  z-index: 1000001 !important; /* выше, чем .modal с 99999 */
+  pointer-events: all;
 }
 .modal.show{
   display: flex !important;
@@ -4102,54 +4102,52 @@ async function handleAmountSubmit() {
 
   const amount = validation.value;
 
-  // 1) сразу показываем кибер-загрузку
+  // 1) сразу показываем кибер-загрузку и запоминаем момент старта
   const loaderShownAt = Date.now();
   showTopupLoader();
 
-  // запомним сумму, чтобы потом понять, сколько начислять (если ты это уже делаешь — оставляем)
+  // 2) сохраняем сумму, чтобы потом понять, сколько начислять
   try {
     localStorage.setItem('gd_last_topup_amount', String(amount));
   } catch (_) {}
 
+  // 3) запрос к твоему бэку -> получаем invoice_url
   try {
-    // 2) создаём инвойс на бэке
     const resp = await fetch(`${window.API_BASE}/api/payments/create-stars-invoice`, {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({ amount })
     });
-
     const data = await resp.json();
 
     if (!resp.ok || !data.invoice_url) {
       console.error('Create invoice error:', data);
       showFloatingError('Не удалось создать счёт');
-      hideTopupLoader(); // ошибка — сразу убираем загрузку
+      hideTopupLoader(); // ошибка — убираем загрузку сразу
       return false;
     }
 
-    // 3) закрываем модалку суммы
+    // 4) закрываем модалку суммы
     topupAmountCloseModal();
 
     const tg = window.Telegram && window.Telegram.WebApp;
 
-    // 4) открываем Телеграм-инвойс СРАЗУ,
-    //    лоадер всё ещё активен
+    // 5) открываем окно оплаты Телеги
     if (tg?.openInvoice) {
-      // если у тебя обёртка Stars.open уже внутри вызывает tg.openInvoice — оставляем так
+      // твоя обёртка — как и раньше
       Stars.open(amount, data.invoice_url);
       // или напрямую:
       // tg.openInvoice(data.invoice_url);
     } else {
-      // не в телеге — просто открываем ссылку
+      // запасной вариант в браузере
       window.open(data.invoice_url, '_blank');
     }
 
-    // 5) считаем, сколько уже крутился лоадер
+    // 6) считаем, сколько уже времени крутится лоадер
     const elapsed = Date.now() - loaderShownAt;
     const remaining = Math.max(0, TOPUP_LOADER_MIN_MS - elapsed);
 
-    // 6) убираем лоадер через оставшееся время
+    // 7) убираем лоадер через оставшееся до минимума время
     setTimeout(() => {
       hideTopupLoader();
     }, remaining);
@@ -4158,7 +4156,7 @@ async function handleAmountSubmit() {
   } catch (e) {
     console.error(e);
     showFloatingError('Сеть недоступна');
-    hideTopupLoader(); // при сетевой ошибке — сразу спрятать
+    hideTopupLoader(); // при сетевой ошибке тоже убираем
     return false;
   }
 }
