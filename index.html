@@ -1164,6 +1164,50 @@ html.scroll-locked, html.scroll-locked body{
   cursor: pointer;
 }
 
+/* ===== КНОПКА "ВОЙТИ ЧЕРЕЗ TELEGRAM" НА САЙТЕ ===== */
+
+.landing-login-wrap{
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  justify-content: center;
+  padding: 16px 12px 8px;
+  background: linear-gradient(180deg, rgba(8,14,36,.95), rgba(6,10,26,.85));
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(10px);
+}
+
+/* сама кнопка */
+.landing-login-btn{
+  width: 100%;
+  max-width: 420px;
+  border-radius: 999px;
+  padding: 14px 18px;
+  border: 1px solid rgba(22,241,255,.6);
+  font-weight: 900;
+  font-size: 16px;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  cursor: pointer;
+
+  background: linear-gradient(135deg, var(--neon-cyan), var(--neon-pink));
+  color: #081121;
+  box-shadow:
+    0 12px 32px rgba(22,241,255,.35),
+    0 0 40px rgba(255,62,208,.25);
+  text-align: center;
+}
+
+.landing-login-btn:active{
+  transform: translateY(1px);
+}
+
+/* Внутри Telegram mini-app кнопку прячем */
+.in-telegram .landing-login-wrap{
+  display: none;
+}
+
   </style>
 
 <style>
@@ -1591,6 +1635,12 @@ html.scroll-locked, html.scroll-locked body{
 <body>
   <div class="cyber-bg"></div>
 
+  <div class="landing-login-wrap">
+  <button type="button" id="openMiniAppBtn" class="landing-login-btn">
+    ВОЙТИ ЧЕРЕЗ TELEGRAM
+  </button>
+</div>
+
   <div class="app" id="top">
     <div class="topbar">
       <img id="userAvatar" class="avatar hidden" alt="avatar">
@@ -1869,6 +1919,37 @@ window.safeOpen = function(url){
   const w = window.open(url, '_blank', 'noopener,noreferrer');
   if (!w || w.closed) window.location.href = url;
 };
+
+// ===== КНОПКА "ВОЙТИ ЧЕРЕЗ TELEGRAM" НА САЙТЕ =====
+(function(){
+
+  // Определяем, внутри ли мы Telegram WebApp
+  const tg = window.Telegram && window.Telegram.WebApp;
+  if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user){
+    // Внутри мини-аппа: вешаем класс на <html>, чтобы скрыть кнопку
+    document.documentElement.classList.add('in-telegram');
+  }
+
+  const btn = document.getElementById('openMiniAppBtn');
+  if (!btn) return;
+
+  // URL для открытия мини-аппа бота из браузера
+  // Вариант 1: просто открыть мини-апп
+  const miniAppUrl = `https://t.me/${GD.BOT_USERNAME}/app`;
+
+  // Если хочешь ещё и стартовый параметр (например, "from_site"),
+  // можно так:
+  // const miniAppUrl = `https://t.me/${GD.BOT_USERNAME}?startapp=from_site`;
+
+  btn.addEventListener('click', function(){
+    // safeOpen уже учитывает Telegram / не Telegram
+    if (typeof window.safeOpen === 'function'){
+      window.safeOpen(miniAppUrl);
+    } else {
+      window.open(miniAppUrl, '_blank');
+    }
+  });
+})();
 
 </script>
 
