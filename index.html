@@ -1167,13 +1167,15 @@ html.scroll-locked, html.scroll-locked body{
 /* ===== КНОПКА "ВОЙТИ ЧЕРЕЗ TELEGRAM" НА САЙТЕ ===== */
 
 .landing-login-wrap{
-  position: sticky;
+  position: sticky;      /* прижимаем к верху и держим всегда на экране */
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 50;
   display: flex;
   justify-content: center;
   padding: 16px 12px 8px;
-  background: linear-gradient(180deg, rgba(8,14,36,.95), rgba(6,10,26,.85));
+  background: linear-gradient(180deg, rgba(8,14,36,0.95), rgba(6,10,26,0.85));
   border-bottom: 1px solid var(--border);
   backdrop-filter: blur(10px);
 }
@@ -1184,7 +1186,7 @@ html.scroll-locked, html.scroll-locked body{
   max-width: 420px;
   border-radius: 999px;
   padding: 14px 18px;
-  border: 1px solid rgba(22,241,255,.6);
+  border: 1px solid rgba(22,241,255,0.6);
   font-weight: 900;
   font-size: 16px;
   letter-spacing: .8px;
@@ -1194,8 +1196,8 @@ html.scroll-locked, html.scroll-locked body{
   background: linear-gradient(135deg, var(--neon-cyan), var(--neon-pink));
   color: #081121;
   box-shadow:
-    0 12px 32px rgba(22,241,255,.35),
-    0 0 40px rgba(255,62,208,.25);
+    0 12px 32px rgba(22,241,255,0.35),
+    0 0 40px rgba(255,62,208,0.25);
   text-align: center;
 }
 
@@ -1205,6 +1207,12 @@ html.scroll-locked, html.scroll-locked body{
 
 /* Внутри Telegram mini-app кнопку прячем */
 .in-telegram .landing-login-wrap{
+  display: none;
+}
+
+/* А вот на САЙТЕ полностью убираем верхний топбар,
+   чтобы его «перекрывал» баннер с кнопкой */
+.on-site .topbar{
   display: none;
 }
 
@@ -1929,24 +1937,24 @@ window.safeOpen = function(url){
 
   // Определяем, внутри ли мы Telegram WebApp
   const tg = window.Telegram && window.Telegram.WebApp;
+
   if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user){
     // Внутри мини-аппа: вешаем класс на <html>, чтобы скрыть кнопку
     document.documentElement.classList.add('in-telegram');
+  } else {
+    // В обычном браузере (САЙТ): ставим класс on-site
+    document.documentElement.classList.add('on-site');
   }
 
   const btn = document.getElementById('openMiniAppBtn');
   if (!btn) return;
 
   // URL для открытия мини-аппа бота из браузера
-  // Вариант 1: просто открыть мини-апп
   const miniAppUrl = `https://t.me/${GD.BOT_USERNAME}/app`;
-
-  // Если хочешь ещё и стартовый параметр (например, "from_site"),
-  // можно так:
+  // либо вариант со startapp:
   // const miniAppUrl = `https://t.me/${GD.BOT_USERNAME}?startapp=from_site`;
 
   btn.addEventListener('click', function(){
-    // safeOpen уже учитывает Telegram / не Telegram
     if (typeof window.safeOpen === 'function'){
       window.safeOpen(miniAppUrl);
     } else {
@@ -2603,10 +2611,22 @@ if ('ResizeObserver' in window){
 }
 
 
-// === Синхронизация высоты топбара в CSS-переменную ===
+// === Синхронизация высоты верхнего блока в CSS-переменную ===
 function syncTopbarOffset(){
-  const h = document.querySelector('.topbar')?.offsetHeight || 64;
-  document.documentElement.style.setProperty('--topbar-h', h + 'px');
+  const root = document.documentElement;
+
+  // Если мы на САЙТЕ — берём высоту баннера с кнопкой
+  if (root.classList.contains('on-site')){
+    const landing = document.querySelector('.landing-login-wrap');
+    const hLanding = landing?.offsetHeight || 64;
+    root.style.setProperty('--topbar-h', hLanding + 'px');
+    return;
+  }
+
+  // Внутри мини-аппа — как раньше, от высоты topbar
+  const topbar = document.querySelector('.topbar');
+  const hTopbar = topbar?.offsetHeight || 64;
+  root.style.setProperty('--topbar-h', hTopbar + 'px');
 }
 
 // 1) Вызвать прямо сейчас
