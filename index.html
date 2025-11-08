@@ -4074,6 +4074,9 @@ setStarsBalance(Math.max(getStarsBalance(), Number(data?.stars) || 0));
   setStarsBalance(current);
 })();
 
+// Минимальное время показа загрузки после нажатия "ПОПОЛНИТЬ" (в мс)
+const TOPUP_LOADER_MIN_MS = 700; // меняй это число под себя
+
 // === Глобальный лоадер для пополнения ===
 function showTopupLoader(){
   const el = document.getElementById('loaderOverlay');
@@ -4099,51 +4102,63 @@ async function handleAmountSubmit() {
 
   const amount = validation.value;
 
-  // показываем кибер-загрузку
+  // 1) сразу показываем кибер-загрузку
+  const loaderShownAt = Date.now();
   showTopupLoader();
 
-  // сохраняем сумму, чтобы помнить её дальше
-  try { localStorage.setItem('gd_last_topup_amount', String(amount)); } catch(_) {}
-
-  // запрос к твоему бэку -> получаем invoice_url
+  // запомним сумму, чтобы потом понять, сколько начислять (если ты это уже делаешь — оставляем)
   try {
+    localStorage.setItem('gd_last_topup_amount', String(amount));
+  } catch (_) {}
+
+  try {
+    // 2) создаём инвойс на бэке
     const resp = await fetch(`${window.API_BASE}/api/payments/create-stars-invoice`, {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({ amount })
     });
+
     const data = await resp.json();
 
     if (!resp.ok || !data.invoice_url) {
       console.error('Create invoice error:', data);
       showFloatingError('Не удалось создать счёт');
-      hideTopupLoader();          // ← прячем лоадер при ошибке
+      hideTopupLoader(); // ошибка — сразу убираем загрузку
       return false;
     }
 
-    // закрываем модалку суммы
+    // 3) закрываем модалку суммы
     topupAmountCloseModal();
 
     const tg = window.Telegram && window.Telegram.WebApp;
 
-    // как только вызываем окно оплаты — убираем лоадер,
-    // дальше уже работает интерфейс Telegram
-    hideTopupLoader();
-
+    // 4) открываем Телеграм-инвойс СРАЗУ,
+    //    лоадер всё ещё активен
     if (tg?.openInvoice) {
-      // твоя обёртка/Stars.open — оставляю как есть
+      // если у тебя обёртка Stars.open уже внутри вызывает tg.openInvoice — оставляем так
       Stars.open(amount, data.invoice_url);
-      // если хочешь через openInvoice напрямую:
+      // или напрямую:
       // tg.openInvoice(data.invoice_url);
     } else {
-      // запасной вариант в браузере
+      // не в телеге — просто открываем ссылку
       window.open(data.invoice_url, '_blank');
     }
+
+    // 5) считаем, сколько уже крутился лоадер
+    const elapsed = Date.now() - loaderShownAt;
+    const remaining = Math.max(0, TOPUP_LOADER_MIN_MS - elapsed);
+
+    // 6) убираем лоадер через оставшееся время
+    setTimeout(() => {
+      hideTopupLoader();
+    }, remaining);
+
     return true;
   } catch (e) {
     console.error(e);
     showFloatingError('Сеть недоступна');
-    hideTopupLoader();            // ← и тут тоже прячем
+    hideTopupLoader(); // при сетевой ошибке — сразу спрятать
     return false;
   }
 }
