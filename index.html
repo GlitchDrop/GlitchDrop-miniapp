@@ -791,58 +791,30 @@ html.scroll-locked, html.scroll-locked body{
 
 .plus-wrap::after{ display:none; }
 .plus-wrap.open::after{ display:block; }
-/* ===== TOPUP MODAL — bottom sheet-анимация ===== */
-.modal-topup {
-  z-index: 120 !important;
-  align-items: flex-end;                 /* прижимаем модалку к низу */
-  justify-content: center;
-  padding: 0 12px calc(12px + env(safe-area-inset-bottom, 0));
-}
 
-.modal-topup::before {
+/* ===== TOPUP MODAL ===== */
+.modal-topup{ z-index: 120 !important; } /* выше detail (60) и confirm (90) */
+.modal-topup::before{
   backdrop-filter: blur(8px);
   background: linear-gradient(180deg, rgba(8,14,36,.60), rgba(6,10,26,.72));
 }
 
-/* карточка: изначально спрятана внизу */
-.topup-card {
-  position: relative;
-  width: min(520px, 92vw);
-  height: min(45vh, 520px);
+/* карточка меньше половины 9:16, аккуратная */
+.topup-card{
+  position:relative;
+  width:min(520px, 92vw);
+  height:min(45vh, 520px);
   max-height: 520px;
   border-radius: 20px;
-  border: 1px solid var(--border);
+  border:1px solid var(--border);
   background: linear-gradient(180deg, rgba(20,26,62,.80), rgba(14,18,40,.90));
   box-shadow: var(--shadow-strong);
   padding: 14px 14px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-
-  /* стартовое положение — внизу и прозрачная */
-  transform: translateY(110%);
-  opacity: 0;
-  transition:
-    transform 0.45s cubic-bezier(0.22, 0.8, 0.25, 1),
-    opacity   0.45s ease;
+  display:flex; flex-direction:column; gap:10px;
 }
-
-/* активное состояние — плавно на место */
-.modal-topup.show .topup-card {
-  transform: translateY(0);
-  opacity: 1;
-}
-
-/* состояние закрытия — плавно вниз */
-.modal-topup.closing .topup-card {
-  transform: translateY(110%);
-  opacity: 0;
-}
-
 
 /* заголовок */
 .topup-title{
-
   text-align:left;
   font-weight: 900;
   letter-spacing: .6px;
@@ -1299,37 +1271,6 @@ html.scroll-locked, html.scroll-locked body{
    чтобы его «перекрывал» баннер с кнопкой */
 .on-site .topbar{
   display: none;
-}
-
-/* ===== НАСТРОЙКИ РАЗМЕРА USERNAME ===== */
-:root {
-  /* максимальная ширина области под ник */
-  --username-max-width: 120px;   /* меняешь это число — меняется "граница" */
-  /* размер шрифта ника */
-  --username-font-size: 16px;    /* можешь поставить 14px, 18px и т.д. */
-}
-
-/* контейнер, в котором лежит ник (обычно .brand) */
-.topbar .brand {
-  flex: 0 0 var(--username-max-width);  /* фиксированная ширина */
-  max-width: var(--username-max-width);
-  overflow: hidden;                     /* всё, что дальше — обрежется */
-  display: flex;
-  align-items: center;
-}
-
-/* сам текст ника */
-#userName {
-  display: inline-block;
-  font-size: var(--username-font-size);
-  white-space: nowrap;
-}
-
-/* плюсик / кнопки справа — чтобы не сжимались */
-.topbar .actions,
-.topbar .plus-btn {
-  margin-left: auto;
-  flex-shrink: 0;
 }
 
   </style>
@@ -2549,7 +2490,6 @@ detail.scrollTop = 0;
   const display = u.username ? '@' + u.username : [u.first_name||'', u.last_name||''].join(' ').trim() || 'GLITCH DROP';
   nameEl.textContent = display;
   nameEl.setAttribute('data-text', display.replaceAll(' ', '\u00A0'));
-  nameEl.dataset.fullName = display;
 
 (async () => {
   const uid8 = await GD.ensureUid8(u.id);
@@ -2673,28 +2613,60 @@ GD.getOrFetchUid8 = window.getOrFetchUid8;
   if (typeof syncTopbarOffset === 'function') syncTopbarOffset();
 })();
 
+// === Автоподгон ника под доступную ширину бренда ===
 function fitUserName(){
+  const brand = document.querySelector('.brand');
   const el = document.getElementById('userName');
-  if (!el) return;
+  if(!brand || !el) return;
 
-  const full = el.dataset.fullName || el.textContent || '';
-  const LIMIT = 8; // максимум символов, включая @
+  el.style.transform = 'scale(1)';
+  el.style.removeProperty('--name-scale');
 
-  let shown = full;
+  const maxW = Math.floor(brand.clientWidth);
+  const needW = Math.ceil(el.scrollWidth);
+  if (!maxW || !needW) return;
 
-  if (full.length > LIMIT) {
-    shown = full.slice(0, LIMIT) + '...';   // троеточие после 8-го символа
+  if (needW <= maxW){
+    el.removeAttribute('title');
+    return;
   }
 
-  el.textContent = shown;
-  el.setAttribute('data-text', shown.replaceAll(' ', '\u00A0'));
+  const scale = Math.max(0.65, maxW / needW); // не меньше 0.65
+  el.style.transform = `scale(${scale})`;
 
-  // на всякий случай очищаем старые стили, если они были
-  el.style.transform = '';
+// лёгкое уплотнение межбуквенного интервала при сильном скейле
+if (scale <= 0.70){
+  el.style.letterSpacing = '-0.2px';
+} else {
   el.style.removeProperty('letter-spacing');
-  el.style.removeProperty('max-width');
-  el.style.removeProperty('overflow');
-  el.style.removeProperty('text-overflow');
+}
+
+
+  if (scale <= 0.70){
+    el.setAttribute('title', el.textContent);
+    el.style.maxWidth = maxW + 'px';
+    el.style.textOverflow = 'ellipsis';
+    el.style.overflow = 'hidden';
+  } else {
+    el.removeAttribute('title');
+    el.style.removeProperty('max-width');
+    el.style.removeProperty('text-overflow');
+    el.style.removeProperty('overflow');
+  }
+}
+
+// вызываем при загрузке и на изменение размеров
+fitUserName();
+window.addEventListener('resize', fitUserName, {passive:true});
+window.addEventListener('orientationchange', fitUserName);
+
+// 👇 На случай, если верстка дорисуется позже
+document.addEventListener('DOMContentLoaded', () => {
+  if (typeof fitUserName === 'function') fitUserName();
+});
+
+if (document.fonts && document.fonts.ready) {
+  document.fonts.ready.then(() => fitUserName());
 }
 
 if ('ResizeObserver' in window){
@@ -4007,50 +3979,45 @@ function updateDots() {
 }
 
 function topupOpen() {
-  const topupModal = document.getElementById('topupModal');
-  if (!topupModal) return;
-
-  const card = topupModal.querySelector('.topup-card');
-
-  // убираем старые состояния
-  topupModal.classList.remove('closing');
-  topupModal.classList.add('show');
-  topupModal.setAttribute('aria-hidden', 'false');
-  lockBody(true);
-
-  // гарантируем, что карточка поедет плавно
-  requestAnimationFrame(() => {
-    if (card) {
-      card.style.transition = 'none';
-      card.getBoundingClientRect(); // форс ререндер
-      card.style.transition = '';
-      card.style.transform = 'translateY(0)';
-      card.style.opacity = '1';
+    console.log('🔵 Открытие модалки пополнения баланса');
+    
+    const topupModal = document.getElementById('topupModal');
+    if (!topupModal) {
+        console.error('❌ Модалка не найдена');
+        return;
     }
-  });
 
-  topupModal.addEventListener('click', onBackdropClick, { passive: false });
-  document.addEventListener('keydown', onEscKey, true);
+    currentSlide = 0;
+    isAnimating = false;
+    
+    topupModal.classList.add('show');
+    topupModal.setAttribute('aria-hidden', 'false');
+    
+    lockBody(true);
+    
+    setTimeout(() => {
+        updateSlider();
+    }, 50);
+    
+    topupModal.addEventListener('click', onBackdropClick, { passive: false });
+    document.addEventListener('keydown', onEscKey, true);
+    
+    console.log('✅ Модалка открыта');
 }
 
 function topupCloseModal() {
-  const topupModal = document.getElementById('topupModal');
-  if (!topupModal) return;
-
-  const card = topupModal.querySelector('.topup-card');
-  topupModal.classList.add('closing');
-  topupModal.setAttribute('aria-hidden', 'true');
-  lockBody(false);
-
-  topupModal.removeEventListener('click', onBackdropClick, { passive: false });
-  document.removeEventListener('keydown', onEscKey, true);
-
-  const onAnimEnd = () => {
-    topupModal.classList.remove('show', 'closing');
-    card?.removeEventListener('transitionend', onAnimEnd);
-  };
-
-  card?.addEventListener('transitionend', onAnimEnd);
+    console.log('🔴 Закрытие модалки пополнения баланса');
+    
+    const topupModal = document.getElementById('topupModal');
+    if (!topupModal) return;
+    
+    topupModal.classList.remove('show');
+    topupModal.setAttribute('aria-hidden', 'true');
+    
+    lockBody(false);
+    
+    topupModal.removeEventListener('click', onBackdropClick, { passive: false });
+    document.removeEventListener('keydown', onEscKey, true);
 }
 
 function onBackdropClick(e) {
