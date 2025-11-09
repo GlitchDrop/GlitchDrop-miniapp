@@ -4360,7 +4360,7 @@ function handleTonSubmit() {
 
   const raw = (input.value || '').trim();
 
-  // проверка, что введено целое число
+  // Проверка: введена ли целая сумма
   if (!raw || !/^\d+$/.test(raw)) {
     if (errorEl) {
       errorEl.textContent = 'Некорректная сумма';
@@ -4369,9 +4369,9 @@ function handleTonSubmit() {
     return false;
   }
 
-  let ton = parseInt(raw, 10);
+  const ton = parseInt(raw, 10);
 
-  // минимальный депозит
+  // Минимум
   if (ton < TON_MIN) {
     if (errorEl) {
       errorEl.textContent = `Минимальный депозит ${TON_MIN} TON`;
@@ -4380,7 +4380,7 @@ function handleTonSubmit() {
     return false;
   }
 
-  // максимальный депозит
+  // Максимум
   if (ton > TON_MAX) {
     if (errorEl) {
       errorEl.textContent = `Максимальный депозит ${formatRu(TON_MAX)} TON`;
@@ -4389,7 +4389,7 @@ function handleTonSubmit() {
     return false;
   }
 
-  // убираем текст ошибки
+  // Убираем ошибку
   if (errorEl) {
     errorEl.style.display = 'none';
     errorEl.textContent = '';
@@ -4397,19 +4397,24 @@ function handleTonSubmit() {
 
   const stars = ton * TON_TO_STARS_RATE;
 
-  // запомним сумму, если захочешь дальше использовать при отправке транзакции
+  // Запомним, сколько TON и STARS
   window.lastTonTopup = { ton, stars };
 
-  // проверяем, что TON Connect инициализирован
+  // Проверяем, инициализирован ли TON Connect
   if (!window.tonConnectUI) {
     console.error('TonConnectUI не инициализирован');
     if (typeof showFloatingError === 'function') {
       showFloatingError('TON Connect не инициализирован');
+    } else {
+      alert('TON Connect не инициализирован');
     }
     return false;
   }
 
-  // Открываем окно TON Connect (как на твоём скрине)
+  // ВАЖНО: НИЧЕГО НЕ ЗАКРЫВАЕМ!
+  // Модалки topup/topupAmount остаются открытыми под TonConnect-окном
+
+  // Открываем окно TonConnect поверх
   window.tonConnectUI.openModal();
 
   return true;
