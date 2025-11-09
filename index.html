@@ -1603,6 +1603,27 @@ html.scroll-locked, html.scroll-locked body{
   opacity: 1;
 }
 
+/* Доп. инфа под полем ввода (TON → STARS) */
+.amount-meta {
+  margin-top: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  font-size: 11px;
+  font-weight: 400;          /* тонкий шрифт */
+  color: #ffffff;
+  opacity: 0.9;
+}
+
+.amount-meta-left {
+  opacity: 0.9;
+}
+
+.amount-meta-right {
+  opacity: 0.8;
+  text-align: right;
+}
+
 /* Анимированное сообщение вверху */
 .floating-error {
   position: fixed;
@@ -1851,7 +1872,7 @@ html.scroll-locked, html.scroll-locked body{
     <div class="modal-title">ПОПОЛНЕНИЕ БАЛАНСА</div>
     
     <!-- Контейнер для сообщений об ошибке -->
-    <div id="amountError" class="error-message" style="display: none;"></div>
+    <div id="amountError" class="error-message"></div>
     
     <div class="amount-input-wrapper">
       <input type="text" 
@@ -1860,6 +1881,16 @@ html.scroll-locked, html.scroll-locked body{
              placeholder="Сумма пополнения"
              maxlength="10"
              autocomplete="off">
+    </div>
+
+    <!-- Блок с курсом TON → STARS -->
+    <div class="amount-meta" id="tonMeta" style="display:none;">
+      <div class="amount-meta-left" id="tonReceiveText">
+        Вы получите 2000 Stars
+      </div>
+      <div class="amount-meta-right">
+        1 TON = 200 STARS⭐
+      </div>
     </div>
     
     <div class="modal-actions">
@@ -3746,6 +3777,9 @@ const totalSlides = 5;
 let isAnimating = false;
 let touchStartX = 0;
 let touchEndX = 0;
+// какой способ оплаты выбран
+// 0-й слайд — звезды, 1-й — TON → Stars
+let currentPaymentMethod = 'stars'; // 'stars' | 'ton'
 
 function initTopupModal() {
     console.log('🔄 Инициализация топ-ап модалки');
@@ -3820,17 +3854,27 @@ function initTopupModal() {
     });
     console.log('✅ Точки навигации настроены');
 
- // Кнопка подтверждения
+// Кнопка подтверждения
 const confirmBtn = document.getElementById('topupConfirm');
 if (confirmBtn) {
   confirmBtn.addEventListener('click', () => {
-    // Для первого слайда (карточки №1) открываем модалку ввода суммы
+    // 0-й слайд — пополнение звёздами (как и было)
     if (currentSlide === 0) {
-      topupAmountOpenModal(); // Открываем сразу, не закрывая основную модалку
-    } else {
-      alert(`Выбран способ оплаты #${currentSlide + 1}. Функция пополнения баланса будет реализована позже`);
-      topupCloseModal();
+      currentPaymentMethod = 'stars';
+      topupAmountOpenModal();
+      return;
     }
+
+    // 1-й слайд — пополнение через TON → Stars
+    if (currentSlide === 1) {
+      currentPaymentMethod = 'ton';
+      topupAmountOpenModal();
+      return;
+    }
+
+    // Остальные способы пока заглушка
+    alert(`Выбран способ оплаты #${currentSlide + 1}. Функция пополнения баланса будет реализована позже`);
+    topupCloseModal();
   });
 }
 
@@ -4283,6 +4327,43 @@ async function handleAmountSubmit() {
   }
 }
 
+function handleTonSubmit() {
+  const input = document.getElementById('amountInput');
+  if (!input) return false;
+
+  const raw = (input.value || '').trim();
+  if (!raw || !/^\d+$/.test(raw)) {
+    showFloatingError('Некорректная сумма');
+    return false;
+  }
+
+  let ton = parseInt(raw, 10);
+
+  if (ton < TON_MIN) {
+    showFloatingError(`Минимальная сумма ${TON_MIN} TON`);
+    return false;
+  }
+
+  if (ton > TON_MAX) {
+    showFloatingError(`Максимальная сумма ${formatRu(TON_MAX)} TON`);
+    return false;
+  }
+
+  const stars = ton * TON_TO_STARS_RATE;
+
+  // Пока что НИЧЕГО не делаем – просто лог
+  console.log(`[TON TOPUP] amount TON = ${ton}, будет начислено STARS = ${stars}`);
+
+  // Можешь по желанию просто закрыть модалку:
+  // topupAmountCloseModal();
+
+  return true;
+}
+
+const TON_TO_STARS_RATE = 200;
+const TON_MIN = 10;
+const TON_MAX = 100000;
+
 function topupAmountOpenModal() {
   console.log('🔵 Открытие модалки ввода суммы');
   
@@ -4292,24 +4373,38 @@ function topupAmountOpenModal() {
     return;
   }
   
-  // Сбрасываем состояние
-  const input = document.getElementById('amountInput');
+  const input   = document.getElementById('amountInput');
   const errorEl = document.getElementById('amountError');
-  
-  if (input) {
-    input.value = '';
-    input.placeholder = 'Сумма пополнения';
-  }
-  
+  const metaEl  = document.getElementById('tonMeta');
+
+  // Сбрасываем ошибки
   if (errorEl) {
     errorEl.style.display = 'none';
     errorEl.textContent = '';
   }
-  
+
+  if (input) {
+    // Настройки под способ оплаты
+    if (currentPaymentMethod === 'ton') {
+      input.placeholder = 'Введите сумму в TON';
+      input.value = String(TON_MIN); // по умолчанию 10 TON
+    } else {
+      input.placeholder = 'Сумма пополнения';
+      input.value = '';
+    }
+  }
+
+  // Показать/спрятать блок с курсом
+  if (metaEl) {
+    metaEl.style.display = currentPaymentMethod === 'ton' ? 'flex' : 'none';
+  }
+
+  // Обновляем текст «Вы получите … Stars»
+  updateTonPreview();
+
   amountModal.classList.add('show');
   amountModal.setAttribute('aria-hidden', 'false');
   
-  // Фокус на поле ввода
   setTimeout(() => {
     if (input) input.focus();
   }, 100);
@@ -4318,6 +4413,41 @@ function topupAmountOpenModal() {
   document.addEventListener('keydown', onAmountEscKey, true);
   
   console.log('✅ Модалка ввода суммы открыта');
+}
+
+function formatRu(num) {
+  try {
+    return num.toLocaleString('ru-RU');
+  } catch (_) {
+    // fallback, если что
+    return String(num);
+  }
+}
+
+function updateTonPreview() {
+  const metaEl   = document.getElementById('tonMeta');
+  const textEl   = document.getElementById('tonReceiveText');
+  const input    = document.getElementById('amountInput');
+
+  if (!metaEl || !textEl || !input) return;
+
+  if (currentPaymentMethod !== 'ton') {
+    metaEl.style.display = 'none';
+    return;
+  }
+
+  metaEl.style.display = 'flex';
+
+  const raw = (input.value || '').trim();
+  const onlyDigits = raw && /^\d+$/.test(raw);
+  let ton = onlyDigits ? parseInt(raw, 10) : 0;
+
+  if (!ton) {
+    ton = TON_MIN; // если пусто или криво — показываем расчёт от минималки
+  }
+
+  const stars = ton * TON_TO_STARS_RATE;
+  textEl.textContent = `Вы получите ${formatRu(stars)} Stars`;
 }
 
 function topupAmountCloseModal() {
@@ -4358,58 +4488,75 @@ function onAmountEscKey(e) {
 function initAmountModal() {
   console.log('🔄 Инициализация модалки ввода суммы');
   
-  const input = document.getElementById('amountInput');
+  const input      = document.getElementById('amountInput');
   const confirmBtn = document.getElementById('confirmAmountBtn');
-  const cancelBtn = document.getElementById('cancelAmountBtn');
-  const errorEl = document.getElementById('amountError');
+  const cancelBtn  = document.getElementById('cancelAmountBtn');
+  const errorEl    = document.getElementById('amountError');
 
-  // Валидация в реальном времени
+  // Валидация в реальном времени + обновление превью
   if (input) {
     input.addEventListener('input', function(e) {
-      const value = e.target.value;
+      const value   = e.target.value;
       const errorEl = document.getElementById('amountError');
       
       // Скрываем placeholder при вводе
       if (value.length > 0) {
-        e.target.placeholder = '';
+        if (currentPaymentMethod === 'ton') {
+          e.target.placeholder = 'Введите сумму в TON';
+        } else {
+          e.target.placeholder = '';
+        }
       } else {
-        e.target.placeholder = 'Сумма пополнения';
+        e.target.placeholder = (currentPaymentMethod === 'ton')
+          ? 'Введите сумму в TON'
+          : 'Сумма пополнения';
       }
       
-      // Проверяем на наличие не-цифр
+      // Проверка только на цифры
       if (value.length > 0 && !/^\d+$/.test(value)) {
-        // Показываем ошибку под полем
         if (errorEl) {
-          errorEl.textContent = '*Некорректная Сумма';
+          errorEl.textContent = '*Некорректная сумма';
           errorEl.style.display = 'block';
         }
-      } else {
-        // Скрываем ошибку если исправили
-        if (errorEl) {
-          errorEl.style.display = 'none';
-        }
+      } else if (errorEl) {
+        errorEl.style.display = 'none';
       }
+
+      // Обновляем «Вы получите … Stars» в режиме TON
+      updateTonPreview();
     });
     
     // Обработка Enter
     input.addEventListener('keydown', function(e) {
       if (e.key === 'Enter') {
         e.preventDefault();
-        handleAmountSubmit();
+        if (currentPaymentMethod === 'ton') {
+          handleTonSubmit();
+        } else {
+          handleAmountSubmit(); // старый сценарий звёзд
+        }
       }
     });
     
     // Восстанавливаем placeholder при потере фокуса если пусто
     input.addEventListener('blur', function(e) {
       if (e.target.value === '') {
-        e.target.placeholder = 'Сумма пополнения';
+        e.target.placeholder = (currentPaymentMethod === 'ton')
+          ? 'Введите сумму в TON'
+          : 'Сумма пополнения';
       }
     });
   }
   
   // Кнопка подтверждения
   if (confirmBtn) {
-    confirmBtn.addEventListener('click', handleAmountSubmit);
+    confirmBtn.addEventListener('click', function() {
+      if (currentPaymentMethod === 'ton') {
+        handleTonSubmit();
+      } else {
+        handleAmountSubmit();
+      }
+    });
   }
   
   // Кнопка отмены
