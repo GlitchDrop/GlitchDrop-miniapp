@@ -1721,9 +1721,23 @@ html.scroll-locked, html.scroll-locked body{
 <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
 
 <script>
-  window.tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-    manifestUrl: 'http://127.0.0.1:5500/tonconnect-manifest.json',
-    language: 'ru',
+  // Ждём, пока страница загрузится
+  window.addEventListener('load', function () {
+    try {
+      // Проверяем, что библиотека TON_CONNECT_UI реально подгрузилась
+      if (window.TON_CONNECT_UI && TON_CONNECT_UI.TonConnectUI) {
+        window.tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+          manifestUrl: 'http://127.0.0.1:5500/tonconnect-manifest.json',
+          language: 'ru',
+        });
+
+        console.log('✅ TonConnectUI инициализирован', window.tonConnectUI);
+      } else {
+        console.error('❌ TON_CONNECT_UI не найден — скрипт tonconnect-ui.min.js не загрузился');
+      }
+    } catch (e) {
+      console.error('❌ Ошибка при инициализации TonConnectUI:', e);
+    }
   });
 </script>
 
