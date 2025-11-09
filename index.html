@@ -791,55 +791,54 @@ html.scroll-locked, html.scroll-locked body{
 
 .plus-wrap::after{ display:none; }
 .plus-wrap.open::after{ display:block; }
-
-/* ===== TOPUP MODAL ===== */
-.modal-topup{
-  z-index: 120 !important; /* выше detail (60) и confirm (90) */
-  /* делаем bottom-sheet: модалка прижата к низу */
-  align-items: flex-end;
+/* ===== TOPUP MODAL — bottom sheet-анимация ===== */
+.modal-topup {
+  z-index: 120 !important;
+  align-items: flex-end;                 /* прижимаем модалку к низу */
   justify-content: center;
   padding: 0 12px calc(12px + env(safe-area-inset-bottom, 0));
 }
 
-.modal-topup::before{
+.modal-topup::before {
   backdrop-filter: blur(8px);
   background: linear-gradient(180deg, rgba(8,14,36,.60), rgba(6,10,26,.72));
 }
 
-/* карточка меньше половины 9:16, аккуратная — теперь выезжает снизу */
-.topup-card{
-  position:relative;
-  width:min(520px, 92vw);
-  height:min(45vh, 520px);
+/* карточка: изначально спрятана внизу */
+.topup-card {
+  position: relative;
+  width: min(520px, 92vw);
+  height: min(45vh, 520px);
   max-height: 520px;
   border-radius: 20px;
-  border:1px solid var(--border);
+  border: 1px solid var(--border);
   background: linear-gradient(180deg, rgba(20,26,62,.80), rgba(14,18,40,.90));
   box-shadow: var(--shadow-strong);
   padding: 14px 14px 16px;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 
-  /* начальное состояние — спрятана внизу */
+  /* стартовое положение — внизу и прозрачная */
   transform: translateY(110%);
   opacity: 0;
   transition:
-    transform .32s cubic-bezier(.22,.8,.25,1),
-    opacity   .32s ease-out;
+    transform 0.45s cubic-bezier(0.22, 0.8, 0.25, 1),
+    opacity   0.45s ease;
 }
 
-/* при открытии модалки карточка поднимается вверх */
-.modal-topup.show .topup-card{
+/* активное состояние — плавно на место */
+.modal-topup.show .topup-card {
   transform: translateY(0);
   opacity: 1;
 }
 
-/* при закрытии — уезжает вниз */
-.modal-topup.closing .topup-card{
+/* состояние закрытия — плавно вниз */
+.modal-topup.closing .topup-card {
   transform: translateY(110%);
   opacity: 0;
 }
+
 
 /* заголовок */
 .topup-title{
@@ -4008,67 +4007,50 @@ function updateDots() {
 }
 
 function topupOpen() {
-    console.log('🔵 Открытие модалки пополнения баланса');
-    
-    const topupModal = document.getElementById('topupModal');
-    if (!topupModal) {
-        console.error('❌ Модалка не найдена');
-        return;
+  const topupModal = document.getElementById('topupModal');
+  if (!topupModal) return;
+
+  const card = topupModal.querySelector('.topup-card');
+
+  // убираем старые состояния
+  topupModal.classList.remove('closing');
+  topupModal.classList.add('show');
+  topupModal.setAttribute('aria-hidden', 'false');
+  lockBody(true);
+
+  // гарантируем, что карточка поедет плавно
+  requestAnimationFrame(() => {
+    if (card) {
+      card.style.transition = 'none';
+      card.getBoundingClientRect(); // форс ререндер
+      card.style.transition = '';
+      card.style.transform = 'translateY(0)';
+      card.style.opacity = '1';
     }
+  });
 
-    currentSlide = 0;
-    isAnimating = false;
-
-    // на всякий случай убираем флаг закрытия
-    topupModal.classList.remove('closing');
-    
-    topupModal.classList.add('show');
-    topupModal.setAttribute('aria-hidden', 'false');
-    
-    lockBody(true);
-    
-    setTimeout(() => {
-        updateSlider();
-    }, 50);
-    
-    topupModal.addEventListener('click', onBackdropClick, { passive: false });
-    document.addEventListener('keydown', onEscKey, true);
-    
-    console.log('✅ Модалка открыта');
+  topupModal.addEventListener('click', onBackdropClick, { passive: false });
+  document.addEventListener('keydown', onEscKey, true);
 }
 
 function topupCloseModal() {
-    console.log('🔴 Закрытие модалки пополнения баланса');
-    
-    const topupModal = document.getElementById('topupModal');
-    if (!topupModal) return;
+  const topupModal = document.getElementById('topupModal');
+  if (!topupModal) return;
 
-    // если уже в процессе закрытия — ничего не делаем
-    if (topupModal.classList.contains('closing')) return;
-    
-    topupModal.classList.add('closing');
-    topupModal.setAttribute('aria-hidden', 'true');
-    
-    lockBody(false);
-    
-    topupModal.removeEventListener('click', onBackdropClick, { passive: false });
-    document.removeEventListener('keydown', onEscKey, true);
+  const card = topupModal.querySelector('.topup-card');
+  topupModal.classList.add('closing');
+  topupModal.setAttribute('aria-hidden', 'true');
+  lockBody(false);
 
-    const card = topupModal.querySelector('.topup-card');
+  topupModal.removeEventListener('click', onBackdropClick, { passive: false });
+  document.removeEventListener('keydown', onEscKey, true);
 
-    const finishClose = () => {
-        topupModal.classList.remove('show', 'closing');
-        topupModal.removeEventListener('transitionend', finishClose);
-        console.log('✅ Модалка полностью закрыта');
-    };
+  const onAnimEnd = () => {
+    topupModal.classList.remove('show', 'closing');
+    card?.removeEventListener('transitionend', onAnimEnd);
+  };
 
-    if (card) {
-        // ждём окончания transition на карточке
-        card.addEventListener('transitionend', finishClose);
-    } else {
-        // на всякий случай, если .topup-card не найдена
-        finishClose();
-    }
+  card?.addEventListener('transitionend', onAnimEnd);
 }
 
 function onBackdropClick(e) {
