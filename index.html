@@ -1267,6 +1267,53 @@ html.scroll-locked, html.scroll-locked body{
   display: none;
 }
 
+.amount-meta {
+  margin-top: 4px; /* почти вплотную к полю ввода */
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/* Общий стиль рамок */
+.amount-meta-left,
+.amount-meta-right {
+  padding: 6px 10px;
+  border-radius: 12px;
+
+  /* фон ЧУТЬ темнее общей карточки */
+  background:
+    radial-gradient(80px 40px at 0% 0%, rgba(22,241,255,0.12), transparent 55%),
+    radial-gradient(80px 40px at 100% 100%, rgba(255,62,208,0.12), transparent 55%),
+    linear-gradient(180deg, #050818, #030513);
+
+  /* тёмная рамка + неоновая кайма по краям */
+  border: 1px solid rgba(7, 181, 255, 0.6);
+  box-shadow:
+    0 0 0 1px rgba(2, 6, 23, 0.9) inset,   /* внутренняя более тёмная рамка */
+    0 0 12px rgba(7, 181, 255, 0.55);      /* внешнее синее неоновое свечение */
+
+  font-size: 12px;
+  font-weight: 800;        /* пожирнее шрифт */
+  letter-spacing: 0.3px;
+  color: #e5ecff;
+  white-space: nowrap;
+}
+
+/* "Вы получите ..." */
+.amount-meta-left {
+  flex: 1;
+  text-align: left;
+}
+
+/* "1 TON = 200 STARS⭐" */
+.amount-meta-right {
+  flex: 0 0 auto;
+  font-size: 11px;         /* чуть мельче, чтобы не спорило с основным текстом */
+  opacity: 0.95;
+  text-align: right;
+}
+
   </style>
 
 <style>
@@ -1560,7 +1607,7 @@ html.scroll-locked, html.scroll-locked body{
 
 /* Стили для модалки ввода суммы */
 .amount-input-wrapper {
-  margin: 20px 0;
+  margin: 20px 0 8px;  /* снизу меньше отступ — блок с курсом ближе к инпуту */
   position: relative;
 }
 
