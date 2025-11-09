@@ -1273,6 +1273,37 @@ html.scroll-locked, html.scroll-locked body{
   display: none;
 }
 
+/* ===== НАСТРОЙКИ РАЗМЕРА USERNAME ===== */
+:root {
+  /* максимальная ширина области под ник */
+  --username-max-width: 120px;   /* меняешь это число — меняется "граница" */
+  /* размер шрифта ника */
+  --username-font-size: 16px;    /* можешь поставить 14px, 18px и т.д. */
+}
+
+/* контейнер, в котором лежит ник (обычно .brand) */
+.topbar .brand {
+  flex: 0 0 var(--username-max-width);  /* фиксированная ширина */
+  max-width: var(--username-max-width);
+  overflow: hidden;                     /* всё, что дальше — обрежется */
+  display: flex;
+  align-items: center;
+}
+
+/* сам текст ника */
+#userName {
+  display: inline-block;
+  font-size: var(--username-font-size);
+  white-space: nowrap;
+}
+
+/* плюсик / кнопки справа — чтобы не сжимались */
+.topbar .actions,
+.topbar .plus-btn {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
   </style>
 
 <style>
