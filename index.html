@@ -1717,6 +1717,16 @@ html.scroll-locked, html.scroll-locked body{
 
 </style>
 
+<!-- TON Connect UI -->
+<script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+
+<script>
+  window.tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+    manifestUrl: 'http://127.0.0.1:5500/tonconnect-manifest.json',
+    language: 'ru',
+  });
+</script>
+
 </head>
 <body>
   <div class="cyber-bg"></div>
@@ -4336,6 +4346,7 @@ function handleTonSubmit() {
 
   const raw = (input.value || '').trim();
 
+  // проверка, что введено целое число
   if (!raw || !/^\d+$/.test(raw)) {
     if (errorEl) {
       errorEl.textContent = 'Некорректная сумма';
@@ -4346,6 +4357,7 @@ function handleTonSubmit() {
 
   let ton = parseInt(raw, 10);
 
+  // минимальный депозит
   if (ton < TON_MIN) {
     if (errorEl) {
       errorEl.textContent = `Минимальный депозит ${TON_MIN} TON`;
@@ -4354,6 +4366,7 @@ function handleTonSubmit() {
     return false;
   }
 
+  // максимальный депозит
   if (ton > TON_MAX) {
     if (errorEl) {
       errorEl.textContent = `Максимальный депозит ${formatRu(TON_MAX)} TON`;
@@ -4362,6 +4375,7 @@ function handleTonSubmit() {
     return false;
   }
 
+  // убираем текст ошибки
   if (errorEl) {
     errorEl.style.display = 'none';
     errorEl.textContent = '';
@@ -4369,8 +4383,24 @@ function handleTonSubmit() {
 
   const stars = ton * TON_TO_STARS_RATE;
 
-  // Пока что НИЧЕГО не делаем – только лог, как ты и просил
-  console.log(`[TON TOPUP] amount TON = ${ton}, будет начислено STARS = ${stars}`);
+  // запомним сумму, если захочешь дальше использовать при отправке транзакции
+  window.lastTonTopup = { ton, stars };
+
+  // проверяем, что TON Connect инициализирован
+  if (!window.tonConnectUI) {
+    console.error('TonConnectUI не инициализирован');
+    if (typeof showFloatingError === 'function') {
+      showFloatingError('TON Connect не инициализирован');
+    }
+    return false;
+  }
+
+  // Закрываем твои модалки (если функции есть)
+  try { topupAmountCloseModal(); } catch (e) {}
+  try { topupCloseModal(); } catch (e) {}
+
+  // Открываем окно TON Connect (как на твоём скрине)
+  window.tonConnectUI.openModal();
 
   return true;
 }
