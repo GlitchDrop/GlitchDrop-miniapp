@@ -1268,48 +1268,39 @@ html.scroll-locked, html.scroll-locked body{
 }
 
 .amount-meta {
-  margin-top: 4px; /* почти вплотную к полю ввода */
+  margin-top: 0;                 /* прям вплотную к полю */
   display: flex;
-  align-items: stretch;
+  align-items: baseline;
   justify-content: space-between;
   gap: 8px;
 }
 
-/* Общий стиль рамок */
+/* Просто текст без фона/рамок */
 .amount-meta-left,
 .amount-meta-right {
-  padding: 6px 10px;
-  border-radius: 12px;
-
-  /* фон ЧУТЬ темнее общей карточки */
-  background:
-    radial-gradient(80px 40px at 0% 0%, rgba(22,241,255,0.12), transparent 55%),
-    radial-gradient(80px 40px at 100% 100%, rgba(255,62,208,0.12), transparent 55%),
-    linear-gradient(180deg, #050818, #030513);
-
-  /* тёмная рамка + неоновая кайма по краям */
-  border: 1px solid rgba(7, 181, 255, 0.6);
-  box-shadow:
-    0 0 0 1px rgba(2, 6, 23, 0.9) inset,   /* внутренняя более тёмная рамка */
-    0 0 12px rgba(7, 181, 255, 0.55);      /* внешнее синее неоновое свечение */
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
 
   font-size: 12px;
-  font-weight: 800;        /* пожирнее шрифт */
+  font-weight: 800;              /* пожирнее шрифт */
   letter-spacing: 0.3px;
-  color: #e5ecff;
+  color: #e8efff;
   white-space: nowrap;
 }
 
-/* "Вы получите ..." */
+/* "Вы получите ..." слева */
 .amount-meta-left {
   flex: 1;
   text-align: left;
 }
 
-/* "1 TON = 200 STARS⭐" */
+/* "1 TON = 200 STARS⭐" справа */
 .amount-meta-right {
   flex: 0 0 auto;
-  font-size: 11px;         /* чуть мельче, чтобы не спорило с основным текстом */
+  font-size: 11px;               /* можно оставить чуть меньше, чтобы не спорило */
   opacity: 0.95;
   text-align: right;
 }
@@ -1607,9 +1598,10 @@ html.scroll-locked, html.scroll-locked body{
 
 /* Стили для модалки ввода суммы */
 .amount-input-wrapper {
-  margin: 20px 0 8px;  /* снизу меньше отступ — блок с курсом ближе к инпуту */
+  margin: 20px 0 2px;  /* было 8px — стало 2px, блок почти вплотную */
   position: relative;
 }
+
 
 .amount-input {
   width: 100%;
