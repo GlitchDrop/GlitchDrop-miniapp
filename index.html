@@ -1573,7 +1573,7 @@ html.scroll-locked, html.scroll-locked body{
 .inv-sell:active{ transform:translateX(-50%) translateY(1px); }
 
 .amount-input-wrapper {
-  margin: 20px 0 0;   /* вообще без отступа снизу */
+  margin: 20px 0 4px; /* добавили небольшой отступ снизу */
   position: relative;
 }
 
@@ -1617,13 +1617,12 @@ html.scroll-locked, html.scroll-locked body{
 }
 
 .amount-meta {
-  margin-top: -2px;            /* ещё ближе, слегка "подползает" к инпуту */
+  margin-top: 4px;             /* чуть ниже поля */
   display: flex;
   align-items: baseline;
-  justify-content: flex-start; /* только слева текст */
+  justify-content: flex-start;
 }
 
-/* Просто жирный текст без фона/рамок */
 .amount-meta-left {
   font-size: 12px;
   font-weight: 800;
@@ -4331,34 +4330,47 @@ async function handleAmountSubmit() {
 }
 
 function handleTonSubmit() {
-  const input = document.getElementById('amountInput');
+  const input   = document.getElementById('amountInput');
+  const errorEl = document.getElementById('amountError');
   if (!input) return false;
 
   const raw = (input.value || '').trim();
+
   if (!raw || !/^\d+$/.test(raw)) {
-    showFloatingError('Некорректная сумма');
+    if (errorEl) {
+      errorEl.textContent = 'Некорректная сумма';
+      errorEl.style.display = 'block';
+    }
     return false;
   }
 
   let ton = parseInt(raw, 10);
 
   if (ton < TON_MIN) {
-    showFloatingError(`Минимальная сумма ${TON_MIN} TON`);
+    if (errorEl) {
+      errorEl.textContent = `Минимальный депозит ${TON_MIN} TON`;
+      errorEl.style.display = 'block';
+    }
     return false;
   }
 
   if (ton > TON_MAX) {
-    showFloatingError(`Максимальная сумма ${formatRu(TON_MAX)} TON`);
+    if (errorEl) {
+      errorEl.textContent = `Максимальный депозит ${formatRu(TON_MAX)} TON`;
+      errorEl.style.display = 'block';
+    }
     return false;
+  }
+
+  if (errorEl) {
+    errorEl.style.display = 'none';
+    errorEl.textContent = '';
   }
 
   const stars = ton * TON_TO_STARS_RATE;
 
-  // Пока что НИЧЕГО не делаем – просто лог
+  // Пока что НИЧЕГО не делаем – только лог, как ты и просил
   console.log(`[TON TOPUP] amount TON = ${ton}, будет начислено STARS = ${stars}`);
-
-  // Можешь по желанию просто закрыть модалку:
-  // topupAmountCloseModal();
 
   return true;
 }
@@ -4387,17 +4399,18 @@ function topupAmountOpenModal() {
   }
 
   if (input) {
-    // Настройки под способ оплаты
     if (currentPaymentMethod === 'ton') {
       input.placeholder = 'Введите сумму в TON';
-      input.value = String(TON_MIN); // по умолчанию 10 TON
+      input.value = String(TON_MIN);          // стартуем с 10 TON
+      input.dataset.lastValidTon = String(TON_MIN);
     } else {
       input.placeholder = 'Сумма пополнения';
       input.value = '';
+      delete input.dataset.lastValidTon;
     }
   }
 
-  // Показать/спрятать блок с курсом
+  // Показать/спрятать блок с «Вы получите … Stars»
   if (metaEl) {
     metaEl.style.display = currentPaymentMethod === 'ton' ? 'flex' : 'none';
   }
@@ -4494,28 +4507,77 @@ function initAmountModal() {
   const input      = document.getElementById('amountInput');
   const confirmBtn = document.getElementById('confirmAmountBtn');
   const cancelBtn  = document.getElementById('cancelAmountBtn');
-  const errorEl    = document.getElementById('amountError');
 
   // Валидация в реальном времени + обновление превью
   if (input) {
     input.addEventListener('input', function(e) {
-      const value   = e.target.value;
+      const el      = e.target;
       const errorEl = document.getElementById('amountError');
-      
-      // Скрываем placeholder при вводе
+      const isTon   = (currentPaymentMethod === 'ton');
+      let   value   = el.value;
+
+      // Плейсхолдер
       if (value.length > 0) {
-        if (currentPaymentMethod === 'ton') {
-          e.target.placeholder = 'Введите сумму в TON';
-        } else {
-          e.target.placeholder = '';
-        }
+        el.placeholder = isTon ? 'Введите сумму в TON' : '';
       } else {
-        e.target.placeholder = (currentPaymentMethod === 'ton')
-          ? 'Введите сумму в TON'
-          : 'Сумма пополнения';
+        el.placeholder = isTon ? 'Введите сумму в TON' : 'Сумма пополнения';
       }
-      
-      // Проверка только на цифры
+
+      // === РЕЖИМ TON → STARS ===
+      if (isTon) {
+        // Оставляем только цифры
+        value = value.replace(/\D/g, '');
+        if (value !== el.value) el.value = value;
+
+        const prev = el.dataset.lastValidTon ?? '';
+
+        // Поле пустое — разрешаем, но напоминаем про минимум
+        if (value === '') {
+          if (errorEl) {
+            errorEl.textContent = `Минимальный депозит ${TON_MIN} TON`;
+            errorEl.style.display = 'block';
+          }
+          el.dataset.lastValidTon = '';
+          updateTonPreview();
+          return;
+        }
+
+        const num = parseInt(value, 10);
+
+        // Меньше минимума — не даём ввести, откат к предыдущему
+        if (num < TON_MIN) {
+          if (errorEl) {
+            errorEl.textContent = `Минимальный депозит ${TON_MIN} TON`;
+            errorEl.style.display = 'block';
+          }
+          el.value = prev;       // цифра не появляется в поле
+          updateTonPreview();
+          return;
+        }
+
+        // Больше максимума — не даём ввести, откат
+        if (num > TON_MAX) {
+          if (errorEl) {
+            errorEl.textContent = `Максимальный депозит ${formatRu(TON_MAX)} TON`;
+            errorEl.style.display = 'block';
+          }
+          el.value = prev;
+          updateTonPreview();
+          return;
+        }
+
+        // Всё ок, число в диапазоне
+        if (errorEl) {
+          errorEl.style.display = 'none';
+          errorEl.textContent = '';
+        }
+        el.dataset.lastValidTon = String(num);
+        el.value = String(num);  // убираем ведущие нули
+        updateTonPreview();
+        return;
+      }
+
+      // === Обычный режим (Stars, старое поведение) ===
       if (value.length > 0 && !/^\d+$/.test(value)) {
         if (errorEl) {
           errorEl.textContent = '*Некорректная сумма';
@@ -4523,9 +4585,10 @@ function initAmountModal() {
         }
       } else if (errorEl) {
         errorEl.style.display = 'none';
+        errorEl.textContent = '';
       }
 
-      // Обновляем «Вы получите … Stars» в режиме TON
+      // На всякий случай обновим превью (в Stars-режиме оно просто спрячется)
       updateTonPreview();
     });
     
