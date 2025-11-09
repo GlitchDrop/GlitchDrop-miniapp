@@ -4409,10 +4409,6 @@ function handleTonSubmit() {
     return false;
   }
 
-  // Закрываем твои модалки (если функции есть)
-  try { topupAmountCloseModal(); } catch (e) {}
-  try { topupCloseModal(); } catch (e) {}
-
   // Открываем окно TON Connect (как на твоём скрине)
   window.tonConnectUI.openModal();
 
