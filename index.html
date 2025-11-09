@@ -1275,34 +1275,10 @@ html.scroll-locked, html.scroll-locked body{
   gap: 8px;
 }
 
-/* Просто текст без фона/рамок */
-.amount-meta-left,
-.amount-meta-right {
-  padding: 0;
-  border-radius: 0;
-  background: transparent;
-  border: none;
-  box-shadow: none;
-
-  font-size: 12px;
-  font-weight: 800;              /* пожирнее шрифт */
-  letter-spacing: 0.3px;
-  color: #e8efff;
-  white-space: nowrap;
-}
-
 /* "Вы получите ..." слева */
 .amount-meta-left {
   flex: 1;
   text-align: left;
-}
-
-/* "1 TON = 200 STARS⭐" справа */
-.amount-meta-right {
-  flex: 0 0 auto;
-  font-size: 11px;               /* можно оставить чуть меньше, чтобы не спорило */
-  opacity: 0.95;
-  text-align: right;
 }
 
   </style>
@@ -1596,12 +1572,10 @@ html.scroll-locked, html.scroll-locked body{
 }
 .inv-sell:active{ transform:translateX(-50%) translateY(1px); }
 
-/* Стили для модалки ввода суммы */
 .amount-input-wrapper {
-  margin: 20px 0 2px;  /* было 8px — стало 2px, блок почти вплотную */
+  margin: 20px 0 0;   /* вообще без отступа снизу */
   position: relative;
 }
-
 
 .amount-input {
   width: 100%;
@@ -1642,25 +1616,19 @@ html.scroll-locked, html.scroll-locked body{
   opacity: 1;
 }
 
-/* Доп. инфа под полем ввода (TON → STARS) */
 .amount-meta {
-  margin-top: 8px;
+  margin-top: -2px;            /* ещё ближе, слегка "подползает" к инпуту */
   display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  font-size: 11px;
-  font-weight: 400;          /* тонкий шрифт */
-  color: #ffffff;
-  opacity: 0.9;
+  align-items: baseline;
+  justify-content: flex-start; /* только слева текст */
 }
 
+/* Просто жирный текст без фона/рамок */
 .amount-meta-left {
-  opacity: 0.9;
-}
-
-.amount-meta-right {
-  opacity: 0.8;
-  text-align: right;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  color: #e8efff;
 }
 
 /* Анимированное сообщение вверху */
@@ -1922,16 +1890,12 @@ html.scroll-locked, html.scroll-locked body{
              autocomplete="off">
     </div>
 
-    <!-- Блок с курсом TON → STARS -->
     <div class="amount-meta" id="tonMeta" style="display:none;">
-      <div class="amount-meta-left" id="tonReceiveText">
-        Вы получите 2000 Stars
-      </div>
-      <div class="amount-meta-right">
-        1 TON = 200 STARS⭐
-      </div>
-    </div>
-    
+  <div class="amount-meta-left" id="tonReceiveText">
+    Вы получите 2000 Stars
+  </div>
+</div>
+
     <div class="modal-actions">
       <button id="cancelAmountBtn" class="btn btn-ghost">ОТМЕНА</button>
       <button id="confirmAmountBtn" class="btn btn-primary">ПОПОЛНИТЬ</button>
