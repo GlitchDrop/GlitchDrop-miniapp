@@ -2483,22 +2483,20 @@ detail.scrollTop = 0;
   if(!tg) return;
   tg.ready(); tg.expand();
 
-  const u = tg.initDataUnsafe && tg.initDataUnsafe.user;
+const u = tg.initDataUnsafe && tg.initDataUnsafe.user;
 if (!u) return;
 
-// максимум 8 символов именно у username (без @)
+// максимум 8 символов у username (без @)
 const USERNAME_MAX = 8;
 let display;
 
 if (u.username) {
-  const raw = String(u.username);          // например "SuperMegaNick123"
+  const raw = String(u.username);
   const short = raw.length > USERNAME_MAX
-    ? raw.slice(0, USERNAME_MAX) + '...'   // "SuperMeg..."
-    : raw;                                 // короче 8 — не трогаем
-
-  display = '@' + short;                   // добавляем @
+    ? raw.slice(0, USERNAME_MAX) + '...'
+    : raw;
+  display = '@' + short;
 } else {
-  // фолбэк по имени
   const name = [u.first_name || '', u.last_name || '']
     .join(' ')
     .trim();
@@ -2507,7 +2505,6 @@ if (u.username) {
 
 nameEl.textContent = display;
 nameEl.setAttribute('data-text', display.replaceAll(' ', '\u00A0'));
-
 
 (async () => {
   const uid8 = await GD.ensureUid8(u.id);
@@ -2635,27 +2632,6 @@ GD.getOrFetchUid8 = window.getOrFetchUid8;
 function fitUserName(){
   // Ничего не делаем — размер и блок ника управляются в CSS
 }
-
-// вызываем при загрузке и на изменение размеров
-fitUserName();
-window.addEventListener('resize', fitUserName, {passive:true});
-window.addEventListener('orientationchange', fitUserName);
-
-// 👇 На случай, если верстка дорисуется позже
-document.addEventListener('DOMContentLoaded', () => {
-  if (typeof fitUserName === 'function') fitUserName();
-});
-
-if (document.fonts && document.fonts.ready) {
-  document.fonts.ready.then(() => fitUserName());
-}
-
-if ('ResizeObserver' in window){
-  const ro = new ResizeObserver(fitUserName);
-  const brandEl = document.querySelector('.brand');
-  if (brandEl) ro.observe(brandEl);
-}
-
 
 // === Синхронизация высоты верхнего блока в CSS-переменную ===
 function syncTopbarOffset(){
