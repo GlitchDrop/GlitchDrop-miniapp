@@ -1,7 +1,7 @@
 {
-  "url": "https://example.com",
-  "name": "Glitch Drop (DEV)",
+  "url": "https://glitchdrop.github.io/GlitchDrop-miniapp",
+  "name": "Glitch Drop",
   "iconUrl": "https://ton.org/favicon.ico",
-  "termsOfUseUrl": "https://example.com/terms",
-  "privacyPolicyUrl": "https://example.com/privacy"
+  "termsOfUseUrl": "https://glitchdrop.github.io/GlitchDrop-miniapp/terms",
+  "privacyPolicyUrl": "https://glitchdrop.github.io/GlitchDrop-miniapp/privacy"
 }
