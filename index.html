@@ -793,13 +793,20 @@ html.scroll-locked, html.scroll-locked body{
 .plus-wrap.open::after{ display:block; }
 
 /* ===== TOPUP MODAL ===== */
-.modal-topup{ z-index: 120 !important; } /* выше detail (60) и confirm (90) */
+.modal-topup{
+  z-index: 120 !important; /* выше detail (60) и confirm (90) */
+  /* делаем bottom-sheet: модалка прижата к низу */
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0 12px calc(12px + env(safe-area-inset-bottom, 0));
+}
+
 .modal-topup::before{
   backdrop-filter: blur(8px);
   background: linear-gradient(180deg, rgba(8,14,36,.60), rgba(6,10,26,.72));
 }
 
-/* карточка меньше половины 9:16, аккуратная */
+/* карточка меньше половины 9:16, аккуратная — теперь выезжает снизу */
 .topup-card{
   position:relative;
   width:min(520px, 92vw);
@@ -810,11 +817,33 @@ html.scroll-locked, html.scroll-locked body{
   background: linear-gradient(180deg, rgba(20,26,62,.80), rgba(14,18,40,.90));
   box-shadow: var(--shadow-strong);
   padding: 14px 14px 16px;
-  display:flex; flex-direction:column; gap:10px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+
+  /* начальное состояние — спрятана внизу */
+  transform: translateY(110%);
+  opacity: 0;
+  transition:
+    transform .32s cubic-bezier(.22,.8,.25,1),
+    opacity   .32s ease-out;
+}
+
+/* при открытии модалки карточка поднимается вверх */
+.modal-topup.show .topup-card{
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* при закрытии — уезжает вниз */
+.modal-topup.closing .topup-card{
+  transform: translateY(110%);
+  opacity: 0;
 }
 
 /* заголовок */
 .topup-title{
+
   text-align:left;
   font-weight: 900;
   letter-spacing: .6px;
@@ -3989,6 +4018,9 @@ function topupOpen() {
 
     currentSlide = 0;
     isAnimating = false;
+
+    // на всякий случай убираем флаг закрытия
+    topupModal.classList.remove('closing');
     
     topupModal.classList.add('show');
     topupModal.setAttribute('aria-hidden', 'false');
@@ -4010,14 +4042,33 @@ function topupCloseModal() {
     
     const topupModal = document.getElementById('topupModal');
     if (!topupModal) return;
+
+    // если уже в процессе закрытия — ничего не делаем
+    if (topupModal.classList.contains('closing')) return;
     
-    topupModal.classList.remove('show');
+    topupModal.classList.add('closing');
     topupModal.setAttribute('aria-hidden', 'true');
     
     lockBody(false);
     
     topupModal.removeEventListener('click', onBackdropClick, { passive: false });
     document.removeEventListener('keydown', onEscKey, true);
+
+    const card = topupModal.querySelector('.topup-card');
+
+    const finishClose = () => {
+        topupModal.classList.remove('show', 'closing');
+        topupModal.removeEventListener('transitionend', finishClose);
+        console.log('✅ Модалка полностью закрыта');
+    };
+
+    if (card) {
+        // ждём окончания transition на карточке
+        card.addEventListener('transitionend', finishClose);
+    } else {
+        // на всякий случай, если .topup-card не найдена
+        finishClose();
+    }
 }
 
 function onBackdropClick(e) {
