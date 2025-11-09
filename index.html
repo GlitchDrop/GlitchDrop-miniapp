@@ -2490,6 +2490,7 @@ detail.scrollTop = 0;
   const display = u.username ? '@' + u.username : [u.first_name||'', u.last_name||''].join(' ').trim() || 'GLITCH DROP';
   nameEl.textContent = display;
   nameEl.setAttribute('data-text', display.replaceAll(' ', '\u00A0'));
+  nameEl.dataset.fullName = display;
 
 (async () => {
   const uid8 = await GD.ensureUid8(u.id);
@@ -2613,45 +2614,91 @@ GD.getOrFetchUid8 = window.getOrFetchUid8;
   if (typeof syncTopbarOffset === 'function') syncTopbarOffset();
 })();
 
-// === Автоподгон ника под доступную ширину бренда ===
+// === Автоподгон ника под доступную ширину бренда + ручное троеточие ===
 function fitUserName(){
   const brand = document.querySelector('.brand');
   const el = document.getElementById('userName');
-  if(!brand || !el) return;
+  if (!brand || !el) return;
 
+  // Берём полный ник, а не уже обрезанный
+  const full = el.dataset.fullName || el.textContent || '';
+
+  // Сбрасываем стили и возвращаем полный текст
+  el.textContent = full;
+  el.setAttribute('data-text', full.replaceAll(' ', '\u00A0')); // для глитча
   el.style.transform = 'scale(1)';
-  el.style.removeProperty('--name-scale');
+  el.style.removeProperty('letter-spacing');
+  el.style.removeProperty('max-width');
+  el.style.removeProperty('overflow');
+  el.style.removeProperty('text-overflow');
 
-  const maxW = Math.floor(brand.clientWidth);
+  const maxW = Math.floor(brand.clientWidth);   // наша «невидимая граница»
+  if (!maxW) return;
+
+  // Ширина полного ника при обычном размере
   const needW = Math.ceil(el.scrollWidth);
-  if (!maxW || !needW) return;
+  if (!needW) return;
 
+  // Если всё влазит — просто выходим, без троеточия и без скейла
   if (needW <= maxW){
     el.removeAttribute('title');
     return;
   }
 
-  const scale = Math.max(0.65, maxW / needW); // не меньше 0.65
+  // Считаем масштаб, но не меньше 0.65
+  let scale = maxW / needW;
+  if (scale > 1) scale = 1;
+  scale = Math.max(0.65, scale);
+
   el.style.transform = `scale(${scale})`;
+  el.style.transformOrigin = 'left center';
 
-// лёгкое уплотнение межбуквенного интервала при сильном скейле
-if (scale <= 0.70){
-  el.style.letterSpacing = '-0.2px';
-} else {
-  el.style.removeProperty('letter-spacing');
-}
-
-
+  // Чуть уплотняем буквы при сильном уменьшении
   if (scale <= 0.70){
-    el.setAttribute('title', el.textContent);
-    el.style.maxWidth = maxW + 'px';
-    el.style.textOverflow = 'ellipsis';
-    el.style.overflow = 'hidden';
+    el.style.letterSpacing = '-0.2px';
+  }
+
+  // Если пришлось сильно сжать — добавляем троеточие вручную
+  // и следим, чтобы ТО, ЧТО ДО "…" влезало в коридор
+  if (scale <= 0.70){
+    el.setAttribute('title', full); // в тултипе — полный ник
+
+    // ширина текста ДО скейла, которая поместится после масштабирования
+    const maxTextW = maxW / scale;
+
+    let lo = 1;
+    let hi = full.length;
+    let best = 0;
+
+    // бинпоиск по количеству символов, которые влезают
+    while (lo <= hi){
+      const mid = (lo + hi) >> 1;
+      const test = full.slice(0, mid) + '…';   // можешь заменить на '...'
+      el.textContent = test;
+      el.setAttribute('data-text', test.replaceAll(' ', '\u00A0'));
+      const w = el.scrollWidth;
+
+      if (w <= maxTextW){
+        best = mid;
+        lo = mid + 1;
+      } else {
+        hi = mid - 1;
+      }
+    }
+
+    // применяем найденный вариант
+    if (best > 0){
+      const finalText = full.slice(0, best) + '…'; // или '...'
+      el.textContent = finalText;
+      el.setAttribute('data-text', finalText.replaceAll(' ', '\u00A0'));
+    } else {
+      // на всякий случай — fallback: просто полный текст
+      el.textContent = full;
+      el.setAttribute('data-text', full.replaceAll(' ', '\u00A0'));
+    }
   } else {
+    // масштаб был достаточно мягкий — без троеточия
     el.removeAttribute('title');
-    el.style.removeProperty('max-width');
-    el.style.removeProperty('text-overflow');
-    el.style.removeProperty('overflow');
   }
 }
 
