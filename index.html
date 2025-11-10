@@ -1717,21 +1717,27 @@ html.scroll-locked, html.scroll-locked body{
 
 </style>
 
-<!-- TON Connect UI -->
 <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
 
 <script>
-  // Ждём, пока страница загрузится
   window.addEventListener('load', function () {
     try {
-      // Проверяем, что библиотека TON_CONNECT_UI реально подгрузилась
       if (window.TON_CONNECT_UI && TON_CONNECT_UI.TonConnectUI) {
         window.tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
           manifestUrl: 'https://glitchdrop.github.io/GlitchDrop-miniapp/tonconnect-manifest.json',
           language: 'ru',
         });
-
         console.log('✅ TonConnectUI инициализирован', window.tonConnectUI);
+
+        // Слушаем изменение статуса кошелька
+        window.tonConnectUI.onStatusChange(function (wallet) {
+          console.log('[TonConnect] status change:', wallet);
+          // Если кошелёк подключился и у нас есть ожидающее пополнение — отправляем транзакцию
+          if (wallet && window.tonTopupPending) {
+            sendTonTopup();
+          }
+        });
+
       } else {
         console.error('❌ TON_CONNECT_UI не найден — скрипт tonconnect-ui.min.js не загрузился');
       }
@@ -4360,7 +4366,7 @@ function handleTonSubmit() {
 
   const raw = (input.value || '').trim();
 
-  // Проверка: введена ли целая сумма
+  // Проверка: целое число
   if (!raw || !/^\d+$/.test(raw)) {
     if (errorEl) {
       errorEl.textContent = 'Некорректная сумма';
@@ -4371,7 +4377,6 @@ function handleTonSubmit() {
 
   const ton = parseInt(raw, 10);
 
-  // Минимум
   if (ton < TON_MIN) {
     if (errorEl) {
       errorEl.textContent = `Минимальный депозит ${TON_MIN} TON`;
@@ -4380,7 +4385,6 @@ function handleTonSubmit() {
     return false;
   }
 
-  // Максимум
   if (ton > TON_MAX) {
     if (errorEl) {
       errorEl.textContent = `Максимальный депозит ${formatRu(TON_MAX)} TON`;
@@ -4389,7 +4393,6 @@ function handleTonSubmit() {
     return false;
   }
 
-  // Убираем ошибку
   if (errorEl) {
     errorEl.style.display = 'none';
     errorEl.textContent = '';
@@ -4397,10 +4400,10 @@ function handleTonSubmit() {
 
   const stars = ton * TON_TO_STARS_RATE;
 
-  // Запомним, сколько TON и STARS
+  // сохраняем данные этого пополнения
   window.lastTonTopup = { ton, stars };
+  window.tonTopupPending = true;
 
-  // Проверяем, инициализирован ли TON Connect
   if (!window.tonConnectUI) {
     console.error('TonConnectUI не инициализирован');
     if (typeof showFloatingError === 'function') {
@@ -4408,14 +4411,20 @@ function handleTonSubmit() {
     } else {
       alert('TON Connect не инициализирован');
     }
+    window.tonTopupPending = false;
     return false;
   }
 
-  // ВАЖНО: НИЧЕГО НЕ ЗАКРЫВАЕМ!
-  // Модалки topup/topupAmount остаются открытыми под TonConnect-окном
+  // Модалку с суммой НЕ закрываем — как ты и хотел
 
-  // Открываем окно TonConnect поверх
-  window.tonConnectUI.openModal();
+  // Если кошелёк уже подключён — сразу шлём транзакцию
+  if (window.tonConnectUI.connected) {
+    sendTonTopup();
+  } else {
+    // Если не подключён — открываем TonConnect-меню,
+    // а после подключения onStatusChange вызовет sendTonTopup()
+    window.tonConnectUI.openModal();
+  }
 
   return true;
 }
@@ -4423,6 +4432,9 @@ function handleTonSubmit() {
 const TON_TO_STARS_RATE = 200;
 const TON_MIN = 10;
 const TON_MAX = 100000;
+
+// Куда летят TON за пополнение (ЗАМЕНИ на свой адрес!)
+const TON_RECEIVER_ADDRESS = 'UQB4Sh-FL-1VWxPDao7l3T-5iKXXuxk5VneNrQ7nehdNk8qK'; // TODO: сюда твой TON-адрес
 
 function topupAmountOpenModal() {
   console.log('🔵 Открытие модалки ввода суммы');
@@ -4713,6 +4725,47 @@ if (document.readyState === 'loading') {
     }
   });
 })();
+
+async function sendTonTopup() {
+  if (!window.tonConnectUI || !window.lastTonTopup) {
+    console.warn('Нет tonConnectUI или данных о пополнении');
+    return;
+  }
+
+  const { ton, stars } = window.lastTonTopup;
+
+  // Перевод TON → нанотонны (1 TON = 1e9)
+  const amountNano = (ton * 1_000_000_000).toString();
+
+  const tx = {
+    validUntil: Math.floor(Date.now() / 1000) + 600, // 10 мин на подписание
+    messages: [
+      {
+        address: TON_RECEIVER_ADDRESS,
+        amount: amountNano,
+        // payload/stateInit можно добавить позже, если нужно
+      }
+    ]
+  };
+
+  try {
+    console.log('[TON TX] отправляем транзакцию', tx);
+    const result = await window.tonConnectUI.sendTransaction(tx);
+    console.log('[TON TX] результат', result);
+
+    // тут уже можно дернуть бэкенд или показать уведомление
+    if (typeof showFloatingError === 'function') {
+      showFloatingError(`Заявка на пополнение ${ton} TON отправлена. После подтверждения начислим ${stars} ⭐`);
+    }
+  } catch (e) {
+    console.error('Ошибка при отправке транзакции TON:', e);
+    if (typeof showFloatingError === 'function') {
+      showFloatingError('Платёж TON отменён или не выполнен');
+    }
+  } finally {
+    window.tonTopupPending = false;
+  }
+}
 
 </script>
 
