@@ -1281,6 +1281,50 @@ html.scroll-locked, html.scroll-locked body{
   text-align: left;
 }
 
+  /* Контейнер поверх всего */
+  #stars-gain-container {
+    position: fixed;
+    bottom: 80px; /* немного выше нижней границы */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Элемент с анимацией */
+  .stars-gain {
+    font-size: 22px;
+    font-weight: 700;
+    color: #FFD700; /* золотой цвет */
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
+    opacity: 0;
+    transform: translateY(20px);
+    animation: starsGainAnim 2s ease-out forwards;
+  }
+
+  @keyframes starsGainAnim {
+    0% {
+      opacity: 0;
+      transform: translateY(20px) scale(0.9);
+    }
+    20% {
+      opacity: 1;
+      transform: translateY(0) scale(1.05);
+    }
+    80% {
+      opacity: 1;
+      transform: translateY(-20px) scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-40px) scale(0.95);
+    }
+  }
+
   </style>
 
 <style>
@@ -1745,6 +1789,26 @@ html.scroll-locked, html.scroll-locked body{
       console.error('❌ Ошибка при инициализации TonConnectUI:', e);
     }
   });
+
+  // Универсальная функция для анимации прибавления звёзд
+function showStarsGain(amount) {
+  const container = document.getElementById('stars-gain-container');
+  if (!container) return;
+
+  // Создаём элемент
+  const el = document.createElement('div');
+  el.className = 'stars-gain';
+  el.textContent = `+${amount} ⭐`;
+
+  // Добавляем в контейнер
+  container.appendChild(el);
+
+  // Удаляем после завершения анимации (2 секунды)
+  setTimeout(() => {
+    el.remove();
+  }, 2000);
+}
+
 </script>
 
 </head>
@@ -4751,6 +4815,37 @@ async function sendTonTopup() {
   try {
     console.log('[TON TX] отправляем транзакцию', tx);
     const result = await window.tonConnectUI.sendTransaction(tx);
+    // === ВРЕМЕННОЕ НАЧИСЛЕНИЕ ЗВЁЗД НА ФРОНТЕ ===
+try {
+  // Находим элемент, где отображается баланс звёзд
+  const starsBalanceEl = document.getElementById('stars-balance');
+
+  if (starsBalanceEl && window.lastTonTopup) {
+    const { ton } = window.lastTonTopup;
+    const addedStars = ton * TON_TO_STARS_RATE;
+
+    // Текущее количество звёзд
+    const currentStars = parseInt(starsBalanceEl.textContent || '0', 10);
+
+    // Прибавляем
+    starsBalanceEl.textContent = currentStars + addedStars;
+    showStarsGain(addedStars);
+
+
+    // Можно добавить плавную анимацию
+    starsBalanceEl.style.transition = 'transform 0.3s ease';
+    starsBalanceEl.style.transform = 'scale(1.2)';
+    setTimeout(() => (starsBalanceEl.style.transform = 'scale(1)'), 300);
+
+    if (typeof showFloatingError === 'function') {
+      showFloatingError(`✅ Начислено ${addedStars} ⭐ (${ton} TON по курсу 1 TON = 200 ⭐)`);
+    }
+  } else {
+    console.warn('Не найден элемент #stars-balance или нет данных о пополнении');
+  }
+} catch (e) {
+  console.error('Ошибка при обновлении баланса звёзд:', e);
+}
     console.log('[TON TX] результат', result);
 
     // тут уже можно дернуть бэкенд или показать уведомление
@@ -4861,6 +4956,9 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 </script>
+
+<!-- Контейнер для анимаций пополнения -->
+<div id="stars-gain-container"></div>
 
 </body>
 </html>
