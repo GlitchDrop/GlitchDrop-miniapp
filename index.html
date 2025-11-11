@@ -4359,14 +4359,15 @@ async function handleAmountSubmit() {
   }
 }
 
-function handleTonSubmit() {
+// ДЕЛАЕМ АСИНХРОННОЙ
+async function handleTonSubmit() {
   const input   = document.getElementById('amountInput');
   const errorEl = document.getElementById('amountError');
   if (!input) return false;
 
   const raw = (input.value || '').trim();
 
-  // Проверка: целое число
+  // Проверка: введена ли целая сумма
   if (!raw || !/^\d+$/.test(raw)) {
     if (errorEl) {
       errorEl.textContent = 'Некорректная сумма';
@@ -4377,6 +4378,7 @@ function handleTonSubmit() {
 
   const ton = parseInt(raw, 10);
 
+  // Минимум
   if (ton < TON_MIN) {
     if (errorEl) {
       errorEl.textContent = `Минимальный депозит ${TON_MIN} TON`;
@@ -4385,6 +4387,7 @@ function handleTonSubmit() {
     return false;
   }
 
+  // Максимум
   if (ton > TON_MAX) {
     if (errorEl) {
       errorEl.textContent = `Максимальный депозит ${formatRu(TON_MAX)} TON`;
@@ -4393,17 +4396,19 @@ function handleTonSubmit() {
     return false;
   }
 
+  // Убираем ошибку
   if (errorEl) {
     errorEl.style.display = 'none';
     errorEl.textContent = '';
   }
 
+  // Сколько звёзд должно прилететь за этот TON-депозит
   const stars = ton * TON_TO_STARS_RATE;
 
-  // сохраняем данные этого пополнения
+  // Просто для отладки/логики
   window.lastTonTopup = { ton, stars };
-  window.tonTopupPending = true;
 
+  // Проверяем, инициализирован ли TON Connect
   if (!window.tonConnectUI) {
     console.error('TonConnectUI не инициализирован');
     if (typeof showFloatingError === 'function') {
@@ -4411,22 +4416,44 @@ function handleTonSubmit() {
     } else {
       alert('TON Connect не инициализирован');
     }
-    window.tonTopupPending = false;
     return false;
   }
 
-  // Модалку с суммой НЕ закрываем — как ты и хотел
+  // Формируем транзакцию TON
+  const tx = {
+    validUntil: Math.floor(Date.now() / 1000) + 600, // +10 минут
+    messages: [
+      {
+        // ⚠️ СЮДА ПОДСТАВЬ АДРЕС ПОЛУЧАТЕЛЯ TON
+        address: 'EQ__________________________________________', 
+        // 1 TON = 1e9 нанотонов
+        amount: String(ton * 1e9),
+      }
+    ]
+  };
 
-  // Если кошелёк уже подключён — сразу шлём транзакцию
-  if (window.tonConnectUI.connected) {
-    sendTonTopup();
-  } else {
-    // Если не подключён — открываем TonConnect-меню,
-    // а после подключения onStatusChange вызовет sendTonTopup()
-    window.tonConnectUI.openModal();
+  try {
+    // ОТКРЫВАЕТСЯ КОШЕЛЁК, ПОЛЬЗОВАТЕЛЬ ПОДПИСЫВАЕТ ТРАНЗАКЦИЮ
+    const res = await window.tonConnectUI.sendTransaction(tx);
+    console.log('✅ TON-транзакция отправлена', res);
+
+    // ❗ СРАЗУ после успешной отправки начисляем звёзды
+    applyTonStarsTopup(stars);
+
+    // Закрываем модалки пополнения
+    try {
+      topupAmountCloseModal();
+      topupCloseModal();
+    } catch (e) {
+      console.warn('Не удалось закрыть модалки после TON', e);
+    }
+
+    return true;
+  } catch (e) {
+    console.error('❌ Ошибка / отмена TON-транзакции', e);
+    // Здесь звёзды НЕ начисляем, потому что оплаты не было
+    return false;
   }
-
-  return true;
 }
 
 const TON_TO_STARS_RATE = 200;
@@ -4803,6 +4830,19 @@ function applyTopup(amountMaybe) {
   localStorage.removeItem(LS_LAST);
   console.log('[stars] +', last, '=>', next);
 }
+
+// ===== ДОБАВЛЕНО: пополнение звёзд после оплаты TON =====
+function applyTonStarsTopup(starsAmount) {
+  var stars = parseInt(starsAmount, 10) || 0;
+  if (!stars) return;
+
+  var current = getStarsBalance();
+  var next = current + stars;
+
+  setStarsBalance(next);
+  console.log('[ton] +', stars, '=>', next);
+}
+// ===== КОНЕЦ ДОБАВЛЕННОГО БЛОКА =====
 
 // ОБЁРТКА ДЛЯ ОТКРЫТИЯ ИНВОЙСА
 function openStarsInvoice(amount, invoiceUrlOrSlug) {
