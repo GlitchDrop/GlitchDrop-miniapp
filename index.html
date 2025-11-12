@@ -2765,7 +2765,7 @@ window.getOrFetchUid8 = async function(tgUserId){
   }catch(_){
     // 3) fallback (детерминированный)
     const h = GD._fnv1a(`GLITCHDROP:${tgUserId || '0'}`);
-    const fallback = GD._to8(h);
+    const fallback = GD._toUid8(h);
     try{ localStorage.setItem(UID8_LS_KEY, fallback); }catch(_){}
     return fallback;
   }
