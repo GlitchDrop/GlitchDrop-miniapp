@@ -2,6 +2,214 @@
 <html lang="ru">
 
 <head>
+
+  <script>
+// === ГЛОБАЛЬНЫЙ СБРОС UID ДЛЯ ВСЕХ ПРИ СЛЕДУЮЩЕМ ЗАПУСКЕ ===
+// Увеличь версию, когда нужно «сбросить всем»: 'v2' -> 'v3' и т.д.
+var UID_SCHEMA_VERSION = 'v2';
+
+// ——— утилиты совместимые со старыми WebView ———
+function isValidUid8(v) {
+  return typeof v === 'string' && /^\d{8}$/.test(v) && v !== '00000000';
+}
+function uidKeyFor(tgId) {
+  return 'gd_uid8:' + UID_SCHEMA_VERSION + ':' + (tgId || 'anon');
+}
+// Полезно убрать очень старый общий ключ, если вдруг сохранился
+var OLD_GENERIC_KEY = 'gd_uid8';
+
+// Math.imul полифилл (для старых движков)
+if (!Math.imul) {
+  Math.imul = function (a, b) {
+    var ah = (a >>> 16) & 0xffff, al = a & 0xffff;
+    var bh = (b >>> 16) & 0xffff, bl = b & 0xffff;
+    var high = ((ah * bl) + (al * bh)) & 0xffff;
+    return ((high << 16) >>> 0) + (al * bl | 0);
+  };
+}
+
+// Одноразовая зачистка старых версий ключей (срабатывает при каждом заходе)
+(function sweepOldUidKeys(){
+  try {
+    var toDelete = [];
+    for (var i = 0; i < localStorage.length; i++) {
+      var k = localStorage.key(i);
+      if (!k) continue;
+
+      // все "gd_uid8:*" КРОМЕ текущей версии
+      var isUidKey = k.indexOf('gd_uid8:') === 0;
+      var isCurrent = k.indexOf('gd_uid8:' + UID_SCHEMA_VERSION + ':') === 0;
+      if (isUidKey && !isCurrent) toDelete.push(k);
+
+      // очень старый общий ключ
+      if (k === OLD_GENERIC_KEY) toDelete.push(k);
+    }
+    for (var j = 0; j < toDelete.length; j++) {
+      localStorage.removeItem(toDelete[j]);
+    }
+  } catch (e) { /* ignore */ }
+})();
+
+// ——— GD helpers ———
+window.GD = window.GD || {};
+
+GD._fnv1a = function (str) {
+  var h = 0x811c9dc5 >>> 0;
+  for (var i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return h >>> 0;
+};
+
+GD._toUid8 = function (n) {
+  // всегда 8 цифр и никогда "00000000"
+  var v = ((n % 99999999) + 1);
+  if (v < 0) v = -v; // на всякий случай
+  var s = String(v);
+  while (s.length < 8) s = '0' + s;
+  return s;
+};
+
+GD.resetUidCacheFor = function (tgId) {
+  try { localStorage.removeItem(uidKeyFor(tgId)); } catch (e) {}
+};
+
+// Основной резолвер UID8 с кэшем и фолбэком
+GD.getOrFetchUid8 = function (tgId) {
+  var K = uidKeyFor(tgId);
+
+  // 1) читаем кэш новой схемы
+  try {
+    var cached = localStorage.getItem(K);
+    if (isValidUid8(cached)) return Promise.resolve(cached);
+    if (cached) localStorage.removeItem(K); // вычистим мусор (включая 00000000)
+  } catch (e) {}
+
+  // 2) пробуем сервер, только если есть fetch и задан API_BASE
+  var canFetch = (typeof fetch === 'function') && (typeof window !== 'undefined') && window.API_BASE;
+  if (canFetch) {
+    return fetch(window.API_BASE + '/api/referrals/hit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telegram_id: String(tgId || '') })
+    })
+    .then(function (resp) {
+      if (!resp.ok) throw new Error('bad status');
+      return resp.json();
+    })
+    .then(function (data) {
+      var uid8 = data && data.uid8;
+      if (!isValidUid8(uid8)) throw new Error('bad uid');
+      try { localStorage.setItem(K, uid8); } catch (e) {}
+      return uid8;
+    })
+    .catch(function () {
+      // 3) фолбэк: детерминированный, гарантированно не "00000000"
+      var h = GD._fnv1a('GLITCHDROP:' + (tgId || '0'));
+      var fallback = GD._toUid8(h);
+      try { localStorage.setItem(K, fallback); } catch (e) {}
+      return fallback;
+    });
+  }
+
+  // 3) нет fetch — сразу фолбэк
+  return new Promise(function (resolve) {
+    var h = GD._fnv1a('GLITCHDROP:' + (tgId || '0'));
+    var fallback = GD._toUid8(h);
+    try { localStorage.setItem(K, fallback); } catch (e) {}
+    resolve(fallback);
+  });
+};
+
+// Мемоизация промисов (без Map)
+GD._uid8Promises = GD._uid8Promises || {};
+GD.ensureUid8 = function (tgId) {
+  var key = String(tgId || 'anon');
+  if (!GD._uid8Promises[key]) {
+    GD._uid8Promises[key] = GD.getOrFetchUid8(tgId);
+  }
+  return GD._uid8Promises[key];
+};
+</script>
+
+  <script>
+    // ===== UID8 helpers + защита =====
+    window.GD = window.GD || {};
+    const isValidUid8 = v => typeof v === 'string' && /^\d{8}$/.test(v) && v !== '00000000';
+    const uidKeyFor = tgId => `gd_uid8:${tgId || 'anon'}`;
+    const OLD_KEY = 'gd_uid8'; // если раньше хранили без неймспейса
+
+    // хеш + генерация 8 цифр (никогда не 00000000)
+    GD._fnv1a = function (str) {
+      let h = 0x811c9dc5 >>> 0;
+      for (let i = 0; i < str.length; i++) {
+        h ^= str.charCodeAt(i);
+        h = Math.imul(h, 0x01000193) >>> 0;
+      }
+      return h >>> 0;
+    };
+    GD._toUid8 = n => String((n % 99999999) + 1).padStart(8, '0');
+
+    GD.resetUidCacheFor = function (tgId) {
+      try {
+        localStorage.removeItem(uidKeyFor(tgId));
+        const old = localStorage.getItem(OLD_KEY);
+        if (old === '00000000') localStorage.removeItem(OLD_KEY);
+      } catch (_) {}
+    };
+
+    GD.getOrFetchUid8 = async function (tgId) {
+      const K = uidKeyFor(tgId);
+
+      // миграция со старого ключа
+      try {
+        const old = localStorage.getItem(OLD_KEY);
+        if (isValidUid8(old)) {
+          localStorage.setItem(K, old);
+          localStorage.removeItem(OLD_KEY);
+        } else if (old === '00000000') {
+          localStorage.removeItem(OLD_KEY);
+        }
+      } catch (_) {}
+
+      // читаем кэш
+      try {
+        const cached = localStorage.getItem(K);
+        if (isValidUid8(cached)) return cached;
+        if (cached) localStorage.removeItem(K); // вычистим мусор, включая 00000000
+      } catch (_) {}
+
+      // пробуем сервер
+      try {
+        const resp = await fetch(`${window.API_BASE}/api/referrals/hit`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ telegram_id: String(tgId || '') }),
+        });
+        if (!resp.ok) throw new Error('bad status');
+        const { uid8 } = await resp.json();
+        if (!isValidUid8(uid8)) throw new Error('bad uid');
+        try { localStorage.setItem(K, uid8); } catch (_) {}
+        return uid8;
+      } catch (_) {
+        // детерминированный фолбэк
+        const h = GD._fnv1a(`GLITCHDROP:${tgId || '0'}`);
+        const fallback = GD._toUid8(h);
+        try { localStorage.setItem(K, fallback); } catch (_) {}
+        return fallback;
+      }
+    };
+
+    GD._uid8Promises = new Map();
+    GD.ensureUid8 = function (tgId) {
+      if (!GD._uid8Promises.has(tgId)) {
+        GD._uid8Promises.set(tgId, GD.getOrFetchUid8(tgId));
+      }
+      return GD._uid8Promises.get(tgId);
+    };
+  </script>
+
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
   <title>GLITCH DROP — Mini App</title>
@@ -2565,9 +2773,21 @@ nameEl.textContent = display;
 nameEl.setAttribute('data-text', display.replaceAll(' ', '\u00A0'));
 
 (async () => {
-  const uid8 = await GD.ensureUid8(u.id);
-  const idEl = document.getElementById('userId');
-  if (idEl) idEl.textContent = `ID ${uid8}`;
+  try {
+    const tg = window.Telegram && window.Telegram.WebApp;
+    const u  = tg?.initDataUnsafe?.user;
+    if (!u) return; // не в Telegram Mini App — ничего не делаем
+
+    const uid8 = await GD.ensureUid8(u.id);
+
+    if (uid8 && uid8 !== '00000000') {
+      document.querySelectorAll('#userId').forEach(el => {
+        el.textContent = `ID ${uid8}`;
+      });
+    }
+  } catch (e) {
+    console.warn('ensureUid8 failed', e);
+  }
 })();
 
 // === UID8 с сервера (уникально в проде) ===
@@ -4359,14 +4579,15 @@ async function handleAmountSubmit() {
   }
 }
 
-function handleTonSubmit() {
+// ДЕЛАЕМ АСИНХРОННОЙ
+async function handleTonSubmit() {
   const input   = document.getElementById('amountInput');
   const errorEl = document.getElementById('amountError');
   if (!input) return false;
 
   const raw = (input.value || '').trim();
 
-  // Проверка: целое число
+  // Проверка: введена ли целая сумма
   if (!raw || !/^\d+$/.test(raw)) {
     if (errorEl) {
       errorEl.textContent = 'Некорректная сумма';
@@ -4377,6 +4598,7 @@ function handleTonSubmit() {
 
   const ton = parseInt(raw, 10);
 
+  // Минимум
   if (ton < TON_MIN) {
     if (errorEl) {
       errorEl.textContent = `Минимальный депозит ${TON_MIN} TON`;
@@ -4385,6 +4607,7 @@ function handleTonSubmit() {
     return false;
   }
 
+  // Максимум
   if (ton > TON_MAX) {
     if (errorEl) {
       errorEl.textContent = `Максимальный депозит ${formatRu(TON_MAX)} TON`;
@@ -4393,17 +4616,19 @@ function handleTonSubmit() {
     return false;
   }
 
+  // Убираем ошибку
   if (errorEl) {
     errorEl.style.display = 'none';
     errorEl.textContent = '';
   }
 
+  // Сколько звёзд должно прилететь за этот TON-депозит
   const stars = ton * TON_TO_STARS_RATE;
 
-  // сохраняем данные этого пополнения
+  // Просто для отладки/логики
   window.lastTonTopup = { ton, stars };
-  window.tonTopupPending = true;
 
+  // Проверяем, инициализирован ли TON Connect
   if (!window.tonConnectUI) {
     console.error('TonConnectUI не инициализирован');
     if (typeof showFloatingError === 'function') {
@@ -4411,22 +4636,44 @@ function handleTonSubmit() {
     } else {
       alert('TON Connect не инициализирован');
     }
-    window.tonTopupPending = false;
     return false;
   }
 
-  // Модалку с суммой НЕ закрываем — как ты и хотел
+  // Формируем транзакцию TON
+  const tx = {
+    validUntil: Math.floor(Date.now() / 1000) + 600, // +10 минут
+    messages: [
+      {
+        // ⚠️ СЮДА ПОДСТАВЬ АДРЕС ПОЛУЧАТЕЛЯ TON
+        address: 'EQ__________________________________________', 
+        // 1 TON = 1e9 нанотонов
+        amount: String(ton * 1e9),
+      }
+    ]
+  };
 
-  // Если кошелёк уже подключён — сразу шлём транзакцию
-  if (window.tonConnectUI.connected) {
-    sendTonTopup();
-  } else {
-    // Если не подключён — открываем TonConnect-меню,
-    // а после подключения onStatusChange вызовет sendTonTopup()
-    window.tonConnectUI.openModal();
+  try {
+    // ОТКРЫВАЕТСЯ КОШЕЛЁК, ПОЛЬЗОВАТЕЛЬ ПОДПИСЫВАЕТ ТРАНЗАКЦИЮ
+    const res = await window.tonConnectUI.sendTransaction(tx);
+    console.log('✅ TON-транзакция отправлена', res);
+
+    // ❗ СРАЗУ после успешной отправки начисляем звёзды
+    applyTonStarsTopup(stars);
+
+    // Закрываем модалки пополнения
+    try {
+      topupAmountCloseModal();
+      topupCloseModal();
+    } catch (e) {
+      console.warn('Не удалось закрыть модалки после TON', e);
+    }
+
+    return true;
+  } catch (e) {
+    console.error('❌ Ошибка / отмена TON-транзакции', e);
+    // Здесь звёзды НЕ начисляем, потому что оплаты не было
+    return false;
   }
-
-  return true;
 }
 
 const TON_TO_STARS_RATE = 200;
@@ -4803,6 +5050,19 @@ function applyTopup(amountMaybe) {
   localStorage.removeItem(LS_LAST);
   console.log('[stars] +', last, '=>', next);
 }
+
+// ===== ДОБАВЛЕНО: пополнение звёзд после оплаты TON =====
+function applyTonStarsTopup(starsAmount) {
+  var stars = parseInt(starsAmount, 10) || 0;
+  if (!stars) return;
+
+  var current = getStarsBalance();
+  var next = current + stars;
+
+  setStarsBalance(next);
+  console.log('[ton] +', stars, '=>', next);
+}
+// ===== КОНЕЦ ДОБАВЛЕННОГО БЛОКА =====
 
 // ОБЁРТКА ДЛЯ ОТКРЫТИЯ ИНВОЙСА
 function openStarsInvoice(amount, invoiceUrlOrSlug) {
