@@ -2110,7 +2110,6 @@ GD._fnv1a = function(str){
   for (let i = 0; i < str.length; i++){ h ^= str.charCodeAt(i); h = (h >>> 0) * 0x01000193; }
   return h >>> 0;
 };
-GD._to8 = n => String(n % 100000000).padStart(8,'0');
 
 // читаем uid8 из localStorage (его кладёт getOrFetchUid8 ниже)
 GD.getUid8 = function(){
@@ -2127,30 +2126,6 @@ GD.buildInviteLink = function(){
 };
 
 GD._uid8Promise = null;
-
-GD.ensureUid8 = function(tgUserId){
-  // если уже идёт запрос — отдать тот же промис
-  if (GD._uid8Promise) return GD._uid8Promise;
-
-  // если уже есть валидный кеш — мгновенно
-  const cached = GD.getUid8();
-  if (cached && cached !== '00000000') return Promise.resolve(cached);
-
-  // единый запрос на всех «ждущих»
-  GD._uid8Promise = (async () => {
-    try{
-      if (typeof window.getOrFetchUid8 === 'function'){
-        return await window.getOrFetchUid8(tgUserId);
-      }
-    }catch(_){}
-    // последний фолбэк — что есть в localStorage (или 00000000)
-    return GD.getUid8();
-  })();
-
-  return GD._uid8Promise;
-};
-
-// ...твои GD.* утилиты выше...
 
 // БЕЗОПАСНАЯ ЭКРАНИЗАЦИЯ ТЕКСТА ДЛЯ ВСТАВКИ В innerHTML
 window.esc = function(s){
@@ -2713,9 +2688,6 @@ nameEl.setAttribute('data-text', display.replaceAll(' ', '\u00A0'));
   }
 })();
 
-// === UID8 с сервера (уникально в проде) ===
-const idEl = document.getElementById('userId');
-
 // Если фронт и API на одном домене через прокси /api → оставь пустую строку.
 // Если на другом домене — укажи полный адрес, например:
 // const API_BASE = "https://sneerful-anamaria-doucely.ngrok-free.dev";
@@ -2739,41 +2711,6 @@ let _uid8Promise = null;
  * @param {string|number} tgUserId
  * @returns {Promise<string>} 8-значная строка
  */
-
-// === UID8 из бэка с кэшем в localStorage ===
-const UID8_LS_KEY = 'gd_uid8';
-
-window.getOrFetchUid8 = async function(tgUserId){
-  // 1) cache
-  try{
-    const cached = localStorage.getItem(UID8_LS_KEY);
-    if (cached && /^\d{8}$/.test(cached)) return cached;
-  }catch(_){}
-
-  // 2) backend
-  try{
-    const resp = await fetch(`${window.API_BASE}/api/referrals/hit`, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ telegram_id: String(tgUserId || '') })
-    });
-    if (!resp.ok) throw new Error('bad status');
-    const { uid8 } = await resp.json();
-    if (!/^\d{8}$/.test(uid8)) throw new Error('bad uid');
-    try{ localStorage.setItem(UID8_LS_KEY, uid8); }catch(_){}
-    return uid8;
-  }catch(_){
-    // 3) fallback (детерминированный)
-    const h = GD._fnv1a(`GLITCHDROP:${tgUserId || '0'}`);
-    const fallback = GD._toUid8(h);
-    try{ localStorage.setItem(UID8_LS_KEY, fallback); }catch(_){}
-    return fallback;
-  }
-};
-
-// Экспорт в пространство GD
-GD.getOrFetchUid8 = window.getOrFetchUid8;
-
 
 // === РЕФЕРАЛКА: регистрация друга при первом запуске по ref_<uid8> ===
 (async () => {
