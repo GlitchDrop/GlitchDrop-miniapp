@@ -4986,10 +4986,11 @@ document.addEventListener('DOMContentLoaded', () => {
 (function () {
   const tg = window.Telegram && window.Telegram.WebApp;
   const u  = tg && tg.initDataUnsafe && tg.initDataUnsafe.user;
-  if (!tg || !u) return;                  // страница не в Telegram Mini App
+  if (!tg || !u) return; // не в Telegram Mini App
 
   try { tg.ready(); tg.expand && tg.expand(); } catch (_) {}
 
+  // Подстановка ID во все #userId
   function paint(uid8) {
     if (!uid8 || uid8 === '00000000') return;
     document.querySelectorAll('#userId').forEach(el => {
@@ -4997,18 +4998,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  let tries = 0;
-  const MAX_TRIES = 50; // ~5 сек
+  // 🔹 КЭШ в памяти: получаем UID один раз
+  let uid8Cached = null;
 
   async function resolveAndPaint() {
     try {
-      const uid8 = await GD.ensureUid8(u.id);
-      const nodes = document.querySelectorAll('#userId');
-      if (!nodes.length) {
-        if (tries++ < MAX_TRIES) return setTimeout(resolveAndPaint, 100);
-        return;
-      }
-      paint(uid8);
+      uid8Cached = await GD.ensureUid8(u.id);  // ← кешируем ОДИН раз
+      paint(uid8Cached);
     } catch (e) {
       console.warn('ensureUid8/paint failed', e);
     }
@@ -5020,13 +5016,22 @@ document.addEventListener('DOMContentLoaded', () => {
     resolveAndPaint();
   }
 
-  // если блоки с ID появятся позже — дорисуем
+  // 🔹 Лёгкий observer: больше НЕ зовём ensureUid8, только перерисовываем по известному uid
+  let repaintScheduled = false;
   const mo = new MutationObserver(() => {
-    const nodes = document.querySelectorAll('#userId');
-    if (!nodes.length) return;
-    GD.ensureUid8(u.id).then(paint).catch(()=>{});
+    if (repaintScheduled) return;
+    repaintScheduled = true;
+    setTimeout(() => {
+      paint(uid8Cached);
+      repaintScheduled = false;
+    }, 80);
   });
-  mo.observe(document.documentElement, { childList: true, subtree: true });
+
+  // Наблюдаем за body (меньше шума, чем documentElement)
+  mo.observe(document.body, { childList: true, subtree: true });
+
+  // Через 3 секунды отключаем observer, чтобы не мешал UI
+  setTimeout(() => mo.disconnect(), 3000);
 })();
 </script>
 
