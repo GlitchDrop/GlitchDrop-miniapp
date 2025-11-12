@@ -2772,18 +2772,19 @@ if (u.username) {
 nameEl.textContent = display;
 nameEl.setAttribute('data-text', display.replaceAll(' ', '\u00A0'));
 
-  (async () => {
-    try {
-      const uid8 = await GD.ensureUid8(u.id);
-      const idEl = document.getElementById('userId');
-      // защита: не перерисовываем, если по какой-то причине пришли нули
-      if (idEl && uid8 && uid8 !== '00000000') {
-        idEl.textContent = `ID ${uid8}`;
-      }
-    } catch (e) {
-      console.warn('ensureUid8 failed', e);
+(async () => {
+  try {
+    const uid8 = await GD.ensureUid8(u.id);
+    // защита: не перерисовываем, если по какой-то причине пришли нули
+    if (uid8 && uid8 !== '00000000') {
+      document.querySelectorAll('#userId').forEach(el => {
+        el.textContent = `ID ${uid8}`;
+      });
     }
-  })();
+  } catch (e) {
+    console.warn('ensureUid8 failed', e);
+  }
+})();
 
 // === UID8 с сервера (уникально в проде) ===
 const idEl = document.getElementById('userId');
