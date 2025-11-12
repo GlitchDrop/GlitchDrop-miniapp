@@ -133,83 +133,6 @@ GD.ensureUid8 = function (tgId) {
 };
 </script>
 
-  <script>
-    // ===== UID8 helpers + защита =====
-    window.GD = window.GD || {};
-    const isValidUid8 = v => typeof v === 'string' && /^\d{8}$/.test(v) && v !== '00000000';
-    const uidKeyFor = tgId => `gd_uid8:${tgId || 'anon'}`;
-    const OLD_KEY = 'gd_uid8'; // если раньше хранили без неймспейса
-
-    // хеш + генерация 8 цифр (никогда не 00000000)
-    GD._fnv1a = function (str) {
-      let h = 0x811c9dc5 >>> 0;
-      for (let i = 0; i < str.length; i++) {
-        h ^= str.charCodeAt(i);
-        h = Math.imul(h, 0x01000193) >>> 0;
-      }
-      return h >>> 0;
-    };
-    GD._toUid8 = n => String((n % 99999999) + 1).padStart(8, '0');
-
-    GD.resetUidCacheFor = function (tgId) {
-      try {
-        localStorage.removeItem(uidKeyFor(tgId));
-        const old = localStorage.getItem(OLD_KEY);
-        if (old === '00000000') localStorage.removeItem(OLD_KEY);
-      } catch (_) {}
-    };
-
-    GD.getOrFetchUid8 = async function (tgId) {
-      const K = uidKeyFor(tgId);
-
-      // миграция со старого ключа
-      try {
-        const old = localStorage.getItem(OLD_KEY);
-        if (isValidUid8(old)) {
-          localStorage.setItem(K, old);
-          localStorage.removeItem(OLD_KEY);
-        } else if (old === '00000000') {
-          localStorage.removeItem(OLD_KEY);
-        }
-      } catch (_) {}
-
-      // читаем кэш
-      try {
-        const cached = localStorage.getItem(K);
-        if (isValidUid8(cached)) return cached;
-        if (cached) localStorage.removeItem(K); // вычистим мусор, включая 00000000
-      } catch (_) {}
-
-      // пробуем сервер
-      try {
-        const resp = await fetch(`${window.API_BASE}/api/referrals/hit`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ telegram_id: String(tgId || '') }),
-        });
-        if (!resp.ok) throw new Error('bad status');
-        const { uid8 } = await resp.json();
-        if (!isValidUid8(uid8)) throw new Error('bad uid');
-        try { localStorage.setItem(K, uid8); } catch (_) {}
-        return uid8;
-      } catch (_) {
-        // детерминированный фолбэк
-        const h = GD._fnv1a(`GLITCHDROP:${tgId || '0'}`);
-        const fallback = GD._toUid8(h);
-        try { localStorage.setItem(K, fallback); } catch (_) {}
-        return fallback;
-      }
-    };
-
-    GD._uid8Promises = new Map();
-    GD.ensureUid8 = function (tgId) {
-      if (!GD._uid8Promises.has(tgId)) {
-        GD._uid8Promises.set(tgId, GD.getOrFetchUid8(tgId));
-      }
-      return GD._uid8Promises.get(tgId);
-    };
-  </script>
-
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
   <title>GLITCH DROP — Mini App</title>
@@ -5120,6 +5043,54 @@ document.addEventListener('DOMContentLoaded', () => {
     window.location.href = TELEGRAM_MINIAPP_URL;
   });
 });
+</script>
+
+<script>
+(function () {
+  const tg = window.Telegram && window.Telegram.WebApp;
+  const u  = tg && tg.initDataUnsafe && tg.initDataUnsafe.user;
+  if (!tg || !u) return;                  // страница не в Telegram Mini App
+
+  try { tg.ready(); tg.expand && tg.expand(); } catch (_) {}
+
+  function paint(uid8) {
+    if (!uid8 || uid8 === '00000000') return;
+    document.querySelectorAll('#userId').forEach(el => {
+      el.textContent = 'ID ' + uid8;
+    });
+  }
+
+  let tries = 0;
+  const MAX_TRIES = 50; // ~5 сек
+
+  async function resolveAndPaint() {
+    try {
+      const uid8 = await GD.ensureUid8(u.id);
+      const nodes = document.querySelectorAll('#userId');
+      if (!nodes.length) {
+        if (tries++ < MAX_TRIES) return setTimeout(resolveAndPaint, 100);
+        return;
+      }
+      paint(uid8);
+    } catch (e) {
+      console.warn('ensureUid8/paint failed', e);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', resolveAndPaint, { once: true });
+  } else {
+    resolveAndPaint();
+  }
+
+  // если блоки с ID появятся позже — дорисуем
+  const mo = new MutationObserver(() => {
+    const nodes = document.querySelectorAll('#userId');
+    if (!nodes.length) return;
+    GD.ensureUid8(u.id).then(paint).catch(()=>{});
+  });
+  mo.observe(document.documentElement, { childList: true, subtree: true });
+})();
 </script>
 
 </body>
