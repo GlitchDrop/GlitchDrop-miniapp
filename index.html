@@ -4500,17 +4500,15 @@ async function handleTonSubmit() {
   }
 
   // Формируем транзакцию TON
-  const tx = {
-    validUntil: Math.floor(Date.now() / 1000) + 600, // +10 минут
-    messages: [
-      {
-        // ⚠️ СЮДА ПОДСТАВЬ АДРЕС ПОЛУЧАТЕЛЯ TON
-        address: 'EQ__________________________________________', 
-        // 1 TON = 1e9 нанотонов
-        amount: String(ton * 1e9),
-      }
-    ]
-  };
+const tx = {
+  validUntil: Math.floor(Date.now() / 1000) + 600, // +10 минут
+  messages: [
+    {
+      address: TON_RECEIVER_ADDRESS,      // ✅ теперь берём реальный адрес
+      amount: String(ton * 1e9),          // 1 TON = 1e9 нанотонов
+    }
+  ]
+};
 
   try {
     // ОТКРЫВАЕТСЯ КОШЕЛЁК, ПОЛЬЗОВАТЕЛЬ ПОДПИСЫВАЕТ ТРАНЗАКЦИЮ
