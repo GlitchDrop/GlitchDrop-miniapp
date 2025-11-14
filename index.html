@@ -4288,17 +4288,11 @@ function tryChargeSpin() {
     const userId = tg?.initDataUnsafe?.user?.id;
     if (!userId) return;
 
-    // Берём тот же uid8, который ты показываешь в интерфейсе
-    const uid8 = await GD.ensureUid8(userId);
-    if (!uid8 || uid8 === '00000000') return;
-
-    // Забираем баланс с бэка по uid8
-    const resp = await fetch(`${window.API_BASE}/api/stars/by-uid8/${uid8}`);
+    const resp = await fetch(`${window.API_BASE}/api/user-balance?user_id=${userId}`);
     if (!resp.ok) throw new Error('status ' + resp.status);
 
     const data = await resp.json();
     if (data && typeof data.stars === 'number') {
-      // Не даём случайно уменьшить, пока бэк не догонит
       setStarsBalance(Math.max(getStarsBalance(), Number(data.stars) || 0));
     }
   } catch (e) {
