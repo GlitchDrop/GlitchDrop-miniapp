@@ -4282,26 +4282,27 @@ function tryChargeSpin() {
 }
 
 // === Синхронизация баланса со сервером поверх localStorage ===
-(() => {
+(async () => {
   try {
     const tg = window.Telegram && window.Telegram.WebApp;
     const userId = tg?.initDataUnsafe?.user?.id;
     if (!userId) return;
 
-    // ВАЖНО: у тебя API_BASE уже без /api на конце.
-    // Эндпоинт у нас /api/user-balance → добавляем его здесь.
-    fetch(`${window.API_BASE}/api/user-balance?user_id=${userId}`)
-      .then(r => r.ok ? r.json() : Promise.reject(r.status))
-      .then(data => {
-        if (data && typeof data.stars === 'number') {
-          // кладём серверный баланс и в DOM, и в localStorage
-          // не уменьшаем локальный баланс, пока бэк не догонит
-setStarsBalance(Math.max(getStarsBalance(), Number(data?.stars) || 0));
-        }
-      })
-      .catch(e => console.warn('Balance fetch failed:', e));
+    // Берём тот же uid8, который ты показываешь в интерфейсе
+    const uid8 = await GD.ensureUid8(userId);
+    if (!uid8 || uid8 === '00000000') return;
+
+    // Забираем баланс с бэка по uid8
+    const resp = await fetch(`${window.API_BASE}/api/stars/by-uid8/${uid8}`);
+    if (!resp.ok) throw new Error('status ' + resp.status);
+
+    const data = await resp.json();
+    if (data && typeof data.stars === 'number') {
+      // Не даём случайно уменьшить, пока бэк не догонит
+      setStarsBalance(Math.max(getStarsBalance(), Number(data.stars) || 0));
+    }
   } catch (e) {
-    console.warn('Balance init failed:', e);
+    console.warn('Balance sync failed:', e);
   }
 })();
 
