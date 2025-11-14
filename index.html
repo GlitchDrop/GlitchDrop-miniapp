@@ -146,24 +146,10 @@ GD.ensureUid8 = function (tgId) {
       --shadow-strong:0 20px 60px rgba(10,20,60,.55), 0 0 60px rgba(22,241,255,.08);
       --shadow-soft:0 10px 30px rgba(10,20,60,.35);
       --radius:18px;
-      --tabbar-h: 84px;  /* дефолт, дальше пересчитаем JS-ом */
-
-      /* цвета для переливающейся рамки */
-      --border-cyan:   rgba(22,241,255,.7);
-      --border-pink:   rgba(255,62,208,.7);
-      --border-yellow: rgba(255,228,122,.8);
-    }
-
- /* анимация перелива рамки */
-    @keyframes neonBorderPulse {
-      0%   { border-color: var(--border-cyan); }
-      33%  { border-color: var(--border-pink); }
-      66%  { border-color: var(--border-yellow); }
-      100% { border-color: var(--border-cyan); }
+--tabbar-h: 84px;  /* дефолт, дальше пересчитаем JS-ом */
     }
 
     *{box-sizing:border-box}
-
     html,body{height:100%;margin:0;font-family:'Inter',system-ui,Segoe UI,Roboto,Arial,sans-serif}
     html{scroll-behavior:smooth; scrollbar-gutter: stable;}
     body{ color:var(--text); overflow-x:hidden; background:#0e1b25; overflow-y:scroll; }
@@ -244,8 +230,7 @@ GD.ensureUid8 = function (tgId) {
     .card::before{ content:""; position:absolute; inset:-2px; background:conic-gradient(from 200deg, transparent, rgba(22,241,255,.18), transparent 30%, rgba(255,62,208,.18), transparent 55%); filter:blur(14px); opacity:.35; z-index:0; }
     .inner{position:relative; z-index:1}
     .thumb{
-      height:160px; border-radius:14px; border:1px dashed var(--border-cyan);
-      animation: neonBorderPulse 4s linear infinite;
+      height:160px; border-radius:14px; border:1px dashed rgba(180,210,255,.35);
       background: radial-gradient(120px 80px at 20% 20%, rgba(22,241,255,.12), transparent 60%), radial-gradient(120px 80px at 80% 80%, rgba(255,62,208,.10), transparent 60%), linear-gradient(180deg,#0c1230,#0a1028);
       display:grid; place-items:center; color:#a9c2ff; font-size:12px; text-transform:uppercase; letter-spacing:1px;
       overflow:hidden;
@@ -298,8 +283,7 @@ html:not(.in-telegram) .card .price{
     .d-title{font-weight:900}
     .d-body{padding:16px; padding-bottom: max(var(--tabbar-h,84px), env(safe-area-inset-bottom) + 16px); max-width:1100px; margin:0 auto; width:100%}
     .d-hero{display:grid; grid-template-columns:1fr; gap:14px; margin-bottom:10px;}
-    .d-thumb{ min-height:200px; height:auto; border-radius:16px; border:1px dashed var(--border-cyan);
-      animation: neonBorderPulse 4s linear infinite;
+    .d-thumb{ min-height:200px; height:auto; border-radius:16px; border:1px dashed rgba(180,210,255,.35);
       background: radial-gradient(160px 110px at 20% 20%, rgba(22,241,255,.12), transparent 60%), radial-gradient(160px 110px at 80% 80%, rgba(255,62,208,.10), transparent 60%), linear-gradient(180deg,#0c1230,#0a1028);
       display:grid; place-items:center; color:#a9c2ff; text-transform:uppercase; letter-spacing:1px; }
     .d-actions{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
