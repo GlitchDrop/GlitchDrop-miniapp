@@ -2559,8 +2559,8 @@ sections.forEach(sec=>{
           ${isFree ? '' : '<span class="price-star">⭐</span>'}
           <span class="price">${isFree ? (rawPrice || 'БЕСПЛАТНО') : cleanPrice}</span>
         </div>
-        ${isFree ? '' : '<button type="button" class="card-open-btn">ОТКРЫТЬ</button>'}
       </div>
+      ${isFree ? '' : '<button type="button" class="card-open-btn">ОТКРЫТЬ</button>'}
     `;
 
     if (isFree){
@@ -2573,7 +2573,7 @@ sections.forEach(sec=>{
     } else {
       const openBtn = card.querySelector('.card-open-btn');
 
-      // Выбор платной карточки — по pointerdown, без задержки
+           // Выбор платной карточки — по pointerdown, без задержки
       card.addEventListener('pointerdown', (evt)=>{
         // если жмём по самой кнопке "ОТКРЫТЬ" — не переключаем выбор
         if (evt.target.closest('.card-open-btn')) return;
@@ -2584,12 +2584,11 @@ sections.forEach(sec=>{
           return;
         }
 
-        // сняли выбор с предыдущей
+        // снимаем выбор с предыдущей
         if (selectedCaseCard && selectedCaseCard !== card){
           selectedCaseCard.classList.remove('case-selected');
         }
 
-        // выделили текущую
         selectedCaseCard = card;
         card.classList.add('case-selected');
       });
