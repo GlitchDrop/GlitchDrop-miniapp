@@ -240,9 +240,9 @@ GD.ensureUid8 = function (tgId) {
   cursor:pointer;
   transform:translateY(0) scale(1);
   transition:
-    transform .18s cubic-bezier(.2,.7,.2,1),
-    box-shadow .18s,
-    border-color .18s;
+    transform .14s cubic-bezier(.25,.8,.25,1),
+    box-shadow .14s,
+    border-color .14s;
 }
 
 /* мягкий неон вокруг карточки */
@@ -271,7 +271,7 @@ GD.ensureUid8 = function (tgId) {
   inset:0;
   background:radial-gradient(circle at 50% 30%, rgba(0,0,0,.15), rgba(0,0,0,.55));
   opacity:0;
-  transition:opacity .18s;
+  transition:opacity .14s;
   z-index:1;
   pointer-events:none;
 }
@@ -318,7 +318,8 @@ GD.ensureUid8 = function (tgId) {
 
 /* нижняя зона с ценником на всю ширину */
 .card-footer{
-  position:relative;
+  /* БЕЗ position: relative, чтобы кнопка ориентировалась на .card */
+  position: static;
   margin-top:auto;
   z-index:2;
 }
@@ -374,10 +375,11 @@ GD.ensureUid8 = function (tgId) {
   opacity:0;
   pointer-events:none;
   z-index:3;
-  transition:
-    opacity .16s ease-out,
-    transform .18s cubic-bezier(.2,.7,.2,1);
+transition:
+    opacity .12s ease-out,
+    transform .14s cubic-bezier(.25,.8,.25,1);
 }
+
 .card-open-btn:active{
   transform:translate(-50%,-52%) scale(.96);
   box-shadow:
@@ -2592,12 +2594,12 @@ sections.forEach(sec=>{
       card.dataset.title   = title;
       card.dataset.price   = price;
 
-      // Клик по карточке = выбрать / снять выбор
-      card.addEventListener('click', (evt) => {
+      // Мгновенный выбор карточки (без задержки) — на pointerdown
+      card.addEventListener('pointerdown', (evt) => {
         evt.preventDefault();
         evt.stopPropagation();
 
-        // повторный клик по выбранной — "отбухает"
+        // повторный тап по выбранной — "отбухает"
         if (selectedCaseCard === card) {
           clearSelectedCase();
           return;
@@ -2635,16 +2637,16 @@ sections.forEach(sec=>{
 });
 
 // Снятие выбора, если кликнули мимо карточек / кнопки "ОТКРЫТЬ"
-document.addEventListener('click', (e) => {
+document.addEventListener('pointerdown', (e) => {
   if (!selectedCaseCard) return;
 
-  // если клик по кнопке "ОТКРЫТЬ" — не трогаем (её уже обработали)
+  // клик по кнопке "ОТКРЫТЬ" — не трогаем, тут отдельная логика
   if (e.target.closest('.card-open-btn')) return;
 
-  // если клик внутри ЛЮБОЙ карточки — пусть отработает её собственный обработчик
+  // клик внутри любой карточки — там уже работает свой обработчик выбора
   if (e.target.closest('.card')) return;
 
-  // кликнули где-то в интерфейсе вне карточек — "отбухаем"
+  // тапнули куда-то ещё в интерфейсе — снимаем выбор
   clearSelectedCase();
 }, { passive: true });
 
