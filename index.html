@@ -225,7 +225,7 @@ GD.ensureUid8 = function (tgId) {
   padding-bottom: max(var(--tabbar-h,84px), env(safe-area-inset-bottom) + 16px);
 }
 
-/* ====== CARD кейса (обновлённый) ====== */
+/* ====== CARD кейса (без флипа) + выбранное состояние ====== */
 .card{
   position:relative;
   background:linear-gradient(180deg, rgba(20,26,62,0.55), rgba(14,18,40,0.6));
@@ -238,12 +238,11 @@ GD.ensureUid8 = function (tgId) {
   gap:10px;
   overflow:hidden;
   cursor:pointer;
-
   transform:translateY(0) scale(1);
   transition:
-    transform .14s cubic-bezier(.25,.8,.25,1),
-    box-shadow .14s ease-out,
-    border-color .14s ease-out;
+    transform .18s cubic-bezier(.2,.7,.2,1),
+    box-shadow .18s,
+    border-color .18s;
 }
 
 /* мягкий неон вокруг карточки */
@@ -254,9 +253,9 @@ GD.ensureUid8 = function (tgId) {
   background:conic-gradient(
     from 200deg,
     transparent,
-    rgba(22,241,255,0.18),
+    rgba(22,241,255,.18),
     transparent 30%,
-    rgba(255,62,208,0.18),
+    rgba(255,62,208,.18),
     transparent 55%
   );
   filter:blur(14px);
@@ -265,19 +264,19 @@ GD.ensureUid8 = function (tgId) {
   pointer-events:none;
 }
 
-/* затемнение содержимого при выборе */
+/* затемнение контента при выборе */
 .card::after{
   content:"";
   position:absolute;
   inset:0;
-  background:radial-gradient(circle at 50% 50%, rgba(0,0,0,0.12), rgba(0,0,0,0.70));
+  background:radial-gradient(circle at 50% 30%, rgba(0,0,0,.15), rgba(0,0,0,.55));
   opacity:0;
-  pointer-events:none;
-  transition:opacity .14s ease-out;
+  transition:opacity .18s;
   z-index:1;
+  pointer-events:none;
 }
 
-.inner{
+.card .inner{
   position:relative;
   z-index:2;
   display:flex;
@@ -285,7 +284,7 @@ GD.ensureUid8 = function (tgId) {
   gap:8px;
 }
 
-.thumb{
+.card .thumb{
   height:160px;
   border-radius:14px;
   border:1px dashed rgba(180,210,255,0.35);
@@ -301,25 +300,25 @@ GD.ensureUid8 = function (tgId) {
   letter-spacing:1px;
   overflow:hidden;
 }
-.thumb img{
+.card .thumb img{
   width:100%;
   height:100%;
   object-fit:cover;
   display:block;
 }
 
-.name{
+.card .name{
   font-weight:900;
   letter-spacing:.3px;
 }
-.desc{
+.card .desc{
   font-size:12px;
   color:#9fb2d9;
 }
 
-/* НИЖНЯЯ ПОЛОСА-ЦЕННИК на всю ширину */
+/* нижняя зона с ценником на всю ширину */
 .card-footer{
-  position:static;          /* БЕЗ relative — кнопка центрируется по .card */
+  position:relative;
   margin-top:auto;
   z-index:2;
 }
@@ -328,83 +327,96 @@ GD.ensureUid8 = function (tgId) {
   display:flex;
   align-items:center;
   justify-content:center;
-  gap:8px;
+  gap:6px;
   padding:8px 10px;
   border-radius:12px;
-  background:linear-gradient(90deg, rgba(14,22,52,0.95), rgba(18,30,64,0.95));
-  border:1px solid rgba(255,228,122,0.55);
-  box-shadow:0 0 18px rgba(255,228,122,0.25);
-}
-
-.price-star{
-  font-size:18px;
-  line-height:1;
-}
-
-.price{
+  background:linear-gradient(90deg, rgba(22,241,255,.18), rgba(255,228,122,.16));
+  border:1px solid rgba(255,228,122,.6);
+  box-shadow:0 0 18px rgba(255,228,122,.22);
   font-weight:900;
   color:var(--neon-yellow);
-  text-shadow:0 0 12px rgba(255,228,122,0.25);
+  text-shadow:0 0 10px rgba(255,228,122,.35);
+}
+.price-bar--free{
+  background:linear-gradient(135deg, rgba(22,241,255,.16), rgba(22,241,255,.05));
+  border-color:rgba(22,241,255,.65);
+  color:#e8efff;
+  text-shadow:0 0 10px rgba(22,241,255,.35);
+}
+.price-star{
+  font-size:16px;
+  line-height:1;
+}
+.price-value{
+  font-size:14px;
   letter-spacing:.4px;
 }
 
-/* На сайте (вне Telegram) прячем ценник */
-html:not(.in-telegram) .card .price-bar{
-  display:none;
-}
-
-/* ЦЕНТРАЛЬНАЯ КНОПКА «ОТКРЫТЬ» — ПРЯМО ПО ЦЕНТРУ КАРТОЧКИ */
+/* Жёлтая центральная кнопка "ОТКРЫТЬ" (изначально скрыта) */
 .card-open-btn{
   position:absolute;
-  top:50%;
   left:50%;
-  transform:translate(-50%, -50%) scale(0.9);
-  padding:12px 24px;
+  top:50%;
+  transform:translate(-50%,-50%) scale(.92);
+  padding:10px 18px;
   border-radius:999px;
-  border:1px solid rgba(255,228,122,0.85);
-  background:linear-gradient(135deg, #ffe64a, #ffb300);
-  color:#241400;
+  border:none;
   font-weight:900;
-  letter-spacing:.7px;
+  letter-spacing:.8px;
   text-transform:uppercase;
+  background:linear-gradient(135deg,#ffef8a,#ffcf3a);
+  color:#20120a;
   box-shadow:
-    0 12px 32px rgba(255,228,122,0.45),
-    0 0 36px rgba(255,228,122,0.75);
+    0 0 0 1px rgba(255,228,122,.8),
+    0 8px 26px rgba(255,193,67,.55),
+    0 0 40px rgba(255,228,122,.65);
+  text-shadow:0 1px 0 rgba(255,255,255,.75);
   opacity:0;
   pointer-events:none;
-  transition:
-    opacity .12s ease-out,
-    transform .14s cubic-bezier(.25,.8,.25,1),
-    box-shadow .14s ease-out;
   z-index:3;
+  transition:
+    opacity .16s ease-out,
+    transform .18s cubic-bezier(.2,.7,.2,1);
 }
-
 .card-open-btn:active{
-  transform:translate(-50%, -50%) scale(0.96);
+  transform:translate(-50%,-52%) scale(.96);
   box-shadow:
-    0 6px 18px rgba(255,228,122,0.45),
-    0 0 24px rgba(255,228,122,0.70);
+    0 0 0 1px rgba(255,228,122,.9),
+    0 4px 18px rgba(255,193,67,.55);
 }
 
-/* СОСТОЯНИЕ ВЫБРАННОЙ КАРТОЧКИ — «набухла» и с подсветкой */
+/* выбранная карточка — "набухла" и с неоном по краям */
 .card.case-selected{
   transform:translateY(-2px) scale(1.03);
   border-color:var(--neon-cyan);
   box-shadow:
-    0 18px 40px rgba(22,241,255,0.45),
-    0 0 40px rgba(255,228,122,0.75);
+    0 0 0 1px rgba(22,241,255,.85),
+    0 0 24px rgba(22,241,255,.45),
+    0 0 36px rgba(255,62,208,.35);
 }
 .card.case-selected::after{
-  opacity:1; /* затемнение */
+  opacity:1;
 }
 .card.case-selected .card-open-btn{
   opacity:1;
   pointer-events:auto;
-  transform:translate(-50%, -50%) scale(1);
+  transform:translate(-50%,-50%) scale(1);
 }
+
+/* лёгкое затемнение содержимого, когда выбрана */
 .card.case-selected .inner,
 .card.case-selected .card-footer{
-  filter:brightness(0.9);
+  filter:brightness(.9);
+}
+
+/* у бесплатных карточек кнопка не показывается вообще */
+.card.card--free .card-open-btn{
+  display:none;
+}
+
+/* На сайте (вне Telegram) прячем ценник под обложкой кейса */
+html:not(.in-telegram) .card .card-footer{
+  display:none;
 }
 
     .tabbar{
@@ -2502,8 +2514,9 @@ const dPrice   = document.getElementById('detailPrice');
 const dThumb   = document.getElementById('detailThumb');
 const lootGrid = document.getElementById('lootGrid');
 
-/* текущая выбранная платная карточка */
+// Выбранная (оплачиваемая) карточка кейса
 let selectedCaseCard = null;
+
 function clearSelectedCase(){
   if (selectedCaseCard){
     selectedCaseCard.classList.remove('case-selected');
@@ -2531,22 +2544,21 @@ sections.forEach(sec=>{
   const grid = document.createElement('div');
   grid.className = 'grid';
 
-  for(let i=0;i<sec.items;i++){
+  for (let i = 0; i < sec.items; i++) {
     const thumbUrl  = (CASE_THUMBS[sec.id] && CASE_THUMBS[sec.id][i]) || "";
     const thumbHTML = thumbUrl
       ? `<img src="${thumbUrl}" alt="Обложка кейса #${i+1}" onerror="this.src='${FALLBACK_IMG}'">`
       : `Заглушка`;
 
-    const isFree   = (sec.id === 'free');
-    const rawPrice = Array.isArray(sec.price)? sec.price[i] : sec.price;
+    // исходная цена как строка (например "50 ⭐" или "БЕСПЛАТНО")
+    const rawPrice = Array.isArray(sec.price) ? sec.price[i] : sec.price;
+    // убираем звёздочки и лишние пробелы — чтобы внизу показать одну общую ⭐ + число
+    const cleanPrice = String(rawPrice || '').replace(/⭐/g, '').trim();
 
-    // убираем вторую звезду в конце ("50 ⭐" -> "50")
-    const cleanPrice = String(rawPrice || '').replace(/\s*⭐\s*$/,'').trim();
+    const isFree = (sec.id === 'free');
 
     const card = document.createElement('div');
-    card.className='card';
-
-    const setId = `${sec.id}_${i+1}`;
+    card.className = isFree ? 'card card--free' : 'card card--paid';
 
     card.innerHTML = `
       <div class="inner">
@@ -2555,53 +2567,61 @@ sections.forEach(sec=>{
         <div class="desc">${(sec.descs && sec.descs[i]) || 'Неоновая коллекция'}</div>
       </div>
       <div class="card-footer">
-        <div class="price-bar">
-          ${isFree ? '' : '<span class="price-star">⭐</span>'}
-          <span class="price">${isFree ? (rawPrice || 'БЕСПЛАТНО') : cleanPrice}</span>
+        <div class="price-bar ${isFree ? 'price-bar--free' : ''}">
+          ${
+            isFree
+              ? `<span class="price-value">${rawPrice}</span>`
+              : `<span class="price-star">⭐</span><span class="price-value">${cleanPrice}</span>`
+          }
         </div>
-        ${isFree ? '' : '<button type="button" class="card-open-btn">ОТКРЫТЬ</button>'}
+        ${
+          isFree
+            ? ''
+            : '<button type="button" class="card-open-btn" data-role="open">ОТКРЫТЬ</button>'
+        }
       </div>
     `;
 
-    if (isFree){
-      // Бесплатные — как раньше: клик по карточке сразу ведёт к барабану
-      card.addEventListener('click', ()=> openDetail({
-        title: `${sec.title} — Кейс #${i+1}`,
-        price: rawPrice,
-        setId
-      }));
-    } else {
-      const openBtn = card.querySelector('.card-open-btn');
+    // Логика только для платных кейсов
+    if (!isFree) {
+      const setId = `${sec.id}_${i+1}`;
+      const title = `${sec.title} — Кейс #${i+1}`;
+      const price = rawPrice;
 
-      // Выбор платной карточки — по pointerdown, без задержки
-      card.addEventListener('pointerdown', (evt)=>{
-        // если жмём по самой кнопке "ОТКРЫТЬ" — не переключаем выбор
-        if (evt.target.closest('.card-open-btn')) return;
+      card.dataset.setId   = setId;
+      card.dataset.title   = title;
+      card.dataset.price   = price;
 
-        // повторный тап по уже выбранной — "отбухает"
-        if (selectedCaseCard === card){
+      // Клик по карточке = выбрать / снять выбор
+      card.addEventListener('click', (evt) => {
+        evt.preventDefault();
+        evt.stopPropagation();
+
+        // повторный клик по выбранной — "отбухает"
+        if (selectedCaseCard === card) {
           clearSelectedCase();
           return;
         }
 
-        // сняли выбор с предыдущей
-        if (selectedCaseCard && selectedCaseCard !== card){
+        // снимаем выбор с предыдущей
+        if (selectedCaseCard && selectedCaseCard !== card) {
           selectedCaseCard.classList.remove('case-selected');
         }
 
-        // выделили текущую
         selectedCaseCard = card;
         card.classList.add('case-selected');
       });
 
-      // Нажатие на кнопку "ОТКРЫТЬ" — перейти к барабану
-      if (openBtn){
-        openBtn.addEventListener('click', (ev)=>{
+      // Кнопка "ОТКРЫТЬ" в центре карточки
+      const openBtn = card.querySelector('.card-open-btn');
+      if (openBtn) {
+        openBtn.addEventListener('click', (ev) => {
+          ev.preventDefault();
           ev.stopPropagation();
 
           openDetail({
-            title: `${sec.title} — Кейс #${i+1}`,
-            price: rawPrice,
+            title,
+            price,
             setId
           });
         });
@@ -2614,15 +2634,19 @@ sections.forEach(sec=>{
   content.appendChild(grid);
 });
 
-// ====== Клик мимо карточки — снимаем выбор ======
-document.addEventListener('pointerdown', (evt)=>{
+// Снятие выбора, если кликнули мимо карточек / кнопки "ОТКРЫТЬ"
+document.addEventListener('click', (e) => {
   if (!selectedCaseCard) return;
 
-  // если кликнули по любой карточке (или по кнопке внутри неё) — не трогаем
-  if (evt.target.closest('.card')) return;
+  // если клик по кнопке "ОТКРЫТЬ" — не трогаем (её уже обработали)
+  if (e.target.closest('.card-open-btn')) return;
 
+  // если клик внутри ЛЮБОЙ карточки — пусть отработает её собственный обработчик
+  if (e.target.closest('.card')) return;
+
+  // кликнули где-то в интерфейсе вне карточек — "отбухаем"
   clearSelectedCase();
-}, { passive:true });
+}, { passive: true });
 
 // ====== Чипы (скролл по секциям) ======
 const chips = Array.from(chipbar.querySelectorAll('.chip'));
