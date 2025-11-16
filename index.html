@@ -431,14 +431,6 @@ html:not(.in-telegram) .card .price-bar{
   cursor: pointer;
 }
 
-/* активная иконка — ещё больше и неоновый свет */
-.tab.active .ico img {
-  transform: scale(1.8); /* было 1.5 в обычном состоянии */
-  filter: drop-shadow(0 0 10px #7b5cff);
-  box-shadow: 0 0 16px rgba(123, 92, 255, 0.7);
-  border-radius: 12px;
-}
-
 /* контейнер под иконку — оставим не очень большим,
    чтобы он не тянул высоту таббара */
 .ico {
@@ -477,38 +469,6 @@ html:not(.in-telegram) .card .price-bar{
 .tab:hover .ico img {
   /* тоже без transform */
   filter: drop-shadow(0 0 5px #7b5cff);
-}
-
-/* активная вкладка – "набухание" и неоновый свет */
-.tab.active .ico img {
-  transform: scale(1.22);
-  filter: drop-shadow(0 0 10px #7b5cff);
-  box-shadow: 0 0 16px rgba(123, 92, 255, 0.7);
-  border-radius: 12px;
-}
-
-/* лёгкий эффект при наведении */
-.tab:hover .ico img {
-  transform: scale(1.08);
-  filter: drop-shadow(0 0 6px #7b5cff);
-}
-
-/* эффект при нажатии (тап) */
-.tab:active .ico img {
-  transform: scale(0.97);
-  filter: drop-shadow(0 0 3px #7b5cff);
-}
-
-/* лёгкий эффект при наведении */
-.tab:hover .ico img {
-  transform: scale(1.65);
-  filter: drop-shadow(0 0 6px #7b5cff);
-}
-
-/* эффект при нажатии (тап) */
-.tab:active .ico img {
-  transform: scale(1.45);
-  filter: drop-shadow(0 0 3px #7b5cff);
 }
 
     .backtop{ bottom: calc(var(--tabbar-h,84px) + 6px); position:fixed; right:14px; z-index:50; padding:9px 12px; border-radius:12px; font-weight:900; font-size:12px; letter-spacing:.3px; border:1px solid rgba(22,241,255,.45); color:#081121; background:linear-gradient(135deg, var(--neon-cyan), var(--neon-pink)); box-shadow:0 10px 28px rgba(22,241,255,.35), 0 0 36px rgba(255,62,208,.25); opacity:0; pointer-events:none; transform:translateY(8px); transition:opacity .2s, transform .2s; }
@@ -5380,3 +5340,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
