@@ -465,6 +465,20 @@ html:not(.in-telegram) .card .price-bar{
     box-shadow 0.18s ease;
 }
 
+/* активная вкладка – только подсветка, размер НЕ трогаем */
+.tab.active .ico img {
+  /* transform НЕ пишем! тогда останется scale(2.0) из .ico img */
+  filter: drop-shadow(0 0 10px #7b5cff);
+  box-shadow: 0 0 16px rgba(123, 92, 255, 0.7);
+  border-radius: 12px;
+}
+
+/* по желанию – лёгкий glow при наведении, тоже без изменения размера */
+.tab:hover .ico img {
+  /* тоже без transform */
+  filter: drop-shadow(0 0 5px #7b5cff);
+}
+
 /* активная вкладка – "набухание" и неоновый свет */
 .tab.active .ico img {
   transform: scale(1.22);
@@ -2199,7 +2213,7 @@ html.scroll-locked, html.scroll-locked body{
 
   <div class="tab">
     <div class="ico">
-      <img src="assets/images/20251116_0831_Прозрачные Объёмные Тени_remix_01ka5j9yktf32vnny25mx8cjbx.png" alt="Друзья">
+      <img src="assets/images/20251116_0834_Объёмный значок без фона_remix_01ka5je43ge5f8x8j9cnbj0qeb.png" alt="Друзья">
     </div>
     Друзья
   </div>
