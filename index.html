@@ -431,27 +431,34 @@ html:not(.in-telegram) .card .price-bar{
   cursor: pointer;
 }
 
-/* активная вкладка (подсветка текста) */
-.tab.active {
-  color: #e8efff;
+/* активная иконка — ещё больше и неоновый свет */
+.tab.active .ico img {
+  transform: scale(1.8); /* было 1.5 в обычном состоянии */
+  filter: drop-shadow(0 0 10px #7b5cff);
+  box-shadow: 0 0 16px rgba(123, 92, 255, 0.7);
+  border-radius: 12px;
 }
 
-/* контейнер под иконку */
+/* контейнер под иконку — оставим не очень большим,
+   чтобы он не тянул высоту таббара */
 .ico {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: visible; /* важно: даём иконке выходить за пределы блока */
 }
 
-/* сама иконка-картинка */
+/* реальный размер картинки маленький, а визуально увеличиваем scale-ом */
 .ico img {
-  width: 28px;
-  height: 28px;
+  width: 20px;
+  height: 20px;
   display: block;
   object-fit: cover;
   border-radius: 8px;
+  transform: scale(2.0);            /* картинка уже выглядит крупнее */
+  transform-origin: center center;   /* масштабируем от центра */
   transition:
     transform 0.18s ease,
     filter 0.18s ease,
@@ -475,6 +482,18 @@ html:not(.in-telegram) .card .price-bar{
 /* эффект при нажатии (тап) */
 .tab:active .ico img {
   transform: scale(0.97);
+  filter: drop-shadow(0 0 3px #7b5cff);
+}
+
+/* лёгкий эффект при наведении */
+.tab:hover .ico img {
+  transform: scale(1.65);
+  filter: drop-shadow(0 0 6px #7b5cff);
+}
+
+/* эффект при нажатии (тап) */
+.tab:active .ico img {
+  transform: scale(1.45);
   filter: drop-shadow(0 0 3px #7b5cff);
 }
 
@@ -5347,4 +5366,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
-
