@@ -454,17 +454,12 @@ html:not(.in-telegram) .card .price-bar{
   display: block;
   object-fit: cover;
   border-radius: 8px;
-  transform: scale(2.0);            /* картинка уже выглядит крупнее */
-  transform-origin: center center;   /* масштабируем от центра */
+  transform: translateY(3px) scale(2.0);   /* и сдвиг, и scale */
+  transform-origin: center center;
   transition:
     transform 0.18s ease,
     filter 0.18s ease,
     box-shadow 0.18s ease;
-}
-
-/* Спец-правка для иконки "Инвентарь" — чуть опускаем вниз */
-.tab[data-tab="inventory"] .ico img{
-  transform: translateY(3px) scale(2.0);
 }
 
 /* активная вкладка — мягкий неоновый ореол без жёстких границ */
@@ -2669,8 +2664,8 @@ sections.forEach(sec=>{
     } else {
       const openBtn = card.querySelector('.card-open-btn');
 
-           // Выбор платной карточки — по pointerdown, без задержки
-      card.addEventListener('pointerdown', (evt)=>{
+      // Выбор платной карточки — по normal click (не срабатывает при скролле)
+      card.addEventListener('click', (evt)=>{
         // если жмём по самой кнопке "ОТКРЫТЬ" — не переключаем выбор
         if (evt.target.closest('.card-open-btn')) return;
 
@@ -2704,20 +2699,21 @@ sections.forEach(sec=>{
     }
 
     grid.appendChild(card);
+
   }
 
   content.appendChild(grid);
 });
 
 // ====== Клик мимо карточки — снимаем выбор ======
-document.addEventListener('pointerdown', (evt)=>{
+document.addEventListener('click', (evt)=>{
   if (!selectedCaseCard) return;
 
   // если кликнули по любой карточке (или по кнопке внутри неё) — не трогаем
   if (evt.target.closest('.card')) return;
 
   clearSelectedCase();
-}, { passive:true });
+});
 
 // ====== Чипы (скролл по секциям) ======
 const chips = Array.from(chipbar.querySelectorAll('.chip'));
