@@ -443,7 +443,9 @@ html:not(.in-telegram) .card .price-bar{
   align-items: center;
   justify-content: center;
   overflow: visible; /* важно: даём иконке выходить за пределы блока */
+  position: relative; /* ДОБАВИЛИ: чтобы можно было рисовать мягкий glow вокруг */
 }
+
 
 /* реальный размер картинки маленький, а визуально увеличиваем scale-ом */
 .ico img {
@@ -460,18 +462,40 @@ html:not(.in-telegram) .card .price-bar{
     box-shadow 0.18s ease;
 }
 
-/* активная вкладка – только подсветка, размер НЕ трогаем */
-.tab.active .ico img {
-  /* transform НЕ пишем! тогда останется scale(2.0) из .ico img */
-  filter: drop-shadow(0 0 10px #7b5cff);
-  box-shadow: 0 0 16px rgba(123, 92, 255, 0.7);
+/* Спец-правка для иконки "Инвентарь" — чуть опускаем вниз */
+.tab[data-tab="inventory"] .ico img{
+  transform: translateY(3px) scale(2.0);
+}
+
+/* активная вкладка — мягкий неоновый ореол без жёстких границ */
+.tab.active .ico img{
+  /* только лёгкий drop-shadow, без жёсткого box-shadow по краям */
+  filter: drop-shadow(0 0 14px rgba(123,92,255,0.9));
+  box-shadow: none;
   border-radius: 12px;
 }
 
-/* по желанию – лёгкий glow при наведении, тоже без изменения размера */
-.tab:hover .ico img {
-  /* тоже без transform */
-  filter: drop-shadow(0 0 5px #7b5cff);
+/* дополнительное мягкое пятно под иконкой */
+.tab.active .ico::before{
+  content:'';
+  position:absolute;
+  inset:-6px;
+  border-radius:999px;
+  background:
+    radial-gradient(circle,
+      rgba(123,92,255,0.55) 0%,
+      rgba(123,92,255,0.35) 35%,
+      rgba(123,92,255,0.0) 70%
+    );
+  filter: blur(6px);
+  opacity:0.9;
+  pointer-events:none;
+  z-index:-1;
+}
+
+/* лёгкий glow при наведении — мягкий, без рамки */
+.tab:hover .ico img{
+  filter: drop-shadow(0 0 8px rgba(123,92,255,0.7));
 }
 
     .backtop{ bottom: calc(var(--tabbar-h,84px) + 6px); position:fixed; right:14px; z-index:50; padding:9px 12px; border-radius:12px; font-weight:900; font-size:12px; letter-spacing:.3px; border:1px solid rgba(22,241,255,.45); color:#081121; background:linear-gradient(135deg, var(--neon-cyan), var(--neon-pink)); box-shadow:0 10px 28px rgba(22,241,255,.35), 0 0 36px rgba(255,62,208,.25); opacity:0; pointer-events:none; transform:translateY(8px); transition:opacity .2s, transform .2s; }
@@ -2148,7 +2172,7 @@ html.scroll-locked, html.scroll-locked body{
 <!-- ПУСТОЙ ЭКРАН КОНКУРСОВ -->
 <div class="hide" id="contestsScreen" aria-hidden="true"></div>
 
-<!-- ПУСТОЙ ЭКРАН АПГРЕЙДОВ -->
+<!-- ПУСТОЙ ЭКРАН ОБМЕНОВ -->
 <div class="hide" id="upgradesScreen" aria-hidden="true"></div>
 
 
@@ -2162,9 +2186,9 @@ html.scroll-locked, html.scroll-locked body{
 
   <div class="tab">
     <div class="ico">
-      <img src="assets/images/20251117_1747_Иконка с прозрачным фоном_remix_01ka94fh16en3vq3kqfmhp6re2.png" alt="Апгрейд">
+      <img src="assets/images/20251117_1747_Иконка с прозрачным фоном_remix_01ka94fh16en3vq3kqfmhp6re2.png" alt="Обмен">
     </div>
-    Апгрейд
+    Обмен
   </div>
 
   <div class="tab active">
@@ -3480,7 +3504,7 @@ const profileTab =
   || tabsAll.find(t => /ИНВЕНТАРЬ|Профиль/i.test(t.textContent.trim()));
 const friendsTab = tabsAll.find(t => /Друзья/i.test(t.textContent.trim()));
 const contestsTab = tabsAll.find(t => /Конкурсы/i.test(t.textContent.trim()));
-const upgradesTab = tabsAll.find(t => /Апгрейд/i.test(t.textContent.trim()));
+const upgradesTab = tabsAll.find(t => /Обмен/i.test(t.textContent.trim()));
 
 
 // Делает таб активным визуально
@@ -3801,7 +3825,7 @@ function showUpgrades(){
   friendsScreen.classList.add('hide');  friendsScreen.setAttribute('aria-hidden','true');
   contestsScreen.classList.add('hide'); contestsScreen.setAttribute('aria-hidden','true');
 
-  // показать апгрейды
+  // показать обмен
   upgradesScreen.classList.remove('hide');
   upgradesScreen.setAttribute('aria-hidden','false');
 
