@@ -240,8 +240,10 @@ GD.ensureUid8 = function (tgId) {
   cursor:pointer;
 
   transform:translateY(0) scale(1);
-  /* полностью отключаем переходы для мгновенного эффекта */
-  transition: none;
+  transition:
+    transform .14s cubic-bezier(.25,.8,.25,1),
+    box-shadow .14s ease-out,
+    border-color .14s ease-out;
 }
 
 /* мягкий неон вокруг карточки */
@@ -271,8 +273,7 @@ GD.ensureUid8 = function (tgId) {
   background:radial-gradient(circle at 50% 50%, rgba(0,0,0,0.12), rgba(0,0,0,0.70));
   opacity:0;
   pointer-events:none;
-  /* без перехода — моментальное затемнение */
-  transition: none;
+  transition:opacity .14s ease-out;
   z-index:1;
 }
 
@@ -371,8 +372,10 @@ html:not(.in-telegram) .card .price-bar{
     0 0 36px rgba(255,228,122,0.75);
   opacity:0;
   pointer-events:none;
-  /* отключаем переходы — кнопка появляется мгновенно */
-  transition: none;
+  transition:
+    opacity .12s ease-out,
+    transform .14s cubic-bezier(.25,.8,.25,1),
+    box-shadow .14s ease-out;
   z-index:3;
 }
 
@@ -392,13 +395,12 @@ html:not(.in-telegram) .card .price-bar{
     0 0 40px rgba(255,228,122,0.75);
 }
 .card.case-selected::after{
-  opacity:1; /* затемнение — моментально */
+  opacity:1; /* затемнение */
 }
 .card.case-selected .card-open-btn{
   opacity:1;
   pointer-events:auto;
   transform:translate(-50%, -50%) scale(1);
-  /* никаких transition-delay / transition — всё мгновенно */
 }
 .card.case-selected .inner,
 .card.case-selected .card-footer{
@@ -2754,9 +2756,9 @@ chipbar.addEventListener('click', e=>{
 function setActiveChip(ch){ chips.forEach(c=>c.classList.remove('active')); ch.classList.add('active'); }
 const mapTargetToChip = new Map([['#top', chipbar.querySelector('.chip.active')], ...chips.map(c=>[c.dataset.target,c])]);
 const sectionEls = sections.map(s=>document.getElementById(`sec-${s.id}`));
+
 // --- Синхронизация: наблюдаем не за всей секцией, а за её заголовком,
 // --- и делаем rootMargin так, чтобы пересечение происходило ровно в позиции desiredViewportY.
-
 (function initSectionsObserverForHeadings(){
   const root = document.documentElement;
 
