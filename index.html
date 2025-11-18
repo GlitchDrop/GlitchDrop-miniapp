@@ -240,10 +240,13 @@ GD.ensureUid8 = function (tgId) {
   cursor:pointer;
 
   transform:translateY(0) scale(1);
+  /* более мягкая и заметная анимация:
+     - увеличил длительность до 280ms
+     - использую более «медленное» easing чтобы было плавно */
   transition:
-    transform .14s cubic-bezier(.25,.8,.25,1),
-    box-shadow .14s ease-out,
-    border-color .14s ease-out;
+    transform 0.28s cubic-bezier(.25,.9,.25,1),
+    box-shadow 0.28s ease,
+    border-color 0.28s ease;
 }
 
 /* мягкий неон вокруг карточки */
@@ -273,7 +276,8 @@ GD.ensureUid8 = function (tgId) {
   background:radial-gradient(circle at 50% 50%, rgba(0,0,0,0.12), rgba(0,0,0,0.70));
   opacity:0;
   pointer-events:none;
-  transition:opacity .14s ease-out;
+  /* плавнее — чуть дольше и легче easing */
+  transition: opacity 0.32s cubic-bezier(.2,.9,.2,1);
   z-index:1;
 }
 
@@ -358,7 +362,7 @@ html:not(.in-telegram) .card .price-bar{
   position:absolute;
   top:50%;
   left:50%;
-  transform:translate(-50%, -50%) scale(0.9);
+  transform:translate(-50%, -50%) scale(0.95); /* чуть ближе к финальному положению */
   padding:12px 24px;
   border-radius:999px;
   border:1px solid rgba(255,228,122,0.85);
@@ -372,10 +376,11 @@ html:not(.in-telegram) .card .price-bar{
     0 0 36px rgba(255,228,122,0.75);
   opacity:0;
   pointer-events:none;
+  /* плавнее: дольше + чуть задержки при появлении (через отдельное правило ниже) */
   transition:
-    opacity .12s ease-out,
-    transform .14s cubic-bezier(.25,.8,.25,1),
-    box-shadow .14s ease-out;
+    opacity 0.32s cubic-bezier(.2,.9,.2,1),
+    transform 0.28s cubic-bezier(.25,.9,.25,1),
+    box-shadow 0.28s ease;
   z-index:3;
 }
 
@@ -388,23 +393,34 @@ html:not(.in-telegram) .card .price-bar{
 
 /* СОСТОЯНИЕ ВЫБРАННОЙ КАРТОЧКИ — «набухла» и с подсветкой */
 .card.case-selected{
-  transform:translateY(-2px) scale(1.03);
-  border-color:var(--neon-cyan);
+  /* чуть мягче подъём — меньший масштаб + плавный переход от .card */
+  transform: translateY(-2px) scale(1.02);
+  border-color: var(--neon-cyan);
   box-shadow:
     0 18px 40px rgba(22,241,255,0.45),
     0 0 40px rgba(255,228,122,0.75);
 }
+
+/* затемнение проявляется плавно (см. transition в ::after) */
 .card.case-selected::after{
-  opacity:1; /* затемнение */
+  opacity:1;
 }
+
+/* кнопка проявляется с небольшой задержкой — сначала картинка/теневой эффект,
+   потом сама кнопка (это даёт ощущение «не выстреливает») */
 .card.case-selected .card-open-btn{
   opacity:1;
   pointer-events:auto;
   transform:translate(-50%, -50%) scale(1);
+  /* задержка появления (включается на этапе transition) */
+  transition-delay: 0.08s;
 }
+
+/* немного приглушаем содержимое, плавно */
 .card.case-selected .inner,
 .card.case-selected .card-footer{
-  filter:brightness(0.9);
+  filter: brightness(0.92);
+  transition: filter 0.28s ease;
 }
 
     .tabbar{
