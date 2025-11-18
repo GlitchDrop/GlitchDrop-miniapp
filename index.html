@@ -2716,16 +2716,23 @@ document.addEventListener('click', (evt)=>{
 // ====== Чипы (скролл по секциям) ======
 const chips = Array.from(chipbar.querySelectorAll('.chip'));
 chipbar.addEventListener('click', e=>{
-  const chip = e.target.closest('.chip'); if(!chip) return;
+  const chip = e.target.closest('.chip');
+  if (!chip) return;
   setActiveChip(chip);
 
   const sel = chip.dataset.target;
-  if(!sel || sel==="#top"){ window.scrollTo({top:0, behavior:'smooth'}); return; }
+  if (!sel || sel === "#top") {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
 
-  const targetEl = document.querySelector(sel);
-  if(!targetEl) return;
+  const section = document.querySelector(sel);
+  if (!section) return;
 
-  // Получаем высоту верхнего бара — сначала из CSS-переменной, иначе из DOM.
+  // Ищем заголовок внутри секции (h2/h3 или элемент с классом .section-title)
+  const heading = section.querySelector('h2, h3, .section-title') || section;
+
+  // Высота topbar (берём из CSS-переменной или реальную высоту .topbar)
   const root = document.documentElement;
   let topbarH = parseInt(getComputedStyle(root).getPropertyValue('--topbar-h')) || 0;
   if (!topbarH) {
@@ -2733,41 +2740,83 @@ chipbar.addEventListener('click', e=>{
     topbarH = (topbar && topbar.offsetHeight) || 64;
   }
 
-  // Небольшой отступ, чтобы заголовок не прилипал к topbar
-  const gap = 8; // px — можно выставить 6 / 10 / 16 по вкусу
-  const scrollToY = targetEl.getBoundingClientRect().top + window.scrollY - (topbarH + gap);
+  const gap = 8; // px — итоговый отступ между topbar и заголовком
+  const desiredViewportY = topbarH + gap;
 
-  window.scrollTo({ top: Math.max(0, scrollToY), behavior: 'smooth' });
+  // вычисляем координату заголовка в документе и скроллим так, чтобы его top оказался на desiredViewportY
+  const headingRect = heading.getBoundingClientRect();
+  const targetScrollY = window.scrollY + headingRect.top - desiredViewportY;
+
+  window.scrollTo({ top: Math.max(0, Math.round(targetScrollY)), behavior: 'smooth' });
 });
 
 function setActiveChip(ch){ chips.forEach(c=>c.classList.remove('active')); ch.classList.add('active'); }
 const mapTargetToChip = new Map([['#top', chipbar.querySelector('.chip.active')], ...chips.map(c=>[c.dataset.target,c])]);
 const sectionEls = sections.map(s=>document.getElementById(`sec-${s.id}`));
-(function initSectionsObserver(){
+// --- Синхронизация: наблюдаем не за всей секцией, а за её заголовком,
+// --- и делаем rootMargin так, чтобы пересечение происходило ровно в позиции desiredViewportY.
+(function initSectionsObserverForHeadings(){
   const root = document.documentElement;
+
+  // Высота topbar (как в click-handler)
   const topbarH = parseInt(getComputedStyle(root).getPropertyValue('--topbar-h')) || document.querySelector('.topbar')?.offsetHeight || 64;
-  // верхнее смещение = высота topbar + небольшой запас (например 10px)
-  const topOffset = topbarH + 10;
-  const rootMargin = `-${topOffset}px 0px -60% 0px`;
+  const gap = 8; // должен совпадать с gap в click-handler
+  const desiredViewportY = topbarH + gap;
+
+  // rootMargin: верхняя часть «сдвигается» на desiredViewportY, нижняя вычисляется так,
+  // чтобы область наблюдения была корректной в вертикальном пространстве.
+  // Формула: rootMargin = `-desiredViewportY px 0px -(viewportHeight - desiredViewportY - 1)px 0px`
+  // Это означает: рассматривается событие пересечения, когда топ элемента попадёт в y = desiredViewportY.
+  const vpH = window.innerHeight || document.documentElement.clientHeight;
+  const topOffset = desiredViewportY;
+  const bottomOffset = Math.max(0, vpH - desiredViewportY - 1);
+  const rootMargin = `-${topOffset}px 0px -${bottomOffset}px 0px`;
+
+  // Собираем список заголовков внутри секций (должны совпадать с теми селекторами, что используется в click handler)
+  const sectionHeadings = sections.map(s => {
+    const secEl = document.getElementById(`sec-${s.id}`);
+    if (!secEl) return null;
+    return secEl.querySelector('h2, h3, .section-title') || secEl;
+  }).filter(Boolean);
+
+  // Map heading element -> chip (по id секции)
+  const headingToChip = new Map();
+  sectionHeadings.forEach(h => {
+    // ожидаем, что родитель секции имеет id "sec-<id>" — берем его
+    const sec = h.closest('[id]');
+    if (!sec) return;
+    const secId = sec.id; // например "sec-allornothing"
+    const chip = mapTargetToChip.get('#' + secId);
+    if (chip) headingToChip.set(h, chip);
+  });
 
   const io = new IntersectionObserver((entries)=>{
-    let best=null,ratio=0;
-    for(const e of entries){
-      if(e.isIntersecting && e.intersectionRatio>ratio){
-        best=e.target; ratio=e.intersectionRatio;
-      }
+    // Среди всех entries выбираем тот, который пересёкся и чей boundingClientRect.top
+    // ближе всего к desiredViewportY — это наилучший кандидат
+    let bestEntry = null;
+    let bestDist = Infinity;
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      const top = entry.boundingClientRect.top;
+      const dist = Math.abs(top - desiredViewportY);
+      if (dist < bestDist) { bestDist = dist; bestEntry = entry; }
     }
-    if(best){
-      const ch = mapTargetToChip.get('#'+best.id);
-      ch && setActiveChip(ch);
+    if (bestEntry) {
+      const headingEl = bestEntry.target;
+      const chip = headingToChip.get(headingEl);
+      if (chip) setActiveChip(chip);
     }
-    if(window.scrollY < 10){
-      setActiveChip(mapTargetToChip.get('#top'));
-    }
-  }, { root:null, rootMargin, threshold:[0.2,0.4,0.6,0.8] });
 
-  const sectionEls = sections.map(s=>document.getElementById(`sec-${s.id}`));
-  sectionEls.forEach(s => s && io.observe(s));
+    // Если вверху страницы — ставим топ/все
+    if (window.scrollY < 10) {
+      const topChip = mapTargetToChip.get('#top');
+      topChip && setActiveChip(topChip);
+    }
+  }, { root: null, rootMargin, threshold: [0, 0.01, 0.1] });
+
+  // Очищаем старые наблюдения (если есть) и ставим новые
+  // (предполагается, что sectionEls массив/observer ранее не нужен; просто используем новые heading элементы)
+  sectionHeadings.forEach(h => io.observe(h));
 })();
 
 // ====== Кнопка «вверх» ======
@@ -5398,4 +5447,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
 
