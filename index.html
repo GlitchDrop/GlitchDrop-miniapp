@@ -240,13 +240,8 @@ GD.ensureUid8 = function (tgId) {
   cursor:pointer;
 
   transform:translateY(0) scale(1);
-  /* более мягкая и заметная анимация:
-     - увеличил длительность до 280ms
-     - использую более «медленное» easing чтобы было плавно */
-  transition:
-    transform 0.28s cubic-bezier(.25,.9,.25,1),
-    box-shadow 0.28s ease,
-    border-color 0.28s ease;
+  /* полностью отключаем переходы для мгновенного эффекта */
+  transition: none;
 }
 
 /* мягкий неон вокруг карточки */
@@ -276,8 +271,8 @@ GD.ensureUid8 = function (tgId) {
   background:radial-gradient(circle at 50% 50%, rgba(0,0,0,0.12), rgba(0,0,0,0.70));
   opacity:0;
   pointer-events:none;
-  /* плавнее — чуть дольше и легче easing */
-  transition: opacity 0.32s cubic-bezier(.2,.9,.2,1);
+  /* без перехода — моментальное затемнение */
+  transition: none;
   z-index:1;
 }
 
@@ -362,7 +357,7 @@ html:not(.in-telegram) .card .price-bar{
   position:absolute;
   top:50%;
   left:50%;
-  transform:translate(-50%, -50%) scale(0.95); /* чуть ближе к финальному положению */
+  transform:translate(-50%, -50%) scale(0.9);
   padding:12px 24px;
   border-radius:999px;
   border:1px solid rgba(255,228,122,0.85);
@@ -376,11 +371,8 @@ html:not(.in-telegram) .card .price-bar{
     0 0 36px rgba(255,228,122,0.75);
   opacity:0;
   pointer-events:none;
-  /* плавнее: дольше + чуть задержки при появлении (через отдельное правило ниже) */
-  transition:
-    opacity 0.32s cubic-bezier(.2,.9,.2,1),
-    transform 0.28s cubic-bezier(.25,.9,.25,1),
-    box-shadow 0.28s ease;
+  /* отключаем переходы — кнопка появляется мгновенно */
+  transition: none;
   z-index:3;
 }
 
@@ -393,34 +385,24 @@ html:not(.in-telegram) .card .price-bar{
 
 /* СОСТОЯНИЕ ВЫБРАННОЙ КАРТОЧКИ — «набухла» и с подсветкой */
 .card.case-selected{
-  /* чуть мягче подъём — меньший масштаб + плавный переход от .card */
-  transform: translateY(-2px) scale(1.02);
-  border-color: var(--neon-cyan);
+  transform:translateY(-2px) scale(1.03);
+  border-color:var(--neon-cyan);
   box-shadow:
     0 18px 40px rgba(22,241,255,0.45),
     0 0 40px rgba(255,228,122,0.75);
 }
-
-/* затемнение проявляется плавно (см. transition в ::after) */
 .card.case-selected::after{
-  opacity:1;
+  opacity:1; /* затемнение — моментально */
 }
-
-/* кнопка проявляется с небольшой задержкой — сначала картинка/теневой эффект,
-   потом сама кнопка (это даёт ощущение «не выстреливает») */
 .card.case-selected .card-open-btn{
   opacity:1;
   pointer-events:auto;
   transform:translate(-50%, -50%) scale(1);
-  /* задержка появления (включается на этапе transition) */
-  transition-delay: 0.08s;
+  /* никаких transition-delay / transition — всё мгновенно */
 }
-
-/* немного приглушаем содержимое, плавно */
 .card.case-selected .inner,
 .card.case-selected .card-footer{
-  filter: brightness(0.92);
-  transition: filter 0.28s ease;
+  filter:brightness(0.9);
 }
 
     .tabbar{
@@ -2736,20 +2718,57 @@ const chips = Array.from(chipbar.querySelectorAll('.chip'));
 chipbar.addEventListener('click', e=>{
   const chip = e.target.closest('.chip'); if(!chip) return;
   setActiveChip(chip);
+
   const sel = chip.dataset.target;
-  if(!sel || sel==="#top"){ window.scrollTo({top:0,behavior:'smooth'}); return; }
-  document.querySelector(sel)?.scrollIntoView({behavior:'smooth', block:'start'});
+  if(!sel || sel==="#top"){ window.scrollTo({top:0, behavior:'smooth'}); return; }
+
+  const targetEl = document.querySelector(sel);
+  if(!targetEl) return;
+
+  // Получаем высоту верхнего бара — сначала из CSS-переменной, иначе из DOM.
+  const root = document.documentElement;
+  let topbarH = parseInt(getComputedStyle(root).getPropertyValue('--topbar-h')) || 0;
+  if (!topbarH) {
+    const topbar = document.querySelector('.topbar');
+    topbarH = (topbar && topbar.offsetHeight) || 64;
+  }
+
+  // Небольшой отступ, чтобы заголовок не прилипал к topbar
+  const gap = 8; // px — можно выставить 6 / 10 / 16 по вкусу
+  const scrollToY = targetEl.getBoundingClientRect().top + window.scrollY - (topbarH + gap);
+
+  window.scrollTo({ top: Math.max(0, scrollToY), behavior: 'smooth' });
 });
+
 function setActiveChip(ch){ chips.forEach(c=>c.classList.remove('active')); ch.classList.add('active'); }
 const mapTargetToChip = new Map([['#top', chipbar.querySelector('.chip.active')], ...chips.map(c=>[c.dataset.target,c])]);
 const sectionEls = sections.map(s=>document.getElementById(`sec-${s.id}`));
-const io = new IntersectionObserver((entries)=>{
-  let best=null,ratio=0;
-  for(const e of entries){ if(e.isIntersecting && e.intersectionRatio>ratio){best=e.target;ratio=e.intersectionRatio;} }
-  if(best){ const ch = mapTargetToChip.get('#'+best.id); ch && setActiveChip(ch); }
-  if(window.scrollY<10){ setActiveChip(mapTargetToChip.get('#top')); }
-}, {root:null, rootMargin:'-130px 0px -60% 0px', threshold:[0.2,0.4,0.6,0.8]});
-sectionEls.forEach(s=>io.observe(s));
+(function initSectionsObserver(){
+  const root = document.documentElement;
+  const topbarH = parseInt(getComputedStyle(root).getPropertyValue('--topbar-h')) || document.querySelector('.topbar')?.offsetHeight || 64;
+  // верхнее смещение = высота topbar + небольшой запас (например 10px)
+  const topOffset = topbarH + 10;
+  const rootMargin = `-${topOffset}px 0px -60% 0px`;
+
+  const io = new IntersectionObserver((entries)=>{
+    let best=null,ratio=0;
+    for(const e of entries){
+      if(e.isIntersecting && e.intersectionRatio>ratio){
+        best=e.target; ratio=e.intersectionRatio;
+      }
+    }
+    if(best){
+      const ch = mapTargetToChip.get('#'+best.id);
+      ch && setActiveChip(ch);
+    }
+    if(window.scrollY < 10){
+      setActiveChip(mapTargetToChip.get('#top'));
+    }
+  }, { root:null, rootMargin, threshold:[0.2,0.4,0.6,0.8] });
+
+  const sectionEls = sections.map(s=>document.getElementById(`sec-${s.id}`));
+  sectionEls.forEach(s => s && io.observe(s));
+})();
 
 // ====== Кнопка «вверх» ======
 const backTop = document.getElementById('backTop');
