@@ -2107,6 +2107,83 @@ html.scroll-locked, html.scroll-locked body{
   });
 </script>
 
+<!-- === Inventory: стили для кнопок Продать/Вывести и номера в карточке === -->
+<style>
+/* контейнер карточки предполагает position:relative */
+.inventory-card { position: relative; }
+
+/* контейнер для двух кнопок внизу карточки */
+.inventory-card .inv-actions{
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+  pointer-events: auto;
+}
+
+/* базовая кнопка — высота сохранена через padding */
+.inv-btn {
+  width: 44%;
+  box-sizing: border-box;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* левая — Продать (оставляем ваш существующий стиль) */
+.inv-btn--sell { }
+
+/* правая — Вывести: прозрачная копия */
+.inv-btn--withdraw {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: inherit;
+}
+
+/* нумерация в левом верхнем углу карточки */
+.inventory-card .inv-index {
+  position: absolute;
+  top: 6px;
+  left: 8px;
+  font-weight: 600;
+  font-size: 12px;
+  color: rgba(255,255,255,0.9);
+  background: rgba(255,255,255,0.05);
+  padding: 2px 6px;
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* модалка вывода — чуть шире */
+#withdrawModal .modal-content {
+  max-width: 640px;
+  width: calc(100% - 48px);
+  margin: 24px auto;
+  padding: 20px;
+}
+#withdrawModal .modal-title {
+  font-size: 18px;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+}
+#withdrawModal .tg-link {
+  color: #0077cc;
+  text-decoration: underline;
+  cursor: pointer;
+}
+</style>
+<!-- === /Inventory styles === -->
+
 </head>
 <body>
   <div class="cyber-bg"></div>
@@ -3682,7 +3759,6 @@ if (typeof syncTopbarOffset === 'function') syncTopbarOffset();
 
 }
 
-
 function renderInventory(){
   const grid  = document.getElementById('inventoryGrid');
   const empty = document.getElementById('inventoryEmpty');
@@ -3708,7 +3784,11 @@ function renderInventory(){
     card.dataset.id = item.id;
     card.innerHTML = `
       <img src="${item.img}" alt="предмет" loading="lazy" onerror="this.remove()">
-      <button type="button" class="inv-sell">ПРОДАТЬ</button>
+      <div class="inv-index">${idx + 1}</div>
+      <div class="inv-actions">
+        <button type="button" class="inv-btn inv-btn--sell inv-sell" data-idx="${idx}">ПРОДАТЬ</button>
+        <button type="button" class="inv-btn inv-btn--withdraw inv-withdraw" data-idx="${idx}">Вывести</button>
+      </div>
     `;
     grid.appendChild(card);
   });
@@ -3724,6 +3804,55 @@ function renderInventory(){
     openConfirmSell(() => sellFromInventory(id, card));
   };
 }
+
+/* ====== Inventory: withdraw (вывести) helper ====== */
+const MOD_USERNAME = '@T808rc'; // <-- меняйте здесь при необходимости
+
+function setupWithdrawUsername(){
+  const el = document.getElementById('withdrawModLink');
+  if (!el) return;
+  const uname = MOD_USERNAME.startsWith('@') ? MOD_USERNAME : '@' + MOD_USERNAME;
+  const unameForLink = uname.replace(/^@/, '');
+  el.textContent = uname;
+  el.href = 'https://t.me/' + unameForLink;
+}
+
+function openModalById(id){
+  const m = document.getElementById(id);
+  if (!m) return;
+  m.style.display = 'block';
+  m.setAttribute('aria-hidden','false');
+}
+function closeModalById(id){
+  const m = document.getElementById(id);
+  if (!m) return;
+  m.style.display = 'none';
+  m.setAttribute('aria-hidden','true');
+}
+
+function openWithdrawModal(idxOrId){
+  // при желании можно подставлять номер предмета внутрь модалки — оставил заглушку
+  openModalById('withdrawModal');
+}
+
+/* Делегирование кликов: обработка кнопки "Вывести" */
+document.addEventListener('click', function(e){
+  // закрытие модалок по overlay / крестик (если в вашем коде используется data-close — это совместимо)
+  if (e.target && (e.target.dataset.close !== undefined || e.target.closest('[data-close]'))) {
+    const modals = document.querySelectorAll('#withdrawModal');
+    modals.forEach(m => { if(m){ m.style.display='none'; m.setAttribute('aria-hidden','true'); }});
+  }
+
+  if (e.target && e.target.id === 'withdrawCloseBtn') {
+    closeModalById('withdrawModal');
+  }
+
+  const withdrawBtn = e.target.closest && e.target.closest('.inv-withdraw');
+  if (withdrawBtn) {
+    const idx = withdrawBtn.dataset.idx;
+    openWithdrawModal(idx);
+  }
+});
 
 /* ===================== FRIENDS v2 ===================== */
 const topbarEl = document.querySelector('.topbar');
@@ -5447,6 +5576,38 @@ document.addEventListener('DOMContentLoaded', () => {
   // Через 3 секунды отключаем observer, чтобы не мешал UI
   setTimeout(() => mo.disconnect(), 3000);
 })();
+</script>
+
+<!-- Modal: Вывести предметы -->
+<div id="withdrawModal" class="modal" style="display:none;" aria-hidden="true">
+  <div class="modal-overlay" data-close></div>
+  <div class="modal-content" role="dialog" aria-modal="true">
+    <button class="modal-close" data-close aria-label="Закрыть">&times;</button>
+    <h3 class="modal-title">ВЫВОД ПРЕДМЕТОВ</h3>
+
+    <div class="modal-body">
+      <ol>
+        <li>Выберите подарок, который хотите вывести.</li>
+        <li>Напишите нашему модератору <span class="tg-link-wrap">(<a id="withdrawModLink" class="tg-link" href="#" target="_blank" rel="noopener noreferrer">@T808rc</a>)</span>, чтобы запросить вывод подарка. Обязательно укажите в сообщении свой ID профиля и номер подарка.</li>
+        <li>Далее, пожалуйста, следуйте инструкциям модератора — он подскажет все дальнейшие шаги, чтобы вы гарантированно получили свой подарок.</li>
+        <li>Получите свой подарок на аккаунт!</li>
+      </ol>
+
+      <p>После получения подарка начинайте охоту на новые призы! 🎁</p>
+    </div>
+
+    <div class="modal-footer" style="text-align:center; margin-top:12px;">
+      <button id="withdrawCloseBtn" class="inv-btn inv-btn--withdraw" type="button">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<!-- Инициализация: подставить username в модалку -->
+<script>
+  // Подставим username после загрузки DOM (если функция доступна)
+  try {
+    if (typeof setupWithdrawUsername === 'function') setupWithdrawUsername();
+  } catch(e){}
 </script>
 
 </body>
