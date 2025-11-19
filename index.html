@@ -1366,7 +1366,7 @@ html.scroll-locked, html.scroll-locked body{
 
 .topup-slider .nav:hover {
     background: linear-gradient(135deg, rgba(22, 241, 255, 0.15), rgba(138, 92, 255, 0.15));
-    border-color: #ffffff;
+    border-color: var(--neon-cyan);
     transform: translateY(-50%) scale(1.05);
 }
 
@@ -1913,15 +1913,16 @@ html.scroll-locked, html.scroll-locked body{
   box-shadow:0 10px 22px rgba(255,77,109,.25);
 }
 
-/* === Изменённая кнопка ПРОДАТЬ (сдвинута влево, чуть уже) === */
+
+/* === Кнопка ПРОДАТЬ — текст по центру === */
 .inv-sell{
   position: absolute;
-  left: 10px;                  /* прижата к левой кромке карточки */
+  left: 10px;
   bottom: 10px;
-  transform: none;             /* убираем центрирующий translate */
+  transform: none;
   appearance: none;
   border: none;
-  padding: 10px 0px;          /* вертикальная высота сохранена (10px), горизонтально чуть уже */
+  padding: 10px 14px;
   border-radius: 999px;
   font-weight: 900;
   letter-spacing: .3px;
@@ -1930,42 +1931,43 @@ html.scroll-locked, html.scroll-locked body{
   background: linear-gradient(135deg, var(--neon-cyan), var(--neon-pink));
   border: 1px solid rgba(22,241,255,.35);
   box-shadow: 0 8px 22px rgba(22,241,255,.28), 0 0 24px rgba(255,62,208,.22);
-  width: calc(50% - 12px);    /* занимает половину по горизонтали минус небольшой gap */
-  text-align: center;         /* текст центрируется внутри кнопки */
-  box-sizing: border-box;
+  width: calc(50% - 12px);
+  text-align: center;
+
+  /* → добавляем абсолютный центр текста ← */
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-/* активное состояние — чуть сдвигаем вниз (как раньше, но без X-translate) */
 .inv-sell:active{
   transform: translateY(1px);
 }
 
-/* === Копия кнопки (ВЫВЕСТИ) — точная по размеру/форме, прозрачная, справа === */
+/* === Кнопка ВЫВЕСТИ — белый текст === */
 .inv-withdraw{
   position: absolute;
-  right: 10px;                /* прижата к правой кромке */
+  right: 10px;
   bottom: 10px;
   transform: none;
   appearance: none;
-  border: 1px solid rgba(255,255,255,.06); /* лёгкая рамка, чтобы форма читалась на фоне */
-  padding: 10px 14px;         /* ТОЧНО такой же вертикальный размер и горизонтальные паддинги как .inv-sell */
+  border: 1px solid rgba(255,255,255,.06);
+  padding: 10px 14px;
   border-radius: 999px;
   font-weight: 900;
   letter-spacing: .3px;
-  cursor: default;            /* пока не реагирует — делаем курсор не указывающий активность */
-  color: var(--neon-cyan);    /* цвет текста можно поменять — здесь НЕ он указывает функционал */
-  background: transparent;    /* полностью прозрачная внутренняя заливка */
-  box-shadow: none;           /* убрать неон вокруг копии */
-  width: calc(50% - 12px);    /* та же ширина, чтобы кнопки совпадали по размеру */
+  cursor: default;
+  color: #ffffff;       /* ← ИСПРАВЛЕНО */
+  background: transparent;
+  box-shadow: none;
+  width: calc(50% - 12px);
   text-align: center;
+  display: flex;         /* чтобы текст стоял идеально по центру */
+  justify-content: center;
+  align-items: center;
   box-sizing: border-box;
-  opacity: 0.95;              /* чуть видна на фоне */
-  pointer-events: none;       /* технически блокируем клики (на всякий) — чтобы точно не реагировала */
-}
-
-/* на маленьких экранах можно немного уменьшать gap, но это опционально */
-@media (max-width: 420px){
-  .inv-sell, .inv-withdraw { padding: 10px 12px; width: calc(50% - 10px); }
+  opacity: 0.95;
+  pointer-events: none;
 }
 
 .amount-input-wrapper {
@@ -5324,6 +5326,7 @@ async function sendTonTopup() {
     window.tonTopupPending = false;
   }
 }
+
 
 </script>
 
