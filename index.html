@@ -1915,34 +1915,29 @@ html.scroll-locked, html.scroll-locked body{
 
 
 /* === Кнопка ПРОДАТЬ — текст по центру === */
-/* Левая кнопка ПРОДАТЬ */
-.inv-left{
-  position:absolute;
-  left:10px;
-  bottom:10px;
-  width:calc(50% - 12px);
-  padding:10px 0;
-  border-radius:999px;
-  font-weight:900;
-  text-align:center;
-  border:1px solid rgba(22,241,255,0.35);
-  color:#081121;
-  background:linear-gradient(135deg, var(--neon-cyan), var(--neon-pink));
-}
+.inv-sell{
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  transform: none;
+  appearance: none;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 999px;
+  font-weight: 900;
+  letter-spacing: .3px;
+  cursor: pointer;
+  color: #081121;
+  background: linear-gradient(135deg, var(--neon-cyan), var(--neon-pink));
+  border: 1px solid rgba(22,241,255,.35);
+  box-shadow: 0 8px 22px rgba(22,241,255,.28), 0 0 24px rgba(255,62,208,.22);
+  width: calc(50% - 12px);
+  text-align: center;
 
-/* Правая кнопка ВЫВЕСТИ */
-.inv-right{
-  position:absolute;
-  right:10px;
-  bottom:10px;
-  width:calc(50% - 12px);
-  padding:10px 0;
-  border-radius:999px;
-  font-weight:900;
-  text-align:center;
-  color:#fff;
-  background:transparent;
-  border:1px solid rgba(255,255,255,0.25);
+  /* → добавляем абсолютный центр текста ← */
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .inv-sell:active{
@@ -2305,35 +2300,6 @@ html.scroll-locked, html.scroll-locked body{
     <div class="modal-actions">
       <button id="confirmNo"  class="btn btn-no">НЕТ</button>
       <button id="confirmYes" class="btn btn-yes">ДА</button>
-    </div>
-  </div>
-</div>
-
-<!-- ===== WITHDRAW MODAL ===== -->
-<div id="withdrawModal" class="modal" aria-hidden="true">
-  <div class="modal-content" style="max-width:360px;">
-    <div class="modal-title">ВЫВОД ПРЕДМЕТОВ</div>
-
-    <div class="modal-body" style="font-weight:800; line-height:1.45;">
-      <p>1. Выберите подарок, который хотите вывести.</p>
-
-      <p>2. Напишите нашему модератору 
-        <a id="withdrawModLink" href="#" target="_blank" style="color:#4da3ff; font-weight:900;">
-          (@Username)
-        </a>, 
-        чтобы запросить вывод подарка.  
-        Укажите свой ID профиля и номер подарка.
-      </p>
-
-      <p>3. Следуйте инструкциям модератора — он подскажет дальнейшие шаги.</p>
-
-      <p>4. Получите подарок на аккаунт!</p>
-
-      <p>После получения подарка начинайте охоту на новые призы! 🎁</p>
-    </div>
-
-    <div class="modal-actions" style="justify-content:center;">
-      <button id="withdrawClose" class="btn btn-ghost">ЗАКРЫТЬ</button>
     </div>
   </div>
 </div>
@@ -3780,9 +3746,8 @@ function renderInventory(){
     card.dataset.id = item.id;
 card.innerHTML = `
   <img src="${item.img}" alt="предмет" loading="lazy" onerror="this.remove()">
-
-  <button type="button" class="inv-sell inv-left">ПРОДАТЬ</button>
-  <button type="button" class="inv-withdraw inv-right">ВЫВЕСТИ</button>
+  <button type="button" class="inv-sell">ПРОДАТЬ</button>
+  <button type="button" class="inv-withdraw">Вывести</button>
 `;
     grid.appendChild(card);
   });
@@ -3797,13 +3762,6 @@ card.innerHTML = `
 
     openConfirmSell(() => sellFromInventory(id, card));
   };
-}
-
-// Кнопка ВЫВЕСТИ
-const wbtn = e.target.closest('.inv-withdraw');
-if (wbtn) {
-    openWithdrawModal();
-    return;
 }
 
 /* ===================== FRIENDS v2 ===================== */
@@ -4209,27 +4167,6 @@ function openConfirmSell(onYesCb, text){
   document.addEventListener('keydown', _confirmTrapTab, true);
 }
 
-// ==== WITHDRAW MODAL ====
-const withdrawModal = document.getElementById('withdrawModal');
-const withdrawClose = document.getElementById('withdrawClose');
-const withdrawLink  = document.getElementById('withdrawModLink');
-
-// меняемый ник модератора
-window.WITHDRAW_MANAGER = "@Username"; // <- здесь меняешь
-withdrawLink.textContent = `(${window.WITHDRAW_MANAGER})`;
-withdrawLink.href = "https://t.me/" + window.WITHDRAW_MANAGER.replace("@","");
-
-function openWithdrawModal(){
-  withdrawModal.classList.add("show");
-  withdrawModal.setAttribute("aria-hidden", "false");
-}
-
-function closeWithdrawModal(){
-  withdrawModal.classList.remove("show");
-  withdrawModal.setAttribute("aria-hidden", "true");
-}
-
-withdrawClose?.addEventListener("click", closeWithdrawModal);
 
 function closeConfirmModal(){
   if (!confirmModal) return;
