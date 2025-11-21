@@ -1641,6 +1641,50 @@ html.scroll-locked, html.scroll-locked body{
   text-align: left;
 }
 
+/* Модалка вывода предметов */
+.withdraw-modal .modal-card {
+  max-width: 480px;
+  padding: 20px;
+}
+
+.withdraw-steps {
+  margin: 16px 0;
+  line-height: 1.5;
+  color: #e8efff;
+}
+
+.withdraw-steps ol {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.withdraw-steps li {
+  margin-bottom: 12px;
+}
+
+.moderator-link {
+  color: #2AABEE;
+  text-decoration: none;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.moderator-link:hover {
+  text-decoration: underline;
+}
+
+.withdraw-close-btn {
+  width: 100%;
+  margin-top: 10px;
+  color: #081121;
+  background: linear-gradient(135deg, var(--neon-cyan), var(--neon-pink));
+  border: 1px solid transparent;
+  font-weight: 900;
+  letter-spacing: .3px;
+  border-radius: 14px;
+  padding: 12px 16px;
+}
+
   </style>
 
 <style>
@@ -1951,23 +1995,29 @@ html.scroll-locked, html.scroll-locked body{
   bottom: 10px;
   transform: none;
   appearance: none;
-  border: 1px solid rgba(255,255,255,.06);
+  border: 1px solid rgba(22,241,255,.45);
   padding: 10px 14px;
   border-radius: 999px;
   font-weight: 900;
   letter-spacing: .3px;
-  cursor: default;
-  color: #ffffff;       /* ← ИСПРАВЛЕНО */
-  background: transparent;
-  box-shadow: none;
+  cursor: pointer;
+  color: #e8efff;
+  background: linear-gradient(135deg, rgba(22,241,255,.15), rgba(138,92,255,.18));
+  box-shadow: 0 4px 12px rgba(22,241,255,.2);
   width: calc(50% - 12px);
   text-align: center;
-  display: flex;         /* чтобы текст стоял идеально по центру */
+  display: flex;
   justify-content: center;
   align-items: center;
   box-sizing: border-box;
-  opacity: 0.95;
-  pointer-events: none;
+  opacity: 1;
+  pointer-events: auto;
+  transition: all 0.2s ease;
+}
+
+.inv-withdraw:active{
+  transform: translateY(1px);
+  box-shadow: 0 2px 6px rgba(22,241,255,.15);
 }
 
 .amount-input-wrapper {
@@ -2370,6 +2420,32 @@ html.scroll-locked, html.scroll-locked body{
 </div>
 
 <button id="backTop" class="backtop" aria-label="Вверх">ВВЕРХ ↑</button>
+
+<!-- Модалка вывода предметов -->
+<div id="withdrawModal" class="modal withdraw-modal" aria-hidden="true" aria-modal="true" role="dialog">
+  <div class="modal-card" role="document">
+    <div class="modal-title">ВЫВОД ПРЕДМЕТОВ</div>
+    
+    <div class="withdraw-steps">
+      <ol>
+        <li>Выберите подарок, который хотите вывести.</li>
+        <li>
+          Напишите нашему модератору 
+          <span id="moderatorUsername" class="moderator-link">(@Username)</span>, 
+          чтобы запросить вывод подарка. Обязательно укажите в сообщении свой ID профиля и номер подарка.
+        </li>
+        <li>
+          Далее, пожалуйста, следуйте инструкциям модератора — он подскажет все дальнейшие шаги, 
+          чтобы вы гарантированно получили свой подарок.
+        </li>
+        <li>Получите свой подарок на аккаунт!</li>
+        <li>После получения подарка начинайте охоту на новые призы!🎁</li>
+      </ol>
+    </div>
+
+    <button id="withdrawCloseBtn" class="btn withdraw-close-btn">ЗАКРЫТЬ</button>
+  </div>
+</div>
 
 <!-- Глобальный лоадер для пополнения -->
 <div id="loaderOverlay" class="loader-overlay" aria-hidden="true">
@@ -3728,7 +3804,6 @@ function renderInventory(){
 
   grid.innerHTML = '';
 
-  // показываем новые предметы сверху
   const list = (window.INVENTORY || []).slice().reverse();
 
   if (!list.length){
@@ -3740,16 +3815,33 @@ function renderInventory(){
   empty.style.display = 'none';
   grid.style.display  = 'grid';
 
-  list.forEach(item=>{
+  list.forEach((item, index)=>{
     const card = document.createElement('div');
     card.className = 'inventory-card';
     card.dataset.id = item.id;
-card.innerHTML = `
-  <img src="${item.img}" alt="предмет" loading="lazy" onerror="this.remove()">
-  <button type="button" class="inv-sell">ПРОДАТЬ</button>
-  <button type="button" class="inv-withdraw">Вывести</button>
-`;
+    card.innerHTML = `
+      <img src="${item.img}" alt="предмет" loading="lazy" onerror="this.remove()">
+      <button type="button" class="inv-sell">ПРОДАТЬ</button>
+      <button type="button" class="inv-withdraw">Вывести</button>
+    `;
     grid.appendChild(card);
+
+    // Добавляем обработчик для кнопки "Вывести"
+    const withdrawBtn = card.querySelector('.inv-withdraw');
+    if (withdrawBtn) {
+      withdrawBtn.style.pointerEvents = 'auto';
+      withdrawBtn.style.cursor = 'pointer';
+      withdrawBtn.style.opacity = '1';
+      withdrawBtn.style.color = '#e8efff';
+      withdrawBtn.style.background = 'linear-gradient(135deg, rgba(22,241,255,.15), rgba(138,92,255,.18))';
+      withdrawBtn.style.border = '1px solid rgba(22,241,255,.45)';
+      withdrawBtn.style.boxShadow = '0 4px 12px rgba(22,241,255,.2)';
+      
+      withdrawBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openWithdrawModal();
+      });
+    }
   });
 
   // делегирование на кнопки ПРОДАТЬ
@@ -5434,6 +5526,82 @@ document.addEventListener('DOMContentLoaded', () => {
     window.location.href = TELEGRAM_MINIAPP_URL;
   });
 });
+
+// === КОНФИГУРАЦИЯ МОДЕРАТОРА ===
+// ЗДЕСЬ МОЖНО ПОМЕНЯТЬ USERNAME МОДЕРАТОРА
+const MODERATOR_USERNAME = 'Glitchdrop_bot'; // Замени на нужный username (без @)
+
+// === ФУНКЦИОНАЛ МОДАЛКИ ВЫВОДА ===
+const withdrawModal = document.getElementById('withdrawModal');
+const moderatorUsernameEl = document.getElementById('moderatorUsername');
+const withdrawCloseBtn = document.getElementById('withdrawCloseBtn');
+
+// Инициализация модалки вывода
+function initWithdrawModal() {
+  // Устанавливаем username модератора
+  if (moderatorUsernameEl) {
+    moderatorUsernameEl.textContent = `(@${MODERATOR_USERNAME})`;
+    
+    // Добавляем обработчик клика на username
+    moderatorUsernameEl.addEventListener('click', function() {
+      const tgUrl = `https://t.me/${MODERATOR_USERNAME}`;
+      safeOpen(tgUrl);
+    });
+  }
+
+  // Обработчик кнопки закрытия
+  if (withdrawCloseBtn) {
+    withdrawCloseBtn.addEventListener('click', closeWithdrawModal);
+  }
+
+  // Закрытие по клику на фон
+  withdrawModal.addEventListener('click', function(e) {
+    if (e.target === withdrawModal) {
+      closeWithdrawModal();
+    }
+  });
+
+  // Закрытие по ESC
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && !withdrawModal.classList.contains('hide')) {
+      closeWithdrawModal();
+    }
+  });
+}
+
+// Открытие модалки вывода
+function openWithdrawModal() {
+  if (!withdrawModal) return;
+  
+  withdrawModal.classList.add('show');
+  withdrawModal.setAttribute('aria-hidden', 'false');
+  lockBody(true);
+  
+  // Фокусировка на кнопке закрытия
+  setTimeout(() => withdrawCloseBtn?.focus(), 0);
+}
+
+// Закрытие модалки вывода
+function closeWithdrawModal() {
+  if (!withdrawModal) return;
+  
+  withdrawModal.classList.remove('show');
+  withdrawModal.setAttribute('aria-hidden', 'true');
+  
+  // Разблокируем скролл только если нет других открытых модалок
+  const dropIsOpen = typeof _modalOpen !== 'undefined' && _modalOpen;
+  const confirmIsOpen = typeof _confirmOpen !== 'undefined' && _confirmOpen;
+  
+  if (!detail.classList.contains('show') && !dropIsOpen && !confirmIsOpen) {
+    lockBody(false);
+  }
+}
+
+// Инициализация при загрузке
+document.addEventListener('DOMContentLoaded', function() {
+  initWithdrawModal();
+});
+
 </script>
 
 <script>
