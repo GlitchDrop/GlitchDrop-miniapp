@@ -3821,7 +3821,8 @@ function renderInventory(){
 
   grid.innerHTML = '';
 
-  const list = (window.INVENTORY || []).slice().reverse();
+  // Показываем предметы в порядке добавления (новые снизу)
+const list = window.INVENTORY || [];
 
   if (!list.length){
     empty.style.display = 'grid';
@@ -3837,7 +3838,7 @@ function renderInventory(){
   card.className = 'inventory-card';
   card.dataset.id = item.id;
   card.innerHTML = `
-    <div class="inventory-card-number">№${list.length - index}</div>
+  <div class="inventory-card-number">№${index + 1}</div>
     <img src="${item.img}" alt="предмет" loading="lazy" onerror="this.remove()">
     <button type="button" class="inv-sell">ПРОДАТЬ</button>
     <button type="button" class="inv-withdraw">Вывести</button>
