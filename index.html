@@ -725,6 +725,23 @@ html:not(.in-telegram) .d-auth-warning{
   user-select:none;
 }
 
+.inventory-card-number {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  border-radius: 4px;
+  padding: 3px 6px;
+  font-size: 11px;
+  font-weight: 900;
+  z-index: 2;
+  min-width: 24px;
+  text-align: center;
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
 .inventory-card img{
   width:88%;
   height:88%;
@@ -3816,15 +3833,16 @@ function renderInventory(){
   grid.style.display  = 'grid';
 
   list.forEach((item, index)=>{
-    const card = document.createElement('div');
-    card.className = 'inventory-card';
-    card.dataset.id = item.id;
-    card.innerHTML = `
-      <img src="${item.img}" alt="предмет" loading="lazy" onerror="this.remove()">
-      <button type="button" class="inv-sell">ПРОДАТЬ</button>
-      <button type="button" class="inv-withdraw">Вывести</button>
-    `;
-    grid.appendChild(card);
+  const card = document.createElement('div');
+  card.className = 'inventory-card';
+  card.dataset.id = item.id;
+  card.innerHTML = `
+    <div class="inventory-card-number">№${list.length - index}</div>
+    <img src="${item.img}" alt="предмет" loading="lazy" onerror="this.remove()">
+    <button type="button" class="inv-sell">ПРОДАТЬ</button>
+    <button type="button" class="inv-withdraw">Вывести</button>
+  `;
+  grid.appendChild(card);
 
     // Добавляем обработчик для кнопки "Вывести"
     const withdrawBtn = card.querySelector('.inv-withdraw');
