@@ -1702,41 +1702,6 @@ html.scroll-locked, html.scroll-locked body{
   padding: 12px 16px;
 }
 
-/* === Улучшенные стили для списка друзей === */
-.fr-item .gain img {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 1px solid var(--border);
-  background: linear-gradient(135deg, rgba(22,241,255,.1), rgba(138,92,255,.12));
-}
-
-.fr-empty {
-  padding: 40px 20px;
-  text-align: center;
-  color: #9fb2d9;
-  font-weight: 800;
-  font-size: 16px;
-  opacity: 0.8;
-}
-
-/* Улучшение отображения длинных имен */
-.fr-item .nm {
-  flex: 1;
-  min-width: 0;
-  padding: 0 8px;
-}
-
-.fr-item .nm-txt {
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-weight: 800;
-  color: #e8efff;
-}
-
   </style>
 
 <style>
@@ -2557,57 +2522,14 @@ window.esc = function(s){
     .replaceAll('/','&#47;');
 };
 
-// === ИСПРАВЛЕННАЯ функция получения списка приглашенных ===
 async function fetchInvited(){
-  try {
-    const tg = window.Telegram && window.Telegram.WebApp;
-    const user = tg?.initDataUnsafe?.user;
-    
-    if (!user) {
-      console.warn('No Telegram user data');
-      return [];
-    }
-
-    // Получаем UID8 текущего пользователя
-    const uid8 = await GD.ensureUid8(user.id);
-    
-    if (!uid8 || uid8 === '00000000') {
-      console.warn('Invalid UID8:', uid8);
-      return [];
-    }
-
-    console.log('🔄 Fetching referrals for UID8:', uid8);
-    
-    const response = await fetch(`${window.API_BASE}/api/referrals?uid8=${uid8}`, { 
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    if (!response.ok) {
-      console.error('❌ Failed to fetch referrals:', response.status);
-      return [];
-    }
-    
-    const data = await response.json();
-    console.log('✅ Referrals data received:', data);
-    
-    // Преобразуем данные в формат, ожидаемый фронтендом
-    const items = Array.isArray(data.items) ? data.items : [];
-    
-    return items.map(item => ({
-      name: item.name || 'Пользователь',
-      photo_url: item.photo_url || '',
-      user_id: item.user_id || item.id,
-      first_name: item.first_name || item.name || '',
-      registered_at: item.registered_at
-    }));
-    
-  } catch (error) {
-    console.error('❌ Error fetching referrals:', error);
-    return [];
-  }
+  const uid8 = await GD.ensureUid8();     // ты уже это используешь
+  try{
+    const r = await fetch(`${window.API_BASE}/api/referrals?uid8=${uid8}`, { method:'GET' });
+    if(!r.ok) return [];
+    const data = await r.json();
+    return Array.isArray(data.items) ? data.items : [];
+  }catch(_){ return []; }
 }
 
 window.safeOpen = function(url){
@@ -3959,17 +3881,14 @@ const topbarEl = document.querySelector('.topbar');
 // флаг «уже нарисовали один раз»
 let friendsLoaded = false;
 
-// === ИСПРАВЛЕННАЯ функция рендеринга друзей ===
 async function renderFriends(forceReload = false){
   if (!friendsScreen) return;
 
+  // если уже загружено и не просили форс-обновление — просто выходим
   if (friendsLoaded && !forceReload) return;
 
   const TOKEN_ICON = 'assets/images/20251005_0825_Яркое неоновое сияние_remix_01k6sd902pf03ah1w3cpkr66jz.png';
-  
-  // Получаем актуальные данные
   const invited = await fetchInvited();
-  console.log('🎯 Rendering friends list:', invited);
 
   friendsLoaded = true;
 
@@ -3977,6 +3896,7 @@ async function renderFriends(forceReload = false){
     <div class="friends-header">ДРУЗЬЯ</div>
 
     <div class="friends-wrap">
+      <!-- Промо-блок во всю ширину, без «панели» -->
       <div class="fr-title">Приглашай друзей — Получай награды!</div>
       <div class="fr-sub">Каждый приглашённый друг = <strong>1</strong> <span class="bil">🎟️</span> билет</div>
 
@@ -3993,29 +3913,29 @@ async function renderFriends(forceReload = false){
         </div>
         <div class="fr-list" id="frList">
           ${
-            invited.length > 0 
-              ? invited.map((user, index) => `
-                <div class="fr-item" role="listitem">
-                  <div class="n">${index + 1}.</div>
-                  <div class="nm">
-                    <span class="nm-txt">${esc(user.name || user.first_name || 'Пользователь')}</span>
-                  </div>
-                  <div class="gain">
-                    +1 <img src="${user.photo_url || TOKEN_ICON}" alt="${esc(user.name)}" 
-                         onerror="this.src='${TOKEN_ICON}'">
-                  </div>
-                </div>
-              `).join('')
-              : `<div class="fr-empty">Вы пока никого не пригласили</div>`
-          }
+  invited.length
+    ? invited.map((u,i)=>`
+      <div class="fr-item" role="listitem">
+        <div class="n">${i+1}.</div>
+        <div class="nm">
+          <span class="nm-txt">${esc(u.name || 'Пользователь')}</span>
+        </div>
+        <div class="gain">
+          +1 <img src="${u.photo_url || 'assets/images/20251005_0825_Яркое неоновое сияние_remix_01k6sd902pf03ah1w3cpkr66jz.png'}" alt="" onerror="this.src='assets/images/20251005_0825_Яркое неоновое сияние_remix_01k6sd902pf03ah1w3cpkr66jz.png'">
+        </div>
+      </div>
+    `).join('')
+    
+    : `<div class="fr-empty">Вы пока никого не пригласили</div>`
+
+}
         </div>
       </div>
     </div>
   `;
 
-  // === Обработчики кнопок ===
-  setupFriendsButtons();
-}
+// ===== ДЕЙСТВИЯ КНОПОК ПРИГЛАШЕНИЯ/КОПИРОВАНИЯ — ЖЕЛЕЗОБЕТОННЫЙ ВАРИАНТ =====
+const tg = window.Telegram && window.Telegram.WebApp;
 
 function showToast(msg){
   if (tg?.showAlert) tg.showAlert(msg);
@@ -4075,6 +3995,9 @@ if (window.matchMedia('(min-width:680px)').matches && partnerBtn){
   partnerBtn.style.display = 'inline-block';
   partnerBtn.addEventListener('click', ()=> alert('Стать партнёром (заглушка)'));
 }
+
+}
+
 
 function showFriends(){
   hardCloseDetailAndModal();
@@ -5082,72 +5005,6 @@ async function handleAmountSubmit() {
   }
 }
 
-// === Вынесем обработчики кнопок в отдельную функцию ===
-function setupFriendsButtons() {
-  const tg = window.Telegram && window.Telegram.WebApp;
-
-  function showToast(msg){
-    if (tg?.showAlert) tg.showAlert(msg);
-    else alert(msg);
-  }
-
-  // Кнопка приглашения
-  document.getElementById('btnInvite')?.addEventListener('click', async () => {
-    const user = tg?.initDataUnsafe?.user;
-    if (user) {
-      await GD.ensureUid8(user.id);
-    }
-    const link = GD.buildInviteLink();
-    const text = 'Залетай в GLITCH DROP — ловим дропы вместе!';
-    const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`;
-    safeOpen(shareUrl);
-  });
-
-  // Кнопка копирования
-  document.getElementById('btnCopy')?.addEventListener('click', async () => {
-    const user = tg?.initDataUnsafe?.user;
-    if (user) {
-      await GD.ensureUid8(user.id);
-    }
-    const link = GD.buildInviteLink();
-
-    if (tg?.setClipboardText) {
-      tg.setClipboardText(link);
-      try { tg.HapticFeedback?.notificationOccurred('success'); } catch(_) {}
-      tg.showAlert?.('Ссылка скопирована');
-      return;
-    }
-
-    try {
-      await navigator.clipboard.writeText(link);
-      showToast('Ссылка скопирована');
-      return;
-    } catch(_) {}
-
-    try {
-      const ta = document.createElement('textarea');
-      ta.value = link;
-      ta.setAttribute('readonly','');
-      ta.style.position = 'fixed';
-      ta.style.left = '-9999px';
-      document.body.appendChild(ta);
-      ta.select();
-      const ok = document.execCommand('copy');
-      document.body.removeChild(ta);
-      if (ok) { showToast('Ссылка скопирована'); return; }
-    } catch(_) {}
-
-    showToast(`Скопируй вручную:\n${link}`);
-  });
-
-  // Партнерская кнопка
-  const partnerBtn = document.getElementById('btnPartner');
-  if (window.matchMedia('(min-width:680px)').matches && partnerBtn){
-    partnerBtn.style.display = 'inline-block';
-    partnerBtn.addEventListener('click', ()=> alert('Стать партнёром (заглушка)'));
-  }
-}
-
 // ДЕЛАЕМ АСИНХРОННОЙ
 async function handleTonSubmit() {
   const input   = document.getElementById('amountInput');
@@ -5762,54 +5619,6 @@ function closeWithdrawModal() {
 // Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', function() {
   initWithdrawModal();
-});
-
-// === Функция для принудительного обновления списка друзей ===
-function refreshFriendsList() {
-  friendsLoaded = false;
-  const friendsScreen = document.getElementById('friendsScreen');
-  if (friendsScreen && !friendsScreen.classList.contains('hide')) {
-    console.log('🔄 Manual refresh of friends list');
-    renderFriends(true);
-  }
-}
-
-// === Автообновление списка друзей ===
-let friendsRefreshInterval = null;
-
-function startFriendsAutoRefresh() {
-  // Останавливаем предыдущий интервал если есть
-  if (friendsRefreshInterval) {
-    clearInterval(friendsRefreshInterval);
-  }
-  
-  // Обновляем каждые 15 секунд, если вкладка "Друзья" активна
-  friendsRefreshInterval = setInterval(() => {
-    const friendsScreen = document.getElementById('friendsScreen');
-    if (friendsScreen && !friendsScreen.classList.contains('hide')) {
-      console.log('🔄 Auto-refreshing friends list');
-      refreshFriendsList();
-    }
-  }, 15000);
-}
-
-// === Глобальная функция для ручного обновления ===
-window.refreshFriends = refreshFriendsList;
-
-// === Инициализация после загрузки ===
-window.addEventListener('load', () => {
-  // Запускаем автообновление через 3 секунды после загрузки
-  setTimeout(startFriendsAutoRefresh, 3000);
-  
-  // Также обновляем при возвращении на вкладку
-  document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) {
-      const friendsScreen = document.getElementById('friendsScreen');
-      if (friendsScreen && !friendsScreen.classList.contains('hide')) {
-        setTimeout(refreshFriendsList, 1000);
-      }
-    }
-  });
 });
 
 </script>
