@@ -218,14 +218,12 @@ GD.ensureUid8 = function (tgId) {
 
 .chipbar{
   position:sticky;
-  top: calc(var(--topbar-h, 64px) - 6px); /* было просто topbar-h */
-
+  top: var(--topbar-h, 64px);
   z-index:25;
 
   display:flex;
   gap:10px;
-
-  padding:6px 14px 6px; /* было 10px сверху — уменьшаем */
+  padding:10px 14px 6px;
   overflow-x:auto;
 
   background:transparent;
@@ -3224,49 +3222,67 @@ document.addEventListener('click', (evt)=>{
   clearSelectedCase();
 });
 
-// ====== Чипы (ФИЛЬТР секций) ======
+// ====== Чипы (ФИЛЬТР секций: заголовок + grid) ======
 const chips = Array.from(chipbar.querySelectorAll('.chip'));
 
-// все секции как они есть в DOM
-const sectionEls = sections
-  .map(s => document.getElementById(`sec-${s.id}`))
-  .filter(Boolean);
+// Собираем пары секций: heading (h2#sec-...) + grid (следующий div.grid)
+const sectionPairs = sections.map((s, i) => {
+  const heading = document.getElementById(`sec-${s.id}`);
+  const grid = heading ? heading.nextElementSibling : null;
 
-// контейнер, в котором лежат секции
-const sectionsContainer = sectionEls[0]?.parentElement;
+  return {
+    id: s.id,
+    heading,
+    grid,
+    index: i
+  };
+}).filter(p =>
+  p.heading &&
+  p.grid &&
+  p.grid.classList.contains('grid')
+);
 
-// запоминаем исходный порядок
-sectionEls.forEach((sec, i) => sec.dataset.origIndex = String(i));
+const sectionsContainer = sectionPairs[0]?.heading?.parentElement;
 
 // текущий активный фильтр (по умолчанию "Все")
 let activeFilterSel = "#top";
 
-// показ всех секций в исходном порядке
+// Показать ВСЕ секции в исходном порядке (heading + grid)
 function showAllSections(){
   if (!sectionsContainer) return;
 
-  const ordered = [...sectionEls].sort(
-    (a,b)=> Number(a.dataset.origIndex) - Number(b.dataset.origIndex)
-  );
+  sectionPairs
+    .sort((a,b)=> a.index - b.index)
+    .forEach(p=>{
+      p.heading.style.display = "";
+      p.grid.style.display = "";
 
-  ordered.forEach(sec=>{
-    sec.style.display = "";
-    sectionsContainer.appendChild(sec);
-  });
+      // возвращаем порядок: заголовок -> grid
+      sectionsContainer.appendChild(p.heading);
+      sectionsContainer.appendChild(p.grid);
+    });
 }
 
-// показать только одну секцию и поднять её вверх
+// Показать ТОЛЬКО одну секцию (и поднять её вверх)
 function showOnlySection(sel){
-  const target = document.querySelector(sel);
-  if (!target || !sectionsContainer) return;
+  if (!sectionsContainer) return;
 
-  // прячем все, кроме нужной
-  sectionEls.forEach(sec=>{
-    sec.style.display = (sec === target) ? "" : "none";
+  // sel вида "#sec-cheap" => id "cheap"
+  const targetId = sel.replace('#sec-','');
+  const target = sectionPairs.find(p => p.id === targetId);
+  if (!target) return;
+
+  // прячем все пары кроме нужной
+  sectionPairs.forEach(p=>{
+    const isTarget = (p === target);
+    p.heading.style.display = isTarget ? "" : "none";
+    p.grid.style.display = isTarget ? "" : "none";
   });
 
-  // поднимаем нужную в самый верх (на место "Бесплатные кейсы")
-  sectionsContainer.insertBefore(target, sectionsContainer.firstElementChild);
+  // поднимаем нужную секцию в самый верх:
+  // сначала heading, сразу за ним grid
+  sectionsContainer.insertBefore(target.heading, sectionsContainer.firstChild);
+  sectionsContainer.insertBefore(target.grid, target.heading.nextSibling);
 }
 
 // скроллим к верху, потом применяем фильтр
