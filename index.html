@@ -247,13 +247,45 @@ GD.ensureUid8 = function (tgId) {
   background:linear-gradient(180deg, rgba(10,14,32,.9), rgba(8,10,24,.9));
   border:1px solid rgba(140,170,255,.18);
 
-  /* старую резкую подсветку убираем/оставляем только внутреннюю */
+  /* только внутренний мягкий свет */
   box-shadow: inset 0 0 14px rgba(22,241,255,.08);
+
   transition:.15s;
 
-  position:relative;   /* нужно для мягкого ореола */
+  position:relative;
   overflow:visible;
 }
+
+/* СВЕЧЕНИЕ — максимально мягкое, “туманное” */
+.chip::before{
+  content:"";
+  position:absolute;
+  inset:-22px;                 /* БОЛЬШЕ радиус */
+  border-radius:inherit;
+
+  background: radial-gradient(circle,
+    rgba(22,241,255,.35) 0%,
+    rgba(138,92,255,.22) 30%,
+    rgba(138,92,255,.12) 50%,
+    rgba(138,92,255,.05) 62%,
+    rgba(138,92,255,0) 80%,
+    rgba(138,92,255,0) 100%
+  );
+
+  filter: blur(22px);          /* БОЛЬШЕ blur */
+  opacity: .18;                /* лёгкий фоновой glow всегда */
+  transition: opacity .2s ease, transform .2s ease;
+  pointer-events:none;
+  z-index:-1;
+  transform: scale(1.02);
+}
+
+/* при наведении/тапе — чуть ярче, но всё равно мягко */
+.chip:hover::before{
+  opacity: .5;
+  transform: scale(1.05);
+}
+
 
 /* мягкий ореол вокруг кнопки */
 .chip::after{
@@ -281,14 +313,29 @@ GD.ensureUid8 = function (tgId) {
 }
 
     .chip:hover{ transform:translateY(-1px); box-shadow:0 8px 22px rgba(22,241,255,.12)}
-   .chip.active{
+.chip.active{
   color:#081121 !important;
   background:linear-gradient(135deg, #16f1ff, #8a5cff) !important;
   border-color:transparent !important;
 
-  box-shadow:
-    0 0 10px rgba(22,241,255,.35),
-    0 0 16px rgba(138,92,255,.25) !important;
+  /* убираем внешние резкие тени — за это отвечает ::before */
+  box-shadow: inset 0 0 16px rgba(255,255,255,.12) !important;
+}
+
+/* активный glow — шире и мягче */
+.chip.active::before{
+  opacity: 1;
+  inset:-26px;                 /* ещё шире для активной */
+  background: radial-gradient(circle,
+    rgba(22,241,255,.75) 0%,
+    rgba(138,92,255,.50) 33%,
+    rgba(138,92,255,.22) 55%,
+    rgba(138,92,255,.10) 68%,
+    rgba(138,92,255,0) 85%,
+    rgba(138,92,255,0) 100%
+  );
+  filter: blur(26px);
+  transform: scale(1.08);
 }
 
 /* активный ореол ярче и мягче */
