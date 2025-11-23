@@ -4738,9 +4738,11 @@ function sellFromInventory(id, cardEl){
 // Навешиваем клики
 if (casesTab){
   casesTab.style.cursor = 'pointer';
-  casesTab.addEventListener('click', showCases);
+  casesTab.addEventListener('click', () => {
+    tabHaptic();
+    showCases();
+  });
 }
-
 if (profileTab){
   profileTab.style.cursor = 'pointer';
   profileTab.addEventListener('click', () => {
