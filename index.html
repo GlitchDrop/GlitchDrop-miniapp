@@ -138,29 +138,48 @@ GD.ensureUid8 = function (tgId) {
   <title>GLITCH DROP — Mini App</title>
 
   <style>
-    :root{
-      --bg-top:#0c1822; --bg-bot:#0e2230; --grid:rgba(255,255,255,.035); --grid-gap:34px;
-      --panel:#0a0f1e; --panel2:#0a0d19; --card:#0e1330; --card2:#0b0f26;
-      --neon-cyan:#16f1ff; --neon-pink:#ff3ed0; --neon-yellow:#ffe47a;
-      --text:#e8efff; --muted:#9fb2d9; --border:rgba(120,180,255,.25);
-      --shadow-strong:0 20px 60px rgba(10,20,60,.55), 0 0 60px rgba(22,241,255,.08);
-      --shadow-soft:0 10px 30px rgba(10,20,60,.35);
-      --radius:18px;
---tabbar-h: 84px;  /* дефолт, дальше пересчитаем JS-ом */
-    }
+ :root{
+  --bg-top:#050814;
+  --bg-bot:#0a1022;
+  --grid:rgba(255,255,255,.025);
+  --grid-gap:36px;
+
+  --panel:#070b18;
+  --panel2:#0a0f22;
+
+  --card:#0b1026;
+  --card2:#0d1230;
+
+  --neon-cyan:#16f1ff;
+  --neon-pink:#8a5cff;
+  --neon-yellow:#ffe47a;
+
+  --text:#e8efff;
+  --muted:#9fb2d9;
+  --border:rgba(120,180,255,.22);
+
+  --shadow-strong:0 18px 50px rgba(5,10,40,.7), 0 0 80px rgba(22,241,255,.07);
+  --shadow-soft:0 8px 22px rgba(5,10,40,.45);
+
+  --radius:20px;
+  --tabbar-h: 84px;  /* дефолт, дальше пересчитаем JS-ом */
+}
+
 
     *{box-sizing:border-box}
     html,body{height:100%;margin:0;font-family:'Inter',system-ui,Segoe UI,Roboto,Arial,sans-serif}
     html{scroll-behavior:smooth; scrollbar-gutter: stable;}
     body{ color:var(--text); overflow-x:hidden; background:#0e1b25; overflow-y:scroll; }
-    .cyber-bg{
-      position:fixed; inset:0; z-index:0; pointer-events:none;
-      background:
-        linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bot) 100%),
-        repeating-linear-gradient(0deg,  var(--grid) 0 1px,  transparent 1px var(--grid-gap)),
-        repeating-linear-gradient(90deg, var(--grid) 0 1px,  transparent 1px var(--grid-gap));
-      background-blend-mode: normal, overlay, overlay;
-    }
+ .cyber-bg{
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(80% 50% at 50% -10%, rgba(22,241,255,.06), transparent 60%),
+    radial-gradient(70% 40% at 50% 110%, rgba(138,92,255,.08), transparent 60%),
+    linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bot) 100%),
+    repeating-linear-gradient(0deg,  var(--grid) 0 1px, transparent 1px var(--grid-gap)),
+    repeating-linear-gradient(90deg, var(--grid) 0 1px, transparent 1px var(--grid-gap));
+  background-blend-mode: screen, screen, normal, overlay, overlay;
+}
 
     .app{min-height:100%;display:flex;flex-direction:column;position:relative;z-index:1}
 
@@ -197,24 +216,51 @@ GD.ensureUid8 = function (tgId) {
     .pill--lg{ padding:10px 14px; }
     .pill--lg img{ width:24px; height:24px; }
 
-    .chipbar{
+  .chipbar{
   position:sticky;
-  top: var(--topbar-h, 64px);   /* было 64px */
+  top: var(--topbar-h, 64px);
   z-index:25;
-      display:flex; gap:10px; padding:10px 14px; overflow-x:auto;
-      background:linear-gradient(180deg,rgba(8,14,36,.72),rgba(6,10,26,.62));
-      border-bottom:1px solid var(--border);
-      backdrop-filter:blur(10px);
-    }
+
+  display:flex;
+  gap:10px;
+  padding:10px 14px 6px;
+  overflow-x:auto;
+
+  background:transparent;
+  border-bottom:none;
+  backdrop-filter:none;
+}
+
     .chipbar::-webkit-scrollbar{display:none}
-    .chip{
-      padding:10px 14px; border-radius:999px; white-space:nowrap; cursor:pointer;
-      border:1px solid var(--border); color:#9fb2d9; font-weight:800; user-select:none;
-      background:linear-gradient(135deg, rgba(15,20,48,.7), rgba(12,16,38,.7));
-      transition:transform .15s, box-shadow .15s, color .15s, background .2s, border-color .2s;
-    }
+.chip{
+  padding:8px 14px;
+  border-radius:999px;
+  white-space:nowrap;
+  cursor:pointer;
+  user-select:none;
+
+  font-weight:900;
+  font-size:14px;
+  letter-spacing:.3px;
+
+  color:#a7b8df;
+  background:linear-gradient(180deg, rgba(10,14,32,.9), rgba(8,10,24,.9));
+  border:1px solid rgba(140,170,255,.18);
+
+  box-shadow: inset 0 0 14px rgba(22,241,255,.08);
+  transition:.15s;
+}
+
     .chip:hover{ transform:translateY(-1px); box-shadow:0 8px 22px rgba(22,241,255,.12)}
-    .chip.active{ color:#081121 !important; background:linear-gradient(135deg, var(--neon-cyan), var(--neon-pink)) !important; border-color:transparent !important; box-shadow:0 6px 28px rgba(22,241,255,.35), 0 0 44px rgba(255,62,208,.25) !important; }
+   .chip.active{
+  color:#081121 !important;
+  background:linear-gradient(135deg, #16f1ff, #8a5cff) !important;
+  border-color:transparent !important;
+  box-shadow:
+    0 0 18px rgba(22,241,255,.45),
+    0 0 22px rgba(138,92,255,.35);
+}
+
 
     .content{
   flex:1;
@@ -228,16 +274,14 @@ GD.ensureUid8 = function (tgId) {
 /* ====== CARD кейса (обновлённый) ====== */
 .card{
   position:relative;
-  background:linear-gradient(180deg, rgba(20,26,62,0.55), rgba(14,18,40,0.6));
-  border:1px solid var(--border);
-  border-radius:var(--radius);
-  box-shadow:var(--shadow-strong);
-  padding:12px;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
+  padding:10px;
+  gap:8px;
   overflow:hidden;
   cursor:pointer;
+  border-radius:var(--radius);
+  border:1px solid rgba(140,170,255,.2);
+  background:linear-gradient(180deg, rgba(12,16,40,.9), rgba(9,12,30,.95));
+  box-shadow:var(--shadow-strong);
 
   transform:translateY(0) scale(1);
   transition:
@@ -286,13 +330,13 @@ GD.ensureUid8 = function (tgId) {
 }
 
 .thumb{
-  height:160px;
-  border-radius:14px;
+  height:150px;
+  border-radius:16px;
   border:1px dashed rgba(180,210,255,0.35);
   background:
-    radial-gradient(120px 80px at 20% 20%, rgba(22,241,255,0.12), transparent 60%),
-    radial-gradient(120px 80px at 80% 80%, rgba(255,62,208,0.10), transparent 60%),
-    linear-gradient(180deg,#0c1230,#0a1028);
+    radial-gradient(120px 90px at 15% 15%, rgba(22,241,255,.10), transparent 60%),
+    radial-gradient(120px 90px at 85% 85%, rgba(138,92,255,.12), transparent 60%),
+    linear-gradient(180deg,#070b1d,#050815);
   display:grid;
   place-items:center;
   color:#a9c2ff;
@@ -301,6 +345,7 @@ GD.ensureUid8 = function (tgId) {
   letter-spacing:1px;
   overflow:hidden;
 }
+
 .thumb img{
   width:100%;
   height:100%;
@@ -330,10 +375,10 @@ GD.ensureUid8 = function (tgId) {
   justify-content:center;
   gap:8px;
   padding:8px 10px;
-  border-radius:12px;
-  background:linear-gradient(90deg, rgba(14,22,52,0.95), rgba(18,30,64,0.95));
-  border:1px solid rgba(255,228,122,0.55);
-  box-shadow:0 0 18px rgba(255,228,122,0.25);
+  border-radius:14px;
+  background:linear-gradient(90deg, rgba(8,12,28,1), rgba(12,18,40,1));
+  border:1px solid rgba(255,228,122,.6);
+  box-shadow:0 0 14px rgba(255,228,122,.22);
 }
 
 .price-star{
@@ -1700,6 +1745,19 @@ html.scroll-locked, html.scroll-locked body{
   letter-spacing: .3px;
   border-radius: 14px;
   padding: 12px 16px;
+}
+
+h2.section{
+  margin:8px 4px 12px;
+  font-size:28px;
+  font-weight:1000;
+  letter-spacing:1px;
+  color:#e8efff;
+
+  text-transform:uppercase;
+  text-shadow:
+    0 0 14px rgba(22,241,255,.18),
+    0 0 22px rgba(138,92,255,.12);
 }
 
   </style>
