@@ -563,7 +563,7 @@ html:not(.in-telegram) .card .price-bar{
 .tab.active::after{
   content:"";
   position:absolute;
-  bottom: 4px;
+  bottom: -2px;            /* было 4px — опускаем ниже текста */
   left:50%;
   width: 18px;
   height: 4px;
