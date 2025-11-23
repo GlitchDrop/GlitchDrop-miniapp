@@ -461,12 +461,12 @@ html:not(.in-telegram) .card .price-bar{
   grid-template-columns: repeat(5, 1fr);
   gap: 4px;
 
-  padding: 10px 8px;
-  padding-bottom: calc(env(safe-area-inset-bottom) + 10px);
+  padding: 7px 8px;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 7px);
 
   background: linear-gradient(180deg, rgba(10,14,32,.88), rgba(7,9,20,.92));
   border: 1px solid rgba(140,170,255,.20);
-  border-radius: 22px;
+  border-radius: 28px;
 
   backdrop-filter: blur(14px) saturate(1.25);
   box-shadow:
@@ -481,16 +481,17 @@ html:not(.in-telegram) .card .price-bar{
   flex-direction:column;
   align-items:center;
   justify-content:center;
-  gap: 5px;
 
-  padding: 8px 2px;
+  gap: 3px;
+  padding: 5px 2px;
+
   border-radius: 16px;
 
   color: #9fb2d9;
   font-size: 11.5px;
   font-weight: 900;
   letter-spacing: .25px;
-  line-height: 1.1;
+  line-height: 1.05;
 
   cursor:pointer;
   transition:
@@ -508,8 +509,8 @@ html:not(.in-telegram) .card .price-bar{
 /* контейнер под иконку — оставим не очень большим,
    чтобы он не тянул высоту таббара */
 .ico{
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
   display:flex;
   align-items:center;
   justify-content:center;
@@ -521,12 +522,12 @@ html:not(.in-telegram) .card .price-bar{
 
 /* реальный размер картинки маленький, а визуально увеличиваем scale-ом */
 .ico img{
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   display:block;
   object-fit: contain;
 
-  transform: translateY(1px) scale(1.25);
+  transform: translateY(0.5px) scale(1.45);
   transform-origin:center;
   filter: drop-shadow(0 0 6px rgba(120,160,255,.35));
 
@@ -552,7 +553,7 @@ html:not(.in-telegram) .card .price-bar{
 }
 
 .tab.active .ico img{
-  transform: translateY(0) scale(1.55);
+  transform: translateY(0) scale(1.7);
   filter:
     drop-shadow(0 0 10px rgba(59,232,255,.9))
     drop-shadow(0 0 14px rgba(138,92,255,.8));
