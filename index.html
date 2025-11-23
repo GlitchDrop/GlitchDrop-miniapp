@@ -247,8 +247,37 @@ GD.ensureUid8 = function (tgId) {
   background:linear-gradient(180deg, rgba(10,14,32,.9), rgba(8,10,24,.9));
   border:1px solid rgba(140,170,255,.18);
 
+  /* старую резкую подсветку убираем/оставляем только внутреннюю */
   box-shadow: inset 0 0 14px rgba(22,241,255,.08);
   transition:.15s;
+
+  position:relative;   /* нужно для мягкого ореола */
+  overflow:visible;
+}
+
+/* мягкий ореол вокруг кнопки */
+.chip::after{
+  content:"";
+  position:absolute;
+  inset:-14px;            /* насколько далеко уходит свечение */
+  border-radius:inherit;
+
+  background: radial-gradient(circle,
+    rgba(138,92,255,.35) 0%,
+    rgba(59,232,255,.22) 38%,
+    rgba(59,232,255,0) 72%
+  );
+
+  filter: blur(14px);
+  opacity:0;
+  transition: opacity .2s ease;
+  pointer-events:none;
+  z-index:-1;
+}
+
+/* лёгкое свечение при наведении/тапе */
+.chip:hover::after{
+  opacity:.55;
 }
 
     .chip:hover{ transform:translateY(-1px); box-shadow:0 8px 22px rgba(22,241,255,.12)}
@@ -256,11 +285,22 @@ GD.ensureUid8 = function (tgId) {
   color:#081121 !important;
   background:linear-gradient(135deg, #16f1ff, #8a5cff) !important;
   border-color:transparent !important;
+
   box-shadow:
-    0 0 18px rgba(22,241,255,.45),
-    0 0 22px rgba(138,92,255,.35);
+    0 0 10px rgba(22,241,255,.35),
+    0 0 16px rgba(138,92,255,.25) !important;
 }
 
+/* активный ореол ярче и мягче */
+.chip.active::after{
+  opacity:1;
+  background: radial-gradient(circle,
+    rgba(22,241,255,.60) 0%,
+    rgba(138,92,255,.40) 45%,
+    rgba(138,92,255,0) 78%
+  );
+  filter: blur(18px);
+}
 
     .content{
   flex:1;
@@ -582,7 +622,9 @@ html:not(.in-telegram) .card .price-bar{
     drop-shadow(0 0 14px rgba(138,92,255,.8));
 }
 
-    .backtop{ bottom: calc(var(--tabbar-h,84px) + 6px); position:fixed; right:14px; z-index:50; padding:9px 12px; border-radius:12px; font-weight:900; font-size:12px; letter-spacing:.3px; border:1px solid rgba(22,241,255,.45); color:#081121; background:linear-gradient(135deg, var(--neon-cyan), var(--neon-pink)); box-shadow:0 10px 28px rgba(22,241,255,.35), 0 0 36px rgba(255,62,208,.25); opacity:0; pointer-events:none; transform:translateY(8px); transition:opacity .2s, transform .2s; }
+    .backtop{
+  bottom: calc(var(--tabbar-h,84px) + 18px); position:fixed; right:14px; z-index:50; padding:9px 12px; border-radius:12px; font-weight:900; font-size:12px; letter-spacing:.3px; border:1px solid rgba(22,241,255,45); color:#081121; background:linear-gradient(135deg, var(--neon-cyan), var(--neon-pink)); box-shadow:0 10px 28px rgba(22,241,255,35), 0 0 36px rgba(255,62,208,25); opacity:0; pointer-events:none; transform:translateY(8px); transition:opacity .2s, transform .2s;
+}
     .backtop.show{opacity:1; pointer-events:auto; transform:translateY(0)}
 
     /* ===== DETAIL VIEW ===== */
@@ -4057,6 +4099,16 @@ const friendsTab = tabsAll.find(t => /Друзья/i.test(t.textContent.trim()))
 const contestsTab = tabsAll.find(t => /Конкурсы/i.test(t.textContent.trim()));
 const upgradesTab = tabsAll.find(t => /Обмен/i.test(t.textContent.trim()));
 
+// ===== HAPTIC FEEDBACK (вибрация) =====
+function tabHaptic(){
+  try{
+    if (window.Telegram?.WebApp?.HapticFeedback?.impactOccurred){
+      window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
+      return;
+    }
+  }catch(e){}
+  if (navigator.vibrate) navigator.vibrate(18);
+}
 
 // Делает таб активным визуально
 function setActiveTab(tab){
@@ -4688,23 +4740,35 @@ if (casesTab){
   casesTab.style.cursor = 'pointer';
   casesTab.addEventListener('click', showCases);
 }
+
 if (profileTab){
   profileTab.style.cursor = 'pointer';
-  profileTab.addEventListener('click', showProfile);
+  profileTab.addEventListener('click', () => {
+    tabHaptic();
+    showProfile();
+  });
 }
 if (friendsTab){
   friendsTab.style.cursor = 'pointer';
-  friendsTab.addEventListener('click', showFriends);
+  friendsTab.addEventListener('click', () => {
+    tabHaptic();
+    showFriends();
+  });
 }
 if (contestsTab){
   contestsTab.style.cursor = 'pointer';
-  contestsTab.addEventListener('click', showContests);
+  contestsTab.addEventListener('click', () => {
+    tabHaptic();
+    showContests();
+  });
 }
 if (upgradesTab){
   upgradesTab.style.cursor = 'pointer';
-  upgradesTab.addEventListener('click', showUpgrades);
+  upgradesTab.addEventListener('click', () => {
+    tabHaptic();
+    showUpgrades();
+  });
 }
-
 
 // Гарантируем, что при первой загрузке мы в "Кейсах"
 showCases();
