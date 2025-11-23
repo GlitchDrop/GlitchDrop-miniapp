@@ -1917,6 +1917,100 @@ h2.section{
     drop-shadow(0 0 14px rgba(138,92,255,.8)) !important;
 }
 
+/* =========================
+   APP LOADER
+   ========================= */
+#app-loader{
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: grid;
+  place-items: center;
+  pointer-events: all;
+
+  /* переливающийся фон */
+  background:
+    radial-gradient(1200px 700px at 20% -10%, rgba(138,92,255,.45), transparent 60%),
+    radial-gradient(1000px 600px at 80% 110%, rgba(59,232,255,.38), transparent 60%),
+    linear-gradient(135deg, #050614, #0b0f2a, #120b3a, #071a3a);
+  background-size: 200% 200%;
+  animation: loaderBgShift 6s ease-in-out infinite alternate;
+}
+
+@keyframes loaderBgShift{
+  0%   { background-position: 0% 30%; filter: hue-rotate(0deg); }
+  100% { background-position: 100% 70%; filter: hue-rotate(12deg); }
+}
+
+#app-loader .loader-card{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:12px;
+  transform: translateY(-6px);
+}
+
+/* круглая картинка + вращение */
+#app-loader .loader-logo{
+  width: 120px;
+  height: 120px;
+  border-radius: 999px;
+  object-fit: cover;
+
+  box-shadow:
+    0 0 25px rgba(59,232,255,.45),
+    0 0 35px rgba(138,92,255,.45);
+
+  animation: logoSpin 1.2s linear infinite;
+}
+
+@keyframes logoSpin{
+  from{ transform: rotate(0deg); }
+  to  { transform: rotate(360deg); }
+}
+
+/* текст */
+#app-loader .loader-text{
+  font-weight: 900;
+  letter-spacing: .6px;
+  font-size: 14px;
+  color: rgba(255,255,255,.75);
+  text-shadow: 0 0 10px rgba(59,232,255,.25);
+}
+
+/* прогресс */
+#app-loader .loader-bar{
+  width: 170px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(160,190,255,.25);
+  overflow: hidden;
+  box-shadow: inset 0 0 8px rgba(0,0,0,.6);
+}
+
+#app-loader .loader-bar-fill{
+  height: 100%;
+  width: 40%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #3be8ff, #8a5cff, #ff61d0);
+  box-shadow: 0 0 12px rgba(59,232,255,.6);
+  animation: barMove 1.1s ease-in-out infinite;
+}
+
+@keyframes barMove{
+  0%   { transform: translateX(-110%); }
+  100% { transform: translateX(260%); }
+}
+
+/* плавное исчезновение */
+#app-loader.loaded{
+  animation: none;
+  opacity: 0;
+  transition: opacity .25s ease;
+  pointer-events: none;
+}
+
   </style>
 
 <style>
@@ -2433,6 +2527,22 @@ h2.section{
 
 </head>
 <body>
+
+  <!-- APP LOADER OVERLAY -->
+<div id="app-loader" aria-live="polite">
+  <div class="loader-card">
+    <img
+      class="loader-logo"
+      src="assets/images/Untitled (68).png"
+      alt="Loading"
+    />
+    <div class="loader-text">Загрузка элементов</div>
+    <div class="loader-bar">
+      <div class="loader-bar-fill"></div>
+    </div>
+  </div>
+</div>
+
   <div class="cyber-bg"></div>
 
   <!-- LIVE 3D GRID BG -->
@@ -5846,6 +5956,26 @@ function closeWithdrawModal() {
 document.addEventListener('DOMContentLoaded', function() {
   initWithdrawModal();
 });
+
+/* =========================
+   HIDE LOADER WHEN READY
+   ========================= */
+(function(){
+  const loader = document.getElementById('app-loader');
+  if(!loader) return;
+
+  const prevOverflow = document.body.style.overflow;
+  document.body.style.overflow = 'hidden';
+
+  window.addEventListener('load', () => {
+    loader.classList.add('loaded');
+
+    setTimeout(() => {
+      loader.remove();
+      document.body.style.overflow = prevOverflow || '';
+    }, 260);
+  });
+})();
 
 </script>
 
