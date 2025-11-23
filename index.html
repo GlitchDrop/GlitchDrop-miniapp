@@ -1760,6 +1760,106 @@ h2.section{
     0 0 22px rgba(138,92,255,.12);
 }
 
+/* =========================
+   LIVE 3D GRID BACKGROUND
+   ========================= */
+
+#live-grid-bg{
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* общий слой */
+#live-grid-bg > div{
+  position:absolute;
+  inset:-4%;
+  width:108%;
+  height:108%;
+}
+
+/* 1) БАЗА: твоя картинка */
+#live-grid-bg .grid-base{
+  background-image: var(--grid-bg-image);
+  background-size: cover;
+  background-position: center bottom;
+  filter: saturate(1.05) contrast(1.08) brightness(.9);
+  transform: scale(1.03);
+  animation: gridDrift 30s ease-in-out infinite alternate;
+  opacity: 1;
+}
+
+/* 2) ПОДСВЕТКА ЛИНИЙ: мягкое мерцание */
+#live-grid-bg .grid-glow{
+  background:
+    radial-gradient(120% 70% at 50% 10%, rgba(180,90,255,.18), transparent 60%),
+    radial-gradient(90% 60% at 50% 90%, rgba(110,60,255,.20), transparent 70%);
+  mix-blend-mode: screen;
+  filter: blur(18px);
+  animation: glowBreath 6.5s ease-in-out infinite alternate;
+  opacity:.9;
+}
+
+/* 3) “СКАН-ВОЛНЫ” по линиям сетки */
+#live-grid-bg .grid-scan{
+  background:
+    /* волна слева направо */
+    linear-gradient(90deg,
+      transparent 0%,
+      rgba(190,120,255,.0) 35%,
+      rgba(220,160,255,.18) 50%,
+      rgba(190,120,255,.0) 65%,
+      transparent 100%),
+    /* волна сверху вниз */
+    linear-gradient(180deg,
+      transparent 0%,
+      rgba(120,180,255,.0) 40%,
+      rgba(150,220,255,.14) 50%,
+      rgba(120,180,255,.0) 60%,
+      transparent 100%);
+  mix-blend-mode: screen;
+  filter: blur(8px);
+  animation:
+    scanX 7s linear infinite,
+    scanY 9s linear infinite;
+  opacity:.8;
+}
+
+/* если у тебя контент вдруг перекрывается фоном — подними его */
+.app, #root, body > .app-wrap, .wrap{
+  position: relative;
+  z-index: 1;
+}
+
+/* ====== Анимации ====== */
+
+/* лёгкое движение всей картинки */
+@keyframes gridDrift{
+  0%   { transform: translate3d(0,0,0) scale(1.03); }
+  50%  { transform: translate3d(-1.2%,-0.8%,0) scale(1.05); }
+  100% { transform: translate3d(1.2%,0.8%,0) scale(1.04); }
+}
+
+/* дыхание подсветки */
+@keyframes glowBreath{
+  0%   { opacity:.55; transform: scale(1) }
+  100% { opacity:1;   transform: scale(1.03) }
+}
+
+/* скан по X */
+@keyframes scanX{
+  0%   { transform: translateX(-35%); }
+  100% { transform: translateX(35%); }
+}
+
+/* скан по Y */
+@keyframes scanY{
+  0%   { transform: translateY(-30%); }
+  100% { transform: translateY(30%); }
+}
+
   </style>
 
 <style>
@@ -2238,6 +2338,10 @@ h2.section{
   to { transform: rotate(360deg); }
 }
 
+:root{
+  --grid-bg-image: url("assets/images/20251123_1037_Неоновый Космический Фон_remix_01kaqt8na7fpbsgfythbfnwfhp.png");
+}
+
 </style>
 
 <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
@@ -2273,6 +2377,13 @@ h2.section{
 </head>
 <body>
   <div class="cyber-bg"></div>
+
+  <!-- LIVE 3D GRID BG -->
+<div id="live-grid-bg">
+  <div class="grid-base"></div>
+  <div class="grid-glow"></div>
+  <div class="grid-scan"></div>
+</div>
 
   <div class="landing-login-wrap">
   <button type="button" id="openMiniAppBtn" class="landing-login-btn">
