@@ -452,90 +452,131 @@ html:not(.in-telegram) .card .price-bar{
   filter:brightness(0.9);
 }
 
-    .tabbar{
-  position: fixed;          /* было: sticky */
-  left: 0; right: 0; bottom: 0;
-  z-index: 80;              /* выше контента и detail, но ниже модалок */
-  background: linear-gradient(180deg,rgba(8,14,36,.72),rgba(6,10,26,.62));
-  border-top: 1px solid var(--border);
-  backdrop-filter: blur(10px);
+.tabbar{
+  position: fixed;
+  left: 10px; right: 10px; bottom: 10px;
+  z-index: 80;
+
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  padding: 8px 6px;
-  padding-bottom: calc(env(safe-area-inset-bottom) + 6px); /* ДОБАВЬ ЭТО */
+  gap: 4px;
+
+  padding: 10px 8px;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 10px);
+
+  background: linear-gradient(180deg, rgba(10,14,32,.88), rgba(7,9,20,.92));
+  border: 1px solid rgba(140,170,255,.20);
+  border-radius: 22px;
+
+  backdrop-filter: blur(14px) saturate(1.25);
+  box-shadow:
+    0 16px 48px rgba(0,0,0,.65),
+    0 0 40px rgba(138,92,255,.18),
+    inset 0 0 18px rgba(59,232,255,.06);
 }
 
-.tab {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 2px;
+.tab{
+  position: relative;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap: 5px;
+
+  padding: 8px 2px;
+  border-radius: 16px;
+
   color: #9fb2d9;
-  font-size: 12px;
-  font-weight: 800;
-  line-height: 1.2;      /* добавили: одинаковая высота строк */
-  text-transform: none;  /* добавили: никакой принудительный капс */
-  cursor: pointer;
+  font-size: 11.5px;
+  font-weight: 900;
+  letter-spacing: .25px;
+  line-height: 1.1;
+
+  cursor:pointer;
+  transition:
+    transform .16s ease,
+    color .16s ease,
+    background .2s ease;
+}
+
+.tab:hover{
+  background: rgba(120,160,255,.06);
+  transform: translateY(-1px);
+  color: #dbe6ff;
 }
 
 /* контейнер под иконку — оставим не очень большим,
    чтобы он не тянул высоту таббара */
-.ico {
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: visible; /* важно: даём иконке выходить за пределы блока */
-  position: relative; /* ДОБАВИЛИ: чтобы можно было рисовать мягкий glow вокруг */
+.ico{
+  width: 36px;
+  height: 36px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  overflow: visible;
+  border-radius: 12px;
 }
 
 
 /* реальный размер картинки маленький, а визуально увеличиваем scale-ом */
-.ico img {
-  width: 20px;
-  height: 20px;
-  display: block;
-  object-fit: cover;
-  border-radius: 8px;
-  transform: translateY(3px) scale(2.0);   /* и сдвиг, и scale */
-  transform-origin: center center;
+.ico img{
+  width: 22px;
+  height: 22px;
+  display:block;
+  object-fit: contain;
+
+  transform: translateY(1px) scale(1.25);
+  transform-origin:center;
+  filter: drop-shadow(0 0 6px rgba(120,160,255,.35));
+
   transition:
-    transform 0.18s ease,
-    filter 0.18s ease,
-    box-shadow 0.18s ease;
+    transform .18s ease,
+    filter .18s ease;
 }
 
 /* активная вкладка — мягкий неоновый ореол без жёстких границ */
-.tab.active .ico img{
-  /* только лёгкий drop-shadow, без жёсткого box-shadow по краям */
-  filter: drop-shadow(0 0 14px rgba(123,92,255,0.9));
-  box-shadow: none;
-  border-radius: 12px;
+.tab.active{
+  color: #eaf1ff;
+  background: linear-gradient(180deg, rgba(59,232,255,.10), rgba(138,92,255,.12));
+  transform: translateY(-4px);
 }
 
-/* дополнительное мягкое пятно под иконкой */
-.tab.active .ico::before{
-  content:'';
-  position:absolute;
-  inset:-6px;
-  border-radius:999px;
+.tab.active .ico{
   background:
-    radial-gradient(circle,
-      rgba(123,92,255,0.55) 0%,
-      rgba(123,92,255,0.35) 35%,
-      rgba(123,92,255,0.0) 70%
-    );
-  filter: blur(6px);
-  opacity:0.9;
-  pointer-events:none;
-  z-index:-1;
+    radial-gradient(80% 80% at 50% 20%, rgba(59,232,255,.28), transparent 60%),
+    radial-gradient(90% 90% at 50% 90%, rgba(138,92,255,.34), transparent 65%);
+  box-shadow:
+    0 0 18px rgba(59,232,255,.45),
+    0 0 26px rgba(138,92,255,.35);
 }
+
+.tab.active .ico img{
+  transform: translateY(0) scale(1.55);
+  filter:
+    drop-shadow(0 0 10px rgba(59,232,255,.9))
+    drop-shadow(0 0 14px rgba(138,92,255,.8));
+}
+
+/* светящийся индикатор снизу активной вкладки */
+.tab.active::after{
+  content:"";
+  position:absolute;
+  bottom: 4px;
+  left:50%;
+  width: 18px;
+  height: 4px;
+  border-radius: 999px;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, var(--neon-cyan), #b58cff);
+  box-shadow: 0 0 10px rgba(59,232,255,.9);
+}
+
 
 /* лёгкий glow при наведении — мягкий, без рамки */
 .tab:hover .ico img{
-  filter: drop-shadow(0 0 8px rgba(123,92,255,0.7));
+  transform: translateY(0) scale(1.35);
+  filter: drop-shadow(0 0 10px rgba(138,92,255,.7));
 }
 
     .backtop{ bottom: calc(var(--tabbar-h,84px) + 6px); position:fixed; right:14px; z-index:50; padding:9px 12px; border-radius:12px; font-weight:900; font-size:12px; letter-spacing:.3px; border:1px solid rgba(22,241,255,.45); color:#081121; background:linear-gradient(135deg, var(--neon-cyan), var(--neon-pink)); box-shadow:0 10px 28px rgba(22,241,255,.35), 0 0 36px rgba(255,62,208,.25); opacity:0; pointer-events:none; transform:translateY(8px); transition:opacity .2s, transform .2s; }
