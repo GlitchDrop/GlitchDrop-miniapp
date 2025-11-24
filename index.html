@@ -4868,27 +4868,6 @@ function onMenuKeys(e){
 
 addBtn?.addEventListener('click', ()=> toggleQuickMenu());
 
-// ===== TON: open wallet modal if not connected =====
-async function openTonWallet(){
-  if (!window.tonConnectUI){
-    showFloatingError?.("TON Connect не инициализирован");
-    return;
-  }
-
-  // если кошелёк не подключён — открываем список кошельков
-  if (!window.tonConnectUI.wallet){
-    try{
-      await window.tonConnectUI.openModal();
-    }catch(e){
-      console.log("openModal error:", e);
-    }
-    return;
-  }
-
-  // если подключён — просто открываем модалку пополнения как раньше
-  topupOpen();
-}
-
 quickMenu?.addEventListener('click', (e)=>{
   console.log('🟡 Quick menu clicked');
   const btn = e.target.closest('.qm-item'); 
@@ -4907,7 +4886,7 @@ quickMenu?.addEventListener('click', (e)=>{
       break;
 
 case 'topup':
-  openTonWallet();
+  topupOpen();     // просто открываем модалку пополнения, TON НЕ трогаем
   break;
 
     case 'settings':
@@ -5521,7 +5500,7 @@ async function handleTonSubmit() {
   // Просто для отладки/логики
   window.lastTonTopup = { ton, stars };
 
-  // Проверяем, инициализирован ли TON Connect
+   // Проверяем, инициализирован ли TON Connect
   if (!window.tonConnectUI) {
     console.error('TonConnectUI не инициализирован');
     if (typeof showFloatingError === 'function') {
@@ -5531,6 +5510,33 @@ async function handleTonSubmit() {
     }
     return false;
   }
+
+  // ✅ Каждый раз начинаем с "чистого листа":
+  // если кошелёк был подключён ранее — отключаем,
+  // чтобы TonConnect снова предложил привязку.
+  try {
+    if (window.tonConnectUI.wallet) {
+      await window.tonConnectUI.disconnect();
+    }
+  } catch (e) {
+    console.warn('disconnect before connect failed', e);
+  }
+
+  // ✅ Ставим флаг ожидания оплаты
+  window.tonTopupPending = true;
+
+  // ✅ Открываем привязку/выбор кошелька ТОЛЬКО сейчас
+  // (после нажатия кнопки "ПОПОЛНИТЬ" во 2-м методе)
+  try {
+    await window.tonConnectUI.openModal();
+    // дальше ничего не делаем:
+    // когда кошелёк подключится, onStatusChange вызовет sendTonTopup()
+  } catch (e) {
+    console.warn('openModal cancelled', e);
+    window.tonTopupPending = false;
+  }
+
+  return false;
 
   // Сколько звёзд должно прилететь за этот TON-депозит
 const starsToAdd = ton * TON_TO_STARS_RATE;
@@ -5852,6 +5858,7 @@ if (document.readyState === 'loading') {
   });
 })();
 
+
 async function sendTonTopup() {
   if (!window.tonConnectUI || !window.lastTonTopup) {
     console.warn('Нет tonConnectUI или данных о пополнении');
@@ -5860,11 +5867,10 @@ async function sendTonTopup() {
 
   const { ton, stars } = window.lastTonTopup;
 
-  // Перевод TON → нанотонны (1 TON = 1e9)
   const amountNano = (ton * 1_000_000_000).toString();
 
   const tx = {
-    validUntil: Math.floor(Date.now() / 1000) + 600, // 10 мин на подписание
+    validUntil: Math.floor(Date.now() / 1000) + 600,
     messages: [
       {
         address: TON_RECEIVER_ADDRESS,
@@ -5878,10 +5884,10 @@ async function sendTonTopup() {
     const result = await window.tonConnectUI.sendTransaction(tx);
     console.log('[TON TX] результат', result);
 
-    // ✅ начисляем звёзды сразу после успешной подписи
+    // ✅ начисляем звёзды сразу после подписи
     applyTonStarsTopup(stars);
 
-    // ✅ закрываем обе модалки
+    // ✅ закрываем модалки
     try {
       topupAmountCloseModal();
       topupCloseModal();
@@ -5904,6 +5910,14 @@ async function sendTonTopup() {
 
   } finally {
     window.tonTopupPending = false;
+
+    // ✅ КЛЮЧЕВОЕ: всегда отключаем кошелёк после попытки,
+    // чтобы он НЕ сохранялся и в следующий раз снова попросить привязку.
+    try {
+      await window.tonConnectUI.disconnect();
+    } catch (e) {
+      console.warn('disconnect after tx failed', e);
+    }
   }
 }
 
