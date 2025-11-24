@@ -2899,7 +2899,13 @@ window.esc = function(s){
 };
 
 async function fetchInvited(){
-  const uid8 = await GD.ensureUid8();     // ты уже это используешь
+  const tg = window.Telegram?.WebApp;
+  const u = tg?.initDataUnsafe?.user;
+  if(!u?.id) return [];
+
+  const uid8 = window.MY_UID8 || await GD.ensureUid8(String(u.id));
+  window.MY_UID8 = uid8;
+
   try{
     const r = await fetch(`${window.API_BASE}/api/referrals?uid8=${uid8}`, { method:'GET' });
     if(!r.ok) return [];
@@ -2907,6 +2913,7 @@ async function fetchInvited(){
     return Array.isArray(data.items) ? data.items : [];
   }catch(_){ return []; }
 }
+
 
 window.safeOpen = function(url){
   const tg = window.Telegram?.WebApp;
@@ -3576,6 +3583,39 @@ detail.scrollTop = 0;
 
 const u = tg.initDataUnsafe && tg.initDataUnsafe.user;
 if (!u) return;
+
+
+// ====== REF SYSTEM: HIT ON START (самореф разрешён) ======
+(async function referralHitOnStart(){
+  try {
+    const refUid8 = (tg.initDataUnsafe?.start_param || "").trim();
+
+    // получаем свой uid8 и сохраняем (важно!)
+    const myUid8 = await GD.ensureUid8(String(u.id));
+    window.MY_UID8 = myUid8;
+
+    // если пришли по реф ссылке — регистрируем друга
+    if (refUid8 && /^\d{8}$/.test(refUid8) && window.API_BASE) {
+      await fetch(window.API_BASE + "/api/referrals/hit", {
+        method: "POST",
+        headers: { "Content-Type":"application/json" },
+        body: JSON.stringify({
+          ref_uid8: refUid8,
+          user: {
+            id: u.id,
+            first_name: u.first_name,
+            last_name: u.last_name,
+            username: u.username,
+            photo_url: u.photo_url
+          },
+          initData: tg.initData
+        })
+      }).catch(()=>{});
+    }
+  } catch(e){
+    console.log("referralHitOnStart error:", e);
+  }
+})();
 
 // максимум 8 символов у username (без @)
 const USERNAME_MAX = 8;
@@ -4333,7 +4373,9 @@ function showToast(msg){
 }
 
 document.getElementById('btnInvite')?.addEventListener('click', async () => {
-  await GD.ensureUid8();
+  const tg = window.Telegram?.WebApp;
+const u = tg?.initDataUnsafe?.user;
+if(u?.id) await GD.ensureUid8(String(u.id));
   const link = GD.buildInviteLink();
   const text = 'Залетай в GLITCH DROP — ловим дропы вместе!';
   const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`;
