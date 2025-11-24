@@ -5532,39 +5532,27 @@ async function handleTonSubmit() {
     return false;
   }
 
-  // Формируем транзакцию TON
-const tx = {
-  validUntil: Math.floor(Date.now() / 1000) + 600, // +10 минут
-  messages: [
-    {
-      address: TON_RECEIVER_ADDRESS,      // ✅ теперь берём реальный адрес
-      amount: String(ton * 1e9),          // 1 TON = 1e9 нанотонов
-    }
-  ]
-};
+  // Сколько звёзд должно прилететь за этот TON-депозит
+const starsToAdd = ton * TON_TO_STARS_RATE;
+window.lastTonTopup = { ton, stars: starsToAdd };
 
-  try {
-    // ОТКРЫВАЕТСЯ КОШЕЛЁК, ПОЛЬЗОВАТЕЛЬ ПОДПИСЫВАЕТ ТРАНЗАКЦИЮ
-    const res = await window.tonConnectUI.sendTransaction(tx);
-    console.log('✅ TON-транзакция отправлена', res);
-
-    // ❗ СРАЗУ после успешной отправки начисляем звёзды
-    applyTonStarsTopup(stars);
-
-    // Закрываем модалки пополнения
+  // ✅ Если кошелёк НЕ подключён — открываем привязку и выходим.
+  // onStatusChange сам продолжит оплату через sendTonTopup()
+  if (!window.tonConnectUI.wallet) {
+    window.tonTopupPending = true;
     try {
-      topupAmountCloseModal();
-      topupCloseModal();
+      await window.tonConnectUI.openModal();
     } catch (e) {
-      console.warn('Не удалось закрыть модалки после TON', e);
+      console.warn('openModal cancelled', e);
+      window.tonTopupPending = false;
     }
-
-    return true;
-  } catch (e) {
-    console.error('❌ Ошибка / отмена TON-транзакции', e);
-    // Здесь звёзды НЕ начисляем, потому что оплаты не было
     return false;
   }
+
+  // ✅ Если кошелёк уже подключён — сразу отправляем оплату
+  window.tonTopupPending = true;
+  await sendTonTopup();  // отправит транзакцию на ton из input
+  return true;
 }
 
 const TON_TO_STARS_RATE = 200;
@@ -5867,7 +5855,7 @@ if (document.readyState === 'loading') {
 async function sendTonTopup() {
   if (!window.tonConnectUI || !window.lastTonTopup) {
     console.warn('Нет tonConnectUI или данных о пополнении');
-    return;
+    return false;
   }
 
   const { ton, stars } = window.lastTonTopup;
@@ -5880,8 +5868,7 @@ async function sendTonTopup() {
     messages: [
       {
         address: TON_RECEIVER_ADDRESS,
-        amount: amountNano,
-        // payload/stateInit можно добавить позже, если нужно
+        amount: amountNano
       }
     ]
   };
@@ -5891,15 +5878,30 @@ async function sendTonTopup() {
     const result = await window.tonConnectUI.sendTransaction(tx);
     console.log('[TON TX] результат', result);
 
-    // тут уже можно дернуть бэкенд или показать уведомление
-    if (typeof showFloatingError === 'function') {
-      showFloatingError(`Заявка на пополнение ${ton} TON отправлена. После подтверждения начислим ${stars} ⭐`);
+    // ✅ начисляем звёзды сразу после успешной подписи
+    applyTonStarsTopup(stars);
+
+    // ✅ закрываем обе модалки
+    try {
+      topupAmountCloseModal();
+      topupCloseModal();
+    } catch (e) {
+      console.warn('Не удалось закрыть модалки после TON', e);
     }
+
+    if (typeof showFloatingError === 'function') {
+      showFloatingError(`Оплата ${ton} TON отправлена ✅ Начислено ${stars} ⭐`);
+    }
+
+    return true;
+
   } catch (e) {
     console.error('Ошибка при отправке транзакции TON:', e);
     if (typeof showFloatingError === 'function') {
       showFloatingError('Платёж TON отменён или не выполнен');
     }
+    return false;
+
   } finally {
     window.tonTopupPending = false;
   }
