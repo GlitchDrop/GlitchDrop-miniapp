@@ -2542,9 +2542,9 @@ h2.section{
     try {
       if (window.TON_CONNECT_UI && TON_CONNECT_UI.TonConnectUI) {
         window.tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-          manifestUrl: 'https://glitchdrop.github.io/GlitchDrop-miniapp/tonconnect-manifest.json',
-          language: 'ru',
-        });
+  manifestUrl: window.location.origin + '/tonconnect-manifest.json',
+  language: 'ru',
+});
         console.log('✅ TonConnectUI инициализирован', window.tonConnectUI);
 
         // Слушаем изменение статуса кошелька
@@ -4868,6 +4868,27 @@ function onMenuKeys(e){
 
 addBtn?.addEventListener('click', ()=> toggleQuickMenu());
 
+// ===== TON: open wallet modal if not connected =====
+async function openTonWallet(){
+  if (!window.tonConnectUI){
+    showFloatingError?.("TON Connect не инициализирован");
+    return;
+  }
+
+  // если кошелёк не подключён — открываем список кошельков
+  if (!window.tonConnectUI.wallet){
+    try{
+      await window.tonConnectUI.openModal();
+    }catch(e){
+      console.log("openModal error:", e);
+    }
+    return;
+  }
+
+  // если подключён — просто открываем модалку пополнения как раньше
+  topupOpen();
+}
+
 quickMenu?.addEventListener('click', (e)=>{
   console.log('🟡 Quick menu clicked');
   const btn = e.target.closest('.qm-item'); 
@@ -4885,8 +4906,8 @@ quickMenu?.addEventListener('click', (e)=>{
       window.scrollTo({ top: 0, behavior:'smooth' });
       break;
 
-   case 'topup':
-  topupOpen();
+case 'topup':
+  openTonWallet();
   break;
 
     case 'settings':
