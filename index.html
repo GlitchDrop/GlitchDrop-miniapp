@@ -2542,7 +2542,7 @@ h2.section{
     try {
       if (window.TON_CONNECT_UI && TON_CONNECT_UI.TonConnectUI) {
         window.tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-  manifestUrl: window.location.origin + '/tonconnect-manifest.json',
+  manifestUrl: window.location.origin + '/tonconnect-manifest.json?v=11',
   language: 'ru',
 });
         console.log('✅ TonConnectUI инициализирован', window.tonConnectUI);
