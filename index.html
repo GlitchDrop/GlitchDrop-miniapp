@@ -2542,9 +2542,10 @@ h2.section{
     try {
       if (window.TON_CONNECT_UI && TON_CONNECT_UI.TonConnectUI) {
         window.tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-  manifestUrl: "https://sneerful-anamaria-doucely.ngrok-free.dev/tonconnect-manifest.json?v=" + Date.now(),
+  manifestUrl: "https://sneerful-anamaria-doucely.ngrok-free.dev/tonconnect-manifest.json",
   language: "ru",
 });
+
         console.log('✅ TonConnectUI инициализирован', window.tonConnectUI);
 
         // Слушаем изменение статуса кошелька
