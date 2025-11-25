@@ -2799,6 +2799,24 @@ h2.section{
   </div>
 </div>
 
+<!-- ✅ Cardlink / SBP оплата -->
+<div id="bankPayModal" class="modal" aria-hidden="true">
+  <div class="modal-card" role="document" style="max-width: 520px; width: 100%;">
+    <div class="modal-title">ОПЛАТА ЧЕРЕЗ СБП</div>
+
+    <div class="bankpay-frame-wrap" style="width:100%; height:70vh; min-height:420px;">
+      <iframe id="bankPayFrame"
+              src=""
+              style="border:0; width:100%; height:100%; border-radius:12px;"
+              allow="payment *; clipboard-read; clipboard-write"></iframe>
+    </div>
+
+    <div class="modal-actions">
+      <button id="bankPayCloseBtn" class="btn btn-ghost">ЗАКРЫТЬ</button>
+    </div>
+  </div>
+</div>
+
       <button class="nav next" aria-label="Следующий">›</button>
     </div>
 
@@ -4905,7 +4923,7 @@ let touchStartX = 0;
 let touchEndX = 0;
 // какой способ оплаты выбран
 // 0-й слайд — звезды, 1-й — TON → Stars
-let currentPaymentMethod = 'stars'; // 'stars' | 'ton'
+let currentPaymentMethod = 'stars'; // 'stars' | 'ton' | 'bank'
 
 function initTopupModal() {
     console.log('🔄 Инициализация топ-ап модалки');
@@ -4994,6 +5012,13 @@ if (confirmBtn) {
     // 1-й слайд — пополнение через TON → Stars
     if (currentSlide === 1) {
       currentPaymentMethod = 'ton';
+      topupAmountOpenModal();
+      return;
+    }
+
+        // ✅ 2-й индекс / 3-й слайд — Cardlink / SBP
+    if (currentSlide === 2) {
+      currentPaymentMethod = 'bank';
       topupAmountOpenModal();
       return;
     }
@@ -5563,6 +5588,86 @@ window.lastTonTopup = { ton, stars: starsToAdd };
   return true;
 }
 
+// ✅ Cardlink / SBP
+const CARDLINK_BASE_URL = 'https://ВАШ_CARDLINK_URL/checkout'; 
+// пример: https://pay.cardlink.ru/xxxxxxx  (подставь свой)
+
+function buildCardlinkUrl(amount) {
+  // если у тебя другой формат параметров — поменяй тут
+  const url = new URL(CARDLINK_BASE_URL);
+  url.searchParams.set('amount', String(amount));
+  url.searchParams.set('currency', 'RUB');
+  return url.toString();
+}
+
+function openBankPayModal(amount) {
+  const modal = document.getElementById('bankPayModal');
+  const frame = document.getElementById('bankPayFrame');
+  if (!modal || !frame) return;
+
+  frame.src = buildCardlinkUrl(amount);
+  modal.classList.add('show');
+  modal.setAttribute('aria-hidden', 'false');
+}
+
+function closeBankPayModal() {
+  const modal = document.getElementById('bankPayModal');
+  const frame = document.getElementById('bankPayFrame');
+  if (!modal) return;
+
+  modal.classList.remove('show');
+  modal.setAttribute('aria-hidden', 'true');
+  if (frame) frame.src = '';
+}
+
+// кнопка закрытия
+document.getElementById('bankPayCloseBtn')
+  ?.addEventListener('click', closeBankPayModal);
+
+  async function handleBankSubmit() {
+  const input = document.getElementById('amountInput');
+  const errorEl = document.getElementById('amountError');
+  if (!input) return false;
+
+  const raw = (input.value || '').trim();
+  if (!raw || !/^\d+$/.test(raw)) {
+    if (errorEl) {
+      errorEl.textContent = 'Некорректная сумма';
+      errorEl.style.display = 'block';
+    }
+    return false;
+  }
+
+  const amount = parseInt(raw, 10);
+
+  if (amount < STARS_MIN) {
+    if (errorEl) {
+      errorEl.textContent = `Минимальная сумма ${STARS_MIN}`;
+      errorEl.style.display = 'block';
+    }
+    return false;
+  }
+
+  if (amount > STARS_MAX) {
+    if (errorEl) {
+      errorEl.textContent = `Максимальная сумма ${formatRu(STARS_MAX)}`;
+      errorEl.style.display = 'block';
+    }
+    return false;
+  }
+
+  topupAmountCloseModal();
+
+  // ✅ открываем Cardlink-меню с "Оплатить ..." и QR
+  openBankPayModal(amount);
+
+  return true;
+}
+
+// ✅ Лимиты для Stars и Cardlink (одинаковые)
+const STARS_MIN = 50;
+const STARS_MAX = 50000;
+
 const TON_TO_STARS_RATE = 200;
 const TON_MIN = 10;
 const TON_MAX = 100000;
@@ -5601,10 +5706,21 @@ function topupAmountOpenModal() {
     }
   }
 
-  // Показать/спрятать блок с «Вы получите … Stars»
-  if (metaEl) {
-    metaEl.style.display = currentPaymentMethod === 'ton' ? 'flex' : 'none';
+  // ✅ Стартовое значение инпута
+if (input) {
+  if (currentPaymentMethod === 'ton') {
+    input.value = String(TON_MIN);
+    input.dataset.lastValidTon = String(TON_MIN);
+  } else {
+    input.value = String(STARS_MIN);
+    input.dataset.lastValidStars = String(STARS_MIN);
   }
+}
+
+  // Показать/спрятать блок с «Вы получите … Stars»
+if (metaEl) {
+  metaEl.style.display = currentPaymentMethod === 'ton' ? 'flex' : 'none';
+}
 
   // Обновляем текст «Вы получите … Stars»
   updateTonPreview();
@@ -5768,16 +5884,53 @@ function initAmountModal() {
         return;
       }
 
-      // === Обычный режим (Stars, старое поведение) ===
-      if (value.length > 0 && !/^\d+$/.test(value)) {
-        if (errorEl) {
-          errorEl.textContent = '*Некорректная сумма';
-          errorEl.style.display = 'block';
-        }
-      } else if (errorEl) {
-        errorEl.style.display = 'none';
-        errorEl.textContent = '';
-      }
+     // === Обычный режим (Stars + Bank) ===
+value = value.replace(/\D/g, '');
+if (value !== el.value) el.value = value;
+
+const prev = el.dataset.lastValidStars ?? String(STARS_MIN);
+
+// если попытались стереть всё — возвращаем минимум
+if (value === '') {
+  if (errorEl) {
+    errorEl.textContent = `Минимальная сумма ${STARS_MIN}`;
+    errorEl.style.display = 'block';
+  }
+  el.value = String(STARS_MIN);
+  el.dataset.lastValidStars = String(STARS_MIN);
+  return;
+}
+
+const num = parseInt(value, 10);
+
+// ниже минимума — фиксируем 50
+if (num < STARS_MIN) {
+  if (errorEl) {
+    errorEl.textContent = `Минимальная сумма ${STARS_MIN}`;
+    errorEl.style.display = 'block';
+  }
+  el.value = String(STARS_MIN);
+  el.dataset.lastValidStars = String(STARS_MIN);
+  return;
+}
+
+// выше максимума — режем до 50 000
+if (num > STARS_MAX) {
+  if (errorEl) {
+    errorEl.textContent = `Максимальная сумма ${formatRu(STARS_MAX)}`;
+    errorEl.style.display = 'block';
+  }
+  el.value = String(STARS_MAX);
+  el.dataset.lastValidStars = String(STARS_MAX);
+  return;
+}
+
+// всё ок
+el.dataset.lastValidStars = String(num);
+if (errorEl) {
+  errorEl.style.display = 'none';
+  errorEl.textContent = '';
+}
 
       // На всякий случай обновим превью (в Stars-режиме оно просто спрячется)
       updateTonPreview();
@@ -5808,12 +5961,14 @@ function initAmountModal() {
   // Кнопка подтверждения
   if (confirmBtn) {
     confirmBtn.addEventListener('click', function() {
-      if (currentPaymentMethod === 'ton') {
-        handleTonSubmit();
-      } else {
-        handleAmountSubmit();
-      }
-    });
+  if (currentPaymentMethod === 'ton') {
+    handleTonSubmit();
+  } else if (currentPaymentMethod === 'bank') {
+    handleBankSubmit();
+  } else {
+    handleAmountSubmit(); // stars
+  }
+});
   }
   
   // Кнопка отмены
