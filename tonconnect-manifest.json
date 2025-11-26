@@ -1,7 +1,7 @@
 {
-  "url": "https://sneerful-anamaria-doucely.ngrok-free.dev",
+  "url": "https://raw.githubusercontent.com/GlitchDrop/GlitchDrop-miniapp/main/tonconnect-manifest.json",
   "name": "Glitch Drop",
-  "iconUrl": "https://sneerful-anamaria-doucely.ngrok-free.dev/gd-icon.png",
-  "termsOfUseUrl": "https://sneerful-anamaria-doucely.ngrok-free.dev/terms",
-  "privacyPolicyUrl": "https://sneerful-anamaria-doucely.ngrok-free.dev/privacy"
+  "iconUrl": "https://glitchdrop.github.io/GlitchDrop-miniapp/assets/images/Untitled%20(68).png",
+  "termsOfUseUrl": "https://ton.org",
+  "privacyPolicyUrl": "https://ton.org"
 }
