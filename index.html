@@ -6333,8 +6333,24 @@ document.addEventListener('DOMContentLoaded', function() {
   // Через 3 секунды отключаем observer, чтобы не мешал UI
   setTimeout(() => mo.disconnect(), 3000);
 })();
-</script>
 
+(function(){
+  const tg = window.Telegram && window.Telegram.WebApp;
+  const userId = tg?.initDataUnsafe?.user?.id;
+  if (!userId) return;
+
+  fetch(`${window.API_BASE}/api/user-balance?user_id=${userId}`)
+    .then(r => r.json())
+    .then(data => {
+      if (data && typeof data.stars === 'number') {
+        // кладём серверный баланс в UI и localStorage твоими же функциями/ключами
+        setStarsBalance(data.stars);
+      }
+    })
+    .catch(err => console.warn('Balance fetch failed', err));
+})();
+
+</script>
 </body>
 </html>
 
