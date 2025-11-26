@@ -6024,7 +6024,13 @@ async function sendTonTopup() {
 
   const { ton, stars } = window.lastTonTopup;
 
-  const amountNano = (ton * 1_000_000_000).toString();
+  const tonValue = Number(ton);
+  if (!Number.isFinite(tonValue) || tonValue <= 0) {
+    showFloatingError?.('Некорректная сумма TON');
+    return false;
+  }
+
+  const amountNano = BigInt(Math.round(tonValue * 1_000_000_000)).toString();
 
   const tx = {
     validUntil: Math.floor(Date.now() / 1000) + 600,
@@ -6037,31 +6043,29 @@ async function sendTonTopup() {
   };
 
   try {
-    console.log('[TON TX] отправляем транзакцию', tx);
+    topupAmountCloseModal();
+
+    window.tonTopupPending = true;
+
     const result = await window.tonConnectUI.sendTransaction(tx);
-    console.log('[TON TX] результат', result);
 
-    // ✅ начисляем звёзды сразу после подписи
-    applyTonStarsTopup(stars);
+    console.log('TON tx result:', result);
 
-    // ✅ закрываем модалки
-    try {
-      topupAmountCloseModal();
-      topupCloseModal();
-    } catch (e) {
-      console.warn('Не удалось закрыть модалки после TON', e);
-    }
+    // ✅ Начисляем звёзды сразу после подписи
+    applyTonStarsTopup(stars, ton);
 
-    if (typeof showFloatingError === 'function') {
-      showFloatingError(`Оплата ${ton} TON отправлена ✅ Начислено ${stars} ⭐`);
+    // 🟦 Покажем флоат-уведомление
+    if (typeof showFloatingSuccess === 'function') {
+      showFloatingSuccess(`Оплата ${ton} TON отправлена ✅ Начислено ${stars} ⭐`);
     }
 
     return true;
 
   } catch (e) {
-    console.error('Ошибка при отправке транзакции TON:', e);
+    console.error('TON tx failed:', e);
+
     if (typeof showFloatingError === 'function') {
-      showFloatingError('Платёж TON отменён или не выполнен');
+      showFloatingError('Оплата TON отменена или не прошла');
     }
     return false;
 
