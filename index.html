@@ -5673,7 +5673,7 @@ const TON_MIN = 10;
 const TON_MAX = 100000;
 
 // Куда летят TON за пополнение (ЗАМЕНИ на свой адрес!)
-const TON_RECEIVER_ADDRESS = 'UQB4Sh-FL-1VWxPDao7l3T-5iKXXuxk5VneNrQ7nehdNk8qK'; // TODO: сюда твой TON-адрес
+const TON_RECEIVER_ADDRESS = 'EQB4Sh-FL-1VWxPDao7l3T-5iKXXuxk5VneNrQ7nehdNk5dP'; // TODO: сюда твой TON-адрес
 
 function topupAmountOpenModal() {
   console.log('🔵 Открытие модалки ввода суммы');
@@ -6024,64 +6024,59 @@ async function sendTonTopup() {
 
   const { ton, stars } = window.lastTonTopup;
 
-  const tonValue = Number(ton);
+  // 1) нормализуем ввод (запятая/строка)
+  const tonValue = Number(String(ton).replace(",", "."));
   if (!Number.isFinite(tonValue) || tonValue <= 0) {
-    showFloatingError?.('Некорректная сумма TON');
+    showFloatingError?.("Некорректная сумма TON");
     return false;
   }
 
-  const amountNano = BigInt(Math.round(tonValue * 1_000_000_000)).toString();
+  // 2) конверт в нанотон через BigInt + защита от нуля
+  const amountNanoBI = BigInt(Math.round(tonValue * 1e9));
+  if (amountNanoBI <= 0n) {
+    showFloatingError?.("Слишком маленькая сумма TON");
+    return false;
+  }
+  const amountNano = amountNanoBI.toString();
 
   const tx = {
     validUntil: Math.floor(Date.now() / 1000) + 600,
     messages: [
       {
-        address: TON_RECEIVER_ADDRESS,
+        address: TON_RECEIVER_ADDRESS.trim(),
         amount: amountNano
       }
     ]
   };
 
   try {
-    topupAmountCloseModal();
-
-    window.tonTopupPending = true;
-
+    console.log('[TON TX]', tx);
     const result = await window.tonConnectUI.sendTransaction(tx);
+    console.log('[TON TX result]', result);
 
-    console.log('TON tx result:', result);
+    applyTonStarsTopup(stars);
 
-    // ✅ Начисляем звёзды сразу после подписи
-    applyTonStarsTopup(stars, ton);
-
-    // 🟦 Покажем флоат-уведомление
-    if (typeof showFloatingSuccess === 'function') {
-      showFloatingSuccess(`Оплата ${ton} TON отправлена ✅ Начислено ${stars} ⭐`);
+    try {
+      topupAmountCloseModal();
+      topupCloseModal();
+    } catch (e) {
+      console.warn('Не удалось закрыть модалки после TON', e);
     }
 
+    showFloatingSuccess?.(`Оплата ${tonValue} TON отправлена ✅ Начислено ${stars} ⭐`);
     return true;
 
   } catch (e) {
-    console.error('TON tx failed:', e);
-
-    if (typeof showFloatingError === 'function') {
-      showFloatingError('Оплата TON отменена или не прошла');
-    }
+    console.error('Ошибка при отправке транзакции TON:', e);
+    showFloatingError?.('Платёж TON отменён или не выполнен');
     return false;
 
   } finally {
     window.tonTopupPending = false;
-
-    // ✅ КЛЮЧЕВОЕ: всегда отключаем кошелёк после попытки,
-    // чтобы он НЕ сохранялся и в следующий раз снова попросить привязку.
-    try {
-      await window.tonConnectUI.disconnect();
-    } catch (e) {
-      console.warn('disconnect after tx failed', e);
-    }
+    // ВАЖНО: НЕ дисконнектим сразу — Telegram Wallet часто падает из-за этого
+    // await window.tonConnectUI.disconnect();
   }
 }
-
 
 </script>
 
