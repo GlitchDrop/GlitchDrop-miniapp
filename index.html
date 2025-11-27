@@ -2550,21 +2550,13 @@ h2.section{
         console.log('✅ TonConnectUI инициализирован', window.tonConnectUI);
 
         // Слушаем изменение статуса кошелька
-window.tonConnectUI.onStatusChange(function (wallet) {
-  console.log('[TonConnect] status change:', wallet);
-
-  // ✅ Если подключились — сохраняем адрес навсегда (пока пользователь сам не удалит)
-  const addr = wallet?.account?.address;
-  if (addr) {
-    saveTonWallet(addr);
-    renderTonWalletLine();
-  }
-
-  // ✅ Если кошелёк подключился и у нас есть ожидающее пополнение — отправляем транзакцию
-  if (wallet && window.tonTopupPending) {
-    sendTonTopup();
-  }
-});
+        window.tonConnectUI.onStatusChange(function (wallet) {
+          console.log('[TonConnect] status change:', wallet);
+          // Если кошелёк подключился и у нас есть ожидающее пополнение — отправляем транзакцию
+          if (wallet && window.tonTopupPending) {
+            sendTonTopup();
+          }
+        });
 
       } else {
         console.error('❌ TON_CONNECT_UI не найден — скрипт tonconnect-ui.min.js не загрузился');
@@ -2779,28 +2771,6 @@ window.tonConnectUI.onStatusChange(function (wallet) {
 
       <!-- TOPUP AMOUNT MODAL -->
 <div id="topupAmountModal" class="modal" aria-hidden="true" aria-modal="true" role="dialog">
-
-  <!-- TON WALLET LINE (появляется после привязки) -->
-<div id="tonWalletLine"
-     style="display:none; align-items:center; justify-content:space-between;
-            gap:10px; padding:10px 14px; margin:0 18px 8px 18px;
-            border:1px solid rgba(22,241,255,0.6);
-            border-radius:14px; background:rgba(5,8,20,0.9);
-            box-shadow:0 0 18px rgba(22,241,255,0.2);">
-  <div style="font-weight:700; letter-spacing:0.4px;">
-    <span id="tonWalletText">UQB4...k8qK</span>
-  </div>
-  <button id="tonWalletRemove"
-          type="button"
-          aria-label="Удалить кошелёк"
-          style="width:28px;height:28px;border-radius:999px;
-                 border:1px solid rgba(255,255,255,0.25);
-                 background:transparent;color:#fff;font-size:18px;
-                 line-height:26px;cursor:pointer;">
-    ✕
-  </button>
-</div>
-
   <div class="modal-card" role="document" style="max-width: 400px;">
     <div class="modal-title">ПОПОЛНЕНИЕ БАЛАНСА</div>
     
@@ -5508,64 +5478,6 @@ async function handleAmountSubmit() {
   }
 }
 
-// ===== TON WALLET PERSIST =====
-const LS_TON_WALLET = 'gd_ton_wallet_addr';
-
-function getSavedTonWallet() {
-  try { return localStorage.getItem(LS_TON_WALLET) || ''; } catch (_) { return ''; }
-}
-function saveTonWallet(addr) {
-  try { localStorage.setItem(LS_TON_WALLET, String(addr || '')); } catch (_) {}
-}
-function clearTonWallet() {
-  try { localStorage.removeItem(LS_TON_WALLET); } catch (_) {}
-}
-
-function shortTonAddr(addr){
-  if (!addr || addr.length < 10) return addr || '';
-  return addr.slice(0,4) + '...' + addr.slice(-4);
-}
-
-// Рисуем/прячем линию кошелька над модалкой суммы
-function renderTonWalletLine(){
-  const line = document.getElementById('tonWalletLine');
-  const text = document.getElementById('tonWalletText');
-  if (!line || !text) return;
-
-  const saved = getSavedTonWallet();
-  if (saved){
-    text.textContent = shortTonAddr(saved); // формат UQB4...k8qK
-    line.style.display = 'flex';
-  } else {
-    line.style.display = 'none';
-  }
-}
-
-// Крестик: удалить линию + забыть кошелёк + (опционально) дисконнект
-function initTonWalletLine(){
-  const line = document.getElementById('tonWalletLine');
-  const btn  = document.getElementById('tonWalletRemove');
-  if (!line || !btn) return;
-
-  btn.addEventListener('click', async (e)=>{
-    e.preventDefault();
-    e.stopPropagation();
-    clearTonWallet();
-    renderTonWalletLine();
-    try {
-      if (window.tonConnectUI?.wallet) {
-        await window.tonConnectUI.disconnect();
-      }
-    } catch(_) {}
-  });
-}
-
-// На старте страницы попробуем показать линию, если кошелёк уже был сохранён
-document.addEventListener('DOMContentLoaded', ()=>{
-  renderTonWalletLine();
-  initTonWalletLine();
-});
-
 // ДЕЛАЕМ АСИНХРОННОЙ
 async function handleTonSubmit() {
   const input   = document.getElementById('amountInput');
@@ -5626,21 +5538,26 @@ async function handleTonSubmit() {
     return false;
   }
 
-    // ✅ Ставим флаг ожидания оплаты
-  window.tonTopupPending = true;
-
-  // ✅ Если кошелёк уже подключён ИЛИ у нас есть сохранённый адрес —
-  // сразу идём к транзакции без перепривязки
-  const savedAddr = getSavedTonWallet();
-  if (window.tonConnectUI.wallet || savedAddr) {
-    await sendTonTopup();
-    return true;
+  // ✅ Каждый раз начинаем с "чистого листа":
+  // если кошелёк был подключён ранее — отключаем,
+  // чтобы TonConnect снова предложил привязку.
+  try {
+    if (window.tonConnectUI.wallet) {
+      await window.tonConnectUI.disconnect();
+    }
+  } catch (e) {
+    console.warn('disconnect before connect failed', e);
   }
 
-  // ✅ Если кошелька нет — открываем привязку
+  // ✅ Ставим флаг ожидания оплаты
+  window.tonTopupPending = true;
+
+  // ✅ Открываем привязку/выбор кошелька ТОЛЬКО сейчас
+  // (после нажатия кнопки "ПОПОЛНИТЬ" во 2-м методе)
   try {
     await window.tonConnectUI.openModal();
-    // onStatusChange продолжит оплату
+    // дальше ничего не делаем:
+    // когда кошелёк подключится, onStatusChange вызовет sendTonTopup()
   } catch (e) {
     console.warn('openModal cancelled', e);
     window.tonTopupPending = false;
@@ -5807,8 +5724,6 @@ if (metaEl) {
 
   // Обновляем текст «Вы получите … Stars»
   updateTonPreview();
-
-  renderTonWalletLine();
 
   amountModal.classList.add('show');
   amountModal.setAttribute('aria-hidden', 'false');
