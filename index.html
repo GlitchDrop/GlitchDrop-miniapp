@@ -101,14 +101,20 @@ GD.getOrFetchUid8 = function (tgId) {
     .then(function (data) {
       var uid8 = data && data.uid8;
       if (!isValidUid8(uid8)) throw new Error('bad uid');
-      try { localStorage.setItem(K, uid8); } catch (e) {}
+      try {
+  localStorage.setItem(K, uid8);
+  localStorage.setItem('gd_uid8', uid8);
+} catch (e) {}
       return uid8;
     })
     .catch(function () {
       // 3) фолбэк: детерминированный, гарантированно не "00000000"
       var h = GD._fnv1a('GLITCHDROP:' + (tgId || '0'));
       var fallback = GD._toUid8(h);
-      try { localStorage.setItem(K, fallback); } catch (e) {}
+      try {
+  localStorage.setItem(K, fallback);
+  localStorage.setItem('gd_uid8', fallback);
+} catch (e) {}
       return fallback;
     });
   }
@@ -117,7 +123,10 @@ GD.getOrFetchUid8 = function (tgId) {
   return new Promise(function (resolve) {
     var h = GD._fnv1a('GLITCHDROP:' + (tgId || '0'));
     var fallback = GD._toUid8(h);
-    try { localStorage.setItem(K, fallback); } catch (e) {}
+    try {
+  localStorage.setItem(K, fallback);
+  localStorage.setItem('gd_uid8', fallback);
+} catch (e) {}
     resolve(fallback);
   });
 };
@@ -2946,11 +2955,19 @@ window.esc = function(s){
 
 async function fetchInvited(){
   const tg = window.Telegram?.WebApp;
-  const u = tg?.initDataUnsafe?.user;
-  if(!u?.id) return [];
+  const u  = tg?.initDataUnsafe?.user;
 
-  const uid8 = window.MY_UID8 || await GD.ensureUid8(String(u.id));
-  window.MY_UID8 = uid8;
+  // берем uid8 либо из Telegram, либо из localStorage
+  let uid8 = null;
+
+  if (u?.id){
+    uid8 = window.MY_UID8 || await GD.ensureUid8(String(u.id));
+    window.MY_UID8 = uid8;
+  } else {
+    uid8 = GD.getUid8(); // из localStorage gd_uid8
+  }
+
+  if(!uid8 || uid8 === '00000000') return [];
 
   try{
     const r = await fetch(`${window.API_BASE}/api/referrals?uid8=${uid8}`, { method:'GET' });
