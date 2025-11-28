@@ -2073,10 +2073,10 @@ h2.section{
   white-space: nowrap;
 }
 
-/* Знак ₽ справа от цифры */
+/* Знак ₽ справа от цифры — размер как у цифры */
 .topbar .pill.pill-rub .pill-rub-sign{
-  font-weight: 1000;
-  font-size: 18px;
+  font-weight: 900;          /* как у .num */
+  font-size: inherit;        /* берёт размер цифры */
   line-height: 1;
   color: var(--neon-yellow);
   text-shadow: 0 0 10px rgba(255,228,122,.35);
