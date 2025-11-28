@@ -153,6 +153,7 @@ GD.ensureUid8 = function (tgId) {
   --neon-cyan:#16f1ff;
   --neon-pink:#8a5cff;
   --neon-yellow:#ffe47a;
+    --rub-sign-x: -4px; /* <-- меняй это число: -8px левее, +8px правее */
 
   --text:#e8efff;
   --muted:#9fb2d9;
@@ -2051,25 +2052,40 @@ h2.section{
   display:none !important;
 }
 
-/* Пилюля ₽ в топбаре */
+/* Пилюля ₽ как контейнер */
 .topbar .pill.pill-rub{
-  gap: 6px;                 /* чуть плотнее, чем с картинкой */
+  position: relative;
+  min-width: 120px;           /* растяжение по горизонтали */
+  height: var(--topbar-pill-h);
+  padding: 6px 10px;
+  justify-content: center;    /* базово центр */
 }
 
-/* сам знак ₽ — как иконка */
-.pill-rub-sign{
+/* ₽ делаем абсолютным и двигаем переменной */
+.topbar .pill.pill-rub .pill-rub-sign{
+  position: absolute;
+  left: 10px;                 /* базовая точка у левого края */
+  transform: translateX(var(--rub-sign-x));
   font-weight: 1000;
   font-size: 18px;
   line-height: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;              /* визуально как бывшая иконка */
-  height: 22px;
-  color: var(--neon-yellow); /* лёгкая золотая ассоциация с балансом */
+  color: var(--neon-yellow);
   text-shadow: 0 0 10px rgba(255,228,122,.35);
-  transform: translateY(-0.5px); /* оптическое выравнивание */
+  pointer-events: none;
 }
+
+/* Цифра — строго по центру пилюли */
+.topbar .pill.pill-rub .num{
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-weight: 900;
+  font-size: 15px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
 
   </style>
 
