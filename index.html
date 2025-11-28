@@ -176,7 +176,7 @@ GD.ensureUid8 = function (tgId) {
 
   overflow: hidden;              /* важное: убираем scroll у body */
   overscroll-behavior: none;     /* запрещаем "резинку" на Android */
-  touch-action: none;            /* запрещаем pull-down на body */
+  touch-action: pan-y;   /* разрешаем вертикальный скролл */
   -webkit-overflow-scrolling: auto;
 }
     html{scroll-behavior:smooth; scrollbar-gutter: stable;}
@@ -198,15 +198,16 @@ GD.ensureUid8 = function (tgId) {
 
    .app{
   min-height:100%;
+  height:100%;                    /* <-- ДОБАВЬ */
   display:flex;
   flex-direction:column;
   position:relative;
   z-index:1;
 
-  overflow-y: auto;              /* скролл только внутри app */
-  overscroll-behavior: contain;  /* при упоре не тянем весь экран */
+  overflow-y: auto;
+  overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
-  touch-action: pan-y;           /* разрешаем только вертикальный скролл тут */
+  touch-action: pan-y;
 }
 
     .topbar{
@@ -6400,12 +6401,29 @@ document.addEventListener('DOMContentLoaded', function() {
     .catch(err => console.warn('Balance fetch failed', err));
 })();
 
-// Блокируем "оттягивание" экрана (iOS резинка / pull-to-refresh)
-  document.addEventListener('touchmove', function(e){
-    const scroller = e.target.closest('.app');
-    if (!scroller) e.preventDefault();
+// Умно блокируем только "оттягивание" вниз в самом верху (iOS)
+  let startY = 0;
+  let startScrollTop = 0;
+
+  const scroller = document.querySelector('.app');
+
+  document.addEventListener('touchstart', (e) => {
+    startY = e.touches[0].clientY;
+    startScrollTop = scroller ? scroller.scrollTop : 0;
+  }, { passive: true });
+
+  document.addEventListener('touchmove', (e) => {
+    if (!scroller) return;
+
+    const currentY = e.touches[0].clientY;
+    const pullingDown = currentY > startY;
+
+    // Если мы в самом верху и тянем вниз — режем "резинку"
+    if (startScrollTop === 0 && pullingDown){
+      e.preventDefault();
+    }
   }, { passive: false });
-  
+
 </script>
 </body>
 </html>
