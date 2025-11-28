@@ -2051,6 +2051,26 @@ h2.section{
   display:none !important;
 }
 
+/* Пилюля ₽ в топбаре */
+.topbar .pill.pill-rub{
+  gap: 6px;                 /* чуть плотнее, чем с картинкой */
+}
+
+/* сам знак ₽ — как иконка */
+.pill-rub-sign{
+  font-weight: 1000;
+  font-size: 18px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;              /* визуально как бывшая иконка */
+  height: 22px;
+  color: var(--neon-yellow); /* лёгкая золотая ассоциация с балансом */
+  text-shadow: 0 0 10px rgba(255,228,122,.35);
+  transform: translateY(-0.5px); /* оптическое выравнивание */
+}
+
   </style>
 
 <style>
@@ -2626,16 +2646,10 @@ h2.section{
  </div>
 </div>
 
-      <!-- Пилюля ГЛИТЧ-ТОКЕН слева -->
-      <div class="pill pill--lg" title="Глитч-токен">
-        <img src="assets/images/20251005_0825_Яркое неоновое сияние_remix_01k6sd902pf03ah1w3cpkr66jz.png" alt="глитч-токен">
-        <span class="num" id="bonus">0</span>
-      </div>
-
-      <!-- Пилюля со ЗВЕЗДОЙ справа (такой же размер) -->
-      <div class="pill pill--lg">
-        <img src="assets/images/звезда.png" alt="звезда">
-        <span class="num" id="stars">0</span>
+            <!-- ПИЛЮЛЯ БАЛАНСА ₽ -->
+      <div class="pill pill--lg pill-rub" title="Баланс ₽">
+        <span class="pill-rub-sign" aria-hidden="true">₽</span>
+        <span class="num" id="rubBalance">0</span>
       </div>
     </div>
 
@@ -5243,7 +5257,7 @@ function validateAmount(input) {
 
 // === Баланс звёзд в топбаре ===
 const LS_STARS_KEY = 'gd_stars_balance';
-const starsEl = document.getElementById('stars'); // <span id="stars">0</span>
+const starsEl = document.getElementById('rubBalance'); // <span id="stars">0</span>
 
 function getStarsBalance() {
   // 1) localStorage если есть, иначе из DOM
@@ -6093,7 +6107,7 @@ function getStarsBalance() {
 }
 function setStarsBalance(n) {
   n = Math.max(0, parseInt(n || 0, 10) || 0);
-  var el = document.getElementById('stars');
+  var el = document.getElementById('rubBalance');
   if (el) el.textContent = String(n);
   localStorage.setItem(LS_BAL, String(n));
   console.log('[stars] UI+LS =>', n);
