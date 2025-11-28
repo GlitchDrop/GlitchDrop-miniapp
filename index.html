@@ -169,9 +169,22 @@ GD.ensureUid8 = function (tgId) {
 
 
     *{box-sizing:border-box}
-    html,body{height:100%;margin:0;font-family:'Inter',system-ui,Segoe UI,Roboto,Arial,sans-serif}
+    html,body{
+  height:100%;
+  margin:0;
+  font-family:'Inter',system-ui,Segoe UI,Roboto,Arial,sans-serif;
+
+  overflow: hidden;              /* важное: убираем scroll у body */
+  overscroll-behavior: none;     /* запрещаем "резинку" на Android */
+  touch-action: none;            /* запрещаем pull-down на body */
+  -webkit-overflow-scrolling: auto;
+}
     html{scroll-behavior:smooth; scrollbar-gutter: stable;}
-    body{ color:var(--text); overflow-x:hidden; background:#0e1b25; overflow-y:scroll; }
+    body{
+  color:var(--text);
+  overflow-x:hidden;
+  background:#0e1b25;
+}
  .cyber-bg{
   position:fixed; inset:0; z-index:0; pointer-events:none;
   background:
@@ -183,7 +196,18 @@ GD.ensureUid8 = function (tgId) {
   background-blend-mode: screen, screen, normal, overlay, overlay;
 }
 
-    .app{min-height:100%;display:flex;flex-direction:column;position:relative;z-index:1}
+   .app{
+  min-height:100%;
+  display:flex;
+  flex-direction:column;
+  position:relative;
+  z-index:1;
+
+  overflow-y: auto;              /* скролл только внутри app */
+  overscroll-behavior: contain;  /* при упоре не тянем весь экран */
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;           /* разрешаем только вертикальный скролл тут */
+}
 
     .topbar{
       position:sticky; top:0; z-index:30;
@@ -6376,6 +6400,12 @@ document.addEventListener('DOMContentLoaded', function() {
     .catch(err => console.warn('Balance fetch failed', err));
 })();
 
+// Блокируем "оттягивание" экрана (iOS резинка / pull-to-refresh)
+  document.addEventListener('touchmove', function(e){
+    const scroller = e.target.closest('.app');
+    if (!scroller) e.preventDefault();
+  }, { passive: false });
+  
 </script>
 </body>
 </html>
