@@ -3736,10 +3736,6 @@ let _uid8Promise = null;
 
   const refUid8 = startParam.slice(4);
 
-  // флаг, чтобы не слать повторно
-  const FLAG = `gd_ref_registered_${refUid8}`;
-  try { if (localStorage.getItem(FLAG)) return; } catch(_) {}
-
   // имя «как в аккаунте» (НЕ username)
   const displayName = [u?.first_name||'', u?.last_name||''].join(' ').trim() || 'Без имени';
 
@@ -3758,9 +3754,7 @@ let _uid8Promise = null;
         }
       })
     });
-    if (resp.ok){
-      localStorage.setItem(FLAG,'1');
-    }
+    
   }catch(e){}
 })();
 
