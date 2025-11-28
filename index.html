@@ -164,6 +164,7 @@ GD.ensureUid8 = function (tgId) {
 
   --radius:20px;
   --tabbar-h: 84px;  /* дефолт, дальше пересчитаем JS-ом */
+    --rub-gap: 2px; /* <-- меняй это число: 0px вплотную, 1–3px чуть свободнее */
 }
 
 
@@ -2052,40 +2053,35 @@ h2.section{
   display:none !important;
 }
 
-/* Пилюля ₽ как контейнер */
+/* Пилюля ₽ — центрируем число + ₽ справа */
 .topbar .pill.pill-rub{
-  position: relative;
-  min-width: 120px;           /* растяжение по горизонтали */
+  min-width: 120px;
   height: var(--topbar-pill-h);
   padding: 6px 10px;
-  justify-content: center;    /* базово центр */
+
+  display: flex;
+  align-items: center;
+  justify-content: center;   /* блок по центру пилюли */
+  gap: var(--rub-gap);       /* зазор между цифрой и ₽ */
 }
 
-/* ₽ делаем абсолютным и двигаем переменной */
-.topbar .pill.pill-rub .pill-rub-sign{
-  position: absolute;
-  left: 10px;                 /* базовая точка у левого края */
-  transform: translateX(var(--rub-sign-x));
-  font-weight: 1000;
-  font-size: 18px;
-  line-height: 1;
-  color: var(--neon-yellow);
-  text-shadow: 0 0 10px rgba(255,228,122,.35);
-  pointer-events: none;
-}
-
-/* Цифра — строго по центру пилюли */
+/* Цифра баланса */
 .topbar .pill.pill-rub .num{
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
   font-weight: 900;
   font-size: 15px;
   line-height: 1;
   white-space: nowrap;
 }
 
+/* Знак ₽ справа от цифры */
+.topbar .pill.pill-rub .pill-rub-sign{
+  font-weight: 1000;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--neon-yellow);
+  text-shadow: 0 0 10px rgba(255,228,122,.35);
+  transform: translateY(-0.5px);
+}
 
   </style>
 
@@ -2664,9 +2660,9 @@ h2.section{
 
             <!-- ПИЛЮЛЯ БАЛАНСА ₽ -->
       <div class="pill pill--lg pill-rub" title="Баланс ₽">
-        <span class="pill-rub-sign" aria-hidden="true">₽</span>
-        <span class="num" id="rubBalance">0</span>
-      </div>
+  <span class="num" id="rubBalance">0</span>
+  <span class="pill-rub-sign" aria-hidden="true">₽</span>
+</div>
     </div>
 
     <div class="chipbar" id="chipbar"><div class="chip active" data-target="#top">Все</div></div>
