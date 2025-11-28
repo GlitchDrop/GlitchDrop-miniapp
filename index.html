@@ -2051,21 +2051,24 @@ h2.section{
   display:none !important;
 }
 
-/* Пилюля ₽ в топбаре — растянутая и с левым акцентом */
+/* Пилюля ₽ в топбаре */
 .topbar .pill.pill-rub{
-  padding-left: 10px;        /* чуть больше слева */
-  padding-right: 14px;
-  min-width: 120px;          /* растяжение по горизонтали */
-  justify-content: flex-start; /* всё уходит влево */
-  gap: 8px;
+  gap: 6px;                 /* чуть плотнее, чем с картинкой */
 }
 
-/* сам знак ₽ двигаем ближе к левому краю */
-.topbar .pill.pill-rub .pill-rub-sign{
-  margin-left: -2px;         /* микросдвиг к краю */
-  width: 18px;               /* визуально компактнее */
-  height: 18px;
+/* сам знак ₽ — как иконка */
+.pill-rub-sign{
+  font-weight: 1000;
   font-size: 18px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;              /* визуально как бывшая иконка */
+  height: 22px;
+  color: var(--neon-yellow); /* лёгкая золотая ассоциация с балансом */
+  text-shadow: 0 0 10px rgba(255,228,122,.35);
+  transform: translateY(-0.5px); /* оптическое выравнивание */
 }
 
   </style>
