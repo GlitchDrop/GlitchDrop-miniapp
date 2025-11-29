@@ -1456,8 +1456,9 @@ html.scroll-locked, html.scroll-locked body{
 .topup-dots {
     display: flex;
     justify-content: center;
+    width: 100%;
     gap: 6px;
-    margin-top: 10px;
+    margin-top: 10px; /* вертикаль НЕ трогаем */
 }
 
 .topup-dots .dot::after {
@@ -2795,12 +2796,10 @@ h2.section{
 
       <div class="viewport">
         <div class="track">
-          <!-- 5 слайдов-заглушек -->
-          <div class="slide"></div>
-          <div class="slide"></div>
-          <div class="slide"></div>
-          <div class="slide"></div>
-          <div class="slide"></div>
+          <!-- 3 слайда-заглушки -->
+<div class="slide"></div>
+<div class="slide"></div>
+<div class="slide"></div>
         </div>
       </div>
 
@@ -2856,12 +2855,10 @@ h2.section{
     </div>
 
     <div class="topup-dots" id="topupDots" role="tablist" aria-label="Варианты оплаты">
-      <button class="dot" role="tab" aria-selected="true"></button>
-      <button class="dot" role="tab" aria-selected="false"></button>
-      <button class="dot" role="tab" aria-selected="false"></button>
-      <button class="dot" role="tab" aria-selected="false"></button>
-      <button class="dot" role="tab" aria-selected="false"></button>
-    </div>
+  <button class="dot" role="tab" aria-selected="true"></button>
+  <button class="dot" role="tab" aria-selected="false"></button>
+  <button class="dot" role="tab" aria-selected="false"></button>
+</div>
 
     <button class="btn topup-confirm" id="topupConfirm">ПОДТВЕРДИТЬ</button>
   </div>
@@ -4954,7 +4951,7 @@ case 'topup':
 
 // ===== TOPUP MODAL - ИСПРАВЛЕННАЯ ВЕРСИЯ =====
 let currentSlide = 0;
-const totalSlides = 5;
+const totalSlides = 3;
 let isAnimating = false;
 let touchStartX = 0;
 let touchEndX = 0;
@@ -4968,11 +4965,9 @@ function initTopupModal() {
     // ===== МАССИВ С URL КАРТИНОК ДЛЯ СЛАЙДОВ =====
     // ЗАМЕНИТЕ ЭТИ URL НА СВОИ ИЗОБРАЖЕНИЯ!
     const slideImages = [
-    'assets/images/20251030_1539_Белый текст по центру_remix_01k8thzzsgf4jbcyf41pwnff8y.png',  // Первый слайд
-    'assets/images/Untitled (48).png',  // Второй слайд  
-    'assets/images/Untitled (50).png',  // Третий слайд
-    'assets/images/Untitled (54).png',  // Четвертый слайд
-    'assets/images/Untitled (52).png'   // Пятый слайд
+  'assets/images/20251030_1539_Белый текст по центру_remix_01k8thzzsgf4jbcyf41pwnff8y.png',  // Первый слайд
+  'assets/images/Untitled (48).png',  // Второй слайд  
+  'assets/images/Untitled (50).png'   // Третий слайд
 ];
     
     // Добавляем изображения в слайды
