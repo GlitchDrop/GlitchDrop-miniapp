@@ -558,7 +558,8 @@ html:not(.in-telegram) .card .price-bar{
   display:block;
   object-fit: contain;
 
-  transform: translateY(0.5px) scale(1.45);
+  /* выравниваем все по высоте как у "Кейсов" */
+  transform: translateY(0) scale(1.45);
   transform-origin:center;
   filter: drop-shadow(0 0 6px rgba(120,160,255,.35));
 
@@ -584,6 +585,7 @@ html:not(.in-telegram) .card .price-bar{
 }
 
 .tab.active .ico img{
+  /* активная как у тебя, просто явно без Y-сдвига */
   transform: translateY(0) scale(1.7);
   filter:
     drop-shadow(0 0 10px rgba(59,232,255,.9))
