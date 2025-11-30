@@ -2093,6 +2093,21 @@ h2.section{
   transform: translateY(-0.5px);
 }
 
+/* Конкурсы — пустой экран должен перекрывать фон до низа */
+.contests-fixed{
+  min-height: calc(100vh - var(--topbar-h, 0px) - var(--tabbar-h, 0px));
+  display: flex;
+  flex-direction: column;
+}
+
+/* "Доска" с текстом — растягиваем вниз как в Инвентаре */
+.contests-center{
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
   </style>
 
 <style>
