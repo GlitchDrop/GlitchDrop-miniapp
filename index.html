@@ -2642,10 +2642,11 @@ h2.section{
           // ✅ сохраняем адрес после первой/любой успешной привязки
           try {
             const addr = wallet?.account?.address;
-            if (addr) {
-              localStorage.setItem(window.TON_WALLET_LS_KEY, addr);
-              if (typeof renderTonWalletLine === 'function') renderTonWalletLine();
-            }
+if (addr) {
+  const friendlyAddr = normalizeTonAddr(addr);
+  localStorage.setItem(window.TON_WALLET_LS_KEY, friendlyAddr);
+  if (typeof renderTonWalletLine === 'function') renderTonWalletLine();
+}
           } catch (e) {
             console.warn('Не удалось сохранить TON-адрес', e);
           }
@@ -5772,11 +5773,31 @@ const TON_RECEIVER_ADDRESS = 'EQB4Sh-FL-1VWxPDao7l3T-5iKXXuxk5VneNrQ7nehdNk5dP';
 // ===== TON WALLET UI HELPERS =====
 const LS_TON_WALLET = window.TON_WALLET_LS_KEY || 'gd_ton_wallet_addr';
 
-function shortTonAddr(addr){
+function normalizeTonAddr(addr){
   if (!addr) return '';
+
   const s = String(addr);
-  if (s.length <= 8) return s;
-  return s.slice(0,4) + '...' + s.slice(-4);
+
+  // Если TonConnectUI умеет конвертить в user-friendly — используем
+  try {
+    if (window.tonConnectUI?.utils?.toUserFriendlyAddress) {
+      return window.tonConnectUI.utils.toUserFriendlyAddress(s);
+    }
+    if (window.TON_CONNECT_UI?.toUserFriendlyAddress) {
+      return window.TON_CONNECT_UI.toUserFriendlyAddress(s);
+    }
+  } catch(e){ /* ignore */ }
+
+  // Фолбэк: если уже UQ/EQ — оставляем
+  return s;
+}
+
+// формат строго "UQB4...k8qK"
+function shortTonAddr(addr){
+  const friendly = normalizeTonAddr(addr);
+  if (!friendly) return '';
+  if (friendly.length <= 10) return friendly;
+  return friendly.slice(0,4) + '...' + friendly.slice(-4);
 }
 
 function renderTonWalletLine(){
