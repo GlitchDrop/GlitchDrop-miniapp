@@ -2472,6 +2472,47 @@ h2.section{
   opacity: 1;
 }
 
+/* ===== TON WALLET LINE ===== */
+.wallet-line{
+  margin: 0 0 10px 0;          /* чуть выше инпута */
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(22,241,255,.35);
+  background: rgba(7,14,30,.7);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-weight: 800;
+  font-size: 14px;
+  color: #e8efff;
+  box-shadow: inset 0 0 12px rgba(22,241,255,.12);
+}
+
+.wallet-line-text{
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wallet-line-close{
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  border: none;
+  background: transparent;
+  color: #cfe0ff;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: .8;
+}
+
+.wallet-line-close:hover{ opacity: 1; }
+
 .amount-meta {
   margin-top: 4px;             /* чуть ниже поля */
   display: flex;
@@ -2591,9 +2632,24 @@ h2.section{
 
         console.log('✅ TonConnectUI инициализирован', window.tonConnectUI);
 
+        // глобальный ключ для сохранения TON кошелька
+        window.TON_WALLET_LS_KEY = 'gd_ton_wallet_addr';
+
         // Слушаем изменение статуса кошелька
         window.tonConnectUI.onStatusChange(function (wallet) {
           console.log('[TonConnect] status change:', wallet);
+
+          // ✅ сохраняем адрес после первой/любой успешной привязки
+          try {
+            const addr = wallet?.account?.address;
+            if (addr) {
+              localStorage.setItem(window.TON_WALLET_LS_KEY, addr);
+              if (typeof renderTonWalletLine === 'function') renderTonWalletLine();
+            }
+          } catch (e) {
+            console.warn('Не удалось сохранить TON-адрес', e);
+          }
+
           // Если кошелёк подключился и у нас есть ожидающее пополнение — отправляем транзакцию
           if (wallet && window.tonTopupPending) {
             sendTonTopup();
@@ -2811,6 +2867,12 @@ h2.section{
     <!-- Контейнер для сообщений об ошибке -->
     <div id="amountError" class="error-message"></div>
     
+        <!-- TON WALLET LINE (показывается только если кошелек привязан) -->
+    <div id="tonWalletLine" class="wallet-line" style="display:none;">
+      <span id="tonWalletShort" class="wallet-line-text">UQB4...k8qK</span>
+      <button type="button" id="tonWalletUnlink" class="wallet-line-close" aria-label="Отвязать кошелек">✕</button>
+    </div>
+
     <div class="amount-input-wrapper">
       <input type="text" 
              id="amountInput" 
@@ -5570,25 +5632,25 @@ async function handleTonSubmit() {
     return false;
   }
 
-  // ✅ Каждый раз начинаем с "чистого листа":
-  // если кошелёк был подключён ранее — отключаем,
-  // чтобы TonConnect снова предложил привязку.
-  try {
-    if (window.tonConnectUI.wallet) {
-      await window.tonConnectUI.disconnect();
-    }
-  } catch (e) {
-    console.warn('disconnect before connect failed', e);
-  }
-
   // ✅ Ставим флаг ожидания оплаты
   window.tonTopupPending = true;
 
-  // ✅ Открываем привязку/выбор кошелька ТОЛЬКО сейчас
-  // (после нажатия кнопки "ПОПОЛНИТЬ" во 2-м методе)
+  const savedAddr = localStorage.getItem(LS_TON_WALLET);
+  const hasLiveWallet = !!window.tonConnectUI?.wallet;
+
+  // ✅ если кошелек уже привязан/есть сессия — сразу шлём транзакцию
+  if (hasLiveWallet || savedAddr) {
+    try {
+      const ok = await sendTonTopup();
+      return ok;
+    } finally {
+      renderTonWalletLine();
+    }
+  }
+
+  // ✅ иначе — первый раз привязываем
   try {
     await window.tonConnectUI.openModal();
-    // дальше ничего не делаем:
     // когда кошелёк подключится, onStatusChange вызовет sendTonTopup()
   } catch (e) {
     console.warn('openModal cancelled', e);
@@ -5707,6 +5769,41 @@ const TON_MAX = 100000;
 // Куда летят TON за пополнение (ЗАМЕНИ на свой адрес!)
 const TON_RECEIVER_ADDRESS = 'EQB4Sh-FL-1VWxPDao7l3T-5iKXXuxk5VneNrQ7nehdNk5dP'; // TODO: сюда твой TON-адрес
 
+// ===== TON WALLET UI HELPERS =====
+const LS_TON_WALLET = window.TON_WALLET_LS_KEY || 'gd_ton_wallet_addr';
+
+function shortTonAddr(addr){
+  if (!addr) return '';
+  const s = String(addr);
+  if (s.length <= 8) return s;
+  return s.slice(0,4) + '...' + s.slice(-4);
+}
+
+function renderTonWalletLine(){
+  const line = document.getElementById('tonWalletLine');
+  const textEl = document.getElementById('tonWalletShort');
+  if (!line || !textEl) return;
+
+  const addr = localStorage.getItem(LS_TON_WALLET);
+  if (addr && currentPaymentMethod === 'ton'){
+    textEl.textContent = shortTonAddr(addr);
+    line.style.display = 'flex';
+  } else {
+    line.style.display = 'none';
+  }
+}
+
+// крестик “отвязать”
+document.getElementById('tonWalletUnlink')?.addEventListener('click', async (e)=>{
+  e.preventDefault();
+  e.stopPropagation();
+
+  localStorage.removeItem(LS_TON_WALLET);
+  try { await window.tonConnectUI?.disconnect(); } catch(_){}
+
+  renderTonWalletLine();
+});
+
 function topupAmountOpenModal() {
   console.log('🔵 Открытие модалки ввода суммы');
   
@@ -5757,9 +5854,12 @@ if (metaEl) {
   // Обновляем текст «Вы получите … Stars»
   updateTonPreview();
 
+  // ✅ показываем/прячем линию кошелька
+  renderTonWalletLine();
+
   amountModal.classList.add('show');
   amountModal.setAttribute('aria-hidden', 'false');
-  
+
   setTimeout(() => {
     if (input) input.focus();
   }, 100);
