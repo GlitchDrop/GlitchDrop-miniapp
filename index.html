@@ -1164,7 +1164,7 @@ html.scroll-locked, html.scroll-locked body{
   position: fixed;
   left: 0; right: 0;
   top: var(--topbar-h, 64px);
-  bottom: var(--tabbar-h, 84px);
+  bottom: 0; /* ВАЖНО: тянем фон до самого низа под таббар */
   z-index: 22;
   overflow: hidden; /* вообще без скролла */
   background:
@@ -1173,6 +1173,10 @@ html.scroll-locked, html.scroll-locked body{
     linear-gradient(180deg, #0b1030 0%, #0a1028 100%);
   border-top:1px solid var(--border);
   box-shadow: inset 0 30px 60px rgba(10,20,60,.35);
+
+  /* чтобы контент/текст не уезжал под таббар */
+  padding-bottom: max(var(--tabbar-h,84px), env(safe-area-inset-bottom) + 16px);
+
   display: grid;
   grid-template-rows: auto 1fr; /* шапка + контент */
 }
