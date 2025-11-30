@@ -5922,8 +5922,8 @@ function updateTonPreview() {
     ton = TON_MIN; // если пусто или криво — показываем расчёт от минималки
   }
 
-  const stars = ton * TON_TO_STARS_RATE;
-  textEl.textContent = `Вы получите ${formatRu(stars)} Stars`;
+  const stars = ton * TON_TO_STARS_RATE; // математику не трогаем
+textEl.textContent = `Вы получите ${formatRu(stars)}₽`;
 }
 
 function topupAmountCloseModal() {
@@ -6216,7 +6216,7 @@ async function sendTonTopup() {
       console.warn('Не удалось закрыть модалки после TON', e);
     }
 
-    showFloatingSuccess?.(`Оплата ${tonValue} TON отправлена ✅ Начислено ${stars} ⭐`);
+    showFloatingSuccess?.(`Оплата ${tonValue} TON отправлена ✅ Начислено ${formatRu(stars)}₽`);
     return true;
 
   } catch (e) {
@@ -6506,3 +6506,4 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
+
