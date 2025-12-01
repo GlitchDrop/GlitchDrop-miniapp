@@ -4672,19 +4672,10 @@ function renderContests(){
   if (GD.contestsEmpty){
     // ——— ПУСТОЙ РЕЖИМ ———
 contestsScreen.innerHTML = `
-  <div class="contests-fixed contests-surface contests-page">
+  <div class="contests-fixed">
     <div class="contests-header">КОНКУРСЫ</div>
     <div class="contests-center">
-      <div style="
-        text-align:center;
-        font-weight:900; letter-spacing:.6px;
-        font-size:clamp(22px, 6vw, 32px);
-        color:#e8efff;
-        text-shadow:0 0 16px rgba(22,241,255,18);
-        opacity:.95;
-      ">
-        Здесь пока что пусто
-      </div>
+      <div class="inventory-empty">Здесь пока что пусто</div>
     </div>
   </div>
 `;
