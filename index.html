@@ -1074,13 +1074,16 @@ html.scroll-locked, html.scroll-locked body{
   position: sticky;
   top: var(--topbar-h, 64px);
   z-index: 22;
-  padding: 12px max(12px, env(safe-area-inset-left)) 14px max(12px, env(safe-area-inset-right));
+
+  /* как в inventory-header */
+  padding: 10px max(12px, env(safe-area-inset-left)) 12px max(12px, env(safe-area-inset-right));
   text-align:center;
-  font-weight: 900;
-  letter-spacing: 1.2px;
-  font-size: clamp(28px, 8vw, 56px);
+  font-weight:900;
+  letter-spacing:1.4px;
+  font-size:clamp(24px, 8vw, 52px);
+
   color:#e8efff;
-  text-shadow:0 0 16px rgba(22,241,255,.2);
+  text-shadow:0 0 16px rgba(22,241,255,.18);
   background: linear-gradient(180deg, rgba(12,16,38,.88), rgba(10,14,34,.82));
   border-bottom:1px solid var(--border);
   backdrop-filter: blur(8px);
