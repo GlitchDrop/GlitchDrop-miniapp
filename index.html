@@ -2118,6 +2118,95 @@ h2.section{
   justify-content: center;
 }
 
+/* ===== SETTINGS SCREEN ===== */
+.settings-screen{
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: var(--bg-top);
+  display: flex;
+  flex-direction: column;
+  padding: 14px 14px 90px; /* снизу запас под таббар */
+}
+
+.settings-header{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom: 18px;
+}
+
+.settings-back{
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.12);
+  color:#fff;
+  padding:8px 12px;
+  border-radius:10px;
+  font-size:14px;
+  cursor:pointer;
+}
+
+.settings-title{
+  font-weight:700;
+  letter-spacing:.12em;
+  font-size:14px;
+  color:#fff;
+  opacity:.9;
+}
+
+.settings-list{
+  margin-top: 6px;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+
+.settings-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:14px 12px;
+  background: rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:12px;
+}
+
+.settings-label{
+  color:#fff;
+  font-size:15px;
+  opacity:.95;
+}
+
+/* switch */
+.switch{
+  position:relative;
+  width:48px;
+  height:28px;
+  display:inline-block;
+}
+.switch input{ display:none; }
+.slider{
+  position:absolute; inset:0;
+  background: rgba(255,255,255,.18);
+  border-radius:999px;
+  transition:.2s;
+}
+.slider:before{
+  content:"";
+  position:absolute;
+  width:22px; height:22px;
+  left:3px; top:3px;
+  background:#fff;
+  border-radius:50%;
+  transition:.2s;
+}
+.switch input:checked + .slider{
+  background: rgba(120,255,180,.45);
+}
+.switch input:checked + .slider:before{
+  transform: translateX(20px);
+}
+
   </style>
 
 <style>
@@ -2771,6 +2860,39 @@ if (addr) {
 <!-- ПУСТОЙ ЭКРАН ОБМЕНОВ -->
 <div class="hide" id="upgradesScreen" aria-hidden="true"></div>
 
+<!-- ЭКРАН НАСТРОЕК -->
+<div class="hide settings-screen" id="settingsScreen" aria-hidden="true">
+  <div class="settings-header">
+    <button type="button" class="settings-back" id="settingsBack">← Назад</button>
+    <div class="settings-title">НАСТРОЙКИ</div>
+  </div>
+
+  <div class="settings-list">
+    <div class="settings-row">
+      <div class="settings-label">Вибрация</div>
+      <label class="switch">
+        <input type="checkbox" id="toggleVibration" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="settings-row">
+      <div class="settings-label">Сохранение кошелька</div>
+      <label class="switch">
+        <input type="checkbox" id="toggleWalletSave" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="settings-row">
+      <div class="settings-label">Автоматическая продажа</div>
+      <label class="switch">
+        <input type="checkbox" id="toggleAutoSell" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+</div>
 
     <nav class="tabbar">
   <div class="tab">
@@ -5007,6 +5129,50 @@ quickMenu?.addEventListener('click', (e)=>{
     console.log('No menu item clicked');
     return;
   }
+
+  // ===== SETTINGS SCREEN LOGIC =====
+const settingsScreen = document.getElementById('settingsScreen');
+const settingsBack   = document.getElementById('settingsBack');
+const topbarEl       = document.querySelector('.topbar');
+const tabbarEl       = document.querySelector('.tabbar');
+
+function showSettings(){
+  if (!settingsScreen) return;
+
+  // скрываем все другие экраны как обычно
+  try{
+    document.querySelectorAll('.app .screen, .app .hide').forEach(el=>{
+      if (el !== settingsScreen) el.classList.add('hide');
+    });
+  }catch(e){}
+
+  settingsScreen.classList.remove('hide');
+  settingsScreen.setAttribute('aria-hidden','false');
+
+  // прячем верхний топбар
+  if (topbarEl) topbarEl.style.display = 'none';
+}
+
+function hideSettings(){
+  if (!settingsScreen || settingsScreen.classList.contains('hide')) return;
+  settingsScreen.classList.add('hide');
+  settingsScreen.setAttribute('aria-hidden','true');
+
+  // возвращаем топбар
+  if (topbarEl) topbarEl.style.display = '';
+}
+
+// назад -> главное меню "Кейсы"
+settingsBack?.addEventListener('click', ()=>{
+  hideSettings();
+  if (typeof showCases === 'function') showCases();
+});
+
+// если жмут по таббару — выкидываем из настроек на выбранную вкладку
+tabbarEl?.addEventListener('click', ()=>{
+  hideSettings();
+}, true);
+
   const action = btn.dataset.action;
   console.log('Menu action:', action);
   toggleQuickMenu(false);
@@ -5022,7 +5188,7 @@ case 'topup':
   break;
 
     case 'settings':
-      alert('Скоро — настройки профиля');
+      showSettings();
       break;
   }
 });
