@@ -178,34 +178,10 @@ GD.ensureUid8 = function (tgId) {
 
 
      *{box-sizing:border-box}
-
-/* фиксируем страницу как "прилипшую" */
-html,body{
-  height:100%;
-  margin:0;
-  font-family:'Inter',system-ui,Segoe UI,Roboto,Arial,sans-serif;
-
-  /* главное — убираем резинку/оттягивание */
-  overscroll-behavior: none;
-}
-
-html{
-  scroll-behavior:smooth;
-  scrollbar-gutter: stable;
-}
-
-/* body больше НЕ скроллится */
-body{
-  color:var(--text);
-  overflow:hidden;          /* важно */
-  background:#0e1b25;
-  position:fixed;           /* приклеиваем */
-  inset:0;                  /* top/right/bottom/left = 0 */
-  width:100%;
-}
-
-/* фон как был */
-.cyber-bg{
+    html,body{height:100%;margin:0;font-family:'Inter',system-ui,Segoe UI,Roboto,Arial,sans-serif}
+    html{scroll-behavior:smooth; scrollbar-gutter: stable;}
+    body{ color:var(--text); overflow-x:hidden; background:#0e1b25; overflow-y:scroll; }
+ .cyber-bg{
   position:fixed; inset:0; z-index:0; pointer-events:none;
   background:
     radial-gradient(80% 50% at 50% -10%, rgba(22,241,255,.06), transparent 60%),
@@ -216,15 +192,7 @@ body{
   background-blend-mode: screen, screen, normal, overlay, overlay;
 }
 
-/* app занимает экран и не даёт body скроллиться */
-.app{
-  height:100svh;                 /* ровно высота экрана */
-  display:flex;
-  flex-direction:column;
-  position:relative;
-  z-index:1;
-  overflow:hidden;               /* скролл только внутри */
-}
+   .app{min-height:100%;display:flex;flex-direction:column;position:relative;z-index:1}
 
     .topbar{
       position:sticky; top:0; z-index:30;
@@ -325,18 +293,13 @@ body{
   transform: translateY(-2px) scale(1.06);
 }
 
-.content{
+    .content{
   flex:1;
   padding:16px;
   max-width:1100px;
   margin:0 auto;
   width:100%;
   padding-bottom: max(var(--tabbar-h,84px), env(safe-area-inset-bottom) + 16px);
-
-  /* теперь именно тут скролл */
-  overflow-y:auto;
-  -webkit-overflow-scrolling: touch; /* плавный нативный скролл iOS */
-  overscroll-behavior: none;         /* чтобы внутри тоже не было резинки */
 }
 
 /* ====== CARD кейса (обновлённый) ====== */
