@@ -435,6 +435,22 @@ GD.ensureUid8 = function (tgId) {
   letter-spacing:.4px;
 }
 
+/* ₽ в пилюле "Цена" (detail modal) */
+#detailPrice{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--rub-gap, 2px);
+}
+
+#detailPrice .detail-rub{
+  color: inherit;          /* тот же золотой что и цифры */
+  font: inherit;           /* тот же шрифт/толщина */
+  line-height: inherit;    /* та же высота */
+  position: relative;
+  left: var(--rub-sign-x, -4px);  /* впритык как у баланса */
+}
+
 /* На сайте (вне Telegram) прячем ценник */
 html:not(.in-telegram) .card .price-bar{
   display:none;
@@ -3667,14 +3683,23 @@ function renderLoot(images, setId){
 
     if (isCheap){
       const row = table[idx] || {};
-      const s = (row.stars ?? "").trim() || DEF_STARS;
-      const t = (row.ton   ?? "").trim() || DEF_TON;
+      const sRaw = (row.stars ?? "").trim() || DEF_STARS;
+      const t    = (row.ton   ?? "").trim() || DEF_TON;
+
+      const sClean = String(sRaw).replace(/\s*[⭐₽]\s*$/,'').trim();
+      const sHasNum = /\d/.test(sClean);
+
+      const sHtml = sHasNum
+        ? `${sClean}<span class="lb-rub">₽</span>`
+        : sClean;
+
       back.innerHTML = `
         <div class="lb-stats">
-          <div class="lb-stars">${s}</div>
+          <div class="lb-stars">${sHtml}</div>
           <div class="lb-ton">${t}</div>
         </div>`;
     } else {
+
       back.innerHTML = `
         <div class="lb-stats">
           <div class="lb-stars">—</div>
@@ -3816,7 +3841,16 @@ function openDetail({title, price, setId}) {
 
   // заголовки/цена
   dTitle.textContent = title;
-  dPrice.textContent = String(price || '—');
+
+  const priceStr   = String(price || '—');
+  const cleanPrice = priceStr.replace(/\s*[⭐₽]\s*$/,'').trim();
+  const hasNumber  = /\d/.test(cleanPrice);
+
+  // если это числовая цена — рисуем "число + ₽" (₽ справа)
+  // если это "БЕСПЛАТНО/ЗОЛОТО/—" — оставляем как есть
+  dPrice.innerHTML = hasNumber
+    ? `${cleanPrice}<span class="detail-rub">₽</span>`
+    : cleanPrice;
 
   // чистая заглушка сверху
   dThumb.textContent = 'Заглушка';
