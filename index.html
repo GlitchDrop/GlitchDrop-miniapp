@@ -404,7 +404,7 @@ GD.ensureUid8 = function (tgId) {
   display:flex;
   align-items:center;
   justify-content:center;
-  gap:8px;
+  gap: var(--rub-gap);          /* было gap:8px */
   padding:8px 10px;
   border-radius:14px;
   background:linear-gradient(90deg, rgba(8,12,28,1), rgba(12,18,40,1));
@@ -415,12 +415,17 @@ GD.ensureUid8 = function (tgId) {
 .price-star{
   font-size:18px;
   line-height:1;
+  font-weight:900;             /* как у числа */
+  color: var(--neon-yellow);   /* ₽ теперь золотой */
+  text-shadow:0 0 12px rgba(255,228,122,0.25);
+  display:inline-block;
+  transform: translateX(var(--rub-sign-x)); /* сдвиг ₽ ближе к числу */
 }
 
 .price{
   font-weight:900;
-  color:var(--neon-yellow);
-  text-shadow:0 0 12px rgba(255,228,122,0.25);
+  color:#e8efff;               /* число теперь белое */
+  text-shadow:0 0 8px rgba(255,255,255,0.18);
   letter-spacing:.4px;
 }
 
