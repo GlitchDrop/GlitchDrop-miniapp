@@ -3416,7 +3416,7 @@ sections.forEach(sec=>{
     const rawPrice = Array.isArray(sec.price)? sec.price[i] : sec.price;
 
     // убираем вторую звезду в конце ("50 ⭐" -> "50")
-    const cleanPrice = String(rawPrice || '').replace(/\s*⭐\s*$/,'').trim();
+    const cleanPrice = String(rawPrice || '').replace(/\s*[⭐₽]\s*$/,'').trim();
 
     const card = document.createElement('div');
     card.className='card';
@@ -3431,9 +3431,9 @@ sections.forEach(sec=>{
       </div>
       <div class="card-footer">
         <div class="price-bar">
-          ${isFree ? '' : '<span class="price-star">⭐</span>'}
-          <span class="price">${isFree ? (rawPrice || 'БЕСПЛАТНО') : cleanPrice}</span>
-        </div>
+  ${isFree ? '' : '<span class="price-star">₽</span>'}
+  <span class="price">${isFree ? (rawPrice || 'БЕСПЛАТНО') : cleanPrice}</span>
+</div>
       </div>
       ${isFree ? '' : '<button type="button" class="card-open-btn">ОТКРЫТЬ</button>'}
     `;
@@ -6687,4 +6687,3 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
-
