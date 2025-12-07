@@ -166,8 +166,11 @@ GD.ensureUid8 = function (tgId) {
     
     /* только для ценника кейсов */
 --case-rub-sign-x: 0px;  /* <-- двигает ₽ влево/вправо ТОЛЬКО в ценнике */
---case-rub-gap: 4px;      /* <-- зазор между числом и ₽ ТОЛЬКО в ценнике */
+--case-rub-gap: 2px;      /* <-- зазор между числом и ₽ ТОЛЬКО в ценнике */
 
+/* ===== для "Цена" в модалке барабана (detail) ===== */
+--detail-rub-gap: 2px;      /* <-- зазор между числом и ₽ в барабане */
+--detail-rub-sign-x: 0px;   /* <-- сдвиг ₽ по X в барабане (минус=влево, плюс=вправо) */
 
   --text:#e8efff;
   --muted:#9fb2d9;
@@ -2232,6 +2235,26 @@ h2.section{
 }
 .switch input:checked + .slider:before{
   transform: translateX(20px);
+}
+
+/* ===== "Цена" в detail/baraбане: число + ₽ как у ценника ===== */
+#detailPrice{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--detail-rub-gap);     /* регулируемый зазор */
+}
+
+/* сам знак ₽ */
+#detailPrice .detail-rub{
+  font-size: inherit;            /* размер как у цифр */
+  font-weight: inherit;          /* толщина как у цифр */
+  line-height: 1;
+  color: var(--neon-yellow);     /* золотой как на главной */
+  text-shadow: 0 0 12px rgba(255,228,122,0.25);
+
+  display: inline-block;
+  transform: translateX(var(--detail-rub-sign-x)); /* регулируемый сдвиг */
 }
 
   </style>
