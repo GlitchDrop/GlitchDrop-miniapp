@@ -163,6 +163,11 @@ GD.ensureUid8 = function (tgId) {
   --neon-pink:#8a5cff;
   --neon-yellow:#ffe47a;
     --rub-sign-x: -4px; /* <-- меняй это число: -8px левее, +8px правее */
+    
+    /* только для ценника кейсов */
+--case-rub-sign-x: -2px;  /* <-- двигает ₽ влево/вправо ТОЛЬКО в ценнике */
+--case-rub-gap: 0px;      /* <-- зазор между числом и ₽ ТОЛЬКО в ценнике */
+
 
   --text:#e8efff;
   --muted:#9fb2d9;
@@ -404,7 +409,7 @@ GD.ensureUid8 = function (tgId) {
   display:flex;
   align-items:center;
   justify-content:center;
-  gap: var(--rub-gap);          /* было gap:8px */
+  gap: var(--case-rub-gap);
   padding:8px 10px;
   border-radius:14px;
   background:linear-gradient(90deg, rgba(8,12,28,1), rgba(12,18,40,1));
@@ -415,12 +420,13 @@ GD.ensureUid8 = function (tgId) {
 .price-star{
   font-size:18px;
   line-height:1;
-  font-weight:900;             /* как у числа */
-  color: var(--neon-yellow);   /* ₽ теперь золотой */
+  font-weight:900;
+  color: var(--neon-yellow);
   text-shadow:0 0 12px rgba(255,228,122,0.25);
   display:inline-block;
-  transform: translateX(var(--rub-sign-x)); /* сдвиг ₽ ближе к числу */
+  transform: translateX(var(--case-rub-sign-x));
 }
+
 
 .price{
   font-weight:900;
@@ -3436,8 +3442,8 @@ sections.forEach(sec=>{
       </div>
       <div class="card-footer">
         <div class="price-bar">
-  ${isFree ? '' : '<span class="price-star">₽</span>'}
   <span class="price">${isFree ? (rawPrice || 'БЕСПЛАТНО') : cleanPrice}</span>
+  ${isFree ? '' : '<span class="price-star">₽</span>'}
 </div>
       </div>
       ${isFree ? '' : '<button type="button" class="card-open-btn">ОТКРЫТЬ</button>'}
