@@ -421,11 +421,14 @@ GD.ensureUid8 = function (tgId) {
 }
 
 .price-star{
-  font-size: inherit;            /* ₽ = такой же размер как цифры */
+  font-size: inherit;        
   line-height: 1;
   font-weight:900;
-  color: var(--neon-yellow);
-  text-shadow:0 0 12px rgba(255,228,122,0.25);
+
+  /* ₽ как цифры главного ценника */
+  color: #e8efff;
+  text-shadow: 0 0 8px rgba(255,255,255,0.18);
+
   display:inline-block;
   transform: translateX(var(--case-rub-sign-x));
 }
