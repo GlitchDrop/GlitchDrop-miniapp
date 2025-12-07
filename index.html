@@ -165,7 +165,7 @@ GD.ensureUid8 = function (tgId) {
     --rub-sign-x: -4px; /* <-- меняй это число: -8px левее, +8px правее */
     
     /* только для ценника кейсов */
---case-rub-sign-x: 0px;  /* <-- двигает ₽ влево/вправо ТОЛЬКО в ценнике */
+--case-rub-sign-x: -2px;  /* <-- двигает ₽ влево/вправо ТОЛЬКО в ценнике */
 --case-rub-gap: 2px;      /* <-- зазор между числом и ₽ ТОЛЬКО в ценнике */
 
 /* ===== для "Цена" в модалке барабана (detail) ===== */
@@ -421,14 +421,11 @@ GD.ensureUid8 = function (tgId) {
 }
 
 .price-star{
-  font-size: inherit;        
+  font-size: inherit;
   line-height: 1;
   font-weight:900;
-
-  /* ₽ как цифры главного ценника */
-  color: #e8efff;
-  text-shadow: 0 0 8px rgba(255,255,255,0.18);
-
+  color: var(--neon-yellow);
+  text-shadow:0 0 12px rgba(255,228,122,0.25);
   display:inline-block;
   transform: translateX(var(--case-rub-sign-x));
 }
