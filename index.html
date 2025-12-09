@@ -5789,15 +5789,16 @@ async function handleAmountSubmit() {
 
     const tg = window.Telegram && window.Telegram.WebApp;
 
-// 5) открываем окно оплаты Телеги
-if (tg?.openInvoice) {
-  Stars.open(amount, data.invoice_url);
-} else {
-  window.open(data.invoice_url, '_blank');
-}
+    // 5) открываем окно оплаты Телеги (БЕЗ Stars.open — он глючит на повторных вызовах)
+    if (tg?.openInvoice) {
+      tg.openInvoice(data.invoice_url); 
+    } else {
+      // запасной вариант в браузере
+      window.open(data.invoice_url, '_blank');
+    }
 
-// 4) закрываем модалку суммы ПОСЛЕ открытия инвойса
-topupAmountCloseModal();
+    // 4) закрываем модалку суммы ПОСЛЕ старта открытия инвойса
+    topupAmountCloseModal();
 
     // 6) считаем, сколько уже времени крутится лоадер
     const elapsed = Date.now() - loaderShownAt;
