@@ -6291,31 +6291,29 @@ if (value !== el.value) el.value = value;
 
 const prev = el.dataset.lastValidStars ?? String(STARS_MIN);
 
-// если попытались стереть всё — возвращаем минимум
+// ✅ теперь пустое поле разрешаем (ничего не подставляем)
 if (value === '') {
   if (errorEl) {
-    errorEl.textContent = `Минимальная сумма ${STARS_MIN}`;
-    errorEl.style.display = 'block';
+    errorEl.style.display = 'none';
+    errorEl.textContent = '';
   }
-  el.value = String(STARS_MIN);
-  el.dataset.lastValidStars = String(STARS_MIN);
+  // lastValidStars не трогаем
   return;
 }
 
 const num = parseInt(value, 10);
 
-// ниже минимума — фиксируем 50
+// ✅ ниже минимума — просто показываем ошибку, но НЕ фиксируем значение
 if (num < STARS_MIN) {
   if (errorEl) {
     errorEl.textContent = `Минимальная сумма ${STARS_MIN}`;
     errorEl.style.display = 'block';
   }
-  el.value = String(STARS_MIN);
-  el.dataset.lastValidStars = String(STARS_MIN);
+  // lastValidStars не обновляем, чтобы работал max-кламп
   return;
 }
 
-// выше максимума — режем до 50 000
+// выше максимума — режем до 50 000 (КАК БЫЛО)
 if (num > STARS_MAX) {
   if (errorEl) {
     errorEl.textContent = `Максимальная сумма ${formatRu(STARS_MAX)}`;
