@@ -6482,22 +6482,51 @@ var tg = window.Telegram && window.Telegram.WebApp;
 var LS_BAL  = 'gd_stars_balance';
 var LS_LAST = 'gd_last_topup_amount';
 
-// ====== УТИЛИТЫ БАЛАНСА ======
+// ====== УТИЛИТЫ БАЛАНСА (с CloudStorage) ======
 function getStarsBalance() {
   var n = parseInt(localStorage.getItem(LS_BAL) || '0', 10);
-  return (isFinite(n) && n > 0) ? n : 0;
+  if (!isFinite(n) || n < 0) n = 0;
+  return n;
 }
+
 function setStarsBalance(n) {
   n = Math.max(0, parseInt(n || 0, 10) || 0);
+  var txt = String(n);
+
   var el = document.getElementById('rubBalance');
-  if (el) el.textContent = String(n);
-  localStorage.setItem(LS_BAL, String(n));
-  console.log('[stars] UI+LS =>', n);
+  if (el) el.textContent = txt;
+
+  // как и раньше — в localStorage
+  try { localStorage.setItem(LS_BAL, txt); } catch (e) {}
+
+  // НОВОЕ: пишем ещё и в CloudStorage Telegram
+  try {
+    if (tg && tg.CloudStorage && tg.CloudStorage.setItem) {
+      tg.CloudStorage.setItem(LS_BAL, txt, function (err) {
+        if (err) console.warn('CloudStorage setItem error', err);
+      });
+    }
+  } catch (e) {}
 }
 
 // Восстановить цифру при загрузке
 document.addEventListener('DOMContentLoaded', function () {
+  // сначала локальное значение
   setStarsBalance(getStarsBalance());
+
+  // потом пробуем подтянуть из CloudStorage Telegram
+  try {
+    if (tg && tg.CloudStorage && tg.CloudStorage.getItem) {
+      tg.CloudStorage.getItem(LS_BAL, function (err, value) {
+        if (!err && value != null && value !== '') {
+          var fromCloud = parseInt(value, 10);
+          if (isFinite(fromCloud) && fromCloud >= 0) {
+            setStarsBalance(fromCloud);
+          }
+        }
+      });
+    }
+  } catch (e) {}
 });
 
 // ЕДИНАЯ ТОЧКА ПРИМЕНЕНИЯ ПОПОЛНЕНИЯ
