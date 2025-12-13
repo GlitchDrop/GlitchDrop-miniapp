@@ -5584,28 +5584,6 @@ function validateAmount(input) {
   };
 }
 
-// === Баланс звёзд в топбаре ===
-const LS_STARS_KEY = 'gd_stars_balance';
-const starsEl = document.getElementById('rubBalance'); // <span id="stars">0</span>
-
-function getStarsBalance() {
-  // 1) localStorage если есть, иначе из DOM
-  try {
-    const v = parseInt(localStorage.getItem(LS_STARS_KEY) || '', 10);
-    if (Number.isFinite(v)) return v;
-  } catch (_) {}
-  return parseInt(starsEl?.textContent || '0', 10) || 0;
-}
-
-function setStarsBalance(n) {
-  const v = Math.max(0, parseInt(n, 10) || 0);
-  if (starsEl) starsEl.textContent = String(v);
-  try { localStorage.setItem(LS_STARS_KEY, String(v)); } catch (_) {}
-}
-
-// ← при загрузке синхронизируем DOM с localStorage,
-//   чтобы если ранее уже пополняли, значение восстановилось
-setStarsBalance(getStarsBalance());
 
 // ===== Покупка "прокрута": парсинг цены, списание, алерт "Пополнить" =====
 function parseCasePriceStars() {
@@ -5656,9 +5634,9 @@ function tryChargeSpin() {
     return false;
   }
 
-  setStarsBalance(bal - price);                      // мгновенное списание (DOM+LS)
-  // Если нужно — здесь добавь fetch на бэкенд для фиксации списания
-  // fetch(`${window.API_BASE}/api/spins/charge`, { ... })
+  const next = bal - price;
+  setStarsBalance(next);                             // мгновенное списание (DOM+LS)
+  saveBalanceToBackend(next);                        // <<< ДОБАВИЛИ ЭТУ СТРОКУ
 
   return true;
 }
@@ -5692,21 +5670,30 @@ setStarsBalance(Math.max(getStarsBalance(), Number(data?.stars) || 0));
   const tg = window.Telegram && window.Telegram.WebApp;
   if (!tg || !tg.onEvent) return;
 
- tg.onEvent('invoiceClosed', (ev) => {
-  if (typeof hideTopupLoader === 'function') hideTopupLoader();
+  tg.onEvent('invoiceClosed', (ev) => {
+    if (typeof hideTopupLoader === 'function') hideTopupLoader();
+
     if (ev?.status === 'paid') {
       // Берём сумму последней оплаты (Telegram API перед этим сам выставляет)
       const last = parseInt(localStorage.getItem('gd_last_topup_amount') || '0', 10) || 0;
 
-      // Текущий баланс из localStorage
+      // Текущий баланс
       const current = parseInt(localStorage.getItem('gd_stars_balance') || '0', 10) || 0;
 
       // Прибавляем и сохраняем
       const updated = current + last;
-      localStorage.setItem('gd_stars_balance', String(updated));
 
-      // Обновляем отображение в интерфейсе
-      if (typeof setStarsBalance === 'function') setStarsBalance(updated);
+      // Обновляем интерфейс + localStorage (setStarsBalance уже пишет в LS)
+      if (typeof setStarsBalance === 'function') {
+        setStarsBalance(updated);
+      } else {
+        localStorage.setItem('gd_stars_balance', String(updated));
+      }
+
+      // НОВОЕ: отправить новый баланс на бэкенд
+      if (typeof saveBalanceToBackend === 'function') {
+        saveBalanceToBackend(updated);
+      }
 
       // Чистим временные данные
       localStorage.removeItem('gd_last_topup_amount');
@@ -6465,51 +6452,42 @@ var tg = window.Telegram && window.Telegram.WebApp;
 var LS_BAL  = 'gd_stars_balance';
 var LS_LAST = 'gd_last_topup_amount';
 
-// ====== УТИЛИТЫ БАЛАНСА (с CloudStorage) ======
+// ====== УТИЛИТЫ БАЛАНСА ======
 function getStarsBalance() {
   var n = parseInt(localStorage.getItem(LS_BAL) || '0', 10);
-  if (!isFinite(n) || n < 0) n = 0;
-  return n;
+  return (isFinite(n) && n > 0) ? n : 0;
 }
-
 function setStarsBalance(n) {
   n = Math.max(0, parseInt(n || 0, 10) || 0);
-  var txt = String(n);
-
   var el = document.getElementById('rubBalance');
-  if (el) el.textContent = txt;
+  if (el) el.textContent = String(n);
+  localStorage.setItem(LS_BAL, String(n));
+  console.log('[stars] UI+LS =>', n);
+}
 
-  // как и раньше — в localStorage
-  try { localStorage.setItem(LS_BAL, txt); } catch (e) {}
-
-  // НОВОЕ: пишем ещё и в CloudStorage Telegram
+// === НОВОЕ: сохранить баланс на бэкенд ===
+async function saveBalanceToBackend(newBalance) {
   try {
-    if (tg && tg.CloudStorage && tg.CloudStorage.setItem) {
-      tg.CloudStorage.setItem(LS_BAL, txt, function (err) {
-        if (err) console.warn('CloudStorage setItem error', err);
-      });
-    }
-  } catch (e) {}
+    const tg = window.Telegram && window.Telegram.WebApp;
+    const userId = tg?.initDataUnsafe?.user?.id;
+    if (!userId || !window.API_BASE) return;
+
+    await fetch(`${window.API_BASE}/api/user-balance`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_id: String(userId),
+        stars: Number(newBalance) || 0,
+      }),
+    });
+  } catch (e) {
+    console.warn('Balance save failed:', e);
+  }
 }
 
 // Восстановить цифру при загрузке
 document.addEventListener('DOMContentLoaded', function () {
-  // сначала локальное значение
   setStarsBalance(getStarsBalance());
-
-  // потом пробуем подтянуть из CloudStorage Telegram
-  try {
-    if (tg && tg.CloudStorage && tg.CloudStorage.getItem) {
-      tg.CloudStorage.getItem(LS_BAL, function (err, value) {
-        if (!err && value != null && value !== '') {
-          var fromCloud = parseInt(value, 10);
-          if (isFinite(fromCloud) && fromCloud >= 0) {
-            setStarsBalance(fromCloud);
-          }
-        }
-      });
-    }
-  } catch (e) {}
 });
 
 // ЕДИНАЯ ТОЧКА ПРИМЕНЕНИЯ ПОПОЛНЕНИЯ
@@ -6519,6 +6497,7 @@ function applyTopup(amountMaybe) {
   if (!last) return;
   var next = getStarsBalance() + last;
   setStarsBalance(next);
+  saveBalanceToBackend(next);              // <<< ДОБАВИЛИ ЭТУ СТРОКУ
   localStorage.removeItem(LS_LAST);
   console.log('[stars] +', last, '=>', next);
 }
@@ -6532,8 +6511,10 @@ function applyTonStarsTopup(starsAmount) {
   var next = current + stars;
 
   setStarsBalance(next);
+  saveBalanceToBackend(next);              // <<< ДОБАВИЛИ ЭТУ СТРОКУ
   console.log('[ton] +', stars, '=>', next);
 }
+
 // ===== КОНЕЦ ДОБАВЛЕННОГО БЛОКА =====
 
 // ОБЁРТКА ДЛЯ ОТКРЫТИЯ ИНВОЙСА
