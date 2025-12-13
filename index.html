@@ -6465,30 +6465,64 @@ function setStarsBalance(n) {
   console.log('[stars] UI+LS =>', n);
 }
 
-// === НОВОЕ: сохранить баланс на бэкенд ===
 async function saveBalanceToBackend(newBalance) {
-  try {
-    const tg = window.Telegram && window.Telegram.WebApp;
-    const userId = tg?.initDataUnsafe?.user?.id;
-    if (!userId || !window.API_BASE) return;
+  const tg = window.Telegram && window.Telegram.WebApp;
+  const userId = tg?.initDataUnsafe?.user?.id; // Получаем уникальный id пользователя
+  if (!userId) return;
 
+  try {
+    // Отправка баланса на сервер
     await fetch(`${window.API_BASE}/api/user-balance`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        user_id: String(userId),
-        stars: Number(newBalance) || 0,
-      }),
+        user_id: userId,
+        stars: newBalance
+      })
     });
   } catch (e) {
-    console.warn('Balance save failed:', e);
+    console.error('Error saving balance:', e);
   }
 }
 
-// Восстановить цифру при загрузке
 document.addEventListener('DOMContentLoaded', function () {
-  setStarsBalance(getStarsBalance());
+  getBalanceFromBackend();  // Получаем баланс с сервера
 });
+
+async function saveBalanceToBackend(newBalance) {
+  const tg = window.Telegram && window.Telegram.WebApp;
+  const userId = tg?.initDataUnsafe?.user?.id;
+  if (!userId) return;
+
+  try {
+    await fetch(`${window.API_BASE}/api/user-balance`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_id: userId,
+        stars: newBalance
+      })
+    });
+  } catch (e) {
+    console.error('Error saving balance:', e);
+  }
+}
+
+async function getBalanceFromBackend() {
+  const tg = window.Telegram && window.Telegram.WebApp;
+  const userId = tg?.initDataUnsafe?.user?.id;
+  if (!userId) return;
+
+  try {
+    const response = await fetch(`${window.API_BASE}/api/user-balance?user_id=${userId}`);
+    const data = await response.json();
+    if (data.stars !== undefined) {
+      setStarsBalance(data.stars);  // Обновляем UI
+    }
+  } catch (e) {
+    console.error('Error fetching balance:', e);
+  }
+}
 
 // ЕДИНАЯ ТОЧКА ПРИМЕНЕНИЯ ПОПОЛНЕНИЯ
 function applyTopup(amountMaybe) {
