@@ -5717,23 +5717,6 @@ setStarsBalance(Math.max(getStarsBalance(), Number(data?.stars) || 0));
   });
 })();
 
-
-// === Глобальный reset баланса до 0 для всех, затем обычная работа ===
-(function initStarsBalanceWithGlobalReset(){
-  const LS_BAL = 'gd_stars_balance';
-  const LS_RESET_FLAG = 'gd_balance_reset_v1'; // увеличить суффикс, если захочешь повторить сброс
-
-  // Один раз обнуляем баланс у всех
-  if (localStorage.getItem(LS_RESET_FLAG) !== 'done') {
-    localStorage.setItem(LS_BAL, '0');
-    localStorage.setItem(LS_RESET_FLAG, 'done');
-  }
-
-  // Рисуем текущее значение (после сброса это 0; далее — сохранённые пополнения)
-  const current = parseInt(localStorage.getItem(LS_BAL), 10) || 0;
-  setStarsBalance(current);
-})();
-
 // Минимальное время показа загрузки после нажатия "ПОПОЛНИТЬ" (в мс)
 const TOPUP_LOADER_MIN_MS = 700; // меняй это число под себя
 
