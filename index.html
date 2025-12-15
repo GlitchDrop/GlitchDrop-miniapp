@@ -2349,13 +2349,6 @@ h2.section{
   box-shadow:none;
 }
 
-.battlepass-btn.claimed{
-  background: linear-gradient(135deg, #777, #555);
-  color:#111;
-  box-shadow:none;
-  cursor: default;
-}
-
   </style>
 
 <style>
@@ -5091,8 +5084,7 @@ function renderUpgrades(){
   upgradesScreen.innerHTML = `
     <div class="contests-surface"></div>
   `;
-  bindBattlePassButtons();
-  
+
 }
 
 function renderBattlePass(){
@@ -5122,25 +5114,6 @@ function renderBattlePass(){
       </div>
     </div>
   `;
-}
-
-function bindBattlePassButtons(){
-  const buttons = upgradesScreen.querySelectorAll('.battlepass-btn');
-
-  buttons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      // если уже получено — ничего не делаем
-      if (btn.classList.contains('claimed')) return;
-
-      // меняем текст и стиль
-      btn.textContent = 'Получено';
-      btn.classList.add('claimed');
-
-      // визуально помечаем карточку
-      const card = btn.closest('.battlepass-card');
-      if (card) card.classList.add('claimed');
-    });
-  });
 }
 
 // ===== CONFIRM SELL MODAL =====
