@@ -2257,6 +2257,98 @@ h2.section{
   transform: translateX(var(--detail-rub-sign-x)); /* регулируемый сдвиг */
 }
 
+/* ===== BATTLE PASS (inside Upgrades) ===== */
+
+.battlepass-list{
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 16px 12px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.battlepass-card{
+  position: relative;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: linear-gradient(
+    180deg,
+    rgba(15,20,48,.9),
+    rgba(10,14,34,.95)
+  );
+  box-shadow:
+    0 10px 30px rgba(10,20,60,.45),
+    0 0 40px rgba(22,241,255,.12);
+  padding: 12px;
+}
+
+.battlepass-inner{
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  gap: 14px;
+  align-items: center;
+}
+
+.battlepass-img{
+  width:96px;
+  aspect-ratio:1/1;
+  border-radius:16px;
+  overflow:hidden;
+  border:1px dashed rgba(180,210,255,.35);
+  background:
+    radial-gradient(80px 80px at 50% 50%, rgba(22,241,255,.12), transparent 60%),
+    linear-gradient(180deg,#0b1030,#0a1028);
+}
+
+.battlepass-img img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+
+.battlepass-info{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.battlepass-title{
+  font-weight:900;
+  letter-spacing:.4px;
+}
+
+.battlepass-btn{
+  align-self:flex-start;
+  appearance:none;
+  border:none;
+  cursor:pointer;
+  padding:10px 16px;
+  border-radius:999px;
+  font-weight:900;
+  letter-spacing:.4px;
+  color:#081121;
+  background:linear-gradient(135deg, var(--neon-cyan), var(--neon-pink));
+  box-shadow:
+    0 6px 18px rgba(22,241,255,.45),
+    0 0 26px rgba(138,92,255,.35);
+}
+
+.battlepass-btn:active{
+  transform: translateY(1px);
+}
+
+/* состояние "получено" (на будущее) */
+.battlepass-card.claimed{
+  filter: grayscale(1) brightness(.7);
+}
+.battlepass-card.claimed .battlepass-btn{
+  background: linear-gradient(135deg, #777, #555);
+  color:#111;
+  box-shadow:none;
+}
+
   </style>
 
 <style>
@@ -2780,107 +2872,6 @@ h2.section{
   --grid-bg-image: url("assets/images/20251123_1037_Неоновый Космический Фон_remix_01kaqt8na7fpbsgfythbfnwfhp.png");
 }
 
-/* ===== BATTLE PASS ===== */
-
-.battlepass-list{
-  max-width: 980px;
-  margin: 0 auto;
-  padding: 16px 12px 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.battlepass-card{
-  position: relative;
-  border-radius: 18px;
-  border: 1px solid var(--border);
-  background:
-    linear-gradient(180deg, rgba(15,20,48,.85), rgba(10,14,34,.9));
-  box-shadow:
-    0 10px 30px rgba(10,20,60,.45),
-    0 0 40px rgba(22,241,255,.12);
-  padding: 12px;
-}
-
-.battlepass-card::before{
-  content:"";
-  position:absolute;
-  inset:-2px;
-  border-radius: 20px;
-  background: linear-gradient(135deg, rgba(22,241,255,.35), rgba(138,92,255,.35));
-  opacity:.25;
-  filter: blur(14px);
-  z-index:0;
-}
-
-.battlepass-inner{
-  position:relative;
-  z-index:1;
-  display:grid;
-  grid-template-columns: 96px 1fr;
-  gap: 14px;
-  align-items: center;
-}
-
-.battlepass-img{
-  width:96px;
-  aspect-ratio:1/1;
-  border-radius:16px;
-  overflow:hidden;
-  border:1px dashed rgba(180,210,255,.35);
-  background:#0b1030;
-}
-
-.battlepass-img img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  display:block;
-}
-
-.battlepass-info{
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-}
-
-.battlepass-title{
-  font-weight:900;
-  letter-spacing:.4px;
-}
-
-.battlepass-btn{
-  align-self:flex-start;
-  appearance:none;
-  border:none;
-  cursor:pointer;
-  padding:10px 16px;
-  border-radius:999px;
-  font-weight:900;
-  letter-spacing:.4px;
-  color:#081121;
-  background:linear-gradient(135deg, var(--neon-cyan), var(--neon-pink));
-  box-shadow:
-    0 6px 18px rgba(22,241,255,.45),
-    0 0 26px rgba(138,92,255,.35);
-}
-
-.battlepass-btn:active{
-  transform: translateY(1px);
-}
-
-/* СОСТОЯНИЕ "ПОЛУЧЕНО" */
-.battlepass-card.claimed{
-  filter: grayscale(1) brightness(.7);
-}
-
-.battlepass-card.claimed .battlepass-btn{
-  background: linear-gradient(135deg, #777, #555);
-  color:#111;
-  box-shadow:none;
-}
-
 </style>
 
 <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
@@ -3009,7 +3000,7 @@ if (addr) {
 <div class="hide" id="contestsScreen" aria-hidden="true"></div>
 
 <!-- ПУСТОЙ ЭКРАН ОБМЕНОВ -->
-<div id="battlepassScreen" class="hide" aria-hidden="true"></div>
+<div class="hide" id="upgradesScreen" aria-hidden="true"></div>
 
 <!-- ЭКРАН НАСТРОЕК -->
 <div class="hide settings-screen" id="settingsScreen" aria-hidden="true">
@@ -3054,11 +3045,11 @@ if (addr) {
   </div>
 
   <div class="tab">
-  <div class="ico">
-    <img src="assets/images/battlepass_icon.png" alt="Пропуск">
+    <div class="ico">
+      <img src="assets/images/20251117_1747_Иконка с прозрачным фоном_remix_01ka94fh16en3vq3kqfmhp6re2.png" alt="Обмен">
+    </div>
+    Обмен
   </div>
-  Пропуск
-</div>
 
   <div class="tab active">
     <div class="ico">
@@ -4561,7 +4552,7 @@ const profileScreen = document.getElementById('profileScreen');
 const friendsScreen  = document.getElementById('friendsScreen');
 const contestsScreen = document.getElementById('contestsScreen');
 const upgradesScreen = document.getElementById('upgradesScreen');
-const battlepassScreen = document.getElementById('battlepassScreen');
+
 
 const tabsAll = Array.from(document.querySelectorAll('.tabbar .tab'));
 
@@ -4571,7 +4562,7 @@ const profileTab =
   || tabsAll.find(t => /ИНВЕНТАРЬ|Профиль/i.test(t.textContent.trim()));
 const friendsTab = tabsAll.find(t => /Друзья/i.test(t.textContent.trim()));
 const contestsTab = tabsAll.find(t => /Конкурсы/i.test(t.textContent.trim()));
-const upgradesTab = tabsAll.find(t => /Пропуск/i.test(t.textContent.trim()));
+const upgradesTab = tabsAll.find(t => /Обмен/i.test(t.textContent.trim()));
 
 // ===== HAPTIC FEEDBACK (вибрация) =====
 function tabHaptic(){
@@ -4905,21 +4896,51 @@ function restoreTopbarIfNeeded(){
   }
 }
 
+function showUpgrades(){
+  hardCloseDetailAndModal();
+
+  // вернуть верхний топбар и корректные отступы
+  topbarEl?.classList.remove('hide');
+  restoreTopbarIfNeeded?.();
+  if (typeof syncTopbarOffset === 'function') syncTopbarOffset();
+  if (typeof syncTabbarOffset === 'function') syncTabbarOffset();
+
+  // спрятать остальные экраны
+  chipbar.classList.add('hide');
+  content.classList.add('hide');
+  backTop.classList.add('hide');
+
+  profileScreen.classList.add('hide');  profileScreen.setAttribute('aria-hidden','true');
+  friendsScreen.classList.add('hide');  friendsScreen.setAttribute('aria-hidden','true');
+  contestsScreen.classList.add('hide'); contestsScreen.setAttribute('aria-hidden','true');
+
+  // показать обмен
+  upgradesScreen.classList.remove('hide');
+  upgradesScreen.setAttribute('aria-hidden','false');
+
+  // отрисовать пропуск
+  renderBattlePass();
+
+  setActiveTab(upgradesTab);
+  document.body.classList.remove('friends-active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 // === ПУСТОЙ РЕЖИМ ДЛЯ «КОНКУРСОВ» ===
 
 // true — показываем заглушку «Здесь пока что пусто»; false — обычный интерфейс
 GD.contestsEmpty = true;
 
 // ===== BATTLE PASS CONFIG =====
-// 7 наград пропуска (картинки 1:1)
+// 7 наград пропуска (пока без логики)
 const BATTLE_PASS_REWARDS = [
-  { id: 1, title: 'НАГРАДА 1', img: 'URL_КАРТИНКИ_1', claimed: false },
-  { id: 2, title: 'НАГРАДА 2', img: 'URL_КАРТИНКИ_2', claimed: false },
-  { id: 3, title: 'НАГРАДА 3', img: 'URL_КАРТИНКИ_3', claimed: false },
-  { id: 4, title: 'НАГРАДА 4', img: 'URL_КАРТИНКИ_4', claimed: false },
-  { id: 5, title: 'НАГРАДА 5', img: 'URL_КАРТИНКИ_5', claimed: false },
-  { id: 6, title: 'НАГРАДА 6', img: 'URL_КАРТИНКИ_6', claimed: false },
-  { id: 7, title: 'НАГРАДА 7', img: 'URL_КАРТИНКИ_7', claimed: false }
+  { id: 1, title: 'Награда 1', img: '', claimed: false },
+  { id: 2, title: 'Награда 2', img: '', claimed: false },
+  { id: 3, title: 'Награда 3', img: '', claimed: false },
+  { id: 4, title: 'Награда 4', img: '', claimed: false },
+  { id: 5, title: 'Награда 5', img: '', claimed: false },
+  { id: 6, title: 'Награда 6', img: '', claimed: false },
+  { id: 7, title: 'Награда 7', img: '', claimed: false }
 ];
 
 /** Переключить пустой режим конкурсов.
@@ -4935,36 +4956,6 @@ GD.setContestsEmpty = function(on){
     renderContests();
   }
 };
-
-function showBattlePass(){
-  hardCloseDetailAndModal();
-
-  // вернуть верхний топбар и корректные отступы
-  topbarEl?.classList.remove('hide');
-  restoreTopbarIfNeeded?.();
-  if (typeof syncTopbarOffset === 'function') syncTopbarOffset();
-  if (typeof syncTabbarOffset === 'function') syncTabbarOffset();
-
-  // скрыть остальные экраны
-  chipbar.classList.add('hide');
-  content.classList.add('hide');
-  backTop.classList.add('hide');
-
-  profileScreen.classList.add('hide');  profileScreen.setAttribute('aria-hidden','true');
-  friendsScreen.classList.add('hide');  friendsScreen.setAttribute('aria-hidden','true');
-  contestsScreen.classList.add('hide'); contestsScreen.setAttribute('aria-hidden','true');
-  upgradesScreen.classList.add('hide'); upgradesScreen.setAttribute('aria-hidden','true');
-
-  // показать пропуск
-  battlepassScreen.classList.remove('hide');
-  battlepassScreen.setAttribute('aria-hidden','false');
-
-  renderBattlePass();
-
-  setActiveTab(upgradesTab);
-  document.body.classList.remove('friends-active');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
 
 function renderContests(){
   const contestsScreen = document.getElementById('contestsScreen');
@@ -5046,33 +5037,6 @@ contestsScreen.innerHTML = `
   }, { passive:false });
 }
 
-function renderBattlePass(){
-  if (!battlepassScreen) return;
-
-  battlepassScreen.innerHTML = `
-    <div class="contests-fixed contests-surface contests-page">
-      <div class="contests-header">ПРОПУСК</div>
-      <div class="battlepass-list" id="battlePassList"></div>
-    </div>
-  `;
-
-  const list = document.getElementById('battlePassList');
-  if (!list) return;
-
-  list.innerHTML = BATTLE_PASS_REWARDS.map(r => `
-    <div class="battlepass-card ${r.claimed ? 'claimed' : ''}">
-      <div class="battlepass-inner">
-        <div class="battlepass-img">
-          <img src="${r.img}" alt="${r.title}">
-        </div>
-        <div class="battlepass-info">
-          <div class="battlepass-title">${r.title}</div>
-          <button class="battlepass-btn">Получить</button>
-        </div>
-      </div>
-    </div>
-  `).join('');
-}
 
 
 function showContests(){
@@ -5113,6 +5077,42 @@ upgradesScreen.setAttribute('aria-hidden','true');
   if (typeof syncTabbarOffset === 'function') syncTabbarOffset();
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function renderUpgrades(){
+  // можно использовать уже существующую поверхность, чтобы фон был единый
+  upgradesScreen.innerHTML = `
+    <div class="contests-surface"></div>
+  `;
+}
+
+function renderBattlePass(){
+  if (!upgradesScreen) return;
+
+  upgradesScreen.innerHTML = `
+    <div class="contests-surface contests-page">
+      <div class="contests-header">ПРОПУСК</div>
+
+      <div class="battlepass-list">
+        ${BATTLE_PASS_REWARDS.map(r => `
+          <div class="battlepass-card ${r.claimed ? 'claimed' : ''}">
+            <div class="battlepass-inner">
+              <div class="battlepass-img">
+                ${r.img
+                  ? `<img src="${r.img}" alt="${r.title}">`
+                  : ``
+                }
+              </div>
+              <div class="battlepass-info">
+                <div class="battlepass-title">${r.title}</div>
+                <button class="battlepass-btn">Получить</button>
+              </div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
 }
 
 // ===== CONFIRM SELL MODAL =====
@@ -5269,11 +5269,6 @@ if (upgradesTab){
     showUpgrades();
   });
 }
-
-upgradesTab?.addEventListener('click', ()=>{
-  tabHaptic();
-  showBattlePass();
-});
 
 // Гарантируем, что при первой загрузке мы в "Кейсах"
 showCases();
