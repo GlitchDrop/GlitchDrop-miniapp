@@ -2257,94 +2257,204 @@ h2.section{
   transform: translateX(var(--detail-rub-sign-x)); /* регулируемый сдвиг */
 }
 
-/* ===== BATTLE PASS (tile, 1 column) ===== */
+/* ===== BATTLE PASS — BASE TIMELINE LAYOUT ===== */
 
-.battlepass-list{
-  max-width: 420px;
+.bp-timeline{
+  max-width: 720px;
   margin: 0 auto;
-  padding: 16px 12px 32px;
+  padding: 20px 12px 40px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 28px;
 }
 
-.battlepass-card{
+/* один элемент прогресса */
+.bp-item{
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  align-items: flex-start;
+  column-gap: 16px;
+}
+
+/* левая колонка (линия + точка) */
+.bp-line-wrap{
   position: relative;
-  aspect-ratio: 1 / 1;
-  border-radius: 20px;
-  overflow: hidden;
-  border: 1px solid rgba(140,170,255,.35);
-  background:
-    radial-gradient(120px 120px at 15% 15%, rgba(22,241,255,.14), transparent 60%),
-    radial-gradient(120px 120px at 85% 85%, rgba(138,92,255,.14), transparent 60%),
-    linear-gradient(180deg,#0b1030,#0a1028);
-  box-shadow:
-    0 14px 36px rgba(10,20,60,.55),
-    0 0 40px rgba(22,241,255,.18);
+  display: flex;
+  justify-content: center;
 }
 
-.battlepass-img{
-  position:absolute;
-  inset:0;
+/* вертикальная линия */
+.bp-line{
+  position: absolute;
+  top: 20px;
+  bottom: -28px;
+  width: 2px;
+  background: rgba(180,210,255,.25);
 }
 
-.battlepass-img img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  display:block;
+/* последнему элементу линия не нужна */
+.bp-item:last-child .bp-line{
+  display: none;
 }
 
-.battlepass-footer{
-  position:absolute;
-  left:0;
-  right:0;
-  bottom:0;
-  padding:14px;
+/* точка прогресса */
+.bp-node{
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #0b1030;
+  border: 2px solid rgba(180,210,255,.6);
+  z-index: 2;
+}
+
+/* карточка награды */
+.bp-card{
+  border-radius: 16px;
+  border: 1px solid var(--border);
   background: linear-gradient(
     180deg,
-    rgba(10,14,34,0),
-    rgba(10,14,34,.92)
+    rgba(15,20,48,.85),
+    rgba(10,14,34,.9)
   );
-  display:flex;
-  flex-direction:column;
-  gap:10px;
+  overflow: hidden;
 }
 
-.battlepass-title{
-  font-weight:900;
-  letter-spacing:.6px;
-  text-transform:uppercase;
+/* область картинки */
+.bp-card-img{
+  height: 120px;
+  background:
+    radial-gradient(120px 80px at 20% 20%, rgba(22,241,255,.08), transparent 60%),
+    radial-gradient(120px 80px at 80% 80%, rgba(138,92,255,.08), transparent 60%),
+    linear-gradient(180deg,#0b1030,#0a1028);
+  display: grid;
+  place-items: center;
+  color: #9fb2d9;
+  font-size: 12px;
+  letter-spacing: 1px;
 }
 
-.battlepass-btn{
-  width:100%;
-  appearance:none;
-  border:none;
-  cursor:pointer;
-  padding:12px 0;
-  border-radius:14px;
-  font-weight:900;
-  letter-spacing:.6px;
-  text-transform:uppercase;
-  color:#081121;
-  background:linear-gradient(135deg, var(--neon-cyan), var(--neon-pink));
+/* нижняя часть карточки */
+.bp-card-footer{
+  padding: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+/* название награды */
+.bp-card-title{
+  font-weight: 900;
+  letter-spacing: .4px;
+}
+
+/* кнопка (пока просто стиль) */
+.bp-card-btn{
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: .4px;
+  background: rgba(120,160,255,.15);
+  border: 1px solid rgba(120,160,255,.35);
+  color: #e8efff;
+  user-select: none;
+}
+
+/* ===== BATTLE PASS — SOFT NEON ENHANCEMENTS ===== */
+
+/* линия с лёгким свечением */
+.bp-line{
+  background: linear-gradient(
+    180deg,
+    rgba(22,241,255,.35),
+    rgba(138,92,255,.35)
+  );
+  box-shadow: 0 0 8px rgba(22,241,255,.25);
+}
+
+/* базовый узел */
+.bp-node{
+  background: #0b1030;
+  border-color: rgba(22,241,255,.6);
+  box-shadow: 0 0 6px rgba(22,241,255,.35);
+}
+
+/* активный узел (пока просто стиль, без логики) */
+.bp-node.active{
+  border-color: var(--neon-cyan);
   box-shadow:
-    0 10px 26px rgba(22,241,255,.45),
-    0 0 28px rgba(138,92,255,.35);
+    0 0 10px rgba(22,241,255,.8),
+    0 0 18px rgba(22,241,255,.4);
 }
 
-.battlepass-btn.claimed{
-  background:linear-gradient(135deg,#666,#444);
-  color:#111;
-  box-shadow:none;
-  cursor:default;
+/* карточка — лёгкая глубина */
+.bp-card{
+  box-shadow:
+    0 10px 26px rgba(10,20,60,.45),
+    inset 0 0 18px rgba(22,241,255,.06);
 }
 
-.battlepass-card.claimed{
-  filter:grayscale(1) brightness(.7);
+/* мягкое свечение по краю карточки */
+.bp-card::before{
+  content:"";
+  position:absolute;
+  inset:-1px;
+  border-radius:16px;
+  background: linear-gradient(
+    135deg,
+    rgba(22,241,255,.25),
+    rgba(138,92,255,.25)
+  );
+  opacity:.35;
+  filter: blur(12px);
+  pointer-events:none;
 }
 
+/* кнопка — аккуратный неон */
+.bp-card-btn{
+  background: linear-gradient(
+    135deg,
+    rgba(22,241,255,.22),
+    rgba(138,92,255,.22)
+  );
+  border-color: rgba(22,241,255,.45);
+  box-shadow: 0 0 10px rgba(22,241,255,.25);
+}
+
+/* ===== BATTLE PASS — NODE STATES ===== */
+
+/* ПОЛУЧЕНО */
+.bp-node.done{
+  background: rgba(160,160,160,.35);
+  border-color: rgba(180,180,180,.55);
+  box-shadow: none;
+}
+
+/* АКТИВНЫЙ */
+.bp-node.active{
+  background: var(--neon-cyan);
+  border-color: var(--neon-cyan);
+  box-shadow:
+    0 0 10px rgba(22,241,255,.9),
+    0 0 20px rgba(22,241,255,.45);
+}
+
+/* БУДУЩИЙ */
+.bp-node.locked{
+  background: #0b1030;
+  border-color: rgba(120,140,180,.35);
+  box-shadow: none;
+}
+
+.bp-item.locked .bp-card{
+  opacity: .55;
+  filter: grayscale(.4);
+}
+
+.bp-item.done .bp-card{
+  opacity: .75;
+}
 
   </style>
 
@@ -5091,21 +5201,119 @@ function renderBattlePass(){
     <div class="contests-surface contests-page">
       <div class="contests-header">ПРОПУСК</div>
 
-      <div class="battlepass-list">
-        ${BATTLE_PASS_REWARDS.map(r => `
-          <div class="battlepass-card ${r.claimed ? 'claimed' : ''}">
-  <div class="battlepass-img">
-    ${r.img ? `<img src="${r.img}" alt="${r.title}">` : ``}
-  </div>
+      <div class="bp-timeline">
 
-  <div class="battlepass-footer">
-    <div class="battlepass-title">${r.title}</div>
-    <button class="battlepass-btn ${r.claimed ? 'claimed' : ''}">
-      ${r.claimed ? 'Получено' : 'Получить'}
-    </button>
-  </div>
-</div>
-        `).join('')}
+        <!-- ЭЛЕМЕНТ ПРОГРЕССА 1 -->
+        <div class="bp-item done">
+          <div class="bp-line-wrap">
+            <div class="bp-node done"></div>
+            <div class="bp-line"></div>
+          </div>
+
+          <div class="bp-card">
+            <div class="bp-card-img">КАРТИНКА</div>
+            <div class="bp-card-footer">
+              <div class="bp-card-title">Награда 1</div>
+              <div class="bp-card-btn">Получить</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ЭЛЕМЕНТ ПРОГРЕССА 2 -->
+        <div class="bp-item locked">
+          <div class="bp-line-wrap">
+            <div class="bp-node locked"></div>
+            <div class="bp-line"></div>
+          </div>
+
+          <div class="bp-card">
+            <div class="bp-card-img">КАРТИНКА</div>
+            <div class="bp-card-footer">
+              <div class="bp-card-title">Награда 2</div>
+              <div class="bp-card-btn">Получить</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ЭЛЕМЕНТ ПРОГРЕССА 3 -->
+        <div class="bp-item locked">
+          <div class="bp-line-wrap">
+            <div class="bp-node locked"></div>
+            <div class="bp-line"></div>
+          </div>
+
+          <div class="bp-card">
+            <div class="bp-card-img">КАРТИНКА</div>
+            <div class="bp-card-footer">
+              <div class="bp-card-title">Награда 3</div>
+              <div class="bp-card-btn">Получить</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ЭЛЕМЕНТ ПРОГРЕССА 4 -->
+        <div class="bp-item locked">
+          <div class="bp-line-wrap">
+            <div class="bp-node locked"></div>
+            <div class="bp-line"></div>
+          </div>
+
+          <div class="bp-card">
+            <div class="bp-card-img">КАРТИНКА</div>
+            <div class="bp-card-footer">
+              <div class="bp-card-title">Награда 4</div>
+              <div class="bp-card-btn">Получить</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ЭЛЕМЕНТ ПРОГРЕССА 5 -->
+        <div class="bp-item locked">
+          <div class="bp-line-wrap">
+            <div class="bp-node locked"></div>
+            <div class="bp-line"></div>
+          </div>
+
+          <div class="bp-card">
+            <div class="bp-card-img">КАРТИНКА</div>
+            <div class="bp-card-footer">
+              <div class="bp-card-title">Награда 5</div>
+              <div class="bp-card-btn">Получить</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ЭЛЕМЕНТ ПРОГРЕССА 6 -->
+       <div class="bp-item locked">
+          <div class="bp-line-wrap">
+           <div class="bp-node locked"></div>
+            <div class="bp-line"></div>
+          </div>
+
+          <div class="bp-card">
+            <div class="bp-card-img">КАРТИНКА</div>
+            <div class="bp-card-footer">
+              <div class="bp-card-title">Награда 6</div>
+              <div class="bp-card-btn">Получить</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ЭЛЕМЕНТ ПРОГРЕССА 7 -->
+        <div class="bp-item locked">
+          <div class="bp-line-wrap">
+            <div class="bp-node locked"></div>
+          </div>
+
+          <div class="bp-card">
+            <div class="bp-card-img">КАРТИНКА</div>
+            <div class="bp-card-footer">
+              <div class="bp-card-title">Награда 7</div>
+              <div class="bp-card-btn">Получить</div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   `;
@@ -6878,7 +7086,3 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
-
-
-
-
