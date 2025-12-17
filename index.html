@@ -1076,6 +1076,12 @@ html.scroll-locked, html.scroll-locked body{
 .contests-surface{
   position:relative;
   min-height:100svh;
+
+  overflow-x:hidden;
+  overflow-x:clip;
+  overscroll-behavior-x:none;
+  touch-action:pan-y;
+
   background:
     radial-gradient(60% 40% at 50% -10%, rgba(22,241,255,.06), transparent 60%),
     radial-gradient(60% 40% at 50% 110%, rgba(255,62,208,.05), transparent 60%),
