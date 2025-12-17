@@ -2270,7 +2270,7 @@ h2.section{
   position: relative; /* нужно для .bp-mainline */
 }
 
-/* одна цельная линия (строго от центра первой до центра последней точки) */
+/* светящаяся часть ДО первой точки */
 .bp-mainline{
   position: absolute;
   width: 2px;
@@ -2285,6 +2285,19 @@ h2.section{
     rgba(138,92,255,35)
   );
   box-shadow: 0 0 8px rgba(22,241,255,25);
+}
+
+/* тусклая часть ПОСЛЕ первой точки */
+.bp-mainline-dim{
+  position: absolute;
+  width: 2px;
+  border-radius: 999px;
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 1;
+
+  background: rgba(180,210,255,25);
+  box-shadow: none;
 }
 
 /* один элемент прогресса */
@@ -5211,10 +5224,11 @@ function syncBattlePassMainLine(){
   const tl = upgradesScreen?.querySelector?.('.bp-timeline');
   if (!tl) return;
 
-  const line  = tl.querySelector('.bp-mainline');
+  const lineGlow = tl.querySelector('.bp-mainline');
+  const lineDim  = tl.querySelector('.bp-mainline-dim');
   const wraps = Array.from(tl.querySelectorAll('.bp-line-wrap'));
   const nodes = Array.from(tl.querySelectorAll('.bp-node'));
-  if (!line || wraps.length < 2 || nodes.length < 2) return;
+  if (!lineGlow || !lineDim || wraps.length < 2 || nodes.length < 2) return;
 
   const tlRect = tl.getBoundingClientRect();
   const firstW = wraps[0].getBoundingClientRect();
@@ -5222,15 +5236,24 @@ function syncBattlePassMainLine(){
   const nodeSize = nodes[0]?.offsetHeight || 14;
   const r = nodeSize / 2;
 
-  const lastNodeRect = nodes[nodes.length - 1].getBoundingClientRect();
+  const firstNodeRect = nodes[0].getBoundingClientRect();
+  const lastNodeRect  = nodes[nodes.length - 1].getBoundingClientRect();
 
   const centerX = (firstW.left + firstW.width / 2) - tlRect.left;
-  const topY    = (firstW.top - tlRect.top) + r; // начало линии НЕ двигаем
-  const bottomY = (lastNodeRect.top + lastNodeRect.height / 2) - tlRect.top; // до центра последней точки
 
-  line.style.left   = `${centerX}px`;
-  line.style.top    = `${topY}px`;
-  line.style.height = `${Math.max(0, bottomY - topY)}px`;
+  const startY       = (firstW.top - tlRect.top) + r; // старт линии оставляем как был
+  const firstCenterY = (firstNodeRect.top + firstNodeRect.height / 2) - tlRect.top;
+  const lastCenterY  = (lastNodeRect.top  + lastNodeRect.height  / 2) - tlRect.top;
+
+  // светящаяся часть ДО первой точки
+  lineGlow.style.left   = `${centerX}px`;
+  lineGlow.style.top    = `${startY}px`;
+  lineGlow.style.height = `${Math.max(0, firstCenterY - startY)}px`;
+
+  // тусклая часть ПОСЛЕ первой точки
+  lineDim.style.left   = `${centerX}px`;
+  lineDim.style.top    = `${firstCenterY}px`;
+  lineDim.style.height = `${Math.max(0, lastCenterY - firstCenterY)}px`;
 }
 
 function renderBattlePass(){
@@ -5241,7 +5264,8 @@ function renderBattlePass(){
       <div class="contests-header">ПРОПУСК</div>
 
       <div class="bp-timeline">
-        <div class="bp-mainline"></div>
+  <div class="bp-mainline"></div>
+  <div class="bp-mainline-dim"></div>
 
         <!-- ЭЛЕМЕНТ ПРОГРЕССА 1 -->
         <div class="bp-item done">
