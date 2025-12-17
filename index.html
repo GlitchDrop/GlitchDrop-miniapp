@@ -2317,6 +2317,7 @@ h2.section{
 /* левая колонка (линия + точка) */
 .bp-line-wrap{
   position: relative;
+  width: 40px;
   display: flex;
   justify-content: center;
 }
@@ -2328,19 +2329,17 @@ h2.section{
 
 /* точка прогресса */
 .bp-node{
-  position:absolute;
-  left: 20px;                 /* ТОЧНО по центру линии */
-  bottom: 22px;               /* у нижнего края карточки */
-  transform: translateX(-50%);
+  position: absolute;
+  bottom: 22px;
 
   width: 14px;
   height: 14px;
-  border-radius:50%;
+  border-radius: 50%;
 
-  background:#0b1030;
-  border:2px solid rgba(180,210,255,.6);
+  background: #0b1030;
+  border: 2px solid rgba(180,210,255,.6);
 
-  z-index: 3;                 /* ВСЕГДА поверх линии */
+  z-index: 2;
 }
 
 /* карточка награды */
@@ -2405,12 +2404,19 @@ h2.section{
 
 /* линия с лёгким свечением */
 .bp-line{
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+
   background: linear-gradient(
     180deg,
-    rgba(22,241,255,.35),
-    rgba(138,92,255,.35)
+    rgba(22,241,255,.45),
+    rgba(138,92,255,.45)
   );
-  box-shadow: 0 0 8px rgba(22,241,255,.25);
+
+  box-shadow: 0 0 10px rgba(22,241,255,.35);
+  z-index: 1;
 }
 
 /* базовый узел */
@@ -2494,6 +2500,16 @@ h2.section{
 
 .bp-item.done .bp-card{
   opacity: .75;
+}
+
+/* первый элемент — линия начинается с точки */
+.bp-item:first-child .bp-line{
+  top: 22px;
+}
+
+/* последний элемент — линия заканчивается в точке */
+.bp-item:last-child .bp-line{
+  bottom: 22px;
 }
 
   </style>
@@ -5248,6 +5264,7 @@ function renderBattlePass(){
         <!-- ЭЛЕМЕНТ ПРОГРЕССА 1 -->
         <div class="bp-item done">
           <div class="bp-line-wrap">
+  <div class="bp-line"></div>
   <div class="bp-node"></div>
 </div>
 
@@ -5263,6 +5280,7 @@ function renderBattlePass(){
         <!-- ЭЛЕМЕНТ ПРОГРЕССА 2 -->
         <div class="bp-item locked">
           <div class="bp-line-wrap">
+  <div class="bp-line"></div>
   <div class="bp-node"></div>
 </div>
 
@@ -5278,6 +5296,7 @@ function renderBattlePass(){
         <!-- ЭЛЕМЕНТ ПРОГРЕССА 3 -->
         <div class="bp-item locked">
           <div class="bp-line-wrap">
+  <div class="bp-line"></div>
   <div class="bp-node"></div>
 </div>
 
@@ -5293,6 +5312,7 @@ function renderBattlePass(){
         <!-- ЭЛЕМЕНТ ПРОГРЕССА 4 -->
         <div class="bp-item locked">
           <div class="bp-line-wrap">
+  <div class="bp-line"></div>
   <div class="bp-node"></div>
 </div>
 
@@ -5308,6 +5328,7 @@ function renderBattlePass(){
         <!-- ЭЛЕМЕНТ ПРОГРЕССА 5 -->
         <div class="bp-item locked">
           <div class="bp-line-wrap">
+  <div class="bp-line"></div>
   <div class="bp-node"></div>
 </div>
 
@@ -5323,6 +5344,7 @@ function renderBattlePass(){
         <!-- ЭЛЕМЕНТ ПРОГРЕССА 6 -->
        <div class="bp-item locked">
           <div class="bp-line-wrap">
+  <div class="bp-line"></div>
   <div class="bp-node"></div>
 </div>
 
@@ -5338,6 +5360,7 @@ function renderBattlePass(){
         <!-- ЭЛЕМЕНТ ПРОГРЕССА 7 -->
         <div class="bp-item locked">
           <div class="bp-line-wrap">
+  <div class="bp-line"></div>
   <div class="bp-node"></div>
 </div>
 
