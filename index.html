@@ -2291,7 +2291,7 @@ h2.section{
 .bp-item{
   display: grid;
   grid-template-columns: 40px 1fr;
-  align-items: flex-start;
+  align-items: stretch;   /* тянем левую колонку до низа карточки */
   column-gap: 16px;
 }
 
@@ -2300,6 +2300,8 @@ h2.section{
   position: relative;
   display: flex;
   justify-content: center;
+  align-items: flex-end;  /* точка у нижнего края */
+  height: 100%;
 }
 
 /* старая сегментная линия — выключаем */
@@ -5209,16 +5211,20 @@ function syncBattlePassMainLine(){
   if (!tl) return;
 
   const line  = tl.querySelector('.bp-mainline');
+  const wraps = Array.from(tl.querySelectorAll('.bp-line-wrap'));
   const nodes = Array.from(tl.querySelectorAll('.bp-node'));
-  if (!line || nodes.length < 2) return;
+  if (!line || wraps.length < 2) return;
 
-  const tlRect    = tl.getBoundingClientRect();
-  const firstRect = nodes[0].getBoundingClientRect();
-  const lastRect  = nodes[nodes.length - 1].getBoundingClientRect();
+  const tlRect = tl.getBoundingClientRect();
+  const firstW = wraps[0].getBoundingClientRect();
+  const lastW  = wraps[wraps.length - 1].getBoundingClientRect();
 
-  const centerX = (firstRect.left + firstRect.width / 2) - tlRect.left;
-  const topY    = (firstRect.top  + firstRect.height / 2) - tlRect.top;
-  const bottomY = (lastRect.top   + lastRect.height / 2) - tlRect.top;
+  const nodeSize = nodes[0]?.offsetHeight || 14;
+  const r = nodeSize / 2;
+
+  const centerX = (firstW.left + firstW.width / 2) - tlRect.left;
+  const topY    = (firstW.top  - tlRect.top) + r;   // старт линии НЕ следует за опущенной точкой
+  const bottomY = (lastW.top   - tlRect.top) + r;
 
   line.style.left   = `${centerX}px`;
   line.style.top    = `${topY}px`;
