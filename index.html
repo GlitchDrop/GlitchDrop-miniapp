@@ -2268,11 +2268,31 @@ h2.section{
   gap: 28px;
 }
 
+/* общая линия прогресса */
+.bp-timeline{
+  position: relative;
+}
+
+.bp-timeline::before{
+  content:"";
+  position:absolute;
+  top: 0;
+  bottom: 0;
+  left: 20px; /* позиция линии */
+  width: 2px;
+  background: linear-gradient(
+    180deg,
+    rgba(22,241,255,.45),
+    rgba(138,92,255,.45)
+  );
+  box-shadow: 0 0 10px rgba(22,241,255,.35);
+}
+
 /* один элемент прогресса */
 .bp-item{
+  position: relative;
   display: grid;
   grid-template-columns: 40px 1fr;
-  align-items: flex-start;
   column-gap: 16px;
 }
 
@@ -2283,15 +2303,6 @@ h2.section{
   justify-content: center;
 }
 
-/* вертикальная линия */
-.bp-line{
-  position: absolute;
-  top: 20px;
-  bottom: -28px;
-  width: 2px;
-  background: rgba(180,210,255,.25);
-}
-
 /* последнему элементу линия не нужна */
 .bp-item:last-child .bp-line{
   display: none;
@@ -2299,12 +2310,15 @@ h2.section{
 
 /* точка прогресса */
 .bp-node{
+  position: absolute;
+  left: 13px;          /* центрируем на линии */
+  bottom: 22px;        /* ПРИЖИМАЕМ К НИЗУ КАРТОЧКИ */
   width: 14px;
   height: 14px;
   border-radius: 50%;
   background: #0b1030;
   border: 2px solid rgba(180,210,255,.6);
-  z-index: 2;
+  z-index: 3;
 }
 
 /* карточка награды */
@@ -2317,6 +2331,10 @@ h2.section{
     rgba(10,14,34,.9)
   );
   overflow: hidden;
+}
+
+.bp-card{
+  margin-left: 8px;
 }
 
 /* область картинки */
