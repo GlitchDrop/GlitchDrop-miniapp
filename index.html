@@ -2314,9 +2314,10 @@ h2.section{
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: #0b1030;
+  background: #0b1030;          /* непрозрачная заливка */
   border: 2px solid rgba(180,210,255,6);
-  z-index: 2;
+  transform: translateY(-9px);  /* подняли точки на ~9px */
+  z-index: 3;                   /* точки поверх линии */
 }
 
 /* карточка награды */
@@ -2438,8 +2439,8 @@ h2.section{
 
 /* ПОЛУЧЕНО */
 .bp-node.done{
-  background: rgba(160,160,160,.35);
-  border-color: rgba(180,180,180,.55);
+  background: #a0a0a0;              /* непрозрачно */
+  border-color: rgba(180,180,180,55);
   box-shadow: none;
 }
 
@@ -5213,18 +5214,19 @@ function syncBattlePassMainLine(){
   const line  = tl.querySelector('.bp-mainline');
   const wraps = Array.from(tl.querySelectorAll('.bp-line-wrap'));
   const nodes = Array.from(tl.querySelectorAll('.bp-node'));
-  if (!line || wraps.length < 2) return;
+  if (!line || wraps.length < 2 || nodes.length < 2) return;
 
   const tlRect = tl.getBoundingClientRect();
   const firstW = wraps[0].getBoundingClientRect();
-  const lastW  = wraps[wraps.length - 1].getBoundingClientRect();
 
   const nodeSize = nodes[0]?.offsetHeight || 14;
   const r = nodeSize / 2;
 
+  const lastNodeRect = nodes[nodes.length - 1].getBoundingClientRect();
+
   const centerX = (firstW.left + firstW.width / 2) - tlRect.left;
-  const topY    = (firstW.top  - tlRect.top) + r;   // старт линии НЕ следует за опущенной точкой
-  const bottomY = (lastW.top   - tlRect.top) + r;
+  const topY    = (firstW.top - tlRect.top) + r; // начало линии НЕ двигаем
+  const bottomY = (lastNodeRect.top + lastNodeRect.height / 2) - tlRect.top; // до центра последней точки
 
   line.style.left   = `${centerX}px`;
   line.style.top    = `${topY}px`;
