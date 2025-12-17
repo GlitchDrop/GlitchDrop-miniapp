@@ -2288,6 +2288,24 @@ h2.section{
   box-shadow: 0 0 10px rgba(22,241,255,.35);
 }
 
+/* ОДНА ЦЕЛЬНАЯ ЛИНИЯ ПРОГРЕССА */
+.bp-main-line{
+  position:absolute;
+  left: 20px;                 /* центр линии совпадает с центром точек */
+  top: 0;                     /* НАЧАЛО — верх первой карточки */
+  bottom: 22px;               /* КОНЕЦ — центр последней точки */
+  width: 2px;
+
+  background: linear-gradient(
+    180deg,
+    rgba(22,241,255,.45),
+    rgba(138,92,255,.45)
+  );
+
+  box-shadow: 0 0 10px rgba(22,241,255,.35);
+  z-index: 1;
+}
+
 /* один элемент прогресса */
 .bp-item{
   position: relative;
@@ -2310,15 +2328,19 @@ h2.section{
 
 /* точка прогресса */
 .bp-node{
-  position: absolute;
-  left: 13px;          /* центрируем на линии */
-  bottom: 22px;        /* ПРИЖИМАЕМ К НИЗУ КАРТОЧКИ */
+  position:absolute;
+  left: 20px;                 /* ТОЧНО по центру линии */
+  bottom: 22px;               /* у нижнего края карточки */
+  transform: translateX(-50%);
+
   width: 14px;
   height: 14px;
-  border-radius: 50%;
-  background: #0b1030;
-  border: 2px solid rgba(180,210,255,.6);
-  z-index: 3;
+  border-radius:50%;
+
+  background:#0b1030;
+  border:2px solid rgba(180,210,255,.6);
+
+  z-index: 3;                 /* ВСЕГДА поверх линии */
 }
 
 /* карточка награды */
@@ -5221,12 +5243,13 @@ function renderBattlePass(){
 
       <div class="bp-timeline">
 
+      <div class="bp-main-line"></div>
+
         <!-- ЭЛЕМЕНТ ПРОГРЕССА 1 -->
         <div class="bp-item done">
           <div class="bp-line-wrap">
-            <div class="bp-node done"></div>
-            <div class="bp-line"></div>
-          </div>
+  <div class="bp-node"></div>
+</div>
 
           <div class="bp-card">
             <div class="bp-card-img">КАРТИНКА</div>
@@ -5240,9 +5263,8 @@ function renderBattlePass(){
         <!-- ЭЛЕМЕНТ ПРОГРЕССА 2 -->
         <div class="bp-item locked">
           <div class="bp-line-wrap">
-            <div class="bp-node locked"></div>
-            <div class="bp-line"></div>
-          </div>
+  <div class="bp-node"></div>
+</div>
 
           <div class="bp-card">
             <div class="bp-card-img">КАРТИНКА</div>
@@ -5256,9 +5278,8 @@ function renderBattlePass(){
         <!-- ЭЛЕМЕНТ ПРОГРЕССА 3 -->
         <div class="bp-item locked">
           <div class="bp-line-wrap">
-            <div class="bp-node locked"></div>
-            <div class="bp-line"></div>
-          </div>
+  <div class="bp-node"></div>
+</div>
 
           <div class="bp-card">
             <div class="bp-card-img">КАРТИНКА</div>
@@ -5272,9 +5293,8 @@ function renderBattlePass(){
         <!-- ЭЛЕМЕНТ ПРОГРЕССА 4 -->
         <div class="bp-item locked">
           <div class="bp-line-wrap">
-            <div class="bp-node locked"></div>
-            <div class="bp-line"></div>
-          </div>
+  <div class="bp-node"></div>
+</div>
 
           <div class="bp-card">
             <div class="bp-card-img">КАРТИНКА</div>
@@ -5288,9 +5308,8 @@ function renderBattlePass(){
         <!-- ЭЛЕМЕНТ ПРОГРЕССА 5 -->
         <div class="bp-item locked">
           <div class="bp-line-wrap">
-            <div class="bp-node locked"></div>
-            <div class="bp-line"></div>
-          </div>
+  <div class="bp-node"></div>
+</div>
 
           <div class="bp-card">
             <div class="bp-card-img">КАРТИНКА</div>
@@ -5304,9 +5323,8 @@ function renderBattlePass(){
         <!-- ЭЛЕМЕНТ ПРОГРЕССА 6 -->
        <div class="bp-item locked">
           <div class="bp-line-wrap">
-           <div class="bp-node locked"></div>
-            <div class="bp-line"></div>
-          </div>
+  <div class="bp-node"></div>
+</div>
 
           <div class="bp-card">
             <div class="bp-card-img">КАРТИНКА</div>
@@ -5320,8 +5338,8 @@ function renderBattlePass(){
         <!-- ЭЛЕМЕНТ ПРОГРЕССА 7 -->
         <div class="bp-item locked">
           <div class="bp-line-wrap">
-            <div class="bp-node locked"></div>
-          </div>
+  <div class="bp-node"></div>
+</div>
 
           <div class="bp-card">
             <div class="bp-card-img">КАРТИНКА</div>
