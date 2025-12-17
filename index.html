@@ -2311,15 +2311,15 @@ h2.section{
   position: relative;
   display: grid;
   grid-template-columns: 40px 1fr;
-  column-gap: 16px;
 }
 
 /* левая колонка (линия + точка) */
 .bp-line-wrap{
-  position: relative;
-  width: 40px;
-  display: flex;
-  justify-content: center;
+  position: absolute;
+  left: 20px;          /* ось линии и точек */
+  top: 0;
+  bottom: 0;
+  width: 0;
 }
 
 /* последнему элементу линия не нужна */
@@ -2330,7 +2330,9 @@ h2.section{
 /* точка прогресса */
 .bp-node{
   position: absolute;
+  left: 20px;
   bottom: 22px;
+  transform: translateX(-50%);
 
   width: 14px;
   height: 14px;
