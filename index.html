@@ -2358,11 +2358,17 @@ h2.section{
     radial-gradient(120px 80px at 20% 20%, rgba(22,241,255,.08), transparent 60%),
     radial-gradient(120px 80px at 80% 80%, rgba(138,92,255,.08), transparent 60%),
     linear-gradient(180deg,#0b1030,#0a1028);
-  display: grid;
-  place-items: center;
-  color: #9fb2d9;
-  font-size: 12px;
-  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.bp-card-img img{
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+  display: block;
 }
 
 /* нижняя часть карточки */
@@ -5291,14 +5297,15 @@ function renderBattlePass(){
           </div>
 
           <div class="bp-card">
-  <div class="bp-card-img">
-    <img src="assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png" alt="">
-  </div>
-  <div class="bp-card-footer">
-    <div class="bp-card-title">Награда 1</div>
-    <div class="bp-card-btn">Получить</div>
-  </div>
-</div>
+            <div class="bp-card-img">
+              <img src="assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png" alt="">
+            </div>
+            <div class="bp-card-footer">
+              <div class="bp-card-title">Награда 1</div>
+              <div class="bp-card-btn">Получить</div>
+            </div>
+          </div>
+        </div>
 
         <!-- ЭЛЕМЕНТ ПРОГРЕССА 2 -->
         <div class="bp-item locked">
@@ -5308,14 +5315,15 @@ function renderBattlePass(){
           </div>
 
           <div class="bp-card">
-  <div class="bp-card-img">
-    <img src="assets/images/20251003_1621_Прозрачный фон_remix_01k6n3p2hwf4fbk1r0rqbvdc5d.png" alt="">
-  </div>
-  <div class="bp-card-footer">
-    <div class="bp-card-title">Награда 1</div>
-    <div class="bp-card-btn">Получить</div>
-  </div>
-</div>
+            <div class="bp-card-img">
+              <img src="assets/images/20251003_1621_Прозрачный фон_remix_01k6n3p2hwf4fbk1r0rqbvdc5d.png" alt="">
+            </div>
+            <div class="bp-card-footer">
+              <div class="bp-card-title">Награда 2</div>
+              <div class="bp-card-btn">Получить</div>
+            </div>
+          </div>
+        </div>
 
         <!-- ЭЛЕМЕНТ ПРОГРЕССА 3 -->
         <div class="bp-item locked">
@@ -5325,14 +5333,15 @@ function renderBattlePass(){
           </div>
 
           <div class="bp-card">
-  <div class="bp-card-img">
-    <img src="assets/images/Untitled (70).png" alt="">
-  </div>
-  <div class="bp-card-footer">
-    <div class="bp-card-title">Награда 1</div>
-    <div class="bp-card-btn">Получить</div>
-  </div>
-</div>
+            <div class="bp-card-img">
+              <img src="assets/images/Untitled (70).png" alt="">
+            </div>
+            <div class="bp-card-footer">
+              <div class="bp-card-title">Награда 3</div>
+              <div class="bp-card-btn">Получить</div>
+            </div>
+          </div>
+        </div>
 
         <!-- ЭЛЕМЕНТ ПРОГРЕССА 4 -->
         <div class="bp-item locked">
@@ -5342,14 +5351,15 @@ function renderBattlePass(){
           </div>
 
           <div class="bp-card">
-  <div class="bp-card-img">
-    <img src="КАРТИНКА" alt="">
-  </div>
-  <div class="bp-card-footer">
-    <div class="bp-card-title">Награда 1</div>
-    <div class="bp-card-btn">Получить</div>
-  </div>
-</div>
+            <div class="bp-card-img">
+              <img src="КАРТИНКА" alt="">
+            </div>
+            <div class="bp-card-footer">
+              <div class="bp-card-title">Награда 4</div>
+              <div class="bp-card-btn">Получить</div>
+            </div>
+          </div>
+        </div>
 
         <!-- ЭЛЕМЕНТ ПРОГРЕССА 5 -->
         <div class="bp-item locked">
@@ -5359,14 +5369,15 @@ function renderBattlePass(){
           </div>
 
           <div class="bp-card">
-  <div class="bp-card-img">
-    <img src="КАРТИНКА" alt="">
-  </div>
-  <div class="bp-card-footer">
-    <div class="bp-card-title">Награда 1</div>
-    <div class="bp-card-btn">Получить</div>
-  </div>
-</div>
+            <div class="bp-card-img">
+              <img src="КАРТИНКА" alt="">
+            </div>
+            <div class="bp-card-footer">
+              <div class="bp-card-title">Награда 5</div>
+              <div class="bp-card-btn">Получить</div>
+            </div>
+          </div>
+        </div>
 
         <!-- ЭЛЕМЕНТ ПРОГРЕССА 6 -->
        <div class="bp-item locked">
@@ -5376,34 +5387,38 @@ function renderBattlePass(){
           </div>
 
           <div class="bp-card">
-  <div class="bp-card-img">
-    <img src="КАРТИНКА" alt="">
-  </div>
-  <div class="bp-card-footer">
-    <div class="bp-card-title">Награда 1</div>
-    <div class="bp-card-btn">Получить</div>
-  </div>
-</div>
+            <div class="bp-card-img">
+              <img src="КАРТИНКА" alt="">
+            </div>
+            <div class="bp-card-footer">
+              <div class="bp-card-title">Награда 6</div>
+              <div class="bp-card-btn">Получить</div>
+            </div>
+          </div>
+        </div>
 
         <!-- ЭЛЕМЕНТ ПРОГРЕССА 7 -->
         <div class="bp-item locked">
           <div class="bp-line-wrap">
             <div class="bp-node locked"></div>
+            <div class="bp-line"></div>
           </div>
 
           <div class="bp-card">
-  <div class="bp-card-img">
-    <img src="КАРТИНКА" alt="">
-  </div>
-  <div class="bp-card-footer">
-    <div class="bp-card-title">Награда 1</div>
-    <div class="bp-card-btn">Получить</div>
-  </div>
-</div>
+            <div class="bp-card-img">
+              <img src="КАРТИНКА" alt="">
+            </div>
+            <div class="bp-card-footer">
+              <div class="bp-card-title">Награда 7</div>
+              <div class="bp-card-btn">Получить</div>
+            </div>
+          </div>
+        </div>
 
       </div>
     </div>
   `;
+
 
   // одна цельная линия строго от центра первой до центра последней точки
   requestAnimationFrame(syncBattlePassMainLine);
