@@ -2276,7 +2276,7 @@ h2.section{
   position: relative; /* нужно для .bp-mainline */
 }
 
-/* светящаяся часть ДО первой точки */
+/* линия прогресса (светящаяся часть) */
 .bp-mainline{
   position: absolute;
   width: 2px;
@@ -2291,16 +2291,19 @@ h2.section{
     rgba(138,92,255,35)
   );
   box-shadow: 0 0 8px rgba(22,241,255,25);
+
+  transition: height .75s cubic-bezier(.2,.9,.2,1);
+  will-change: height;
 }
 
-/* тусклая часть ПОСЛЕ первой точки */
+/* тусклая база линии (под светящейся) */
 .bp-mainline-dim{
   position: absolute;
   width: 2px;
   border-radius: 999px;
   transform: translateX(-50%);
   pointer-events: none;
-  z-index: 1;
+  z-index: 0;
 
   background: #0b1030;   /* как центр точек (кроме 1-й) */
   box-shadow: none;
@@ -2495,6 +2498,16 @@ h2.section{
 
 .bp-item.done .bp-card{
   opacity: .75;
+}
+
+.bp-item:first-child .bp-card{
+  opacity: 1;
+  filter: none;
+  border-color: rgba(22,241,255,45);
+  box-shadow:
+    0 10px 26px rgba(10,20,60,45),
+    inset 0 0 18px rgba(22,241,255,12),
+    0 0 16px rgba(22,241,255,18);
 }
 
 /* 1-я награда — “доступная”, светлее остальных */
@@ -5261,24 +5274,26 @@ function syncBattlePassMainLine(){
   const nodeSize = nodes[0]?.offsetHeight || 14;
   const r = nodeSize / 2;
 
-  const firstNodeRect = nodes[0].getBoundingClientRect();
   const lastNodeRect  = nodes[nodes.length - 1].getBoundingClientRect();
 
   const centerX = (firstW.left + firstW.width / 2) - tlRect.left;
 
-  const startY       = (firstW.top - tlRect.top) + r; // старт линии оставляем как был
-  const firstCenterY = (firstNodeRect.top + firstNodeRect.height / 2) - tlRect.top;
-  const lastCenterY  = (lastNodeRect.top  + lastNodeRect.height  / 2) - tlRect.top;
+  const startY      = (firstW.top - tlRect.top) + r; // старт линии оставляем как был
+  const lastCenterY = (lastNodeRect.top  + lastNodeRect.height  / 2) - tlRect.top;
 
-  // светящаяся часть ДО первой точки
+  const idx = Math.max(0, Math.min((window.__bpProgressIndex ?? 0), nodes.length - 1));
+  const curRect = nodes[idx].getBoundingClientRect();
+  const curCenterY = (curRect.top + curRect.height / 2) - tlRect.top;
+
+  // тусклая линия: от старта до последней точки (всегда)
+  lineDim.style.left   = `${centerX}px`;
+  lineDim.style.top    = `${startY}px`;
+  lineDim.style.height = `${Math.max(0, lastCenterY - startY)}px`;
+
+  // светящаяся линия прогресса: от старта до текущей точки (анимируется)
   lineGlow.style.left   = `${centerX}px`;
   lineGlow.style.top    = `${startY}px`;
-  lineGlow.style.height = `${Math.max(0, firstCenterY - startY)}px`;
-
-  // тусклая часть ПОСЛЕ первой точки
-  lineDim.style.left   = `${centerX}px`;
-  lineDim.style.top    = `${firstCenterY}px`;
-  lineDim.style.height = `${Math.max(0, lastCenterY - firstCenterY)}px`;
+  lineGlow.style.height = `${Math.max(0, curCenterY - startY)}px`;
 }
 
 function renderBattlePass(){
@@ -5423,13 +5438,39 @@ function renderBattlePass(){
   `;
 
 
-  // одна цельная линия строго от центра первой до центра последней точки
+  // старт прогресса: 1-я точка
+  window.__bpProgressIndex = 0;
+
+  // линия: тусклая до конца + светящаяся до текущей точки
   requestAnimationFrame(syncBattlePassMainLine);
   setTimeout(syncBattlePassMainLine, 60);
 
   if (!window.__bpMainLineResizeBound){
     window.__bpMainLineResizeBound = true;
     window.addEventListener('resize', ()=> requestAnimationFrame(syncBattlePassMainLine));
+  }
+
+  if (!window.__bpMainLineClickBound){
+    window.__bpMainLineClickBound = true;
+
+    document.addEventListener('click', (e)=>{
+      const btn = e.target.closest?.('.bp-card-btn');
+      if (!btn) return;
+      if (!upgradesScreen?.contains(btn)) return;
+
+      const tl = upgradesScreen.querySelector('.bp-timeline');
+      const nodes = Array.from(tl?.querySelectorAll?.('.bp-node') || []);
+      if (nodes.length < 2) return;
+
+      const max = nodes.length - 1;
+      const cur = window.__bpProgressIndex ?? 0;
+      if (cur >= max) return; // на награде 7 — ничего не происходит
+
+      window.__bpProgressIndex = Math.min(max, cur + 1);
+
+      requestAnimationFrame(syncBattlePassMainLine);
+      setTimeout(syncBattlePassMainLine, 40);
+    }, true);
   }
 }
 
@@ -7200,6 +7241,3 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
-
-
-
