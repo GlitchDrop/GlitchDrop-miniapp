@@ -515,29 +515,24 @@ html:not(.in-telegram) .card .price-bar{
 
 .tabbar{
   position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
   z-index: 80;
 
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 0;
 
-  padding: 10px 14px;
-  padding-bottom: calc(env(safe-area-inset-bottom) + 10px);
+  padding: 14px 18px;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 14px);
 
-  background: linear-gradient(
-    180deg,
-    rgba(6,10,26,.95),
-    rgba(4,8,20,.98)
-  );
-  border-top: 1px solid rgba(120,180,255,.22);
-  border-radius: 0;
+  background:#050505;
+  border-radius: 999px;
+  border:none;
 
-  backdrop-filter: blur(12px);
   box-shadow:
-    0 -12px 40px rgba(0,0,0,.55);
+    0 14px 40px rgba(0,0,0,.55);
 }
 
 .tab{
@@ -547,10 +542,10 @@ html:not(.in-telegram) .card .price-bar{
   align-items:center;
   justify-content:center;
 
-  gap: 4px;
-  padding: 8px 2px;
+  gap: 6px;
+  padding: 10px 0;
 
-  border-radius: 14px;
+  border-radius: 999px;
   background: transparent;
 
   color: #9fb2d9;
@@ -560,10 +555,6 @@ html:not(.in-telegram) .card .price-bar{
   line-height: 1.05;
 
   cursor:pointer;
-  transition:
-    transform .16s ease,
-    color .16s ease,
-    background .2s ease;
 }
 
 .tab:hover{
@@ -604,13 +595,18 @@ html:not(.in-telegram) .card .price-bar{
 
 /* активная вкладка — мягкий неоновый ореол без жёстких границ */
 .tab.active{
-  color:#081121;
-  background: linear-gradient(135deg, var(--neon-cyan), var(--neon-pink));
-  transform: translateY(-14px) scale(1.15);
-  border-radius: 18px;
+  color:#000;
+  background:#f5f5f5;
+
+  width:64px;
+  height:64px;
+  margin:0 auto;
+
+  border-radius:999px;
+  transform: translateY(-22px);
+
   box-shadow:
-    0 10px 30px rgba(22,241,255,.45),
-    0 0 36px rgba(138,92,255,.55);
+    0 10px 26px rgba(0,0,0,.35);
 }
 
 .tab.active .ico{
@@ -7206,3 +7202,6 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
+
+
+
