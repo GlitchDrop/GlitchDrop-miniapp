@@ -206,11 +206,17 @@ GD.ensureUid8 = function (tgId) {
       position:sticky; top:0; z-index:30;
       display:flex; align-items:center; gap:12px;
       padding:12px 14px;
+
+      margin: 10px 10px 0;
+      border-radius: 28px;
+
       background:linear-gradient(180deg,rgba(8,14,36,.72),rgba(6,10,26,.62));
-      border-bottom:1px solid var(--border);
+      border:1px solid var(--border);
+
       backdrop-filter:blur(10px);
       box-shadow:var(--shadow-soft);
     }
+
     .avatar{ width:42px; height:42px; border-radius:50%; border:2px solid rgba(22,241,255,.55); box-shadow:0 0 18px rgba(22,241,255,.28), 0 0 28px rgba(255,62,208,.18); object-fit:cover; background:linear-gradient(135deg, rgba(22,241,255,.15), rgba(255,62,208,.15)); }
     .avatar.hidden{ display:none; }
     .avatar-fallback{ width:42px; height:42px; border-radius:12px; display:grid; place-items:center; background:linear-gradient(135deg, rgba(22,241,255,.18), rgba(255,62,208,.18)); border:1px solid var(--border); font-weight:900; letter-spacing:.5px; color:#081121; text-shadow:0 0 12px rgba(22,241,255,.7); }
@@ -237,17 +243,24 @@ GD.ensureUid8 = function (tgId) {
 
 .chipbar{
   position:sticky;
-  top: var(--topbar-h, 64px);
+  top: calc(var(--topbar-h, 64px) + 10px);
   z-index:25;
 
   display:flex;
+  align-items:center;
   gap:10px;
-  padding:10px 14px 6px;
+  padding:10px 12px;
   overflow-x:auto;
 
-  background:transparent;
-  border-bottom:none;
-  backdrop-filter:none;
+  margin: 10px 10px 0;
+  border-radius: 999px;
+
+  background: linear-gradient(180deg, rgba(10,14,32,.80), rgba(7,9,20,.86));
+  border: 1px solid rgba(140,170,255,.20);
+  backdrop-filter: blur(12px) saturate(1.2);
+  box-shadow:
+    0 12px 30px rgba(0,0,0,.45),
+    inset 0 0 16px rgba(59,232,255,.06);
 }
 
 .chipbar::-webkit-scrollbar{display:none}
@@ -310,16 +323,22 @@ GD.ensureUid8 = function (tgId) {
   padding-bottom: max(var(--tabbar-h,84px), env(safe-area-inset-bottom) + 16px);
 }
 
-/* ====== CARD кейса (обновлённый) ====== */
+/* ====== CARD кейса (шаблон: квадрат + большие скругления) ====== */
 .card{
   position:relative;
-  padding:10px;
-  gap:8px;
+  display:flex;
+  flex-direction:column;
+
+  padding:12px;
+  gap:10px;
   overflow:hidden;
   cursor:pointer;
-  border-radius:var(--radius);
-  border:1px solid rgba(140,170,255,.2);
-  background:linear-gradient(180deg, rgba(12,16,40,.9), rgba(9,12,30,.95));
+
+  aspect-ratio: 1 / 1;
+  border-radius:32px;
+
+  border:1px solid rgba(140,170,255,.20);
+  background:linear-gradient(180deg, rgba(12,16,40,.92), rgba(9,12,30,.96));
   box-shadow:var(--shadow-strong);
 
   transform:translateY(0) scale(1);
@@ -366,16 +385,23 @@ GD.ensureUid8 = function (tgId) {
   display:flex;
   flex-direction:column;
   gap:8px;
+
+  flex:1 1 auto;
+  min-height:0;
 }
 
 .thumb{
-  height:150px;
-  border-radius:16px;
-  border:1px dashed rgba(180,210,255,0.35);
+  flex:1 1 auto;
+  min-height:0;
+
+  border-radius:28px;
+  border:1px solid rgba(140,170,255,0.22);
+
   background:
     radial-gradient(120px 90px at 15% 15%, rgba(22,241,255,.10), transparent 60%),
     radial-gradient(120px 90px at 85% 85%, rgba(138,92,255,.12), transparent 60%),
     linear-gradient(180deg,#070b1d,#050815);
+
   display:grid;
   place-items:center;
   color:#a9c2ff;
@@ -522,7 +548,10 @@ html:not(.in-telegram) .card .price-bar{
   grid-template-columns: repeat(5, 1fr);
   gap: 4px;
 
-  padding: 7px 8px;
+  align-items: end;
+  overflow: visible;
+
+  padding: 14px 8px 7px;
   padding-bottom: calc(env(safe-area-inset-bottom) + 7px);
 
   background: linear-gradient(180deg, rgba(10,14,32,.88), rgba(7,9,20,.92));
@@ -567,8 +596,7 @@ html:not(.in-telegram) .card .price-bar{
   color: #dbe6ff;
 }
 
-/* контейнер под иконку — оставим не очень большим,
-   чтобы он не тянул высоту таббара */
+/* контейнер под иконку */
 .ico{
   width: 34px;
   height: 34px;
@@ -579,7 +607,6 @@ html:not(.in-telegram) .card .price-bar{
   overflow: visible;
   border-radius: 12px;
 }
-
 
 /* реальный размер картинки маленький, а визуально увеличиваем scale-ом */
 .ico img{
@@ -597,7 +624,7 @@ html:not(.in-telegram) .card .price-bar{
     filter .18s ease;
 }
 
-/* активная вкладка — мягкий неоновый ореол без жёстких границ */
+/* активная вкладка — оставляем неон/набухание */
 .tab.active{
   color: #eaf1ff;
   background: linear-gradient(180deg, rgba(59,232,255,.10), rgba(138,92,255,.12));
@@ -624,7 +651,7 @@ html:not(.in-telegram) .card .price-bar{
 .tab.active::after{
   content:"";
   position:absolute;
-  bottom: -2px;            /* было 4px — опускаем ниже текста */
+  bottom: -2px;
   left:50%;
   width: 18px;
   height: 4px;
@@ -634,13 +661,33 @@ html:not(.in-telegram) .card .price-bar{
   box-shadow: 0 0 10px rgba(59,232,255,.9);
 }
 
-
-/* лёгкий glow при наведении — мягкий, без рамки */
+/* лёгкий glow при наведении */
 .tab:hover .ico img{
   transform: translateY(0.5px) scale(1.7);
   filter:
     drop-shadow(0 0 10px rgba(59,232,255,.9))
     drop-shadow(0 0 14px rgba(138,92,255,.8));
+}
+
+/* центральная кнопка (3-я вкладка) — больше и выступает вверх */
+.tabbar .tab:nth-child(3){
+  transform: translateY(-18px);
+}
+.tabbar .tab:nth-child(3).active{
+  transform: translateY(-18px); /* не даём .tab.active перезаписать */
+}
+.tabbar .tab:nth-child(3):hover{
+  transform: translateY(-19px);
+}
+
+.tabbar .tab:nth-child(3) .ico{
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+}
+
+.tabbar .tab:nth-child(3) .ico img{
+  transform: translateY(0) scale(2.05);
 }
 
     .backtop{
@@ -1035,18 +1082,15 @@ html.scroll-locked, html.scroll-locked body{
   .grid{ grid-template-columns: repeat(4, minmax(0,1fr)); } /* десктоп */
 }
 
-/* ===== ПРЕВЬЮ В КАРТОЧКЕ — фиксированная высота/пропорции ===== */
+/* ===== ПРЕВЬЮ В КАРТОЧКЕ — без фикс-высоты (квадрат как в шаблоне) ===== */
 .card .thumb{
-  /* вариант 1: фикс по высоте (как было) */
-  height: 160px !important;
-
-  /* вариант 2: если хочешь пропорции вместо фикс. высоты — раскомментируй: */
-  /* aspect-ratio: 16 / 9; height: auto !important; */
+  height: auto !important;
+  flex: 1 1 auto;
 }
 .card .thumb img{
   width: 100%;
   height: 100%;
-  object-fit: cover;   /* картинка заполняет рамку, не тянется по высоте */
+  object-fit: cover;
   display: block;
 }
 
@@ -1255,32 +1299,45 @@ html.scroll-locked, html.scroll-locked body{
 }
 
 /* === ПЛЮС-КАПСУЛА В ТОПБАРЕ === */
+.topbar-actions{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:6px 8px;
+  border-radius:999px;
+
+  /* плашка В НАШЕМ стиле (не чёрная) */
+  background:linear-gradient(135deg, rgba(22,241,255,.10), rgba(138,92,255,.12));
+  border:1px solid rgba(140,170,255,.22);
+  box-shadow:
+    inset 0 0 18px rgba(22,241,255,.10),
+    0 10px 26px rgba(0,0,0,.25);
+}
+
 .plus-wrap{ position: relative; display: flex; align-items: center; }
 
-.pill-plus{
-  appearance:none; cursor:pointer; border:none; outline:none;
-  width:42px; height:42px; border-radius:999px;  /* круглая капсула */
+.topbar-actions .pill-plus{
+  appearance:none; cursor:pointer; outline:none;
+  width:44px; height:44px; border-radius:999px;
   display:grid; place-items:center; flex:0 0 auto;
-  margin-right: 10px;  /* небольшой отступ от глитч-токена */
+  margin-right: 0;
 
-  /* капсула в стиле токенов */
-  background:linear-gradient(135deg, rgba(22,241,255,.12), rgba(138,92,255,.14));
-  border:1px solid var(--border);
+  /* белая капсула */
+  background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(240,245,255,.94));
+  border:1px solid rgba(140,170,255,.35);
   box-shadow:
-    inset 0 0 18px rgba(22,241,255,.12),
-    0 8px 22px rgba(10,20,60,.25);
+    inset 0 0 12px rgba(255,255,255,.65),
+    0 10px 26px rgba(0,0,0,.35);
   transition: transform .15s ease, box-shadow .2s ease, border-color .2s ease;
 }
-.pill-plus:hover{ transform: translateY(-1px); box-shadow: 0 10px 26px rgba(22,241,255,.22); }
-.pill-plus:active{ transform: translateY(0); }
-.pill-plus:focus-visible{ outline:2px solid var(--neon-cyan); outline-offset:2px; }
+.topbar-actions .pill-plus:hover{ transform: translateY(-1px); box-shadow: 0 12px 30px rgba(0,0,0,.45); }
+.topbar-actions .pill-plus:active{ transform: translateY(0); }
+.topbar-actions .pill-plus:focus-visible{ outline:2px solid var(--neon-cyan); outline-offset:2px; }
 
-.plus-ico{
-  font-weight:900; font-size:22px; line-height:1;
-  color:#cfe6ff;
-  text-shadow:
-    0 0 12px rgba(22,241,255,.55),
-    0 0 12px rgba(255,62,208,.35);
+.topbar-actions .plus-ico{
+  font-weight:900; font-size:24px; line-height:1;
+  color:#081121;
+  text-shadow:none;
   transform: translateY(-1px);
 }
 
@@ -1597,95 +1654,20 @@ html.scroll-locked, html.scroll-locked body{
   z-index: 130;
 }
 
-/* === TOPBAR PILLS — выше, уже; плюс — кругом; сдвиг влево === */
+/* === TOPBAR PILLS — шаблон (плашка + белые капсулы) === */
 :root{
-  --topbar-pill-w: 88px;   /* уже по ширине */
-  --topbar-pill-h: 40px;   /* выше по вертикали */
+  --topbar-pill-h: 44px;
 }
 
-/* Чуть уменьшаем правую «кромку» и зазоры — группа уйдёт левее */
 .topbar{
-  padding: 10px 8px;   /* было больше справа — теперь компактнее и левее */
-  gap: 8px;            /* меньше щель между элементами */
+  padding: 12px 14px;
+  gap: 12px;
 }
 
-/* Две пилюли: одинаковая фикс-ширина и высота, компактные паддинги */
-.topbar .pill{
-  padding: 6px 8px;
+.topbar-actions .pill,
+.topbar-actions .pill-plus{
   height: var(--topbar-pill-h);
-  flex: 0 0 var(--topbar-pill-w);
-  min-width: var(--topbar-pill-w);
-  justify-content: center;
-  gap: 8px;
 }
-
-/* Иконки — чуть крупнее по высоте, но не широкие */
-.topbar .pill img{
-  width: 22px;
-  height: 22px;
-  border-radius: 4px;
-}
-
-/* Текст не прыгает и влезает */
-.topbar .pill .num{
-  font-weight: 900;
-  font-size: 15px;
-  line-height: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Переопределяем .pill--lg только в топбаре, чтобы не поломать глобально */
-.topbar .pill.pill--lg{
-  padding: 6px 8px;
-}
-.topbar .pill.pill--lg img{
-  width: 22px; height: 22px;
-}
-
-/* Плюсик: такой же размер по высоте, круглый, и не шире пилюли */
-.topbar .pill-plus{
-  width: var(--topbar-pill-h);
-  height: var(--topbar-pill-h);
-  border-radius: 999px; /* круг */
-  flex: 0 0 var(--topbar-pill-h);
-  margin-right: 6px;    /* лёгкий отступ перед первой пилюлей */
-}
-
-/* Знак плюс — визуально по центру и читается */
-.topbar .pill-plus .plus-ico{
-  font-size: 20px;
-  line-height: 1;
-  transform: translateY(-1px); /* оптический центр */
-}
-
-/* На узких экранах подстрахуемся, чтобы не упиралось вправо */
-.topbar .pill:last-of-type{
-  margin-right: 2px;
-}
-
-/* Если всё равно не влезает, последний шаг — ещё на 1–2px левее всю группу:
-.topbar { padding-right: 6px; }
-*/
-
-/* ——— микро-сдвиг группы (плюс + пилюли) влево ——— */
-:root { --topbar-shift-x: 50px; } /* можно 2–4px по вкусу */
-
-/* если есть плюсик — тянем всю тройку влево через него */
-.topbar .pill-plus{
-  margin-left: calc(var(--topbar-shift-x) * -1);
-}
-
-/* если плюсика нет, но есть сразу пилюли — подстрахуемся */
-.topbar .pill:first-of-type{
-  margin-left: calc(var(--topbar-shift-x) * -1);
-}
-
-:root{--topbar-plus-shift-x:10px}.topbar .pill-plus{transform:translateX(var(--topbar-plus-shift-x))}
-
-
-:root{ --topbar-pills-shift-x: 40px; } .topbar .pill:first-of-type{ margin-left: calc(var(--topbar-pills-shift-x) * -1); }
 
 /* Друзья: растяжка списка вниз при сохранении текущего верха */
 .friends-wrap{
@@ -2109,33 +2091,39 @@ h2.section{
   display:none !important;
 }
 
-/* Пилюля ₽ — центрируем число + ₽ справа */
-.topbar .pill.pill-rub{
+/* Пилюля ₽ — белая капсула внутри .topbar-actions */
+.topbar-actions .pill.pill-rub{
   min-width: 120px;
   height: var(--topbar-pill-h);
-  padding: 6px 10px;
+  padding: 8px 12px;
 
   display: flex;
   align-items: center;
-  justify-content: center;   /* блок по центру пилюли */
-  gap: var(--rub-gap);       /* зазор между цифрой и ₽ */
+  justify-content: center;
+  gap: var(--rub-gap);
+
+  background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(240,245,255,.94));
+  border:1px solid rgba(140,170,255,.35);
+  color:#081121;
+  box-shadow:
+    inset 0 0 12px rgba(255,255,255,.65),
+    0 10px 26px rgba(0,0,0,.35);
 }
 
-/* Цифра баланса */
-.topbar .pill.pill-rub .num{
+.topbar-actions .pill.pill-rub .num{
   font-weight: 900;
   font-size: 15px;
   line-height: 1;
   white-space: nowrap;
+  color:#081121;
 }
 
-/* Знак ₽ справа от цифры — размер как у цифры */
-.topbar .pill.pill-rub .pill-rub-sign{
-  font-weight: 900;          /* как у .num */
-  font-size: inherit;        /* берёт размер цифры */
+.topbar-actions .pill.pill-rub .pill-rub-sign{
+  font-weight: 900;
+  font-size: inherit;
   line-height: 1;
-  color: var(--neon-yellow);
-  text-shadow: 0 0 10px rgba(255,228,122,.35);
+  color:#081121;
+  text-shadow:none;
   transform: translateY(-0.5px);
 }
 
@@ -3124,23 +3112,26 @@ if (addr) {
       <div class="grow"></div>
 
 <!-- мини-меню "Плюс" — СТАВИМ ПЕРЕД глитч-токеном -->
-<div class="plus-wrap">
-  <button id="addBtn" class="pill-plus" aria-haspopup="true" aria-expanded="false" aria-controls="quickMenu" title="Быстрое действие">
-    <span class="plus-ico" aria-hidden="true">+</span>
-  </button>
+<div class="topbar-actions">
+  <div class="plus-wrap">
+    <button id="addBtn" class="pill-plus" aria-haspopup="true" aria-expanded="false" aria-controls="quickMenu" title="Быстрое действие">
+      <span class="plus-ico" aria-hidden="true">+</span>
+    </button>
 
- <div id="quickMenu" class="quickmenu" role="menu" aria-hidden="true">
-  <button class="qm-item" role="menuitem" data-action="daily">🎁 Ежедневный бонус</button>
-  <button class="qm-item" role="menuitem" data-action="topup">💳 Пополнить баланс</button>
-  <button class="qm-item" role="menuitem" data-action="settings">⚙️ Настройки</button>
- </div>
+   <div id="quickMenu" class="quickmenu" role="menu" aria-hidden="true">
+    <button class="qm-item" role="menuitem" data-action="daily">🎁 Ежедневный бонус</button>
+    <button class="qm-item" role="menuitem" data-action="topup">💳 Пополнить баланс</button>
+    <button class="qm-item" role="menuitem" data-action="settings">⚙️ Настройки</button>
+   </div>
+  </div>
+
+  <!-- ПИЛЮЛЯ БАЛАНСА ₽ -->
+  <div class="pill pill--lg pill-rub" title="Баланс ₽">
+    <span class="num" id="rubBalance">0</span>
+    <span class="pill-rub-sign" aria-hidden="true">₽</span>
+  </div>
 </div>
 
-            <!-- ПИЛЮЛЯ БАЛАНСА ₽ -->
-      <div class="pill pill--lg pill-rub" title="Баланс ₽">
-  <span class="num" id="rubBalance">0</span>
-  <span class="pill-rub-sign" aria-hidden="true">₽</span>
-</div>
     </div>
 
     <div class="chipbar" id="chipbar"><div class="chip active" data-target="#top">Все</div></div>
