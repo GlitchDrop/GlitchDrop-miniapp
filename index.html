@@ -2276,7 +2276,7 @@ h2.section{
   position: relative; /* нужно для .bp-mainline */
 }
 
-/* линия прогресса (светящаяся часть) */
+/* светящаяся часть ДО первой точки */
 .bp-mainline{
   position: absolute;
   width: 2px;
@@ -2284,6 +2284,7 @@ h2.section{
   transform: translateX(-50%);
   pointer-events: none;
   z-index: 1;
+  transition: height .55s ease, top .55s ease;
 
   background: linear-gradient(
     180deg,
@@ -2291,19 +2292,17 @@ h2.section{
     rgba(138,92,255,35)
   );
   box-shadow: 0 0 8px rgba(22,241,255,25);
-
-  transition: height .75s cubic-bezier(.2,.9,.2,1);
-  will-change: height;
 }
 
-/* тусклая база линии (под светящейся) */
+/* тусклая часть ПОСЛЕ первой точки */
 .bp-mainline-dim{
   position: absolute;
   width: 2px;
   border-radius: 999px;
   transform: translateX(-50%);
   pointer-events: none;
-  z-index: 0;
+  z-index: 1;
+  transition: height .55s ease, top .55s ease;
 
   background: #0b1030;   /* как центр точек (кроме 1-й) */
   box-shadow: none;
@@ -2498,16 +2497,6 @@ h2.section{
 
 .bp-item.done .bp-card{
   opacity: .75;
-}
-
-.bp-item:first-child .bp-card{
-  opacity: 1;
-  filter: none;
-  border-color: rgba(22,241,255,45);
-  box-shadow:
-    0 10px 26px rgba(10,20,60,45),
-    inset 0 0 18px rgba(22,241,255,12),
-    0 0 16px rgba(22,241,255,18);
 }
 
 /* 1-я награда — “доступная”, светлее остальных */
@@ -5275,25 +5264,54 @@ function syncBattlePassMainLine(){
   const r = nodeSize / 2;
 
   const lastNodeRect  = nodes[nodes.length - 1].getBoundingClientRect();
-
   const centerX = (firstW.left + firstW.width / 2) - tlRect.left;
 
   const startY      = (firstW.top - tlRect.top) + r; // старт линии оставляем как был
-  const lastCenterY = (lastNodeRect.top  + lastNodeRect.height  / 2) - tlRect.top;
+  const lastCenterY = (lastNodeRect.top + lastNodeRect.height / 2) - tlRect.top;
 
-  const idx = Math.max(0, Math.min((window.__bpProgressIndex ?? 0), nodes.length - 1));
+  const idx = Math.min(
+    Math.max(0, (window.__bpProgressIndex ?? 0)),
+    nodes.length - 1
+  );
+
   const curRect = nodes[idx].getBoundingClientRect();
   const curCenterY = (curRect.top + curRect.height / 2) - tlRect.top;
 
-  // тусклая линия: от старта до последней точки (всегда)
-  lineDim.style.left   = `${centerX}px`;
-  lineDim.style.top    = `${startY}px`;
-  lineDim.style.height = `${Math.max(0, lastCenterY - startY)}px`;
-
-  // светящаяся линия прогресса: от старта до текущей точки (анимируется)
+  // светящаяся часть ДО текущей точки
   lineGlow.style.left   = `${centerX}px`;
   lineGlow.style.top    = `${startY}px`;
   lineGlow.style.height = `${Math.max(0, curCenterY - startY)}px`;
+
+  // тусклая часть ПОСЛЕ текущей точки
+  lineDim.style.left   = `${centerX}px`;
+  lineDim.style.top    = `${curCenterY}px`;
+  lineDim.style.height = `${Math.max(0, lastCenterY - curCenterY)}px`;
+}
+
+function syncBattlePassProgressUI(){
+  const tl = upgradesScreen?.querySelector?.('.bp-timeline');
+  if (!tl) return;
+
+  const items = Array.from(tl.querySelectorAll('.bp-item'));
+  const nodes = Array.from(tl.querySelectorAll('.bp-node'));
+  if (!items.length || !nodes.length) return;
+
+  const max = Math.min(items.length, nodes.length) - 1;
+  const idx = Math.min(Math.max(0, (window.__bpProgressIndex ?? 0)), max);
+  window.__bpProgressIndex = idx;
+
+  // когда дошли до точки — она становится как первая
+  items.forEach((it,i)=>{
+    const unlocked = i <= idx;
+    it.classList.toggle('done', unlocked);
+    it.classList.toggle('locked', !unlocked);
+  });
+
+  nodes.forEach((nd,i)=>{
+    const unlocked = i <= idx;
+    nd.classList.toggle('done', unlocked);
+    nd.classList.toggle('locked', !unlocked);
+  });
 }
 
 function renderBattlePass(){
@@ -5438,10 +5456,10 @@ function renderBattlePass(){
   `;
 
 
-  // старт прогресса: 1-я точка
-  window.__bpProgressIndex = 0;
+// одна цельная линия строго от центра первой до центра последней точки
+  window.__bpProgressIndex = (window.__bpProgressIndex ?? 0);
+  syncBattlePassProgressUI();
 
-  // линия: тусклая до конца + светящаяся до текущей точки
   requestAnimationFrame(syncBattlePassMainLine);
   setTimeout(syncBattlePassMainLine, 60);
 
@@ -5450,27 +5468,35 @@ function renderBattlePass(){
     window.addEventListener('resize', ()=> requestAnimationFrame(syncBattlePassMainLine));
   }
 
-  if (!window.__bpMainLineClickBound){
-    window.__bpMainLineClickBound = true;
+  if (!window.__bpBattlePassClickBound){
+    window.__bpBattlePassClickBound = true;
 
     document.addEventListener('click', (e)=>{
-      const btn = e.target.closest?.('.bp-card-btn');
+      const btn = e.target.closest('.bp-card-btn');
       if (!btn) return;
-      if (!upgradesScreen?.contains(btn)) return;
 
-      const tl = upgradesScreen.querySelector('.bp-timeline');
-      const nodes = Array.from(tl?.querySelectorAll?.('.bp-node') || []);
-      if (nodes.length < 2) return;
+      const item = btn.closest('.bp-item');
+      const tl = btn.closest('.bp-timeline');
+      if (!item || !tl) return;
 
-      const max = nodes.length - 1;
-      const cur = window.__bpProgressIndex ?? 0;
-      if (cur >= max) return; // на награде 7 — ничего не происходит
+      const items = Array.from(tl.querySelectorAll('.bp-item'));
+      const idx = items.indexOf(item);
+      if (idx === -1) return;
 
-      window.__bpProgressIndex = Math.min(max, cur + 1);
+      const max = items.length - 1;
+      const cur = (window.__bpProgressIndex ?? 0);
+
+      // двигаем линию ТОЛЬКО если нажали "Получить" у текущей награды
+      if (idx !== cur) return;
+      if (cur >= max) return; // на 7-й награде ничего не делаем
+
+      window.__bpProgressIndex = cur + 1;
+
+      // следующая точка становится как первая
+      syncBattlePassProgressUI();
 
       requestAnimationFrame(syncBattlePassMainLine);
-      setTimeout(syncBattlePassMainLine, 40);
-    }, true);
+    });
   }
 }
 
