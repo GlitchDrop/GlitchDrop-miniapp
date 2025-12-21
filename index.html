@@ -5456,17 +5456,19 @@ function renderBattlePass(){
       </div>
     </div>
   `;
-  }
+}
+
 // одна цельная линия строго от центра первой до центра последней точки
   // ===== НАСТРОЙКА СУММ (МЕНЯЕШЬ ТОЛЬКО ЧИСЛА) =====
-  const BP_REWARD_3_ADD = 25; // сумма для награды 3
-  const BP_REWARD_7_ADD = 75; // сумма для награды 7
+  const BP_REWARD_3_ADD = 100; // сумма для награды 3
+  const BP_REWARD_7_ADD = 250; // сумма для награды 7
   const BP_CLAIMED_KEY = 'gd_bp_claimed_rewards';
 
   window.__bpProgressIndex = (window.__bpProgressIndex ?? 0);
   syncBattlePassProgressUI();
 
-  requestAnimationFrame(syncBattlePassMainLine);
+syncBattlePassMainLine();
+  setTimeout(syncBattlePassMainLine, 60);
 
   if (!window.__bpMainLineResizeBound){
     window.__bpMainLineResizeBound = true;
@@ -5520,9 +5522,10 @@ function renderBattlePass(){
       // следующая точка становится как первая
       syncBattlePassProgressUI();
 
-      syncBattlePassMainLine();
+      requestAnimationFrame(syncBattlePassMainLine);
     });
   }
+
 
 // ===== CONFIRM SELL MODAL =====
 const confirmModal = document.getElementById('confirmModal');
