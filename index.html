@@ -2284,8 +2284,7 @@ h2.section{
   transform: translateX(-50%);
   pointer-events: none;
   z-index: 1;
-  transition: height .75s linear, top .75s linear;
-  will-change: height, top;
+  transition: height .55s ease, top .55s ease;
 
   background: linear-gradient(
     180deg,
@@ -2303,6 +2302,7 @@ h2.section{
   transform: translateX(-50%);
   pointer-events: none;
   z-index: 1;
+  transition: height .55s ease, top .55s ease;
 
   background: #0b1030;   /* как центр точек (кроме 1-й) */
   box-shadow: none;
@@ -5091,6 +5091,18 @@ function showUpgrades(){
 // true — показываем заглушку «Здесь пока что пусто»; false — обычный интерфейс
 GD.contestsEmpty = true;
 
+// ===== BATTLE PASS CONFIG =====
+// 7 наград пропуска (пока без логики)
+const BATTLE_PASS_REWARDS = [
+  { id: 1, title: 'Награда 1', img: '', claimed: false },
+  { id: 2, title: 'Награда 2', img: '', claimed: false },
+  { id: 3, title: 'Награда 3', img: '', claimed: false },
+  { id: 4, title: 'Награда 4', img: '', claimed: false },
+  { id: 5, title: 'Награда 5', img: '', claimed: false },
+  { id: 6, title: 'Награда 6', img: '', claimed: false },
+  { id: 7, title: 'Награда 7', img: '', claimed: false }
+];
+
 /** Переключить пустой режим конкурсов.
  * Примеры:
  *   GD.setContestsEmpty(false) // показать полноценный интерфейс
@@ -5442,21 +5454,18 @@ function renderBattlePass(){
       </div>
     </div>
   `;
+  }
+// одна цельная линия строго от центра первой до центра последней точки
+  // ===== НАСТРОЙКА СУММ (МЕНЯЕШЬ ТОЛЬКО ЧИСЛА) =====
+  const BP_REWARD_3_ADD = 25; // сумма для награды 3
+  const BP_REWARD_7_ADD = 75; // сумма для награды 7
+  const BP_CLAIMED_KEY = 'gd_bp_claimed_rewards';
 
   window.__bpProgressIndex = (window.__bpProgressIndex ?? 0);
   syncBattlePassProgressUI();
 
   requestAnimationFrame(syncBattlePassMainLine);
   setTimeout(syncBattlePassMainLine, 60);
-}
-
-// одна цельная линия строго от центра первой до центра последней точки
-// ===== НАСТРОЙКА СУММ НАГРАД =====
-const BP_REWARD_3_ADD = 25; // ← здесь меняешь сумму для награды 3
-const BP_REWARD_7_ADD = 75; // ← здесь меняешь сумму для награды 7
-const BP_CLAIMED_KEY  = 'gd_bp_claimed_rewards_v2';
-
- window.__bpProgressIndex = (window.__bpProgressIndex ?? 0);
 
   if (!window.__bpMainLineResizeBound){
     window.__bpMainLineResizeBound = true;
@@ -5481,19 +5490,19 @@ const BP_CLAIMED_KEY  = 'gd_bp_claimed_rewards_v2';
       const max = items.length - 1;
       const cur = (window.__bpProgressIndex ?? 0);
 
-      // запрещаем забирать будущие (ещё закрытые) награды
-      if (idx > cur) return;
+      // двигаем линию ТОЛЬКО если нажали "Получить" у текущей награды
+      if (idx !== cur) return;
 
       const rewardNo = idx + 1;
 
-      // начисление на баланс только на 3 и 7 награде (разово)
+      // начисление на баланс только на 3 и 7 награде (и защита от повторного клика, особенно для 7-й)
       if (rewardNo === 3 || rewardNo === 7){
-        var claimed = [];
+        let claimed = [];
         try { claimed = JSON.parse(localStorage.getItem(BP_CLAIMED_KEY) || '[]'); } catch(_) { claimed = []; }
 
-        if (claimed.indexOf(rewardNo) === -1){
-          var addRaw = (rewardNo === 3) ? BP_REWARD_3_ADD : BP_REWARD_7_ADD;
-          var add = Math.max(0, parseInt(addRaw, 10) || 0);
+        if (!claimed.includes(rewardNo)){
+          const addRaw = (rewardNo === 3) ? BP_REWARD_3_ADD : BP_REWARD_7_ADD;
+          const add = Math.max(0, parseInt(addRaw, 10) || 0);
 
           if (add > 0) setStarsBalance(getStarsBalance() + add);
 
@@ -5502,18 +5511,17 @@ const BP_CLAIMED_KEY  = 'gd_bp_claimed_rewards_v2';
         }
       }
 
-      // прогресс двигаем только если нажали на текущую (последнюю доступную) награду
-      if (idx !== cur) return;
-
+      // на 7-й награде линию не двигаем
       if (cur >= max) return;
 
       window.__bpProgressIndex = cur + 1;
 
+      // следующая точка становится как первая
       syncBattlePassProgressUI();
+
       requestAnimationFrame(syncBattlePassMainLine);
     });
   }
-
 
 // ===== CONFIRM SELL MODAL =====
 const confirmModal = document.getElementById('confirmModal');
@@ -7268,14 +7276,12 @@ document.addEventListener('DOMContentLoaded', function() {
   const userId = tg?.initDataUnsafe?.user?.id;
   if (!userId) return;
 
-fetch(`${window.API_BASE}/api/user-balance?user_id=${userId}`)
+  fetch(`${window.API_BASE}/api/user-balance?user_id=${userId}`)
     .then(r => r.json())
     .then(data => {
       if (data && typeof data.stars === 'number') {
-        // НЕ затираем локальные начисления (BP/пополнения), пока сервер не догнал
-        var server = Math.max(0, parseInt(data.stars, 10) || 0);
-        var local  = getStarsBalance();
-        setStarsBalance(Math.max(local, server));
+        // кладём серверный баланс в UI и localStorage твоими же функциями/ключами
+        setStarsBalance(data.stars);
       }
     })
     .catch(err => console.warn('Balance fetch failed', err));
