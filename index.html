@@ -2527,12 +2527,12 @@ h2.section{
 }
 
 
-/* === 3D барабан (фронтально, одна ячейка) === */
+/* === 2D барабан (плоский, обычная лента) === */
 :root{
-  /* размеры можно менять из JS */
   --reel-slice-w: 210px;
   --reel-slice-h: 128px;
   --reel-min-h:   360px;
+  --reel-gap:     12px; /* расстояние между ячейками */
 }
 
 .drum-wrap{
@@ -2541,7 +2541,7 @@ h2.section{
   height:100%;
   min-height: var(--reel-min-h);
   display:grid; place-items:center;
-  perspective: 1200px;
+  perspective:none; /* ⬅️ убрали 3D */
 }
 
 .drum-stage{
@@ -2549,40 +2549,68 @@ h2.section{
   width:min(560px, 92%);
   height:100%;
   border-radius:16px;
-  border:1px solid var(--border);
-  background:linear-gradient(180deg,#0c1230,#0a1028);
-  box-shadow:inset 0 0 24px rgba(22,241,255,.12);
+  border:var(--border);
+  background:linear-gradient(180deg, #0c1333, #080c22);
   overflow:hidden;
 }
 
-/* фронтально, без наклона */
+/* Виньетка */
+.drum-stage:before,
+.drum-stage:after{
+  content:"";
+  position:absolute; left:0; right:0;
+  height:22%;
+  z-index:2;
+  pointer-events:none;
+}
+.drum-stage:before{
+  top:0;
+  background:linear-gradient(180deg, rgba(7,11,31,0.9), rgba(7,11,31,0));
+}
+.drum-stage:after{
+  bottom:0;
+  background:linear-gradient(0deg, rgba(7,11,31,0.9), rgba(7,11,31,0));
+}
+
 .drum-tilt{
-  position:absolute; inset:18px;
-  transform-style:preserve-3d;
+  position:absolute;
+  inset:18px;
+  overflow:hidden;         /* ⬅️ теперь это «окно» ленты */
+  transform:none;          /* ⬅️ убрали наклон/3D */
+  transform-style:flat;
 }
 
+/* Лента */
 .drum{
-  position:absolute; left:50%; top:50%;
-  transform-style:preserve-3d;
-  will-change:transform;
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform: translateX(-50%) translateY(0px); /* JS меняет translateY */
+  will-change: transform;
+
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap: var(--reel-gap);
 }
 
-/* «вкладки» барабана */
 .slice{
-  position:absolute; left:50%; top:50%;
-  width: var(--reel-slice-w);
-  height: var(--reel-slice-h);
-  margin: calc(-1 * var(--reel-slice-h) / 2) calc(-1 * var(--reel-slice-w) / 2);
-  border-radius:14px;
-  border:1px dashed rgba(180,210,255,.35);
-  background:
-    radial-gradient(120px 80px at 20% 20%, rgba(22,241,255,.10), transparent 60%),
-    radial-gradient(120px 80px at 80% 80%, rgba(255,62,208,.08), transparent 60%),
-    linear-gradient(180deg,#0b1030,#0a1028);
-  box-shadow:0 8px 26px rgba(10,20,60,.35);
-  display:grid; grid-template-rows:1fr auto; align-items:center; justify-items:center;
-  overflow:hidden;
-  backface-visibility:hidden; -webkit-backface-visibility:hidden;
+  position:relative;
+  left:auto; top:auto;
+  margin:0;
+  transform:none !important; /* ⬅️ гарантированно плоско */
+
+  width:var(--reel-slice-w);
+  height:var(--reel-slice-h);
+  border-radius:16px;
+  border:1px solid rgba(180,210,255,0.15);
+  background:linear-gradient(180deg, rgba(14,22,52,0.95), rgba(11,16,39,0.95));
+  display:grid;
+  grid-template-rows:1fr auto;
+  align-items:center;
+  justify-items:center;
+  padding:10px;
+  box-shadow:0 10px 24px rgba(0,0,0,0.35);
 }
 
 .slice .meta{
@@ -2591,52 +2619,44 @@ h2.section{
   display:flex; align-items:center; justify-content:space-between;
 }
 .slice .value{
-  color:var(--neon-yellow); text-shadow:0 0 12px rgba(255,228,122,.25);
-  font-weight:900; font-size:14px;
+  color:var(--neon-yellow);
+  text-shadow:0 0 12px rgba(255,228,122,0.25);
+  font-weight:900;
+  font-size:14px;
 }
 
-/* центральная линия выигрыша */
 .drum-pointer{
-  position:absolute; left:0; right:0; top:50%;
-  transform:translateY(-50%); height:2px;
-  background:linear-gradient(90deg, transparent, var(--neon-cyan), var(--neon-pink), transparent);
-  box-shadow:0 0 14px rgba(22,241,255,.45), 0 0 20px rgba(255,62,208,.25);
-  pointer-events:none;
+  position:absolute;
+  left:8%;
+  right:8%;
+  top:50%;
+  height:2px;
+  transform:translateY(-50%);
+  background:linear-gradient(90deg, transparent, rgba(120,200,255,0.8), transparent);
+  box-shadow:0 0 18px rgba(120,200,255,0.22);
+  z-index:3;
 }
 
-/* лёгкая виньетка для глубины */
-.drum-stage:before, .drum-stage:after{
-  content:""; position:absolute; left:0; right:0; height:22%;
-  pointer-events:none; z-index:5;
-  background:linear-gradient(180deg, rgba(8,14,36,.8), transparent);
-}
-.drum-stage:after{ bottom:0; top:auto; transform:rotate(180deg); }
-
-/* 🔧 КВАДРАТНАЯ РАМА ДЛЯ КАРТИНКИ В БАРАБАНЕ */
 .slice .img{
   position: relative;
-  aspect-ratio: 1 / 1;
   width: 100%;
-  height: auto;
+  height: 100%;
   padding: 0;
-  border-bottom: 1px solid var(--border);
-  background: radial-gradient(80px 60px at 50% 50%, rgba(22,241,255,.10), transparent 60%);
+  aspect-ratio: 1 / 1;
   overflow: hidden;
-  box-sizing: border-box;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  background: radial-gradient(80px 60px at 50% 50%, rgba(22,241,255,0.10), transparent 60%);
 }
 
-/* 🔧 КАРТИНКА ВСЕГДА ЦЕЛИКОМ ВНУТРИ 1:1 РАМЫ */
 .slice .img img{
   position: absolute;
   inset: 8px;
   width: calc(100% - 16px);
   height: calc(100% - 16px);
-  object-fit: contain;
-  display: block;
-  max-width: none;
-  max-height: none;
+  object-fit: cover;
   border-radius: 12px;
-} /* ← вот этой скобки не хватало */
+  display:block;
+}
 
 /* === Оверрайды ТОЛЬКО для барабана === */
 .drum .slice {
@@ -2655,7 +2675,7 @@ h2.section{
   aspect-ratio: 1 / 1;
   overflow: hidden;
   border-bottom: none;
-  background: radial-gradient(80px 60px at 50% 50%, rgba(22,241,255,.10), transparent 60%);
+  background: radial-gradient(80px 60px at 50% 50%, rgba(22,241,255,0.10), transparent 60%);
 }
 
 /* картинка по центру, без обрезания краёв */
@@ -2668,6 +2688,7 @@ h2.section{
   border-radius: 12px;
   display: block;
 }
+
 
 /* ===== DROP MODAL ===== */
 .modal{
@@ -4135,13 +4156,9 @@ function openDetail({title, price, setId}) {
 
 const key = `${setId}__0`;
 const st  = ensureSpinState(key);
-st.currentAngle = 0; // каждый заход начинаем с нулевого угла
-// размеры фиксированные; если где-то менялись — вернём их
-setReelSize({ sliceW: 210, sliceH: 128, minH: 360 });
-
-
-  // НАРИСОВАТЬ ПРЕВЬЮ ЛЕНТ сразу под выбранное количество
-  renderPreview(setId);
+st.currentIndex = 0; // каждый заход начинаем с первого элемента
+setReelSize({sliceW:210, sliceH:128, minH:360});
+renderPreview(setId);
 
   // подготовка кнопок
   const spinStartBtn = document.getElementById('spinStartBtn');
@@ -4433,14 +4450,13 @@ function ensureSpinState(key){
     while(V.length<11) V.push("—");
 
     SPIN_STATE.set(key, {
-      currentAngle: 0,
+      currentIndex: 0, // 0..10 — текущая картинка по центру
       rafId: 0,
       weights, labels: L, values: V
     });
   }
   return SPIN_STATE.get(key);
 }
-
 
 // Выбор индекса по весам
 function pickIndexByWeights(weights){
@@ -4449,52 +4465,64 @@ function pickIndexByWeights(weights){
   return weights.length-1;
 }
 
-/* ===== 3D барабан для detailThumb ===== */
+/* ===== 2D барабан для detailThumb ===== */
 
 // Глобальный флажок «идёт прокрут»
 if (typeof window.IS_SPINNING === 'undefined') window.IS_SPINNING = false;
 
 // Параметры барабана
-const DRUM_ITEM_COUNT = 11;          // число граней
+const DRUM_ITEM_COUNT = 11;          // число элементов
+const DRUM_CYCLES     = 8;           // сколько раз повторяем ленту (хватает на 3 "оборота" + докрут)
 
 /* Геометрия/размер */
 function getReelMetrics(){
-  const cs = getComputedStyle(document.documentElement);
-  const w = parseFloat(cs.getPropertyValue('--reel-slice-w')) || 210;
-  const h = parseFloat(cs.getPropertyValue('--reel-slice-h')) || 128;
-  const step = 360 / DRUM_ITEM_COUNT;
-  const r = Math.round( (h / 2) / Math.tan(Math.PI / DRUM_ITEM_COUNT) );
-  return { w, h, step, r };
+  const cs  = getComputedStyle(document.documentElement);
+  const w   = parseFloat(cs.getPropertyValue('--reel-slice-w')) || 210;
+  const h   = parseFloat(cs.getPropertyValue('--reel-slice-h')) || 128;
+  const gap = parseFloat(cs.getPropertyValue('--reel-gap'))     || 12;
+  const stepPx = h + gap;
+  return { w, h, gap, stepPx };
 }
 
 /* Публичные функции изменения размера */
-function setReelSize({sliceW, sliceH, minH} = {}){
+function setReelSize({sliceW, sliceH, minH, gap} = {}){
   const root = document.documentElement.style;
   if(sliceW) root.setProperty('--reel-slice-w', `${sliceW}px`);
   if(sliceH) root.setProperty('--reel-slice-h', `${sliceH}px`);
   if(minH)   root.setProperty('--reel-min-h',   `${minH}px`);
+  if(typeof gap === 'number') root.setProperty('--reel-gap', `${gap}px`);
 }
 
-/* Состояние с углом */
-function ensureSpinStateWithAngle(key){
+/* Состояние с индексом (0..10) */
+function ensureSpinStateWithIndex(key){
   const st = ensureSpinState(key);
-  if(typeof st.currentAngle !== 'number') st.currentAngle = 0;
+
+  // совместимость: если где-то остался currentAngle — конвертим в индекс
+  if(typeof st.currentIndex !== 'number'){
+    if(typeof st.currentAngle === 'number'){
+      st.currentIndex = (Math.round(st.currentAngle / (360 / DRUM_ITEM_COUNT)) % DRUM_ITEM_COUNT + DRUM_ITEM_COUNT) % DRUM_ITEM_COUNT;
+    } else {
+      st.currentIndex = 0;
+    }
+  }
+  st.currentIndex = (st.currentIndex % DRUM_ITEM_COUNT + DRUM_ITEM_COUNT) % DRUM_ITEM_COUNT;
   return st;
 }
 
-/* Рендер барабана в d-thumb */
+/* Рендер плоской ленты в detailThumb */
 function render3DReel(setId){
+  const key = `${setId}__0`;
+  const st  = ensureSpinStateWithIndex(key);
+  const { w, h, stepPx } = getReelMetrics();
+
   const parent = document.getElementById('detailThumb');
   if(!parent) return;
-  const key = `${setId}__0`;
-  const st  = ensureSpinStateWithAngle(key);
-  const { step, r } = getReelMetrics();
 
   parent.innerHTML = `
     <div class="drum-wrap">
       <div class="drum-stage">
         <div class="drum-tilt">
-          <div class="drum" id="drum_${key}" style="transform:translateZ(${-r}px) rotateX(${st.currentAngle}deg)"></div>
+          <div class="drum" id="drum_${key}"></div>
         </div>
         <div class="drum-pointer"></div>
       </div>
@@ -4504,52 +4532,68 @@ function render3DReel(setId){
   const drum = document.getElementById(`drum_${key}`);
   drum.innerHTML = "";
 
-  const imgs = (SPIN_IMAGES[setId]?.length ? SPIN_IMAGES[setId] : LOOT_SETS[setId] || []).slice(0, DRUM_ITEM_COUNT);
-  while(imgs.length < DRUM_ITEM_COUNT) imgs.push("");
+  const imgsBase = (SPIN_IMAGES[setId]?.length ? SPIN_IMAGES[setId] : LOOT_SETS[setId] || []).slice(0, DRUM_ITEM_COUNT);
+  while(imgsBase.length < DRUM_ITEM_COUNT) imgsBase.push("");
 
-  for(let i=0;i<DRUM_ITEM_COUNT;i++){
-    const deg = -i * step; // фронтально, вращаем вниз
-    const url   = imgs[i] || "";
-    const label = (SPIN_STATE.get(key)?.labels?.[i]) ?? "ПРИЗ";
-    const value = (SPIN_STATE.get(key)?.values?.[i]) ?? "—";
+  // повторяем ленту, чтобы было куда "крутить" вниз
+  for(let c=0; c<DRUM_CYCLES; c++){
+    for(let i=0; i<DRUM_ITEM_COUNT; i++){
+      const abs = c * DRUM_ITEM_COUNT + i;
+      const url = imgsBase[i] || FALLBACK_IMG;
 
-    const el = document.createElement('div');
-    el.className = 'slice';
-    el.style.setProperty('--_deg', `${deg}deg`);
-    el.style.setProperty('--_rz',  `${r}px`);
-    el.style.transform = `rotateX(${deg}deg) translateZ(${r}px)`;
-    
-// стало:
-el.innerHTML = `
-  <div class="img">
-    ${url ? `<img src="${url}" onerror="this.src='${FALLBACK_IMG}'" alt="">` : '—'}
-  </div>
-`;
-
-    drum.appendChild(el);
+      const el = document.createElement('div');
+      el.className = 'slice';
+      el.dataset.idx = String(i);
+      el.dataset.abs = String(abs);
+      el.style.width  = `${w}px`;
+      el.style.height = `${h}px`;
+      el.innerHTML = `<div class="img"><img src="${url}" alt="" loading="lazy" decoding="async"></div>`;
+      drum.appendChild(el);
+    }
   }
+
+  // Ставим текущий индекс в центр (берём "середину" ленты: 2-й цикл)
+  const startAbs = (DRUM_ITEM_COUNT * 2) + st.currentIndex;
+  const startY   = -(startAbs * stepPx + (h / 2));
+  drum.style.transform = `translateX(-50%) translateY(${startY}px)`;
+
+  // запоминаем абсолютную позицию (для анимации)
+  st._absPos = startAbs;
 }
 
+/* Анимация прокрута (имя оставили старым, чтобы не трогать остальные вызовы) */
 function start3DSpin(setId, onDone){
-  const key  = `${setId}__0`;
+  const key = `${setId}__0`;
+  if(window.IS_SPINNING) return;
+  window.IS_SPINNING = true;
+
+  const st   = ensureSpinStateWithIndex(key);
   const drum = document.getElementById(`drum_${key}`);
-  if (!drum){ onDone && onDone({ idx:-1, imgSrc: FALLBACK_IMG }); return; }
 
+  if(!drum){
+    window.IS_SPINNING = false;
+    return;
+  }
 
-  const st = ensureSpinState(key);
-  const { step, r } = getReelMetrics();
+  const { h, stepPx } = getReelMetrics();
 
-  drum.querySelectorAll('.slice').forEach(s=> s.classList.remove('win'));
+  // текущая абсолютная позиция в ленте
+  const curAbs = (typeof st._absPos === 'number') ? st._absPos : (DRUM_ITEM_COUNT * 2 + st.currentIndex);
+  const curIdx = ((curAbs % DRUM_ITEM_COUNT) + DRUM_ITEM_COUNT) % DRUM_ITEM_COUNT;
 
+  // победитель
   const idx = pickIndexByWeights(st.weights);
-  const current  = Number.isFinite(st.currentAngle) ? st.currentAngle : 0;
-  const curSteps = Math.round(current / step);
-  const curMod   = ((curSteps % 11) + 11) % 11;
 
-  const need = ((idx - curMod) + 11) % 11;
+  // сколько шагов надо докрутить до нужного индекса + "обороты"
+  const need = (idx - curIdx + DRUM_ITEM_COUNT) % DRUM_ITEM_COUNT;
   const EXTRA_TURNS_INT = 3;
-  const deltaSteps = EXTRA_TURNS_INT * 11 + need;
-  const target = (curSteps + deltaSteps) * step;
+  const deltaSteps = EXTRA_TURNS_INT * DRUM_ITEM_COUNT + need;
+
+  const targetAbs = curAbs + deltaSteps;
+
+  // переводим шаги в пиксели
+  const startY  = -(curAbs    * stepPx + (h / 2));
+  const targetY = -(targetAbs * stepPx + (h / 2));
 
   const SPIN_DURATION_MS = 3800;
   const t0 = performance.now();
@@ -4557,23 +4601,28 @@ function start3DSpin(setId, onDone){
 
   function frame(now){
     const p = Math.min(1, (now - t0) / SPIN_DURATION_MS);
-    const ang = current + (target - current) * easeOutCubic(p);
-    drum.style.transform = `translateZ(${-r}px) rotateX(${ang}deg)`;
+    const y = startY + (targetY - startY) * easeOutCubic(p);
+    drum.style.transform = `translateX(-50%) translateY(${y}px)`;
 
     if(p < 1){
       st.rafId = requestAnimationFrame(frame);
     } else {
-            const snapped = Math.round(target / step) * step;
-      drum.style.transform = `translateZ(${-r}px) rotateX(${snapped}deg)`;
-      st.currentAngle = snapped;
+      // финальный снап
+      drum.style.transform = `translateX(-50%) translateY(${targetY}px)`;
+
+      st.currentIndex = idx;
+      st._absPos = targetAbs;
 
       const slices = drum.querySelectorAll('.slice');
-      const winEl = slices[idx];
+      slices.forEach(el => el.classList.remove('win'));
+      const winEl = slices[targetAbs];
       winEl?.classList.add('win');
+
       const winImg = winEl?.querySelector('img');
       const imgSrc = winImg ? winImg.src : FALLBACK_IMG;
 
       st.rafId = 0;
+      window.IS_SPINNING = false;
       onDone && onDone({ idx, imgSrc });
     }
   }
