@@ -2284,8 +2284,7 @@ h2.section{
   transform: translateX(-50%);
   pointer-events: none;
   z-index: 1;
-  transition: height .75s linear, top .75s linear;
-  will-change: height, top;
+  transition: height .55s ease, top .55s ease;
 
   background: linear-gradient(
     180deg,
@@ -2303,8 +2302,7 @@ h2.section{
   transform: translateX(-50%);
   pointer-events: none;
   z-index: 1;
-  transition: height .75s linear, top .75s linear;
-  will-change: height, top;
+  transition: height .55s ease, top .55s ease;
 
   background: #0b1030;   /* как центр точек (кроме 1-й) */
   box-shadow: none;
@@ -5093,17 +5091,55 @@ function showUpgrades(){
 // true — показываем заглушку «Здесь пока что пусто»; false — обычный интерфейс
 GD.contestsEmpty = true;
 
-// ===== BATTLE PASS CONFIG =====
-// 7 наград пропуска (пока без логики)
-const BATTLE_PASS_REWARDS = [
-  { id: 1, title: 'Награда 1', img: '', claimed: false },
-  { id: 2, title: 'Награда 2', img: '', claimed: false },
-  { id: 3, title: 'Награда 3', img: '', claimed: false },
-  { id: 4, title: 'Награда 4', img: '', claimed: false },
-  { id: 5, title: 'Награда 5', img: '', claimed: false },
-  { id: 6, title: 'Награда 6', img: '', claimed: false },
-  { id: 7, title: 'Награда 7', img: '', claimed: false }
-];
+// ===== BATTLE PASS — НАЧИСЛЕНИЕ STARS (1 раз за проход, проход можно начать заново) =====
+// ✅ МЕНЯЙ СУММЫ ТУТ:
+const BP_REWARD_STARS = {
+  3: 2000,
+  7: 7000
+};
+
+// флаги "получено в текущем проходе" — только в памяти (после обновления страницы всё обнуляется)
+window.__bpClaimedThisRun = window.__bpClaimedThisRun || {};
+
+function bpGetRewardStars(id){
+  return Number(BP_REWARD_STARS[id] || 0) || 0;
+}
+
+function bpRunIsClaimed(id){
+  return !!(window.__bpClaimedThisRun && window.__bpClaimedThisRun[String(id)]);
+}
+
+function bpRunMarkClaimed(id){
+  window.__bpClaimedThisRun[String(id)] = true;
+}
+
+function bpRunReset(){
+  window.__bpClaimedThisRun = {};
+}
+
+function bpSyncClaimedUI(tl){
+  tl = tl || upgradesScreen?.querySelector?.('.bp-timeline');
+  if (!tl) return;
+
+  const items = Array.from(tl.querySelectorAll('.bp-item'));
+  const maxIdx = items.length - 1;
+
+  items.forEach((it, i) => {
+    const rewardId = i + 1;
+    const btn = it.querySelector('.bp-card-btn');
+    if (!btn) return;
+
+    // по умолчанию везде "Получить"
+    let text = 'Получить';
+
+    // если мы стоим на 7-й и она уже получена в этом проходе — показываем "Начать заново"
+    if (i === maxIdx && rewardId === 7 && (window.__bpProgressIndex ?? 0) === maxIdx && bpRunIsClaimed(7)) {
+      text = 'Начать заново';
+    }
+
+    btn.textContent = text;
+  });
+}
 
 /** Переключить пустой режим конкурсов.
  * Примеры:
@@ -5456,18 +5492,13 @@ function renderBattlePass(){
       </div>
     </div>
   `;
-}
 
-// одна цельная линия строго от центра первой до центра последней точки
-  // ===== НАСТРОЙКА СУММ (МЕНЯЕШЬ ТОЛЬКО ЧИСЛА) =====
-  const BP_REWARD_3_ADD = 25; // сумма для награды 3
-  const BP_REWARD_7_ADD = 75; // сумма для награды 7
-  const BP_CLAIMED_KEY = 'gd_bp_claimed_rewards';
-
+  // одна цельная линия строго от центра первой до центра последней точки
   window.__bpProgressIndex = (window.__bpProgressIndex ?? 0);
   syncBattlePassProgressUI();
+  bpSyncClaimedUI();
 
-syncBattlePassMainLine();
+  requestAnimationFrame(syncBattlePassMainLine);
   setTimeout(syncBattlePassMainLine, 60);
 
   if (!window.__bpMainLineResizeBound){
@@ -5493,39 +5524,58 @@ syncBattlePassMainLine();
       const max = items.length - 1;
       const cur = (window.__bpProgressIndex ?? 0);
 
-      // двигаем линию ТОЛЬКО если нажали "Получить" у текущей награды
+      // жмём только на текущей (активной) награде
       if (idx !== cur) return;
 
-      const rewardNo = idx + 1;
+      const rewardId = idx + 1;
 
-      // начисление на баланс только на 3 и 7 награде (и защита от повторного клика, особенно для 7-й)
-      if (rewardNo === 3 || rewardNo === 7){
-        let claimed = [];
-        try { claimed = JSON.parse(localStorage.getItem(BP_CLAIMED_KEY) || '[]'); } catch(_) { claimed = []; }
+      // === 7-я: либо выдаём один раз, либо "начать заново" ===
+      if (rewardId === 7){
+        // если 7-я уже получена в этом проходе — второй клик запускает новый проход
+        if (bpRunIsClaimed(7)){
+          bpRunReset();
+          window.__bpProgressIndex = 0;
+          syncBattlePassProgressUI();
+          bpSyncClaimedUI(tl);
+          requestAnimationFrame(syncBattlePassMainLine);
+          return;
+        }
 
-        if (!claimed.includes(rewardNo)){
-          const addRaw = (rewardNo === 3) ? BP_REWARD_3_ADD : BP_REWARD_7_ADD;
-          const add = Math.max(0, parseInt(addRaw, 10) || 0);
+        // выдаём 7-ю один раз за проход
+        const add = bpGetRewardStars(7);
+        if (add > 0){
+          setStarsBalance(getStarsBalance() + add);
+        }
+        bpRunMarkClaimed(7);
+        bpSyncClaimedUI(tl);
 
-          if (add > 0) setStarsBalance(getStarsBalance() + add);
+        // прогресс дальше не двигаем (мы на последней)
+        return;
+      }
 
-          claimed.push(rewardNo);
-          try { localStorage.setItem(BP_CLAIMED_KEY, JSON.stringify(claimed)); } catch(_) {}
+      // === 3-я: выдаём при прохождении (она и так 1 раз, потому что дальше прогресс уйдёт) ===
+      if (rewardId === 3){
+        if (!bpRunIsClaimed(3)){
+          const add = bpGetRewardStars(3);
+          if (add > 0){
+            setStarsBalance(getStarsBalance() + add);
+          }
+          bpRunMarkClaimed(3);
         }
       }
 
-      // на 7-й награде линию не двигаем
+      // дальше двигаем прогресс как раньше
       if (cur >= max) return;
 
       window.__bpProgressIndex = cur + 1;
 
-      // следующая точка становится как первая
       syncBattlePassProgressUI();
+      bpSyncClaimedUI(tl);
 
       requestAnimationFrame(syncBattlePassMainLine);
     });
   }
-
+}
 
 // ===== CONFIRM SELL MODAL =====
 const confirmModal = document.getElementById('confirmModal');
