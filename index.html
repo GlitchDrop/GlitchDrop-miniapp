@@ -5454,7 +5454,7 @@ function renderBattlePass(){
 // ===== НАСТРОЙКА СУММ НАГРАД =====
 const BP_REWARD_3_ADD = 25; // ← здесь меняешь сумму для награды 3
 const BP_REWARD_7_ADD = 75; // ← здесь меняешь сумму для награды 7
-const BP_CLAIMED_KEY  = 'gd_bp_claimed_rewards';
+const BP_CLAIMED_KEY  = 'gd_bp_claimed_rewards_v2';
 
  window.__bpProgressIndex = (window.__bpProgressIndex ?? 0);
 
@@ -5481,19 +5481,19 @@ const BP_CLAIMED_KEY  = 'gd_bp_claimed_rewards';
       const max = items.length - 1;
       const cur = (window.__bpProgressIndex ?? 0);
 
-      // двигаем линию ТОЛЬКО если нажали "Получить" у текущей награды
-      if (idx !== cur) return;
+      // запрещаем забирать будущие (ещё закрытые) награды
+      if (idx > cur) return;
 
       const rewardNo = idx + 1;
 
-      // начисление на баланс только на 3 и 7 награде (и защита от повторного клика, особенно для 7-й)
+      // начисление на баланс только на 3 и 7 награде (разово)
       if (rewardNo === 3 || rewardNo === 7){
-        let claimed = [];
+        var claimed = [];
         try { claimed = JSON.parse(localStorage.getItem(BP_CLAIMED_KEY) || '[]'); } catch(_) { claimed = []; }
 
-        if (!claimed.includes(rewardNo)){
-          const addRaw = (rewardNo === 3) ? BP_REWARD_3_ADD : BP_REWARD_7_ADD;
-          const add = Math.max(0, parseInt(addRaw, 10) || 0);
+        if (claimed.indexOf(rewardNo) === -1){
+          var addRaw = (rewardNo === 3) ? BP_REWARD_3_ADD : BP_REWARD_7_ADD;
+          var add = Math.max(0, parseInt(addRaw, 10) || 0);
 
           if (add > 0) setStarsBalance(getStarsBalance() + add);
 
@@ -5502,14 +5502,14 @@ const BP_CLAIMED_KEY  = 'gd_bp_claimed_rewards';
         }
       }
 
-      // на 7-й награде линию не двигаем
+      // прогресс двигаем только если нажали на текущую (последнюю доступную) награду
+      if (idx !== cur) return;
+
       if (cur >= max) return;
 
       window.__bpProgressIndex = cur + 1;
 
-      // следующая точка становится как первая
       syncBattlePassProgressUI();
-
       requestAnimationFrame(syncBattlePassMainLine);
     });
   }
@@ -7268,12 +7268,14 @@ document.addEventListener('DOMContentLoaded', function() {
   const userId = tg?.initDataUnsafe?.user?.id;
   if (!userId) return;
 
-  fetch(`${window.API_BASE}/api/user-balance?user_id=${userId}`)
+fetch(`${window.API_BASE}/api/user-balance?user_id=${userId}`)
     .then(r => r.json())
     .then(data => {
       if (data && typeof data.stars === 'number') {
-        // кладём серверный баланс в UI и localStorage твоими же функциями/ключами
-        setStarsBalance(data.stars);
+        // НЕ затираем локальные начисления (BP/пополнения), пока сервер не догнал
+        var server = Math.max(0, parseInt(data.stars, 10) || 0);
+        var local  = getStarsBalance();
+        setStarsBalance(Math.max(local, server));
       }
     })
     .catch(err => console.warn('Balance fetch failed', err));
