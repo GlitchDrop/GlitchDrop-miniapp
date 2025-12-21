@@ -2284,7 +2284,8 @@ h2.section{
   transform: translateX(-50%);
   pointer-events: none;
   z-index: 1;
-  transition: height .55s ease, top .55s ease;
+  transition: height .75s linear, top .75s linear;
+  will-change: height, top;
 
   background: linear-gradient(
     180deg,
@@ -2302,7 +2303,8 @@ h2.section{
   transform: translateX(-50%);
   pointer-events: none;
   z-index: 1;
-  transition: height .55s ease, top .55s ease;
+  transition: height .75s linear, top .75s linear;
+  will-change: height, top;
 
   background: #0b1030;   /* как центр точек (кроме 1-й) */
   box-shadow: none;
@@ -5465,7 +5467,6 @@ function renderBattlePass(){
   syncBattlePassProgressUI();
 
   requestAnimationFrame(syncBattlePassMainLine);
-  setTimeout(syncBattlePassMainLine, 60);
 
   if (!window.__bpMainLineResizeBound){
     window.__bpMainLineResizeBound = true;
@@ -5519,7 +5520,7 @@ function renderBattlePass(){
       // следующая точка становится как первая
       syncBattlePassProgressUI();
 
-      requestAnimationFrame(syncBattlePassMainLine);
+      syncBattlePassMainLine();
     });
   }
 
