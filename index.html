@@ -2303,8 +2303,6 @@ h2.section{
   transform: translateX(-50%);
   pointer-events: none;
   z-index: 1;
-  transition: height .75s linear, top .75s linear;
-  will-change: height, top;
 
   background: #0b1030;   /* как центр точек (кроме 1-й) */
   box-shadow: none;
@@ -5093,17 +5091,45 @@ function showUpgrades(){
 // true — показываем заглушку «Здесь пока что пусто»; false — обычный интерфейс
 GD.contestsEmpty = true;
 
-// ===== BATTLE PASS CONFIG =====
-// 7 наград пропуска (пока без логики)
-const BATTLE_PASS_REWARDS = [
-  { id: 1, title: 'Награда 1', img: '', claimed: false },
-  { id: 2, title: 'Награда 2', img: '', claimed: false },
-  { id: 3, title: 'Награда 3', img: '', claimed: false },
-  { id: 4, title: 'Награда 4', img: '', claimed: false },
-  { id: 5, title: 'Награда 5', img: '', claimed: false },
-  { id: 6, title: 'Награда 6', img: '', claimed: false },
-  { id: 7, title: 'Награда 7', img: '', claimed: false }
-];
+// обработка клика "Получить"
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.bp-card-btn');
+  if (!btn) return;
+
+  const item = btn.closest('.bp-item');
+  const timeline = btn.closest('.bp-timeline');
+  if (!item || !timeline) return;
+
+  const items = Array.from(timeline.querySelectorAll('.bp-item'));
+  const idx = items.indexOf(item);
+  if (idx === -1) return;
+
+  const rewardNo = idx + 1;
+
+  // начисляем ТОЛЬКО за 3 и 7 награду
+  if (rewardNo !== 3 && rewardNo !== 7) return;
+
+  let claimed = [];
+  try {
+    claimed = JSON.parse(localStorage.getItem(BP_CLAIMED_KEY) || '[]');
+  } catch {}
+
+  // защита от повторного получения
+  if (claimed.includes(rewardNo)) return;
+
+  const add =
+    rewardNo === 3 ? BP_REWARD_3_ADD :
+    rewardNo === 7 ? BP_REWARD_7_ADD : 0;
+
+  if (add > 0) {
+    const current = getStarsBalance();
+    const next = current + add;
+    setStarsBalance(next);
+
+    claimed.push(rewardNo);
+    localStorage.setItem(BP_CLAIMED_KEY, JSON.stringify(claimed));
+  }
+});
 
 /** Переключить пустой режим конкурсов.
  * Примеры:
@@ -5465,10 +5491,10 @@ function renderBattlePass(){
 }
 
 // одна цельная линия строго от центра первой до центра последней точки
-  // ===== НАСТРОЙКА СУММ (МЕНЯЕШЬ ТОЛЬКО ЧИСЛА) =====
-  const BP_REWARD_3_ADD = 25; // сумма для награды 3
-  const BP_REWARD_7_ADD = 75; // сумма для награды 7
-  const BP_CLAIMED_KEY = 'gd_bp_claimed_rewards';
+// ===== НАСТРОЙКА СУММ НАГРАД =====
+const BP_REWARD_3_ADD = 25; // ← здесь меняешь сумму для награды 3
+const BP_REWARD_7_ADD = 75; // ← здесь меняешь сумму для награды 7
+const BP_CLAIMED_KEY  = 'gd_bp_claimed_rewards';
 
  window.__bpProgressIndex = (window.__bpProgressIndex ?? 0);
 
