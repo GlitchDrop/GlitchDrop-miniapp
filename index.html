@@ -2354,6 +2354,7 @@ h2.section{
     rgba(10,14,34,.9)
   );
   overflow: hidden;
+  transition: border-color .12s ease, box-shadow .12s ease, opacity .12s ease, filter .12s ease;
 }
 
 /* область картинки */
@@ -2502,14 +2503,16 @@ h2.section{
   opacity: .75;
 }
 
-/* 1-я награда — “доступная”, светлее остальных */
-.bp-item:first-child .bp-card{
+/* АКТИВНАЯ награда — подсветка контура ДО нажатия "Получить" */
+.bp-item.active .bp-card{
   opacity: 1;
   filter: none;
+  border-color: rgba(22,241,255,.65);
   box-shadow:
     0 10px 26px rgba(10,20,60,.45),
     inset 0 0 18px rgba(22,241,255,.12),
-    0 0 22px rgba(22,241,255,.18);
+    0 0 22px rgba(22,241,255,.22),
+    0 0 0 1px rgba(22,241,255,.28);
 }
 
   </style>
@@ -5346,17 +5349,27 @@ function syncBattlePassProgressUI(){
   const idx = Math.min(Math.max(0, (window.__bpProgressIndex ?? 0)), max);
   window.__bpProgressIndex = idx;
 
-  // когда дошли до точки — она становится как первая
+  // если мы на 7-й и она уже получена в этом проходе — подсветку "активной" гасим
+  const lastClaimed = (idx === max && bpRunIsClaimed(7));
+
   items.forEach((it,i)=>{
-    const unlocked = i <= idx;
-    it.classList.toggle('done', unlocked);
-    it.classList.toggle('locked', !unlocked);
+    const isLocked = i > idx;
+    const isActive = !lastClaimed && i === idx;                 // подсвечиваем ДО нажатия
+    const isDone   = i < idx || (lastClaimed && i === idx);     // 7-я тоже "потухнет" после получения
+
+    it.classList.toggle('active', isActive);
+    it.classList.toggle('done', isDone);
+    it.classList.toggle('locked', isLocked);
   });
 
   nodes.forEach((nd,i)=>{
-    const unlocked = i <= idx;
-    nd.classList.toggle('done', unlocked);
-    nd.classList.toggle('locked', !unlocked);
+    const isLocked = i > idx;
+    const isActive = !lastClaimed && i === idx;
+    const isDone   = i < idx || (lastClaimed && i === idx);
+
+    nd.classList.toggle('active', isActive);
+    nd.classList.toggle('done', isDone);
+    nd.classList.toggle('locked', isLocked);
   });
 }
 
@@ -5555,6 +5568,7 @@ function renderBattlePass(){
           setStarsBalance(getStarsBalance() + add);
         }
         bpRunMarkClaimed(7);
+        syncBattlePassProgressUI();     // <-- чтобы 7-я потухла сразу
         bpSyncClaimedUI(tl);
 
         // прогресс дальше не двигаем (мы на последней)
