@@ -4176,6 +4176,21 @@ detail.scrollTop = 0;
 const u = tg.initDataUnsafe && tg.initDataUnsafe.user;
 if (!u) return;
 
+// ====== ENSURE USER ON SERVER (закрепляем ID за пользователем) ======
+(async function ensureUserOnServer(){
+  try {
+    if (!window.API_BASE) return;
+    if (!tg?.initData) return;
+
+    await fetch(`${window.API_BASE}/api/users/ensure`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ initData: tg.initData })
+    });
+  } catch (e) {
+    // молча
+  }
+})();
 
 // ====== REF SYSTEM: HIT ON START (самореф разрешён) ======
 (async function referralHitOnStart(){
