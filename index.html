@@ -2294,7 +2294,7 @@ h2.section{
   z-index: 1;
 
   /* плавно, но быстро */
-  transition: transform .22s cubic-bezier(.2,.9,.2,1);
+  transition: transform .45s cubic-bezier(.22,1,.36,1);
 
   background: linear-gradient(
     180deg,
@@ -2321,13 +2321,22 @@ h2.section{
   pointer-events: none;
   z-index: 1;
 
-  transition: transform .22s cubic-bezier(.2,.9,.2,1);
+  transition: transform .45s cubic-bezier(.22,1,.36,1);
 
   background: #0b1030;
   box-shadow: none;
 
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+}
+
+/* Mobile: чуть медленнее и мягче, чтобы не дёргалось в WebView */
+@media (hover: none), (pointer: coarse) {
+  .bp-mainline,
+  .bp-mainline-dim{
+    transition-duration: .55s;
+    transition-timing-function: cubic-bezier(.22,1,.36,1);
+  }
 }
 
 /* один элемент прогресса */
@@ -5543,18 +5552,82 @@ function renderBattlePass(){
     </div>
   `;
 
-  // одна цельная линия строго от центра первой до центра последней точки
-  window.__bpProgressIndex = (window.__bpProgressIndex ?? 0);
-  syncBattlePassProgressUI();
-  bpSyncClaimedUI();
+let __bpMainLineRaf = 0;
+function __bpRoundPx(v){
+  const dpr = window.devicePixelRatio || 1;
+  return Math.round(v * dpr) / dpr;
+}
+function scheduleBattlePassMainLine(){
+  if (__bpMainLineRaf) return;
+  __bpMainLineRaf = requestAnimationFrame(()=>{
+    __bpMainLineRaf = 0;
+    syncBattlePassMainLine();
+    // второй кадр — чтобы на телефоне всё «успело устаканиться»
+    requestAnimationFrame(()=> syncBattlePassMainLine());
+  });
+}
 
-  requestAnimationFrame(syncBattlePassMainLine);
-  setTimeout(syncBattlePassMainLine, 60);
+function syncBattlePassMainLine(){
+  const tl = upgradesScreen?.querySelector?.('.bp-timeline');
+  if (!tl) return;
 
-  if (!window.__bpMainLineResizeBound){
-    window.__bpMainLineResizeBound = true;
-    window.addEventListener('resize', ()=> requestAnimationFrame(syncBattlePassMainLine));
-  }
+  const lineGlow = tl.querySelector('.bp-mainline');
+  const lineDim  = tl.querySelector('.bp-mainline-dim');
+  const wraps = Array.from(tl.querySelectorAll('.bp-line-wrap'));
+  const nodes = Array.from(tl.querySelectorAll('.bp-node'));
+  if (!lineGlow || !lineDim || wraps.length < 2 || nodes.length < 2) return;
+
+  const px = __bpRoundPx;
+
+  const tlRect = tl.getBoundingClientRect();
+  const firstW = wraps[0].getBoundingClientRect();
+
+  const nodeSize = nodes[0]?.offsetHeight || 14;
+  const r = nodeSize / 2;
+
+  const lastNodeRect  = nodes[nodes.length - 1].getBoundingClientRect();
+
+  // raw (без округления) — чтобы масштаб считался стабильно
+  const centerXRaw     = (firstW.left + firstW.width / 2) - tlRect.left;
+  const startYRaw      = (firstW.top - tlRect.top) + r; // старт линии оставляем как был
+  const lastCenterYRaw = (lastNodeRect.top + lastNodeRect.height / 2) - tlRect.top;
+
+  // округляем до device-pixel, чтобы на телефоне не «прыгало» из-за дробных px
+  const centerX     = px(centerXRaw);
+  const startY      = px(startYRaw);
+  const lastCenterY = px(lastCenterYRaw);
+
+  const idx = Math.min(
+    Math.max(0, (window.__bpProgressIndex ?? 0)),
+    nodes.length - 1
+  );
+
+  const curRect = nodes[idx].getBoundingClientRect();
+  const curCenterYRaw = (curRect.top + curRect.height / 2) - tlRect.top;
+  const curCenterY = px(curCenterYRaw);
+
+const fullLenRaw = Math.max(0, lastCenterYRaw - startYRaw);
+const glowLenRaw = Math.max(0, curCenterYRaw - startYRaw);
+const dimLenRaw  = Math.max(0, lastCenterYRaw - curCenterYRaw);
+
+const fullLen = px(fullLenRaw);
+
+const glowScale = fullLenRaw ? Math.min(1, Math.max(0, glowLenRaw / fullLenRaw)) : 0;
+const dimScale  = fullLenRaw ? Math.min(1, Math.max(0, dimLenRaw  / fullLenRaw)) : 0;
+
+// светящаяся часть ДО текущей точки (растёт сверху вниз)
+lineGlow.style.left   = `${centerX}px`;
+lineGlow.style.top    = `${startY}px`;
+lineGlow.style.height = `${fullLen}px`;
+lineGlow.style.transform = `translate3d(-50%,0,0) scaleY(${glowScale})`;
+
+// тусклая часть ПОСЛЕ текущей точки (сжимается снизу вверх)
+lineDim.style.left   = `${centerX}px`;
+lineDim.style.top    = `${startY}px`;
+lineDim.style.height = `${fullLen}px`;
+lineDim.style.transform = `translate3d(-50%,0,0) scaleY(${dimScale})`;
+
+}
 
   if (!window.__bpBattlePassClickBound){
     window.__bpBattlePassClickBound = true;
@@ -5582,14 +5655,27 @@ function renderBattlePass(){
       // === 7-я: либо выдаём один раз, либо "начать заново" ===
       if (rewardId === 7){
         // если 7-я уже получена в этом проходе — второй клик запускает новый проход
-        if (bpRunIsClaimed(7)){
-          bpRunReset();
-          window.__bpProgressIndex = 0;
-          syncBattlePassProgressUI();
-          bpSyncClaimedUI(tl);
-          requestAnimationFrame(syncBattlePassMainLine);
-          return;
-        }
+
+          // одна цельная линия строго от центра первой до центра последней точки
+  window.__bpProgressIndex = (window.__bpProgressIndex ?? 0);
+  syncBattlePassProgressUI();
+  bpSyncClaimedUI();
+
+  scheduleBattlePassMainLine();
+
+  if (!window.__bpMainLineResizeBound){
+    window.__bpMainLineResizeBound = true;
+
+    // обычный resize/поворот
+    window.addEventListener('resize', scheduleBattlePassMainLine, { passive: true });
+    window.addEventListener('orientationchange', scheduleBattlePassMainLine, { passive: true });
+
+    // mobile WebView: адресная строка/клавиатура меняют visualViewport (и именно это часто «дёргает»)
+    if (window.visualViewport){
+      window.visualViewport.addEventListener('resize', scheduleBattlePassMainLine, { passive: true });
+      window.visualViewport.addEventListener('scroll', scheduleBattlePassMainLine, { passive: true });
+    }
+  }
 
         // выдаём 7-ю один раз за проход
         const add = bpGetRewardStars(7);
@@ -5623,7 +5709,7 @@ function renderBattlePass(){
       syncBattlePassProgressUI();
       bpSyncClaimedUI(tl);
 
-      requestAnimationFrame(syncBattlePassMainLine);
+      scheduleBattlePassMainLine();
     });
   }
 }
