@@ -2303,6 +2303,14 @@ h2.section{
   );
   box-shadow: 0 0 8px rgba(22,241,255,25);
 
+  /* плавная "верхушка" — убираем эффект обрезки свечения */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 18px);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 18px);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
@@ -2321,10 +2329,18 @@ h2.section{
   pointer-events: none;
   z-index: 1;
 
-  transition: transform .55s cubic-bezier(.22,1,.36,1);
+ transition: transform .55s cubic-bezier(.22,1,.36,1);
 
   background: rgba(190, 200, 215, .38); /* <-- СЕРАЯ линия, больше не сливается */
   box-shadow: none;
+
+  /* та же плавная верхушка */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 18px);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 18px);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
 
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
