@@ -2294,7 +2294,7 @@ h2.section{
   z-index: 1;
 
   /* плавно, но быстро */
-  transition: transform .22s cubic-bezier(.2,9,2,1);
+  transition: transform .22s cubic-bezier(.2,.9,.2,1);
 
   background: linear-gradient(
     180deg,
@@ -2305,11 +2305,6 @@ h2.section{
 
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-}
-
-/* ТОЛЬКО МОБИЛКА: убираем тяжёлое свечение */
-@media (hover: none), (pointer: coarse) {
-  .bp-mainline{ box-shadow: none !important; }
 }
 
 /* тусклая часть ПОСЛЕ первой точки */
@@ -2466,20 +2461,9 @@ h2.section{
     inset 0 0 18px rgba(22,241,255,.06);
 }
 
-/* мягкое свечение по краю карточки */
+/* УБИРАЕМ фоновое свечение карточек */
 .bp-card::before{
-  content:"";
-  position:absolute;
-  inset:-1px;
-  border-radius:16px;
-  background: linear-gradient(
-    135deg,
-    rgba(22,241,255,.25),
-    rgba(138,92,255,.25)
-  );
-  opacity:.35;
-  filter: blur(12px);
-  pointer-events:none;
+  content: none;
 }
 
 /* кнопка — аккуратный неон */
@@ -2523,20 +2507,18 @@ h2.section{
   filter: grayscale(.4);
 }
 
+/* Полученные — НЕ становятся ярче (как до получения первой) */
 .bp-item.done .bp-card{
-  opacity: .75;
+  opacity: .55;
+  filter: grayscale(.4);
 }
 
-/* АКТИВНАЯ награда — подсветка контура ДО нажатия "Получить" */
+/* АКТИВНАЯ награда — без неонового свечения */
 .bp-item.active .bp-card{
   opacity: 1;
   filter: none;
-  border-color: rgba(22,241,255,.65);
-  box-shadow:
-    0 10px 26px rgba(10,20,60,.45),
-    inset 0 0 18px rgba(22,241,255,.12),
-    0 0 22px rgba(22,241,255,.22),
-    0 0 0 1px rgba(22,241,255,.28);
+  border-color: rgba(22,241,255,.35);
+  box-shadow: none;
 }
 
   </style>
@@ -5320,16 +5302,6 @@ function renderUpgrades(){
 
 }
 
-function queueBattlePassMainLineSync(){
-  if (window.__bpMainLineQueueRaf) cancelAnimationFrame(window.__bpMainLineQueueRaf);
-
-  window.__bpMainLineQueueRaf = requestAnimationFrame(()=>{
-    window.__bpMainLineQueueRaf = 0;
-    // двойной rAF — на телефоне это убирает “резкие” перескоки лэйаута
-    requestAnimationFrame(syncBattlePassMainLine);
-  });
-}
-
 function syncBattlePassMainLine(){
   const tl = upgradesScreen?.querySelector?.('.bp-timeline');
   if (!tl) return;
@@ -5360,91 +5332,25 @@ function syncBattlePassMainLine(){
   const curRect = nodes[idx].getBoundingClientRect();
   const curCenterY = (curRect.top + curRect.height / 2) - tlRect.top;
 
-  const fullLen = Math.max(0, lastCenterY - startY);
-  const glowLen = Math.max(0, curCenterY - startY);
-  const dimLen  = Math.max(0, lastCenterY - curCenterY);
+const fullLen = Math.max(0, lastCenterY - startY);
+const glowLen = Math.max(0, curCenterY - startY);
+const dimLen  = Math.max(0, lastCenterY - curCenterY);
 
-  const targetGlow = fullLen ? Math.min(1, Math.max(0, glowLen / fullLen)) : 0;
-  const targetDim  = fullLen ? Math.min(1, Math.max(0, dimLen  / fullLen)) : 0;
+const glowScale = fullLen ? Math.min(1, Math.max(0, glowLen / fullLen)) : 0;
+const dimScale  = fullLen ? Math.min(1, Math.max(0, dimLen  / fullLen)) : 0;
 
-  // ===== состояние анимации (живёт в window, чтобы не ловить ошибки переобъявления) =====
-  if (!window.__bpMainLineState){
-    window.__bpMainLineState = {
-      raf: 0,
-      hasInit: false,
-      curGlow: 0,
-      curDim: 0,
-      lastLeft: null,
-      lastTop: null,
-      lastH: null
-    };
-  }
-  const st = window.__bpMainLineState;
+// светящаяся часть ДО текущей точки (растёт сверху вниз)
+lineGlow.style.left   = `${centerX}px`;
+lineGlow.style.top    = `${startY}px`;
+lineGlow.style.height = `${fullLen}px`;
+lineGlow.style.transform = `translate3d(-50%,0,0) scaleY(${glowScale})`;
 
-  // Геометрия: пишем только если реально поменялась (на телефоне это убирает “дёрганье”)
-  if (st.lastLeft !== centerX){
-    lineGlow.style.left = `${centerX}px`;
-    lineDim.style.left  = `${centerX}px`;
-    st.lastLeft = centerX;
-  }
-  if (st.lastTop !== startY){
-    lineGlow.style.top = `${startY}px`;
-    lineDim.style.top  = `${startY}px`;
-    st.lastTop = startY;
-  }
-  if (st.lastH !== fullLen){
-    lineGlow.style.height = `${fullLen}px`;
-    lineDim.style.height  = `${fullLen}px`;
-    st.lastH = fullLen;
-  }
+// тусклая часть ПОСЛЕ текущей точки (сжимается снизу вверх)
+lineDim.style.left   = `${centerX}px`;
+lineDim.style.top    = `${startY}px`;
+lineDim.style.height = `${fullLen}px`;
+lineDim.style.transform = `translate3d(-50%,0,0) scaleY(${dimScale})`;
 
-  // отменяем текущую анимацию
-  if (st.raf) cancelAnimationFrame(st.raf);
-
-  // первый запуск — ставим сразу (без анимации), чтобы не было “рывка с нуля”
-  if (!st.hasInit){
-    st.hasInit = true;
-    st.curGlow = targetGlow;
-    st.curDim  = targetDim;
-
-    lineGlow.style.transform = `translate3d(-50%,0,0) scaleY(${targetGlow})`;
-    lineDim.style.transform  = `translate3d(-50%,0,0) scaleY(${targetDim})`;
-    return;
-  }
-
-  const fromGlow = st.curGlow;
-  const fromDim  = st.curDim;
-
-  const dur = 650; // на телефоне чуть длиннее = визуально плавнее
-  const t0 = performance.now();
-
-  function easeOutCubic(t){
-    return 1 - Math.pow(1 - t, 3);
-  }
-
-  function tick(now){
-    const t = Math.min(1, (now - t0) / dur);
-    const k = easeOutCubic(t);
-
-    st.curGlow = fromGlow + (targetGlow - fromGlow) * k;
-    st.curDim  = fromDim  + (targetDim  - fromDim)  * k;
-
-    lineGlow.style.transform = `translate3d(-50%,0,0) scaleY(${st.curGlow})`;
-    lineDim.style.transform  = `translate3d(-50%,0,0) scaleY(${st.curDim})`;
-
-    if (t < 1){
-      st.raf = requestAnimationFrame(tick);
-    } else {
-      st.raf = 0;
-      st.curGlow = targetGlow;
-      st.curDim  = targetDim;
-
-      lineGlow.style.transform = `translate3d(-50%,0,0) scaleY(${targetGlow})`;
-      lineDim.style.transform  = `translate3d(-50%,0,0) scaleY(${targetDim})`;
-    }
-  }
-
-  st.raf = requestAnimationFrame(tick);
 }
 
 function syncBattlePassProgressUI(){
@@ -5629,15 +5535,12 @@ function renderBattlePass(){
   syncBattlePassProgressUI();
   bpSyncClaimedUI();
 
-  queueBattlePassMainLineSync();
+  requestAnimationFrame(syncBattlePassMainLine);
+  setTimeout(syncBattlePassMainLine, 60);
 
   if (!window.__bpMainLineResizeBound){
     window.__bpMainLineResizeBound = true;
-
-    window.addEventListener('resize', ()=>{
-      clearTimeout(window.__bpMainLineResizeT);
-      window.__bpMainLineResizeT = setTimeout(queueBattlePassMainLineSync, 120);
-    });
+    window.addEventListener('resize', ()=> requestAnimationFrame(syncBattlePassMainLine));
   }
 
   if (!window.__bpBattlePassClickBound){
@@ -5666,16 +5569,14 @@ function renderBattlePass(){
       // === 7-я: либо выдаём один раз, либо "начать заново" ===
       if (rewardId === 7){
         // если 7-я уже получена в этом проходе — второй клик запускает новый проход
-
-                if (bpRunIsClaimed(7)){
+        if (bpRunIsClaimed(7)){
           bpRunReset();
           window.__bpProgressIndex = 0;
           syncBattlePassProgressUI();
           bpSyncClaimedUI(tl);
-          queueBattlePassMainLineSync();
+          requestAnimationFrame(syncBattlePassMainLine);
           return;
         }
-
 
         // выдаём 7-ю один раз за проход
         const add = bpGetRewardStars(7);
@@ -5709,8 +5610,7 @@ function renderBattlePass(){
       syncBattlePassProgressUI();
       bpSyncClaimedUI(tl);
 
-      queueBattlePassMainLineSync();
-
+      requestAnimationFrame(syncBattlePassMainLine);
     });
   }
 }
