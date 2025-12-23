@@ -2294,7 +2294,7 @@ h2.section{
   z-index: 1;
 
   /* плавно, но быстро */
-  transition: transform .45s cubic-bezier(.22,1,.36,1);
+  transition: transform .22s cubic-bezier(.2,.9,.2,1);
 
   background: linear-gradient(
     180deg,
@@ -2321,7 +2321,7 @@ h2.section{
   pointer-events: none;
   z-index: 1;
 
-  transition: transform .45s cubic-bezier(.22,1,.36,1);
+  transition: transform .22s cubic-bezier(.2,.9,.2,1);
 
   background: #0b1030;
   box-shadow: none;
@@ -2330,12 +2330,11 @@ h2.section{
   -webkit-backface-visibility: hidden;
 }
 
-/* Mobile: чуть медленнее и мягче, чтобы не дёргалось в WebView */
+/* MOBILE: убираем CSS-transition (иначе в WebView дергается) — анимация будет через requestAnimationFrame */
 @media (hover: none), (pointer: coarse) {
   .bp-mainline,
   .bp-mainline-dim{
-    transition-duration: .55s;
-    transition-timing-function: cubic-bezier(.22,1,.36,1);
+    transition: none !important;
   }
 }
 
@@ -5324,55 +5323,152 @@ function renderUpgrades(){
 
 }
 
-function syncBattlePassMainLine(){
+// ===== MAINLINE ULTRA-SMOOTH (особенно на телефоне) =====
+const __BP_IS_MOBILE = !!(window.matchMedia && window.matchMedia("(hover: none), (pointer: coarse)").matches);
+
+let __bpMainLineAnimRaf = 0;
+let __bpMainLineCurGlow = 0;
+let __bpMainLineCurDim  = 0;
+
+let __bpMainLineRecalcRaf = 0;
+
+function __bpRoundPx(v){
+  const dpr = window.devicePixelRatio || 1;
+  return Math.round(v * dpr) / dpr;
+}
+
+function __bpEaseOutCubic(t){
+  return 1 - Math.pow(1 - t, 3);
+}
+
+function __bpReadMainLineMetrics(idx){
   const tl = upgradesScreen?.querySelector?.('.bp-timeline');
-  if (!tl) return;
+  if (!tl) return null;
 
   const lineGlow = tl.querySelector('.bp-mainline');
   const lineDim  = tl.querySelector('.bp-mainline-dim');
   const wraps = Array.from(tl.querySelectorAll('.bp-line-wrap'));
   const nodes = Array.from(tl.querySelectorAll('.bp-node'));
-  if (!lineGlow || !lineDim || wraps.length < 2 || nodes.length < 2) return;
+  if (!lineGlow || !lineDim || wraps.length < 2 || nodes.length < 2) return null;
+
+  const clamped = Math.min(Math.max(0, idx), nodes.length - 1);
 
   const tlRect = tl.getBoundingClientRect();
   const firstW = wraps[0].getBoundingClientRect();
-
   const nodeSize = nodes[0]?.offsetHeight || 14;
   const r = nodeSize / 2;
 
-  const lastNodeRect  = nodes[nodes.length - 1].getBoundingClientRect();
-  const centerX = (firstW.left + firstW.width / 2) - tlRect.left;
+  const lastNodeRect   = nodes[nodes.length - 1].getBoundingClientRect();
+  const centerXRaw     = (firstW.left + firstW.width / 2) - tlRect.left;
+  const startYRaw      = (firstW.top - tlRect.top) + r; // как было
+  const lastCenterYRaw = (lastNodeRect.top + lastNodeRect.height / 2) - tlRect.top;
 
-  const startY      = (firstW.top - tlRect.top) + r; // старт линии оставляем как был
-  const lastCenterY = (lastNodeRect.top + lastNodeRect.height / 2) - tlRect.top;
+  const curRect = nodes[clamped].getBoundingClientRect();
+  const curCenterYRaw = (curRect.top + curRect.height / 2) - tlRect.top;
 
-  const idx = Math.min(
-    Math.max(0, (window.__bpProgressIndex ?? 0)),
-    nodes.length - 1
-  );
+  const fullLenRaw = Math.max(0, lastCenterYRaw - startYRaw);
+  const glowLenRaw = Math.max(0, curCenterYRaw - startYRaw);
+  const dimLenRaw  = Math.max(0, lastCenterYRaw - curCenterYRaw);
 
-  const curRect = nodes[idx].getBoundingClientRect();
-  const curCenterY = (curRect.top + curRect.height / 2) - tlRect.top;
+  const glowScale = fullLenRaw ? Math.min(1, Math.max(0, glowLenRaw / fullLenRaw)) : 0;
+  const dimScale  = fullLenRaw ? Math.min(1, Math.max(0, dimLenRaw  / fullLenRaw)) : 0;
 
-const fullLen = Math.max(0, lastCenterY - startY);
-const glowLen = Math.max(0, curCenterY - startY);
-const dimLen  = Math.max(0, lastCenterY - curCenterY);
+  return {
+    lineGlow, lineDim,
+    centerX: __bpRoundPx(centerXRaw),
+    startY:  __bpRoundPx(startYRaw),
+    fullLen: __bpRoundPx(fullLenRaw),
+    glowScale,
+    dimScale
+  };
+}
 
-const glowScale = fullLen ? Math.min(1, Math.max(0, glowLen / fullLen)) : 0;
-const dimScale  = fullLen ? Math.min(1, Math.max(0, dimLen  / fullLen)) : 0;
+function __bpApplyMainLineGeom(m){
+  const left = `${m.centerX}px`;
+  const top  = `${m.startY}px`;
+  const h    = `${m.fullLen}px`;
 
-// светящаяся часть ДО текущей точки (растёт сверху вниз)
-lineGlow.style.left   = `${centerX}px`;
-lineGlow.style.top    = `${startY}px`;
-lineGlow.style.height = `${fullLen}px`;
-lineGlow.style.transform = `translate3d(-50%,0,0) scaleY(${glowScale})`;
+  m.lineGlow.style.left = left;
+  m.lineGlow.style.top  = top;
+  m.lineGlow.style.height = h;
 
-// тусклая часть ПОСЛЕ текущей точки (сжимается снизу вверх)
-lineDim.style.left   = `${centerX}px`;
-lineDim.style.top    = `${startY}px`;
-lineDim.style.height = `${fullLen}px`;
-lineDim.style.transform = `translate3d(-50%,0,0) scaleY(${dimScale})`;
+  m.lineDim.style.left = left;
+  m.lineDim.style.top  = top;
+  m.lineDim.style.height = h;
+}
 
+function __bpSetMainLineScales(glowScale, dimScale, m){
+  m.lineGlow.style.transform = `translate3d(-50%,0,0) scaleY(${glowScale})`;
+  m.lineDim.style.transform  = `translate3d(-50%,0,0) scaleY(${dimScale})`;
+}
+
+function __bpCancelMainLineAnim(){
+  if (__bpMainLineAnimRaf){
+    cancelAnimationFrame(__bpMainLineAnimRaf);
+    __bpMainLineAnimRaf = 0;
+  }
+}
+
+function bpMainLineAnimateTo(idx, immediate){
+  const m = __bpReadMainLineMetrics(idx);
+  if (!m) return;
+
+  __bpApplyMainLineGeom(m);
+
+  const toGlow = m.glowScale;
+  const toDim  = m.dimScale;
+
+  // десктоп или принудительно — ставим мгновенно
+  if (!__BP_IS_MOBILE || immediate){
+    __bpCancelMainLineAnim();
+    __bpMainLineCurGlow = toGlow;
+    __bpMainLineCurDim  = toDim;
+    __bpSetMainLineScales(toGlow, toDim, m);
+    return;
+  }
+
+  // MOBILE: анимация кадр-в-кадр (самый плавный вариант)
+  __bpCancelMainLineAnim();
+
+  const fromGlow = __bpMainLineCurGlow;
+  const fromDim  = __bpMainLineCurDim;
+
+  const dur = 520; // ms
+  const start = performance.now();
+
+  const tick = (now)=>{
+    const t = Math.min(1, (now - start) / dur);
+    const k = __bpEaseOutCubic(t);
+
+    const g = fromGlow + (toGlow - fromGlow) * k;
+    const d = fromDim  + (toDim  - fromDim)  * k;
+
+    __bpSetMainLineScales(g, d, m);
+
+    if (t < 1){
+      __bpMainLineAnimRaf = requestAnimationFrame(tick);
+    } else {
+      __bpMainLineAnimRaf = 0;
+      __bpMainLineCurGlow = toGlow;
+      __bpMainLineCurDim  = toDim;
+      __bpSetMainLineScales(toGlow, toDim, m);
+    }
+  };
+
+  __bpMainLineAnimRaf = requestAnimationFrame(tick);
+}
+
+function bpMainLineScheduleRecalc(){
+  if (__bpMainLineRecalcRaf) return;
+  __bpMainLineRecalcRaf = requestAnimationFrame(()=>{
+    __bpMainLineRecalcRaf = 0;
+    bpMainLineAnimateTo((window.__bpProgressIndex ?? 0), true);
+  });
+}
+
+// имя оставляем — чтобы весь остальной код не трогать
+function syncBattlePassMainLine(){
+  bpMainLineAnimateTo((window.__bpProgressIndex ?? 0), true);
 }
 
 function syncBattlePassProgressUI(){
@@ -5552,82 +5648,25 @@ function renderBattlePass(){
     </div>
   `;
 
-let __bpMainLineRaf = 0;
-function __bpRoundPx(v){
-  const dpr = window.devicePixelRatio || 1;
-  return Math.round(v * dpr) / dpr;
-}
-function scheduleBattlePassMainLine(){
-  if (__bpMainLineRaf) return;
-  __bpMainLineRaf = requestAnimationFrame(()=>{
-    __bpMainLineRaf = 0;
-    syncBattlePassMainLine();
-    // второй кадр — чтобы на телефоне всё «успело устаканиться»
-    requestAnimationFrame(()=> syncBattlePassMainLine());
-  });
-}
+  // одна цельная линия строго от центра первой до центра последней точки
+  window.__bpProgressIndex = (window.__bpProgressIndex ?? 0);
+  syncBattlePassProgressUI();
+  bpSyncClaimedUI();
 
-function syncBattlePassMainLine(){
-  const tl = upgradesScreen?.querySelector?.('.bp-timeline');
-  if (!tl) return;
+  // старт — сразу выставляем геометрию/скейл (на мобиле дальнейшее будет анимироваться)
+  bpMainLineAnimateTo((window.__bpProgressIndex ?? 0), true);
 
-  const lineGlow = tl.querySelector('.bp-mainline');
-  const lineDim  = tl.querySelector('.bp-mainline-dim');
-  const wraps = Array.from(tl.querySelectorAll('.bp-line-wrap'));
-  const nodes = Array.from(tl.querySelectorAll('.bp-node'));
-  if (!lineGlow || !lineDim || wraps.length < 2 || nodes.length < 2) return;
+  if (!window.__bpMainLineResizeBound){
+    window.__bpMainLineResizeBound = true;
 
-  const px = __bpRoundPx;
+    window.addEventListener('resize', bpMainLineScheduleRecalc, { passive: true });
+    window.addEventListener('orientationchange', bpMainLineScheduleRecalc, { passive: true });
 
-  const tlRect = tl.getBoundingClientRect();
-  const firstW = wraps[0].getBoundingClientRect();
-
-  const nodeSize = nodes[0]?.offsetHeight || 14;
-  const r = nodeSize / 2;
-
-  const lastNodeRect  = nodes[nodes.length - 1].getBoundingClientRect();
-
-  // raw (без округления) — чтобы масштаб считался стабильно
-  const centerXRaw     = (firstW.left + firstW.width / 2) - tlRect.left;
-  const startYRaw      = (firstW.top - tlRect.top) + r; // старт линии оставляем как был
-  const lastCenterYRaw = (lastNodeRect.top + lastNodeRect.height / 2) - tlRect.top;
-
-  // округляем до device-pixel, чтобы на телефоне не «прыгало» из-за дробных px
-  const centerX     = px(centerXRaw);
-  const startY      = px(startYRaw);
-  const lastCenterY = px(lastCenterYRaw);
-
-  const idx = Math.min(
-    Math.max(0, (window.__bpProgressIndex ?? 0)),
-    nodes.length - 1
-  );
-
-  const curRect = nodes[idx].getBoundingClientRect();
-  const curCenterYRaw = (curRect.top + curRect.height / 2) - tlRect.top;
-  const curCenterY = px(curCenterYRaw);
-
-const fullLenRaw = Math.max(0, lastCenterYRaw - startYRaw);
-const glowLenRaw = Math.max(0, curCenterYRaw - startYRaw);
-const dimLenRaw  = Math.max(0, lastCenterYRaw - curCenterYRaw);
-
-const fullLen = px(fullLenRaw);
-
-const glowScale = fullLenRaw ? Math.min(1, Math.max(0, glowLenRaw / fullLenRaw)) : 0;
-const dimScale  = fullLenRaw ? Math.min(1, Math.max(0, dimLenRaw  / fullLenRaw)) : 0;
-
-// светящаяся часть ДО текущей точки (растёт сверху вниз)
-lineGlow.style.left   = `${centerX}px`;
-lineGlow.style.top    = `${startY}px`;
-lineGlow.style.height = `${fullLen}px`;
-lineGlow.style.transform = `translate3d(-50%,0,0) scaleY(${glowScale})`;
-
-// тусклая часть ПОСЛЕ текущей точки (сжимается снизу вверх)
-lineDim.style.left   = `${centerX}px`;
-lineDim.style.top    = `${startY}px`;
-lineDim.style.height = `${fullLen}px`;
-lineDim.style.transform = `translate3d(-50%,0,0) scaleY(${dimScale})`;
-
-}
+    if (window.visualViewport){
+      window.visualViewport.addEventListener('resize', bpMainLineScheduleRecalc, { passive: true });
+      window.visualViewport.addEventListener('scroll', bpMainLineScheduleRecalc, { passive: true });
+    }
+  }
 
   if (!window.__bpBattlePassClickBound){
     window.__bpBattlePassClickBound = true;
@@ -5656,26 +5695,14 @@ lineDim.style.transform = `translate3d(-50%,0,0) scaleY(${dimScale})`;
       if (rewardId === 7){
         // если 7-я уже получена в этом проходе — второй клик запускает новый проход
 
-          // одна цельная линия строго от центра первой до центра последней точки
-  window.__bpProgressIndex = (window.__bpProgressIndex ?? 0);
-  syncBattlePassProgressUI();
-  bpSyncClaimedUI();
-
-  scheduleBattlePassMainLine();
-
-  if (!window.__bpMainLineResizeBound){
-    window.__bpMainLineResizeBound = true;
-
-    // обычный resize/поворот
-    window.addEventListener('resize', scheduleBattlePassMainLine, { passive: true });
-    window.addEventListener('orientationchange', scheduleBattlePassMainLine, { passive: true });
-
-    // mobile WebView: адресная строка/клавиатура меняют visualViewport (и именно это часто «дёргает»)
-    if (window.visualViewport){
-      window.visualViewport.addEventListener('resize', scheduleBattlePassMainLine, { passive: true });
-      window.visualViewport.addEventListener('scroll', scheduleBattlePassMainLine, { passive: true });
-    }
-  }
+                if (bpRunIsClaimed(7)){
+          bpRunReset();
+          window.__bpProgressIndex = 0;
+          syncBattlePassProgressUI();
+          bpSyncClaimedUI(tl);
+          bpMainLineAnimateTo((window.__bpProgressIndex ?? 0), true);
+          return;
+        }
 
         // выдаём 7-ю один раз за проход
         const add = bpGetRewardStars(7);
@@ -5709,7 +5736,7 @@ lineDim.style.transform = `translate3d(-50%,0,0) scaleY(${dimScale})`;
       syncBattlePassProgressUI();
       bpSyncClaimedUI(tl);
 
-      scheduleBattlePassMainLine();
+      bpMainLineAnimateTo((window.__bpProgressIndex ?? 0));
     });
   }
 }
