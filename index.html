@@ -2293,8 +2293,8 @@ h2.section{
   pointer-events: none;
   z-index: 1;
 
-  /* плавно, но быстро */
-  transition: transform .22s cubic-bezier(.2,.9,.2,1);
+  /* плавнее и медленнее */
+  transition: transform .55s cubic-bezier(.22,1,.36,1);
 
   background: linear-gradient(
     180deg,
@@ -2321,7 +2321,7 @@ h2.section{
   pointer-events: none;
   z-index: 1;
 
-  transition: transform .22s cubic-bezier(.2,9,2,1);
+  transition: transform .55s cubic-bezier(.22,1,.36,1);
 
   background: rgba(190, 200, 215, .38); /* <-- СЕРАЯ линия, больше не сливается */
   box-shadow: none;
