@@ -2532,12 +2532,17 @@ h2.section{
   filter: grayscale(.4);
 }
 
-/* АКТИВНАЯ награда — без неонового свечения */
+/* АКТИВНАЯ награда — свечение контура как у точки */
 .bp-item.active .bp-card{
   opacity: 1;
   filter: none;
-  border-color: rgba(22,241,255,.35);
-  box-shadow: none;
+
+  border-color: var(--neon-cyan);
+
+  /* 1-в-1 как у .bp-node.active */
+  box-shadow:
+    0 0 10px rgba(22,241,255,9),
+    0 0 20px rgba(22,241,255,45);
 }
 
   </style>
