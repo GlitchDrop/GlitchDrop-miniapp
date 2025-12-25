@@ -2381,13 +2381,16 @@ h2.section{
 
 /* карточка награды */
 .bp-card{
+  position: relative; /* важно для .bp-card::before */
   border-radius: 16px;
   border: 1px solid var(--border);
-  background: linear-gradient(
-    180deg,
-    rgba(15,20,48,.85),
-    rgba(10,14,34,.9)
-  );
+
+  /* переносим “верхний” фон на всю карточку (чтобы не было стыка) */
+  background:
+    radial-gradient(120px 80px at 20% 20%, rgba(22,241,255,.08), transparent 60%),
+    radial-gradient(120px 80px at 80% 80%, rgba(138,92,255,.08), transparent 60%),
+    linear-gradient(180deg,#0b1030,#0a1028);
+
   overflow: hidden;
   transition: border-color .12s ease, box-shadow .12s ease, opacity .12s ease, filter .12s ease;
 }
@@ -2395,10 +2398,10 @@ h2.section{
 /* область картинки */
 .bp-card-img{
   height: 120px;
-  background:
-    radial-gradient(120px 80px at 20% 20%, rgba(22,241,255,.08), transparent 60%),
-    radial-gradient(120px 80px at 80% 80%, rgba(138,92,255,.08), transparent 60%),
-    linear-gradient(180deg,#0b1030,#0a1028);
+
+  /* убираем отдельный фон, чтобы не было “полосы”/стыка */
+  background: transparent;
+
   position: relative;
   overflow: hidden;
 }
