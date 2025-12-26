@@ -191,16 +191,10 @@ GD.ensureUid8 = function (tgId) {
      *{box-sizing:border-box}
     html,body{height:100%;margin:0;font-family:'Inter',system-ui,Segoe UI,Roboto,Arial,sans-serif}
     html{scroll-behavior:smooth; scrollbar-gutter: stable;}
-    body{ color:var(--text); overflow-x:hidden; background:#0e1b25; overflow-y:scroll; }
- .cyber-bg{
+    body{ color:var(--text); overflow-x:hidden; background:var(--card); overflow-y:scroll; }
+.cyber-bg{
   position:fixed; inset:0; z-index:0; pointer-events:none;
-  background:
-    radial-gradient(80% 50% at 50% -10%, rgba(22,241,255,.06), transparent 60%),
-    radial-gradient(70% 40% at 50% 110%, rgba(138,92,255,.08), transparent 60%),
-    linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bot) 100%),
-    repeating-linear-gradient(0deg,  var(--grid) 0 1px, transparent 1px var(--grid-gap)),
-    repeating-linear-gradient(90deg, var(--grid) 0 1px, transparent 1px var(--grid-gap));
-  background-blend-mode: screen, screen, normal, overlay, overlay;
+  background: var(--card);
 }
 
    .app{min-height:100%;display:flex;flex-direction:column;position:relative;z-index:1}
@@ -322,21 +316,16 @@ GD.ensureUid8 = function (tgId) {
   cursor:pointer;
   border-radius:var(--radius);
   border:1px solid rgba(140,170,255,.2);
-  background:linear-gradient(180deg, rgba(12,16,40,.9), rgba(9,12,30,.95));
+  background:linear-gradient(180deg, var(--card), var(--card2));
   box-shadow:var(--shadow-strong);
 
-  /* 3D tilt */
-  --rx: 0deg;
-  --ry: 0deg;
-  transform-style: preserve-3d;
-  will-change: transform;
-
-  transform:translateY(0) scale(1) rotateX(var(--rx)) rotateY(var(--ry));
+  transform:translateY(0) scale(1);
   transition:
     transform .14s cubic-bezier(.25,.8,.25,1),
     box-shadow .14s ease-out,
     border-color .14s ease-out;
 }
+
 
 /* пока палец на карточке — убираем transition, чтобы не “резинило” */
 .card.tilting{
@@ -1931,49 +1920,25 @@ h2.section{
 
 /* 1) БАЗА: твоя картинка */
 #live-grid-bg .grid-base{
-  background-image: var(--grid-bg-image);
-  background-size: cover;
-  background-position: center bottom;
-  filter: saturate(1.05) contrast(1.08) brightness(.9);
-  transform: scale(1.03);
-  animation: gridDrift 30s ease-in-out infinite alternate;
+  background: var(--card);
+  background-image: none;
+  filter: none;
+  transform: none;
+  animation: none;
   opacity: 1;
 }
 
 /* 2) ПОДСВЕТКА ЛИНИЙ: мягкое мерцание */
 #live-grid-bg .grid-glow{
-  background:
-    radial-gradient(120% 70% at 50% 10%, rgba(180,90,255,.18), transparent 60%),
-    radial-gradient(90% 60% at 50% 90%, rgba(110,60,255,.20), transparent 70%);
-  mix-blend-mode: screen;
-  filter: blur(18px);
-  animation: glowBreath 6.5s ease-in-out infinite alternate;
-  opacity:.9;
+  opacity: 0;
+  animation: none;
 }
+
 
 /* 3) “СКАН-ВОЛНЫ” по линиям сетки */
 #live-grid-bg .grid-scan{
-  background:
-    /* волна слева направо */
-    linear-gradient(90deg,
-      transparent 0%,
-      rgba(190,120,255,.0) 35%,
-      rgba(220,160,255,.18) 50%,
-      rgba(190,120,255,.0) 65%,
-      transparent 100%),
-    /* волна сверху вниз */
-    linear-gradient(180deg,
-      transparent 0%,
-      rgba(120,180,255,.0) 40%,
-      rgba(150,220,255,.14) 50%,
-      rgba(120,180,255,.0) 60%,
-      transparent 100%);
-  mix-blend-mode: screen;
-  filter: blur(8px);
-  animation:
-    scanX 7s linear infinite,
-    scanY 9s linear infinite;
-  opacity:.8;
+  opacity: 0;
+  animation: none;
 }
 
 /* если у тебя контент вдруг перекрывается фоном — подними его */
