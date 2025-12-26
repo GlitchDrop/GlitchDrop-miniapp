@@ -1022,6 +1022,27 @@ html:not(.in-telegram) .d-auth-warning{
 html.scroll-locked, html.scroll-locked body{
   overflow: hidden;
   overscroll-behavior: none; /* без резких пружин на iOS/Android */
+  height: 100%;
+}
+
+/* === ОБМЕН: фиксируем экран и скроллим только внутри него (без "оттягивания" фона) === */
+#upgradesScreen.upgrades-fixed{
+  position: fixed;
+  left: 0; right: 0;
+  top: var(--topbar-h, 0px);
+  bottom: var(--tabbar-h, 0px);
+
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+
+  /* на современных браузерах */
+  overscroll-behavior: none;
+
+  /* чтобы при любой "пустоте" не просвечивал другой фон */
+  background: linear-gradient(180deg, var(--bg-top, #050814), var(--bg-bot, #0a1022));
+
+  z-index: 5;
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* ===== СЕТКА КАРТОЧЕК КЕЙСОВ ===== */
@@ -4800,6 +4821,16 @@ function hardCloseDetailAndModal(){
       detail.setAttribute('aria-hidden','true');
     } catch(e){}
   }
+
+  // === СБРОС "анти-резинки" для вкладки ОБМЕН (если была включена)
+  try{
+    if (window.__upgradesNoPullCleanup){
+      window.__upgradesNoPullCleanup();
+      window.__upgradesNoPullCleanup = null;
+    }
+    upgradesScreen?.classList.remove('upgrades-fixed');
+  }catch(e){}
+
   // Вернуть скролл, если был залочен
   try { lockBody(false); } catch(e){}
 }
@@ -5124,12 +5155,70 @@ function showUpgrades(){
   upgradesScreen.classList.remove('hide');
   upgradesScreen.setAttribute('aria-hidden','false');
 
+  // === ВАЖНО: лочим общий скролл страницы (чтобы не тянулся фон)
+  try { lockBody(true); } catch(e){}
+
+  // === делаем "Обмен" отдельной фиксированной scroll-поверхностью
+  upgradesScreen.classList.add('upgrades-fixed');
+
+  // анти-"резинка" на iOS: запрещаем тянуть на верхней/нижней границе
+  if (!window.__bindNoPull){
+    window.__bindNoPull = function(el){
+      if (!el) return function(){};
+
+      const isIOS =
+        /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+      if (!isIOS) return function(){};
+
+      let startY = 0;
+
+      const onTouchStart = (e)=>{
+        if (e.touches && e.touches.length === 1){
+          startY = e.touches[0].clientY;
+        }
+      };
+
+      const onTouchMove = (e)=>{
+        if (!e.touches || e.touches.length !== 1) return;
+
+        const y = e.touches[0].clientY;
+        const delta = y - startY;
+
+        const atTop = el.scrollTop <= 0;
+        const atBottom = (el.scrollTop + el.clientHeight) >= (el.scrollHeight - 1);
+
+        // тянем вниз на самом верху / тянем вверх на самом низу — гасим "резинку"
+        if ((atTop && delta > 0) || (atBottom && delta < 0)){
+          e.preventDefault();
+        }
+      };
+
+      el.addEventListener('touchstart', onTouchStart, { passive: true });
+      el.addEventListener('touchmove', onTouchMove, { passive: false });
+
+      return function(){
+        el.removeEventListener('touchstart', onTouchStart);
+        el.removeEventListener('touchmove', onTouchMove);
+      };
+    };
+  }
+
+  // на всякий: снять прошлый хук и поставить заново
+  try{
+    if (window.__upgradesNoPullCleanup) window.__upgradesNoPullCleanup();
+  }catch(e){}
+  window.__upgradesNoPullCleanup = window.__bindNoPull(upgradesScreen);
+
   // отрисовать пропуск
   renderBattlePass();
 
   setActiveTab(upgradesTab);
   document.body.classList.remove('friends-active');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  // скроллим ВНУТРИ экрана "Обмен", а не window
+  upgradesScreen.scrollTop = 0;
 }
 
 // === ПУСТОЙ РЕЖИМ ДЛЯ «КОНКУРСОВ» ===
