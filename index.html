@@ -325,11 +325,28 @@ GD.ensureUid8 = function (tgId) {
   background:linear-gradient(180deg, rgba(12,16,40,.9), rgba(9,12,30,.95));
   box-shadow:var(--shadow-strong);
 
-  transform:translateY(0) scale(1);
+  /* 3D tilt */
+  --rx: 0deg;
+  --ry: 0deg;
+  transform-style: preserve-3d;
+  will-change: transform;
+
+  transform:translateY(0) scale(1) rotateX(var(--rx)) rotateY(var(--ry));
   transition:
     transform .14s cubic-bezier(.25,.8,.25,1),
     box-shadow .14s ease-out,
     border-color .14s ease-out;
+}
+
+/* пока палец на карточке — убираем transition, чтобы не “резинило” */
+.card.tilting{
+  transition:none !important;
+}
+
+/* лёгкая “глубина” контента */
+.card .inner,
+.card .card-footer{
+  transform: translateZ(18px);
 }
 
 /* мягкий неон вокруг карточки */
@@ -497,12 +514,13 @@ html:not(.in-telegram) .card .price-bar{
 
 /* СОСТОЯНИЕ ВЫБРАННОЙ КАРТОЧКИ — «набухла» и с подсветкой */
 .card.case-selected{
-  transform:translateY(-2px) scale(1.03);
+  transform:translateY(-2px) scale(1.03) rotateX(var(--rx)) rotateY(var(--ry));
   border-color:var(--neon-cyan);
   box-shadow:
     0 18px 40px rgba(22,241,255,0.45),
     0 0 40px rgba(255,228,122,0.75);
 }
+
 .card.case-selected::after{
   opacity:1; /* затемнение */
 }
@@ -1030,7 +1048,11 @@ html.scroll-locked, html.scroll-locked body{
   gap: 14px;
   grid-template-columns: repeat(2, minmax(0, 1fr)); /* 2 колонки на мобиле */
   align-items: start;
+
+  perspective: 900px;
+  perspective-origin: 50% 40%;
 }
+
 @media (min-width: 560px){
   .grid{ grid-template-columns: repeat(3, minmax(0,1fr)); } /* планшет */
 }
@@ -3728,6 +3750,115 @@ function clearSelectedCase(){
   }
 }
 
+/* ===== 3D Tilt для карточек (поворот от пальца) ===== */
+function initCardTilt(card){
+  if (!card || card.__tiltBound) return;
+  card.__tiltBound = true;
+
+  const MAX_DEG = 7;       // сила наклона (крути 6..12)
+  const SMOOTH = 0.14;     // плавность (меньше = плавнее, 0.12..0.22)
+
+  let down = false;
+  let rect = null;
+
+  let curRx = 0, curRy = 0;
+  let tgtRx = 0, tgtRy = 0;
+
+  let raf = 0;
+
+  const clamp = (v, a, b) => (v < a ? a : (v > b ? b : v));
+
+  function tick(){
+    raf = 0;
+
+    curRx += (tgtRx - curRx) * SMOOTH;
+    curRy += (tgtRy - curRy) * SMOOTH;
+
+    card.style.setProperty('--rx', curRx.toFixed(3) + 'deg');
+    card.style.setProperty('--ry', curRy.toFixed(3) + 'deg');
+
+    if (Math.abs(tgtRx - curRx) > 0.01 || Math.abs(tgtRy - curRy) > 0.01){
+      raf = requestAnimationFrame(tick);
+    }
+  }
+
+  function setFromXY(x, y){
+    rect = rect || card.getBoundingClientRect();
+
+    let nx = (x - rect.left) / rect.width;
+    let ny = (y - rect.top) / rect.height;
+
+    nx = clamp(nx, 0, 1);
+    ny = clamp(ny, 0, 1);
+
+    tgtRy = clamp((nx - 0.5) * (MAX_DEG * 2), -MAX_DEG, MAX_DEG);
+    tgtRx = clamp(-(ny - 0.5) * (MAX_DEG * 2), -MAX_DEG, MAX_DEG);
+
+    if (!raf) raf = requestAnimationFrame(tick);
+  }
+
+  function reset(){
+    rect = null;
+    tgtRx = 0;
+    tgtRy = 0;
+    if (!raf) raf = requestAnimationFrame(tick);
+  }
+
+  function onDown(e){
+    // если жмут по кнопке "ОТКРЫТЬ" — не крутим карточку (чтобы клик был чистый)
+    if (e.target && e.target.closest && e.target.closest('.card-open-btn')) return;
+
+    down = true;
+    rect = card.getBoundingClientRect();
+    card.classList.add('tilting');
+
+    if (e.pointerId != null && card.setPointerCapture){
+      try{ card.setPointerCapture(e.pointerId); }catch(_){}
+    }
+
+    setFromXY(e.clientX, e.clientY);
+  }
+
+  function onMove(e){
+    if (!down) return;
+    setFromXY(e.clientX, e.clientY);
+  }
+
+  function onUp(){
+    if (!down) return;
+    down = false;
+    card.classList.remove('tilting');
+    reset();
+  }
+
+  if (window.PointerEvent){
+    card.addEventListener('pointerdown', onDown, { passive:true });
+    card.addEventListener('pointermove', onMove, { passive:true });
+    card.addEventListener('pointerup', onUp, { passive:true });
+    card.addEventListener('pointercancel', onUp, { passive:true });
+  } else {
+    // запасной вариант для очень старых webview
+    card.addEventListener('touchstart', (ev)=>{
+      const t = ev.touches && ev.touches[0];
+      if (!t) return;
+      down = true;
+      rect = card.getBoundingClientRect();
+      card.classList.add('tilting');
+      setFromXY(t.clientX, t.clientY);
+    }, { passive:true });
+
+    card.addEventListener('touchmove', (ev)=>{
+      if (!down) return;
+      const t = ev.touches && ev.touches[0];
+      if (!t) return;
+      setFromXY(t.clientX, t.clientY);
+    }, { passive:true });
+
+    card.addEventListener('touchend', onUp, { passive:true });
+    card.addEventListener('touchcancel', onUp, { passive:true });
+  }
+}
+
 // ====== Рендер карточек ======
 sections.forEach(sec=>{
   // чип
@@ -3824,6 +3955,7 @@ sections.forEach(sec=>{
       }
     }
 
+    initCardTilt(card);
     grid.appendChild(card);
 
   }
