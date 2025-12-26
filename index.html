@@ -4884,23 +4884,6 @@ function setActiveTab(tab){
   tab?.classList.add('active');
 }
 
-// Мгновенно прыгаем наверх БЕЗ анимации (даже если в CSS стоит scroll-behavior:smooth)
-function scrollToTopInstant(){
-  var de = document.documentElement;
-  var bd = document.body;
-
-  var prevDe = (de && de.style) ? de.style.scrollBehavior : '';
-  var prevBd = (bd && bd.style) ? bd.style.scrollBehavior : '';
-
-  if (de && de.style) de.style.scrollBehavior = 'auto';
-  if (bd && bd.style) bd.style.scrollBehavior = 'auto';
-
-  window.scrollTo(0, 0);
-
-  if (de && de.style) de.style.scrollBehavior = prevDe || '';
-  if (bd && bd.style) bd.style.scrollBehavior = prevBd || '';
-}
-
 function hardCloseDetailAndModal(){
   // Закрыть модалку дропа, если открыта
   if (typeof _modalOpen !== 'undefined' && _modalOpen) {
@@ -4972,11 +4955,11 @@ upgradesScreen.setAttribute('aria-hidden','true');
       </div>
     </div>
   `;
-  scrollToTopInstant();
   profileScreen.classList.remove('hide');
   profileScreen.setAttribute('aria-hidden','false');
 
   setActiveTab(profileTab);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 
   renderInventory();
   restoreTopbarIfNeeded();                          // ← вернём верхний топбар
@@ -4985,6 +4968,7 @@ document.body.classList.remove('friends-active');
 if (typeof syncTopbarOffset === 'function') syncTopbarOffset();
 
 }
+
 
 function renderInventory(){
   const grid  = document.getElementById('inventoryGrid');
@@ -5172,6 +5156,7 @@ if (window.matchMedia('(min-width:680px)').matches && partnerBtn){
 
 }
 
+
 function showFriends(){
   hardCloseDetailAndModal();
 
@@ -5188,7 +5173,6 @@ upgradesScreen.setAttribute('aria-hidden','true');
 
 
   // показать friends
-  scrollToTopInstant();
   friendsScreen.classList.remove('hide');
   friendsScreen.setAttribute('aria-hidden','false');
 
@@ -5199,12 +5183,14 @@ upgradesScreen.setAttribute('aria-hidden','true');
   document.body.classList.remove('friends-active');
 
   setActiveTab(friendsTab);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 
   // заголовок «Друзья» прижат к самому верху
   document.documentElement.style.setProperty('--topbar-h', '0px');
 
   renderFriends(true);
 }
+
 
 // вернуть топбар при уходе с «Друзей»
 function restoreTopbarIfNeeded(){
@@ -5232,7 +5218,6 @@ function showUpgrades(){
   contestsScreen.classList.add('hide'); contestsScreen.setAttribute('aria-hidden','true');
 
   // показать обмен
-  scrollToTopInstant();
   upgradesScreen.classList.remove('hide');
   upgradesScreen.setAttribute('aria-hidden','false');
 
@@ -5241,6 +5226,7 @@ function showUpgrades(){
 
   setActiveTab(upgradesTab);
   document.body.classList.remove('friends-active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // === ПУСТОЙ РЕЖИМ ДЛЯ «КОНКУРСОВ» ===
@@ -5393,6 +5379,7 @@ contestsScreen.innerHTML = `
 }
 
 
+
 function showContests(){
   hardCloseDetailAndModal();
 // гарантируем видимый верхний топбар и корректные отступы
@@ -5417,7 +5404,6 @@ upgradesScreen.setAttribute('aria-hidden','true');
 
 
   // показываем экран конкурсов
-  scrollToTopInstant();
   contestsScreen.classList.remove('hide');
   contestsScreen.setAttribute('aria-hidden','false');
 
@@ -5431,6 +5417,7 @@ upgradesScreen.setAttribute('aria-hidden','true');
   if (typeof syncTopbarOffset === 'function') syncTopbarOffset();
   if (typeof syncTabbarOffset === 'function') syncTabbarOffset();
 
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function renderUpgrades(){
