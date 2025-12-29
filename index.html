@@ -5269,23 +5269,106 @@ const BP_REWARD_STARS = {
   7: 75
 };
 
-// флаги "получено в текущем проходе" — только в памяти (после обновления страницы всё обнуляется)
-window.__bpClaimedThisRun = window.__bpClaimedThisRun || {};
+// ===== BATTLE PASS — ЕЖЕДНЕВНЫЕ НАГРАДЫ (24 часа между получениями) =====
+// Канонично: кто/когда/какая награда — решает сервер. Фронт только рисует и вызывает API.
+
+const BP_TOTAL_REWARDS = 7;
+const BP_COOLDOWN_SEC = 24 * 60 * 60;
+
+// Состояние с сервера (хранится в памяти, но восстанавливается через /api/bp/status)
+window.__bpServerState = window.__bpServerState || {
+  last_reward: 0,
+  last_claim_ts: 0,
+  next_available_at: 0,
+  server_time: 0
+};
 
 function bpGetRewardStars(id){
+  // В UI можно использовать, но начисление делаем только по ответу сервера
   return Number(BP_REWARD_STARS[id] || 0) || 0;
 }
 
+function bpGetInitData(){
+  return (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData) || '';
+}
+
+function bpFormatLeft(sec){
+  sec = Math.max(0, sec|0);
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  const s = sec % 60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+async function bpApi(path, opts){
+  opts = opts || {};
+  opts.method = opts.method || 'GET';
+  opts.headers = Object.assign({}, opts.headers || {}, {
+    'Content-Type': 'application/json',
+    'X-Init-Data': bpGetInitData()
+  });
+
+  const r = await fetch(`${window.API_BASE}${path}`, opts);
+  const data = await r.json().catch(()=> ({}));
+
+  if (!r.ok){
+    const err = new Error(data?.error || `HTTP ${r.status}`);
+    err.status = r.status;
+    err.data = data;
+    throw err;
+  }
+  return data;
+}
+
+// server-truth: "получено" если rewardId <= last_reward
 function bpRunIsClaimed(id){
-  return !!(window.__bpClaimedThisRun && window.__bpClaimedThisRun[String(id)]);
+  const last = Math.max(0, Number(window.__bpServerState?.last_reward || 0) || 0);
+  return Number(id) <= last;
 }
-
 function bpRunMarkClaimed(id){
-  window.__bpClaimedThisRun[String(id)] = true;
+  // no-op: теперь фиксирует сервер
+}
+function bpRunReset(){
+  // no-op: сбросов больше нет
 }
 
-function bpRunReset(){
-  // СБРОС ПРОХОДА ОТКЛЮЧЕН (по ТЗ убрали "Начать заново" и полный сброс наград)
+function bpSecondsLeft(){
+  const st = window.__bpServerState || {};
+  const now = Number(st.server_time || 0) || Math.floor(Date.now() / 1000);
+  const nextAt = Number(st.next_available_at || 0) || 0;
+  const left = nextAt - now;
+  return left > 0 ? left : 0;
+}
+
+async function bpRefreshFromServer(tl){
+  try{
+    if (!window.API_BASE) return;
+
+    const initData = bpGetInitData();
+    if (!initData) return; // не в Telegram MiniApp
+
+    const st = await bpApi('/api/bp/status', { method:'GET' });
+    if (st && st.ok){
+      window.__bpServerState = {
+        last_reward: Number(st.last_reward || 0) || 0,
+        last_claim_ts: Number(st.last_claim_ts || 0) || 0,
+        next_available_at: Number(st.next_available_at || 0) || 0,
+        server_time: Number(st.server_time || 0) || 0
+      };
+    }
+  } catch (e){
+    console.warn('bp/status failed:', e);
+  } finally {
+    // прогресс = кол-во уже полученных наград (0 → активна 1-я)
+    const last = Math.max(0, Number(window.__bpServerState?.last_reward || 0) || 0);
+    window.__bpProgressIndex = Math.min(BP_TOTAL_REWARDS - 1, last);
+
+    syncBattlePassProgressUI();
+    bpSyncClaimedUI(tl);
+
+    requestAnimationFrame(syncBattlePassMainLine);
+    setTimeout(syncBattlePassMainLine, 60);
+  }
 }
 
 function bpSyncClaimedUI(tl){
@@ -5293,15 +5376,53 @@ function bpSyncClaimedUI(tl){
   if (!tl) return;
 
   const items = Array.from(tl.querySelectorAll('.bp-item'));
+  const last = Math.max(0, Number(window.__bpServerState?.last_reward || 0) || 0);
+  const nextReward = Math.min(BP_TOTAL_REWARDS, last + 1);
+  const left = bpSecondsLeft();
 
   items.forEach((it, i) => {
     const rewardId = i + 1;
     const btn = it.querySelector('.bp-card-btn');
     if (!btn) return;
 
-    // "Получено" если награда уже забрана, иначе "Получить"
-    btn.textContent = bpRunIsClaimed(rewardId) ? 'Получено' : 'Получить';
+    if (bpRunIsClaimed(rewardId)){
+      btn.textContent = 'Получено';
+      btn.classList.add('bp-btn-claimed');
+      btn.classList.remove('bp-btn-cooldown');
+      return;
+    }
+
+    btn.classList.remove('bp-btn-claimed');
+
+    // текущая награда (следующая по порядку)
+    if (rewardId === nextReward && left > 0){
+      btn.textContent = `Через ${bpFormatLeft(left)}`;
+      btn.classList.add('bp-btn-cooldown');
+    } else {
+      btn.textContent = 'Получить';
+      btn.classList.remove('bp-btn-cooldown');
+    }
   });
+}
+
+// 1 раз ставим тикер, чтобы таймер "Через 00:00:00" обновлялся без частых запросов на сервер
+if (!window.__bpCooldownTicker){
+  window.__bpCooldownTicker = true;
+  setInterval(() => {
+    try{
+      if (!upgradesScreen || upgradesScreen.classList.contains('hide')) return;
+
+      if (window.__bpServerState){
+        // тикаем локально (без запросов) — чтобы цифры были плавные
+        if (window.__bpServerState.server_time){
+          window.__bpServerState.server_time += 1;
+        } else {
+          window.__bpServerState.server_time = Math.floor(Date.now()/1000);
+        }
+      }
+      bpSyncClaimedUI();
+    } catch(_) {}
+  }, 1000);
 }
 
 /** Переключить пустой режим конкурсов.
@@ -5676,13 +5797,13 @@ function renderBattlePass(){
     </div>
   `;
 
-  // одна цельная линия строго от центра первой до центра последней точки
-  window.__bpProgressIndex = (window.__bpProgressIndex ?? 0);
+  // прогресс/кнопки подтягиваем с сервера (ежедневные награды + 24ч кулдаун)
+  window.__bpProgressIndex = 0;
   syncBattlePassProgressUI();
   bpSyncClaimedUI();
 
-  requestAnimationFrame(syncBattlePassMainLine);
-  setTimeout(syncBattlePassMainLine, 60);
+  // реальное состояние (что уже получено и когда следующая доступна)
+  bpRefreshFromServer(upgradesScreen.querySelector('.bp-timeline'));
 
   if (!window.__bpMainLineResizeBound){
     window.__bpMainLineResizeBound = true;
@@ -5692,7 +5813,7 @@ function renderBattlePass(){
   if (!window.__bpBattlePassClickBound){
     window.__bpBattlePassClickBound = true;
 
-    document.addEventListener('click', (e)=>{
+document.addEventListener('click', async (e)=>{
       const btn = e.target.closest('.bp-card-btn');
       if (!btn) return;
 
@@ -5712,30 +5833,56 @@ function renderBattlePass(){
 
       const rewardId = idx + 1;
 
-      // если уже получено — ничего не делаем (важно для 7-й, чтобы не было "сброса")
+      // если уже получено — ничего не делаем
       if (bpRunIsClaimed(rewardId)){
         bpSyncClaimedUI(tl);
         return;
       }
 
-      // выдаём STARS, если для этой награды они заданы (у тебя это 3 и 7)
-      const add = bpGetRewardStars(rewardId);
-      if (add > 0){
-        setStarsBalance(getStarsBalance() + add);
+      // если сейчас ещё не прошло 24 часа — просто покажем остаток
+      const leftNow = bpSecondsLeft();
+      if (leftNow > 0){
+        showToast(`Следующая награда будет доступна через ${bpFormatLeft(leftNow)}`);
+        bpSyncClaimedUI(tl);
+        return;
       }
 
-      // фиксируем "получено" для ЛЮБОЙ награды (не только 3/7)
-      bpRunMarkClaimed(rewardId);
+      // защита от спама кликов
+      if (btn.dataset.bpLoading === '1') return;
+      btn.dataset.bpLoading = '1';
 
-      // двигаем прогресс как раньше (кроме последней)
-      if (cur < max){
-        window.__bpProgressIndex = cur + 1;
+      try{
+        const data = await bpApi('/api/bp/claim', {
+          method:'POST',
+          body: JSON.stringify({ reward_id: rewardId })
+        });
+
+        // начисление звёзд для UI — строго по ответу сервера
+        const add = Number(data?.added_stars || 0) || 0;
+        if (add > 0){
+          setStarsBalance(getStarsBalance() + add);
+        }
+
+        // обновляем состояние/прогресс с сервера
+        await bpRefreshFromServer(tl);
+
+      } catch (e){
+        const left = Number(e?.data?.seconds_left || 0) || 0;
+        if (left > 0){
+          // сервер сказал "рано" — обновим локальный таймер, чтобы сразу стало корректно
+          const now = Math.floor(Date.now()/1000);
+          if (window.__bpServerState){
+            window.__bpServerState.server_time = now;
+            window.__bpServerState.next_available_at = now + left;
+          }
+          showToast(`Рано. Доступно через ${bpFormatLeft(left)}`);
+          bpSyncClaimedUI(tl);
+        } else {
+          showToast(e?.data?.error || e?.message || 'Ошибка получения награды');
+        }
+      } finally {
+        btn.dataset.bpLoading = '0';
       }
-
-      syncBattlePassProgressUI();
-      bpSyncClaimedUI(tl);
-
-      requestAnimationFrame(syncBattlePassMainLine);
     });
   }
 }
@@ -6430,7 +6577,10 @@ function tryChargeSpin() {
 
     // ВАЖНО: у тебя API_BASE уже без /api на конце.
     // Эндпоинт у нас /api/user-balance → добавляем его здесь.
-    fetch(`${window.API_BASE}/api/user-balance?user_id=${userId}`)
+    fetch(`${window.API_BASE}/api/user-balance`, {
+      method: 'GET',
+      headers: { 'X-Init-Data': tg?.initData || '' }
+    })
       .then(r => r.ok ? r.json() : Promise.reject(r.status))
       .then(data => {
         if (data && typeof data.stars === 'number') {
@@ -7493,7 +7643,10 @@ document.addEventListener('DOMContentLoaded', function() {
   const userId = tg?.initDataUnsafe?.user?.id;
   if (!userId) return;
 
-  fetch(`${window.API_BASE}/api/user-balance?user_id=${userId}`)
+  fetch(`${window.API_BASE}/api/user-balance`, {
+      method: 'GET',
+      headers: { 'X-Init-Data': tg?.initData || '' }
+    })
     .then(r => r.json())
     .then(data => {
       if (data && typeof data.stars === 'number') {
