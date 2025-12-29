@@ -3234,9 +3234,9 @@ if (addr) {
 
   <div class="tab">
     <div class="ico">
-      <img src="assets/images/20251117_1747_Иконка с прозрачным фоном_remix_01ka94fh16en3vq3kqfmhp6re2.png" alt="Обмен">
+      <img src="assets/images/20251117_1747_Иконка с прозрачным фоном_remix_01ka94fh16en3vq3kqfmhp6re2.png" alt="Пропуск">
     </div>
-    Обмен
+    Пропуск
   </div>
 
   <div class="tab active">
@@ -4865,7 +4865,7 @@ const profileTab =
   || tabsAll.find(t => /ИНВЕНТАРЬ|Профиль/i.test(t.textContent.trim()));
 const friendsTab = tabsAll.find(t => /Друзья/i.test(t.textContent.trim()));
 const contestsTab = tabsAll.find(t => /Конкурсы/i.test(t.textContent.trim()));
-const upgradesTab = tabsAll.find(t => /Обмен/i.test(t.textContent.trim()));
+const upgradesTab = tabsAll.find(t => /Пропуск/i.test(t.textContent.trim()));
 
 // ===== HAPTIC FEEDBACK (вибрация) =====
 function tabHaptic(){
@@ -5257,7 +5257,7 @@ function bpRunMarkClaimed(id){
 }
 
 function bpRunReset(){
-  window.__bpClaimedThisRun = {};
+  // СБРОС ПРОХОДА ОТКЛЮЧЕН (по ТЗ убрали "Начать заново" и полный сброс наград)
 }
 
 function bpSyncClaimedUI(tl){
@@ -5265,22 +5265,14 @@ function bpSyncClaimedUI(tl){
   if (!tl) return;
 
   const items = Array.from(tl.querySelectorAll('.bp-item'));
-  const maxIdx = items.length - 1;
 
   items.forEach((it, i) => {
     const rewardId = i + 1;
     const btn = it.querySelector('.bp-card-btn');
     if (!btn) return;
 
-    // по умолчанию везде "Получить"
-    let text = 'Получить';
-
-    // если мы стоим на 7-й и она уже получена в этом проходе — показываем "Начать заново"
-    if (i === maxIdx && rewardId === 7 && (window.__bpProgressIndex ?? 0) === maxIdx && bpRunIsClaimed(7)) {
-      text = 'Начать заново';
-    }
-
-    btn.textContent = text;
+    // "Получено" если награда уже забрана, иначе "Получить"
+    btn.textContent = bpRunIsClaimed(rewardId) ? 'Получено' : 'Получить';
   });
 }
 
@@ -5692,46 +5684,25 @@ function renderBattlePass(){
 
       const rewardId = idx + 1;
 
-      // === 7-я: либо выдаём один раз, либо "начать заново" ===
-      if (rewardId === 7){
-        // если 7-я уже получена в этом проходе — второй клик запускает новый проход
-        if (bpRunIsClaimed(7)){
-          bpRunReset();
-          window.__bpProgressIndex = 0;
-          syncBattlePassProgressUI();
-          bpSyncClaimedUI(tl);
-          requestAnimationFrame(syncBattlePassMainLine);
-          return;
-        }
-
-        // выдаём 7-ю один раз за проход
-        const add = bpGetRewardStars(7);
-        if (add > 0){
-          setStarsBalance(getStarsBalance() + add);
-        }
-        bpRunMarkClaimed(7);
-        syncBattlePassProgressUI();     // <-- чтобы 7-я потухла сразу
+      // если уже получено — ничего не делаем (важно для 7-й, чтобы не было "сброса")
+      if (bpRunIsClaimed(rewardId)){
         bpSyncClaimedUI(tl);
-
-        // прогресс дальше не двигаем (мы на последней)
         return;
       }
 
-      // === 3-я: выдаём при прохождении (она и так 1 раз, потому что дальше прогресс уйдёт) ===
-      if (rewardId === 3){
-        if (!bpRunIsClaimed(3)){
-          const add = bpGetRewardStars(3);
-          if (add > 0){
-            setStarsBalance(getStarsBalance() + add);
-          }
-          bpRunMarkClaimed(3);
-        }
+      // выдаём STARS, если для этой награды они заданы (у тебя это 3 и 7)
+      const add = bpGetRewardStars(rewardId);
+      if (add > 0){
+        setStarsBalance(getStarsBalance() + add);
       }
 
-      // дальше двигаем прогресс как раньше
-      if (cur >= max) return;
+      // фиксируем "получено" для ЛЮБОЙ награды (не только 3/7)
+      bpRunMarkClaimed(rewardId);
 
-      window.__bpProgressIndex = cur + 1;
+      // двигаем прогресс как раньше (кроме последней)
+      if (cur < max){
+        window.__bpProgressIndex = cur + 1;
+      }
 
       syncBattlePassProgressUI();
       bpSyncClaimedUI(tl);
