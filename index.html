@@ -2530,6 +2530,10 @@ h2.section{
   box-shadow: none;
 }
 
+.bp-card-btn.cooldown{
+  opacity: .6;
+}
+
   </style>
 
 <style>
@@ -5255,15 +5259,65 @@ function showUpgrades(){
 // true — показываем заглушку «Здесь пока что пусто»; false — обычный интерфейс
 GD.contestsEmpty = true;
 
-// ===== BATTLE PASS — НАЧИСЛЕНИЕ STARS (1 раз за проход, проход можно начать заново) =====
+// ===== BATTLE PASS — НАЧИСЛЕНИЕ STARS + PERSIST + COOLDOWN 24H =====
 // ✅ МЕНЯЙ СУММЫ ТУТ:
 const BP_REWARD_STARS = {
   3: 25,
   7: 75
 };
 
-// флаги "получено в текущем проходе" — только в памяти (после обновления страницы всё обнуляется)
-window.__bpClaimedThisRun = window.__bpClaimedThisRun || {};
+// 24 часа между получением наград (кроме первой)
+const BP_COOLDOWN_MS = 24 * 60 * 60 * 1000;
+
+// localStorage keys
+const LS_BP_CLAIMED   = 'gd_bp_claimed_v1';         // {"1":true,"2":true,...}
+const LS_BP_PROGRESS  = 'gd_bp_progress_idx_v1';    // "0..6"
+const LS_BP_LASTCLAIM = 'gd_bp_last_claim_ts_v1';   // unix ms
+
+function bpLsGet(key, fallback){
+  try{
+    const v = localStorage.getItem(key);
+    return (v === null || v === undefined) ? fallback : v;
+  }catch(e){
+    return fallback;
+  }
+}
+function bpLsSet(key, val){
+  try{ localStorage.setItem(key, val); }catch(e){}
+}
+
+function bpLoadClaimed(){
+  try{
+    const raw = bpLsGet(LS_BP_CLAIMED, '{}');
+    const obj = raw ? JSON.parse(raw) : {};
+    return (obj && typeof obj === 'object') ? obj : {};
+  }catch(e){
+    return {};
+  }
+}
+function bpSaveClaimed(map){
+  bpLsSet(LS_BP_CLAIMED, JSON.stringify(map || {}));
+}
+
+function bpLoadProgress(){
+  const n = parseInt(bpLsGet(LS_BP_PROGRESS, '0'), 10);
+  return Number.isFinite(n) ? n : 0;
+}
+function bpSaveProgress(idx){
+  bpLsSet(LS_BP_PROGRESS, String((idx|0)));
+}
+
+function bpLoadLastClaimTs(){
+  const n = parseInt(bpLsGet(LS_BP_LASTCLAIM, '0'), 10);
+  return Number.isFinite(n) ? n : 0;
+}
+function bpSaveLastClaimTs(ts){
+  bpLsSet(LS_BP_LASTCLAIM, String((ts|0)));
+}
+
+// подхватываем сохранённое
+window.__bpClaimedThisRun = bpLoadClaimed();
+window.__bpProgressIndex  = (window.__bpProgressIndex ?? bpLoadProgress());
 
 function bpGetRewardStars(id){
   return Number(BP_REWARD_STARS[id] || 0) || 0;
@@ -5275,10 +5329,29 @@ function bpRunIsClaimed(id){
 
 function bpRunMarkClaimed(id){
   window.__bpClaimedThisRun[String(id)] = true;
+  bpSaveClaimed(window.__bpClaimedThisRun);
 }
 
 function bpRunReset(){
   // СБРОС ПРОХОДА ОТКЛЮЧЕН (по ТЗ убрали "Начать заново" и полный сброс наград)
+}
+
+function bpCooldownRemainingMs(){
+  const last = bpLoadLastClaimTs();
+  if (!last) return 0;
+  const remain = BP_COOLDOWN_MS - (Date.now() - last);
+  return remain > 0 ? remain : 0;
+}
+
+function bpFormatCooldown(ms){
+  const s = Math.ceil(ms / 1000);
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+
+  if (h > 0) return `${h}ч ${m}м`;
+  if (m > 0) return `${m}м ${sec}с`;
+  return `${sec}с`;
 }
 
 function bpSyncClaimedUI(tl){
@@ -5286,14 +5359,32 @@ function bpSyncClaimedUI(tl){
   if (!tl) return;
 
   const items = Array.from(tl.querySelectorAll('.bp-item'));
+  const curIdx = (window.__bpProgressIndex ?? 0);
+  const curRewardId = curIdx + 1;
 
   items.forEach((it, i) => {
     const rewardId = i + 1;
     const btn = it.querySelector('.bp-card-btn');
     if (!btn) return;
 
-    // "Получено" если награда уже забрана, иначе "Получить"
-    btn.textContent = bpRunIsClaimed(rewardId) ? 'Получено' : 'Получить';
+    if (bpRunIsClaimed(rewardId)){
+      btn.textContent = 'Получено';
+      btn.classList.remove('cooldown');
+      return;
+    }
+
+    // для активной награды (кроме первой) показываем таймер, если ещё рано
+    if (rewardId === curRewardId && rewardId > 1){
+      const left = bpCooldownRemainingMs();
+      if (left > 0){
+        btn.textContent = `Через ${bpFormatCooldown(left)}`;
+        btn.classList.add('cooldown');
+        return;
+      }
+    }
+
+    btn.textContent = 'Получить';
+    btn.classList.remove('cooldown');
   });
 }
 
@@ -5669,68 +5760,120 @@ function renderBattlePass(){
     </div>
   `;
 
-  // одна цельная линия строго от центра первой до центра последней точки
-  window.__bpProgressIndex = (window.__bpProgressIndex ?? 0);
-  syncBattlePassProgressUI();
-  bpSyncClaimedUI();
+// одна цельная линия строго от центра первой до центра последней точки
+// прогресс подхватываем из localStorage и подравниваем под "получено"
+{
+  const tl0 = upgradesScreen?.querySelector?.('.bp-timeline');
+  const items0 = tl0 ? Array.from(tl0.querySelectorAll('.bp-item')) : [];
+  const max0 = Math.max(0, items0.length - 1);
 
-  requestAnimationFrame(syncBattlePassMainLine);
-  setTimeout(syncBattlePassMainLine, 60);
+  let idx0 = Number(window.__bpProgressIndex);
+  if (!Number.isFinite(idx0)) idx0 = 0;
 
-  if (!window.__bpMainLineResizeBound){
-    window.__bpMainLineResizeBound = true;
-    window.addEventListener('resize', ()=> requestAnimationFrame(syncBattlePassMainLine));
+  // сколько подряд уже "Получено" (1..N)
+  let claimedCount = 0;
+  for (let i = 1; i <= items0.length; i++){
+    if (bpRunIsClaimed(i)) claimedCount++;
+    else break;
   }
 
-  if (!window.__bpBattlePassClickBound){
-    window.__bpBattlePassClickBound = true;
+  idx0 = Math.max(idx0, Math.min(claimedCount, max0));
+  idx0 = Math.min(Math.max(0, idx0), max0);
 
-    document.addEventListener('click', (e)=>{
-      const btn = e.target.closest('.bp-card-btn');
-      if (!btn) return;
+  window.__bpProgressIndex = idx0;
+  bpSaveProgress(idx0);
+}
 
-      const item = btn.closest('.bp-item');
-      const tl = btn.closest('.bp-timeline');
-      if (!item || !tl) return;
+syncBattlePassProgressUI();
+bpSyncClaimedUI();
 
-      const items = Array.from(tl.querySelectorAll('.bp-item'));
-      const idx = items.indexOf(item);
-      if (idx === -1) return;
+requestAnimationFrame(syncBattlePassMainLine);
+setTimeout(syncBattlePassMainLine, 60);
 
-      const max = items.length - 1;
-      const cur = (window.__bpProgressIndex ?? 0);
+if (!window.__bpMainLineResizeBound){
+  window.__bpMainLineResizeBound = true;
+  window.addEventListener('resize', ()=> requestAnimationFrame(syncBattlePassMainLine));
+}
 
-      // жмём только на текущей (активной) награде
-      if (idx !== cur) return;
+// тикер для обновления текста таймера, пока открыт "Пропуск"
+if (!window.__bpCooldownTicker){
+  window.__bpCooldownTicker = setInterval(()=>{
+    if (upgradesScreen?.classList.contains('hide')) return;
+    const tl = upgradesScreen?.querySelector?.('.bp-timeline');
+    if (!tl) return;
 
-      const rewardId = idx + 1;
+    const curId = (window.__bpProgressIndex ?? 0) + 1;
+    if (curId > 1 && !bpRunIsClaimed(curId)){
+      bpSyncClaimedUI(tl);
+    }
+  }, 15000); // раз в 15 сек достаточно
+}
 
-      // если уже получено — ничего не делаем (важно для 7-й, чтобы не было "сброса")
-      if (bpRunIsClaimed(rewardId)){
+if (!window.__bpBattlePassClickBound){
+  window.__bpBattlePassClickBound = true;
+
+  document.addEventListener('click', (e)=>{
+    const btn = e.target.closest('.bp-card-btn');
+    if (!btn) return;
+
+    const item = btn.closest('.bp-item');
+    const tl = btn.closest('.bp-timeline');
+    if (!item || !tl) return;
+
+    const items = Array.from(tl.querySelectorAll('.bp-item'));
+    const idx = items.indexOf(item);
+    if (idx === -1) return;
+
+    const max = items.length - 1;
+    const cur = (window.__bpProgressIndex ?? 0);
+
+    // жмём только на текущей (активной) награде
+    if (idx !== cur) return;
+
+    const rewardId = idx + 1;
+
+    // если уже получено — ничего не делаем
+    if (bpRunIsClaimed(rewardId)){
+      bpSyncClaimedUI(tl);
+      return;
+    }
+
+    // 24ч блок: первая награда доступна сразу, остальные — только спустя 24ч после предыдущей
+    if (rewardId > 1){
+      const left = bpCooldownRemainingMs();
+      if (left > 0){
+        if (typeof showFloatingError === 'function'){
+          showFloatingError(`Следующая награда будет доступна через ${bpFormatCooldown(left)}`);
+        }
         bpSyncClaimedUI(tl);
         return;
       }
+    }
 
-      // выдаём STARS, если для этой награды они заданы (у тебя это 3 и 7)
-      const add = bpGetRewardStars(rewardId);
-      if (add > 0){
-        setStarsBalance(getStarsBalance() + add);
-      }
+    // выдаём STARS, если для этой награды они заданы (у тебя это 3 и 7)
+    const add = bpGetRewardStars(rewardId);
+    if (add > 0){
+      setStarsBalance(getStarsBalance() + add);
+    }
 
-      // фиксируем "получено" для ЛЮБОЙ награды (не только 3/7)
-      bpRunMarkClaimed(rewardId);
+    // фиксируем "получено" + сохраняем
+    bpRunMarkClaimed(rewardId);
 
-      // двигаем прогресс как раньше (кроме последней)
-      if (cur < max){
-        window.__bpProgressIndex = cur + 1;
-      }
+    // записываем время получения (для кулдауна следующей награды)
+    bpSaveLastClaimTs(Date.now());
 
-      syncBattlePassProgressUI();
-      bpSyncClaimedUI(tl);
+    // двигаем прогресс как раньше (кроме последней) + сохраняем
+    if (cur < max){
+      window.__bpProgressIndex = cur + 1;
+    }
+    bpSaveProgress(window.__bpProgressIndex ?? cur);
 
-      requestAnimationFrame(syncBattlePassMainLine);
-    });
-  }
+    syncBattlePassProgressUI();
+    bpSyncClaimedUI(tl);
+
+    requestAnimationFrame(syncBattlePassMainLine);
+  });
+}
 }
 
 // ===== CONFIRM SELL MODAL =====
