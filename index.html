@@ -386,8 +386,10 @@ GD.ensureUid8 = function (tgId) {
 /* ====== CARD кейса (обновлённый) ====== */
 .card{
   position:relative;
+  display:flex;
+  flex-direction:column;
   padding:10px;
-  gap:8px;
+  gap:0;
   overflow:hidden;
   cursor:pointer;
   border-radius:var(--radius);
@@ -402,6 +404,17 @@ GD.ensureUid8 = function (tgId) {
     border-color .14s ease-out;
 }
 
+.card-footer{
+  position:relative;
+  z-index:2;
+
+  flex: 1 1 auto;
+  min-height: 56px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
 
 /* пока палец на карточке — убираем transition, чтобы не “резинило” */
 .card.tilting{
