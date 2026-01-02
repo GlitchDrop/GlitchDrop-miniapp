@@ -201,13 +201,89 @@ GD.ensureUid8 = function (tgId) {
 
     .topbar{
       position:sticky; top:0; z-index:30;
-      display:flex; align-items:center; gap:12px;
-      padding:12px 14px;
-      background:linear-gradient(180deg,rgba(8,14,36,.72),rgba(6,10,26,.62));
-      border-bottom:1px solid var(--border);
-      backdrop-filter:blur(10px);
-      box-shadow:var(--shadow-soft);
+      padding:12px 12px 10px;
+      background:transparent;
+      border-bottom:none;
+      backdrop-filter:none;
+      box-shadow:none;
     }
+
+    .tb-shell{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:12px;
+      padding:14px 14px;
+      border-radius:28px;
+      background:linear-gradient(180deg, rgba(20,26,62,.78), rgba(10,14,32,.72));
+      border:1px solid rgba(140,170,255,.22);
+      backdrop-filter:blur(14px) saturate(1.2);
+      box-shadow:0 18px 50px rgba(5,10,40,.65), 0 0 80px rgba(22,241,255,.06);
+    }
+
+    .tb-left{ display:flex; align-items:center; gap:12px; min-width:0; }
+
+    .tb-ava{
+      width:54px; height:54px;
+      border-radius:50%;
+      overflow:hidden;
+      position:relative;
+      flex:0 0 54px;
+      border:2px solid rgba(140,170,255,.22);
+      box-shadow:0 0 18px rgba(22,241,255,.10), 0 0 18px rgba(138,92,255,.08);
+      background:linear-gradient(135deg, rgba(22,241,255,.08), rgba(138,92,255,.10));
+    }
+    .tb-ava .avatar{ width:100%; height:100%; border-radius:50%; border:none; box-shadow:none; object-fit:cover; background:transparent; }
+    .tb-ava .avatar.hidden{ display:none; }
+    .tb-ava .avatar-fallback{
+      position:absolute; inset:0;
+      border-radius:50%;
+      display:grid; place-items:center;
+      background:linear-gradient(135deg, rgba(22,241,255,.18), rgba(138,92,255,.18));
+      border:none;
+      font-weight:900;
+      letter-spacing:.5px;
+      color:#e8efff;
+      text-shadow:0 0 12px rgba(22,241,255,.35);
+    }
+
+    .tb-text{ display:flex; flex-direction:column; gap:4px; min-width:0; line-height:1.05; }
+    .tb-name{
+      font-weight:900;
+      font-size:22px;
+      letter-spacing:.2px;
+      color:#e8efff;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .tb-id{
+      font-size:13px;
+      font-weight:800;
+      color:rgba(255,255,255,.55);
+      letter-spacing:.4px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .tb-right{ display:flex; align-items:center; gap:12px; flex:0 0 auto; }
+    .tb-balance{
+      display:flex;
+      align-items:baseline;
+      gap:6px;
+      font-weight:900;
+      font-size:26px;
+      letter-spacing:.3px;
+      color:#e8efff;
+    }
+    .tb-rub{
+      font-weight:900;
+      font-size:inherit;
+      line-height:1;
+      color:var(--neon-yellow);
+      text-shadow:0 0 10px rgba(255,228,122,.28);
+      transform:translateY(-1px);
+    }
+
     .avatar{ width:42px; height:42px; border-radius:50%; border:2px solid rgba(22,241,255,.55); box-shadow:0 0 18px rgba(22,241,255,.28), 0 0 28px rgba(255,62,208,.18); object-fit:cover; background:linear-gradient(135deg, rgba(22,241,255,.15), rgba(255,62,208,.15)); }
     .avatar.hidden{ display:none; }
     .avatar-fallback{ width:42px; height:42px; border-radius:12px; display:grid; place-items:center; background:linear-gradient(135deg, rgba(22,241,255,.18), rgba(255,62,208,.18)); border:1px solid var(--border); font-weight:900; letter-spacing:.5px; color:#081121; text-shadow:0 0 12px rgba(22,241,255,.7); }
@@ -378,20 +454,23 @@ GD.ensureUid8 = function (tgId) {
 }
 
 .thumb{
-  height:150px;
-  border-radius:16px;
-  border:1px dashed rgba(180,210,255,0.35);
+  position:relative;
+  height:170px;
+  border-radius:18px;
+  border:1px solid rgba(140,170,255,.18);
   background:
-    radial-gradient(120px 90px at 15% 15%, rgba(22,241,255,.10), transparent 60%),
-    radial-gradient(120px 90px at 85% 85%, rgba(138,92,255,.12), transparent 60%),
+    radial-gradient(140px 110px at 20% 20%, rgba(22,241,255,.12), transparent 60%),
+    radial-gradient(140px 110px at 80% 80%, rgba(138,92,255,.14), transparent 60%),
     linear-gradient(180deg,#070b1d,#050815);
-  display:grid;
-  place-items:center;
-  color:#a9c2ff;
-  font-size:12px;
-  text-transform:uppercase;
-  letter-spacing:1px;
   overflow:hidden;
+}
+
+.thumb::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:radial-gradient(circle at 50% 75%, rgba(0,0,0,0.0), rgba(0,0,0,.55));
+  pointer-events:none;
 }
 
 .thumb img{
@@ -401,70 +480,58 @@ GD.ensureUid8 = function (tgId) {
   display:block;
 }
 
-.name{
-  font-weight:900;
-  letter-spacing:.3px;
-}
-.desc{
-  font-size:12px;
-  color:#9fb2d9;
-}
-
-/* НИЖНЯЯ ПОЛОСА-ЦЕННИК на всю ширину */
-.card-footer{
-  position:static;          /* БЕЗ relative — кнопка центрируется по .card */
-  margin-top:auto;
+.case-overlay{
+  position:absolute;
+  inset:0;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-end;
+  gap:6px;
+  padding:14px 14px 16px;
   z-index:2;
+  text-align:center;
 }
 
-.price-bar{
+.case-title{
+  font-weight:1000;
+  letter-spacing:.8px;
+  text-transform:uppercase;
+  font-size:20px;
+  text-shadow:0 10px 22px rgba(0,0,0,.55);
+}
+
+.case-sub{
+  font-size:14px;
+  color:rgba(232,239,255,.8);
+  text-shadow:0 10px 22px rgba(0,0,0,.55);
+  margin-top:-2px;
+}
+
+.price-pill{
   display:flex;
   align-items:center;
   justify-content:center;
   gap: var(--case-rub-gap);
-  padding:8px 10px;
-  border-radius:14px;
-  background:linear-gradient(90deg, rgba(8,12,28,1), rgba(12,18,40,1));
-  border:1px solid rgba(255,228,122,.6);
-  box-shadow:0 0 14px rgba(255,228,122,.22);
+  padding:10px 12px;
+  border-radius:999px;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(140,170,255,.22);
+  box-shadow: inset 0 0 16px rgba(255,255,255,.04);
 }
 
-.price-star{
-  font-size: inherit;
-  line-height: 1;
+.price-pill-text{
   font-weight:900;
-  color: var(--neon-yellow);
-  text-shadow:0 0 12px rgba(255,228,122,0.25);
-  display:inline-block;
+  color:#e8efff;
+  letter-spacing:.3px;
+}
+
+.price-pill-cur{
+  font-weight:900;
+  color:rgba(232,239,255,.75);
   transform: translateX(var(--case-rub-sign-x));
 }
 
-
-.price{
-  font-weight:900;
-  color:#e8efff;               /* число теперь белое */
-  text-shadow:0 0 8px rgba(255,255,255,0.18);
-  letter-spacing:.4px;
-}
-
-/* ₽ в пилюле "Цена" (detail modal) */
-#detailPrice{
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--rub-gap, 2px);
-}
-
-#detailPrice .detail-rub{
-  color: inherit;          /* тот же золотой что и цифры */
-  font: inherit;           /* тот же шрифт/толщина */
-  line-height: inherit;    /* та же высота */
-  position: relative;
-  left: var(--rub-sign-x, -4px);  /* впритык как у баланса */
-}
-
-/* На сайте (вне Telegram) прячем ценник */
-html:not(.in-telegram) .card .price-bar{
+html:not(.in-telegram) .card .price-pill{
   display:none;
 }
 
@@ -1273,28 +1340,25 @@ html.scroll-locked, html.scroll-locked body{
 
 .pill-plus{
   appearance:none; cursor:pointer; border:none; outline:none;
-  width:42px; height:42px; border-radius:999px;  /* круглая капсула */
+  width:44px; height:44px; border-radius:999px;
   display:grid; place-items:center; flex:0 0 auto;
-  margin-right: 10px;  /* небольшой отступ от глитч-токена */
+  margin-right: 0;
 
-  /* капсула в стиле токенов */
-  background:linear-gradient(135deg, rgba(22,241,255,.12), rgba(138,92,255,.14));
-  border:1px solid var(--border);
+  background:rgba(10,14,32,.35);
+  border:1px solid rgba(140,170,255,.22);
   box-shadow:
-    inset 0 0 18px rgba(22,241,255,.12),
-    0 8px 22px rgba(10,20,60,.25);
+    inset 0 0 18px rgba(255,255,255,.04),
+    0 10px 28px rgba(0,0,0,.35);
   transition: transform .15s ease, box-shadow .2s ease, border-color .2s ease;
 }
-.pill-plus:hover{ transform: translateY(-1px); box-shadow: 0 10px 26px rgba(22,241,255,.22); }
+.pill-plus:hover{ transform: translateY(-1px); box-shadow: 0 12px 32px rgba(0,0,0,.45); }
 .pill-plus:active{ transform: translateY(0); }
-.pill-plus:focus-visible{ outline:2px solid var(--neon-cyan); outline-offset:2px; }
+.pill-plus:focus-visible{ outline:2px solid rgba(140,170,255,.6); outline-offset:2px; }
 
 .plus-ico{
-  font-weight:900; font-size:22px; line-height:1;
-  color:#cfe6ff;
-  text-shadow:
-    0 0 12px rgba(22,241,255,.55),
-    0 0 12px rgba(255,62,208,.35);
+  font-weight:900; font-size:26px; line-height:1;
+  color:rgba(255,255,255,.78);
+  text-shadow:none;
   transform: translateY(-1px);
 }
 
@@ -1613,93 +1677,23 @@ html.scroll-locked, html.scroll-locked body{
 
 /* === TOPBAR PILLS — выше, уже; плюс — кругом; сдвиг влево === */
 :root{
-  --topbar-pill-w: 88px;   /* уже по ширине */
-  --topbar-pill-h: 40px;   /* выше по вертикали */
+  --topbar-pill-w: 88px;
+  --topbar-pill-h: 40px;
 }
 
-/* Чуть уменьшаем правую «кромку» и зазоры — группа уйдёт левее */
+/* НОВЫЙ ТОПБАР: убираем все старые сдвиги/ужимания */
 .topbar{
-  padding: 10px 8px;   /* было больше справа — теперь компактнее и левее */
-  gap: 8px;            /* меньше щель между элементами */
+  padding:12px 12px 10px;
 }
 
-/* Две пилюли: одинаковая фикс-ширина и высота, компактные паддинги */
-.topbar .pill{
-  padding: 6px 8px;
-  height: var(--topbar-pill-h);
-  flex: 0 0 var(--topbar-pill-w);
-  min-width: var(--topbar-pill-w);
-  justify-content: center;
-  gap: 8px;
-}
-
-/* Иконки — чуть крупнее по высоте, но не широкие */
-.topbar .pill img{
-  width: 22px;
-  height: 22px;
-  border-radius: 4px;
-}
-
-/* Текст не прыгает и влезает */
-.topbar .pill .num{
-  font-weight: 900;
-  font-size: 15px;
-  line-height: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Переопределяем .pill--lg только в топбаре, чтобы не поломать глобально */
-.topbar .pill.pill--lg{
-  padding: 6px 8px;
-}
-.topbar .pill.pill--lg img{
-  width: 22px; height: 22px;
-}
-
-/* Плюсик: такой же размер по высоте, круглый, и не шире пилюли */
 .topbar .pill-plus{
-  width: var(--topbar-pill-h);
-  height: var(--topbar-pill-h);
-  border-radius: 999px; /* круг */
-  flex: 0 0 var(--topbar-pill-h);
-  margin-right: 6px;    /* лёгкий отступ перед первой пилюлей */
+  margin-left: 0;
+  transform: none;
 }
 
-/* Знак плюс — визуально по центру и читается */
-.topbar .pill-plus .plus-ico{
-  font-size: 20px;
-  line-height: 1;
-  transform: translateY(-1px); /* оптический центр */
-}
-
-/* На узких экранах подстрахуемся, чтобы не упиралось вправо */
-.topbar .pill:last-of-type{
-  margin-right: 2px;
-}
-
-/* Если всё равно не влезает, последний шаг — ещё на 1–2px левее всю группу:
-.topbar { padding-right: 6px; }
-*/
-
-/* ——— микро-сдвиг группы (плюс + пилюли) влево ——— */
-:root { --topbar-shift-x: 50px; } /* можно 2–4px по вкусу */
-
-/* если есть плюсик — тянем всю тройку влево через него */
-.topbar .pill-plus{
-  margin-left: calc(var(--topbar-shift-x) * -1);
-}
-
-/* если плюсика нет, но есть сразу пилюли — подстрахуемся */
 .topbar .pill:first-of-type{
-  margin-left: calc(var(--topbar-shift-x) * -1);
+  margin-left: 0;
 }
-
-:root{--topbar-plus-shift-x:10px}.topbar .pill-plus{transform:translateX(var(--topbar-plus-shift-x))}
-
-
-:root{ --topbar-pills-shift-x: 40px; } .topbar .pill:first-of-type{ margin-left: calc(var(--topbar-pills-shift-x) * -1); }
 
 /* Друзья: растяжка списка вниз при сохранении текущего верха */
 .friends-wrap{
@@ -1886,17 +1880,16 @@ html.scroll-locked, html.scroll-locked body{
 }
 
 h2.section{
-  margin:8px 4px 12px;
-  font-size:28px;
+  margin:18px 2px 14px;
+  font-size:34px;
   font-weight:1000;
-  letter-spacing:1px;
+  letter-spacing:0;
   color:#e8efff;
 
-  text-transform:uppercase;
-  text-shadow:
-    0 0 14px rgba(22,241,255,.18),
-    0 0 22px rgba(138,92,255,.12);
+  text-transform:none;
+  text-shadow:0 0 18px rgba(0,0,0,.35);
 }
+
 
 /* =========================
    LIVE 3D GRID BACKGROUND
@@ -3170,35 +3163,38 @@ if (addr) {
 
   <div class="app" id="top">
     <div class="topbar">
-      <img id="userAvatar" class="avatar hidden" alt="avatar">
-      <div id="avatarFallback" class="avatar-fallback">GD</div>
-      <div class="brand">
-  <div class="brand-lines">
-    <span id="userName" class="glitch" data-text="GLITCH&nbsp;DROP">GLITCH&nbsp;DROP</span>
-    <span id="userId" class="uid" aria-label="User ID">ID 00000000</span>
-  </div>
-</div>
+      <div class="tb-shell">
+        <div class="tb-left">
+          <div class="tb-ava">
+            <img id="userAvatar" class="avatar hidden" alt="avatar">
+            <div id="avatarFallback" class="avatar-fallback">GD</div>
+          </div>
 
-      <div class="grow"></div>
+          <div class="tb-text">
+            <div id="userName" class="tb-name">GLITCH&nbsp;DROP</div>
+            <div id="userId" class="tb-id" aria-label="User ID">ID 00000000</div>
+          </div>
+        </div>
 
-<!-- мини-меню "Плюс" — СТАВИМ ПЕРЕД глитч-токеном -->
-<div class="plus-wrap">
-  <button id="addBtn" class="pill-plus" aria-haspopup="true" aria-expanded="false" aria-controls="quickMenu" title="Быстрое действие">
-    <span class="plus-ico" aria-hidden="true">+</span>
-  </button>
+        <div class="tb-right">
+          <div class="tb-balance" title="Баланс ₽">
+            <span id="rubBalance">0</span>
+            <span class="tb-rub" aria-hidden="true">₽</span>
+          </div>
 
- <div id="quickMenu" class="quickmenu" role="menu" aria-hidden="true">
-  <button class="qm-item" role="menuitem" data-action="daily">🎁 Ежедневный бонус</button>
-  <button class="qm-item" role="menuitem" data-action="topup">💳 Пополнить баланс</button>
-  <button class="qm-item" role="menuitem" data-action="settings">⚙️ Настройки</button>
- </div>
-</div>
+          <div class="plus-wrap">
+            <button id="addBtn" class="pill-plus" aria-haspopup="true" aria-expanded="false" aria-controls="quickMenu" title="Быстрое действие">
+              <span class="plus-ico" aria-hidden="true">+</span>
+            </button>
 
-            <!-- ПИЛЮЛЯ БАЛАНСА ₽ -->
-      <div class="pill pill--lg pill-rub" title="Баланс ₽">
-  <span class="num" id="rubBalance">0</span>
-  <span class="pill-rub-sign" aria-hidden="true">₽</span>
-</div>
+            <div id="quickMenu" class="quickmenu" role="menu" aria-hidden="true">
+              <button class="qm-item" role="menuitem" data-action="daily">🎁 Ежедневный бонус</button>
+              <button class="qm-item" role="menuitem" data-action="topup">💳 Пополнить баланс</button>
+              <button class="qm-item" role="menuitem" data-action="settings">⚙️ Настройки</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="chipbar" id="chipbar"><div class="chip active" data-target="#top">Все</div></div>
@@ -3886,18 +3882,32 @@ sections.forEach(sec=>{
 
     const setId = `${sec.id}_${i+1}`;
 
-    card.innerHTML = `
+card.innerHTML = `
       <div class="inner">
-        <div class="thumb">${thumbHTML}</div>
-        <div class="name">${sec.title.split(' ')[0]} Кейс #${i+1}</div>
-        <div class="desc">${(sec.descs && sec.descs[i]) || ''}</div>
+        <div class="thumb">
+          ${thumbHTML}
+          <div class="case-overlay">
+            <div class="case-title">${
+              isFree
+                ? (['ЗА ПРОМОКОД','ПОПОЛНЕНИЕ','ПОПОЛНЕНИЕ','ПОПОЛНЕНИЕ'][i] || '')
+                : (sec.title.split(' ')[0] + ' Кейс #' + (i+1))
+            }</div>
+            <div class="case-sub">${
+              isFree
+                ? (['','от 500₽','от 2000₽','от 10000₽'][i] || '')
+                : ((sec.descs && sec.descs[i]) || '')
+            }</div>
+          </div>
+        </div>
       </div>
+
       <div class="card-footer">
-        <div class="price-bar">
-  <span class="price">${isFree ? (rawPrice || 'БЕСПЛАТНО') : cleanPrice}</span>
-  ${isFree ? '' : '<span class="price-star">₽</span>'}
-</div>
+        <div class="price-pill">
+          <span class="price-pill-text">${isFree ? (rawPrice || 'Бесплатно') : cleanPrice}</span>
+          ${isFree ? '' : '<span class="price-pill-cur">₽</span>'}
+        </div>
       </div>
+
       ${isFree ? '' : '<button type="button" class="card-open-btn">ОТКРЫТЬ</button>'}
     `;
 
