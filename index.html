@@ -3882,22 +3882,10 @@ sections.forEach(sec=>{
 
     const setId = `${sec.id}_${i+1}`;
 
-card.innerHTML = `
+    card.innerHTML = `
       <div class="inner">
         <div class="thumb">
           ${thumbHTML}
-          <div class="case-overlay">
-            <div class="case-title">${
-              isFree
-                ? (['ЗА ПРОМОКОД','ПОПОЛНЕНИЕ','ПОПОЛНЕНИЕ','ПОПОЛНЕНИЕ'][i] || '')
-                : (sec.title.split(' ')[0] + ' Кейс #' + (i+1))
-            }</div>
-            <div class="case-sub">${
-              isFree
-                ? (['','от 500₽','от 2000₽','от 10000₽'][i] || '')
-                : ((sec.descs && sec.descs[i]) || '')
-            }</div>
-          </div>
         </div>
       </div>
 
