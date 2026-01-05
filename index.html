@@ -1007,9 +1007,7 @@ html:not(.in-telegram) .d-auth-warning{
   width: 100vw;
   margin-left: calc(50% - 50vw);
   margin-right: calc(50% - 50vw);
-  position: sticky;
-  top: var(--topbar-h, 64px);
-  z-index: 22;
+  position: relative;
 
   /* вот это добавляем */
   overflow-x: hidden; /* фолбэк */
@@ -1022,8 +1020,8 @@ html:not(.in-telegram) .d-auth-warning{
   letter-spacing:1.4px;
   font-size:clamp(24px, 8vw, 52px);
   color:#e8efff;
-  text-shadow:0 0 16px rgba(22,241,255,.18);
-  background: linear-gradient(180deg, rgba(12,16,38,.88), rgba(10,14,34,.82));
+  text-shadow:0 0 16px rgba(22,241,255,18);
+  background: linear-gradient(180deg, rgba(12,16,38,88), rgba(10,14,34,82));
   border-bottom:1px solid var(--border);
   backdrop-filter: blur(8px);
 }
