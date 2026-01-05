@@ -3020,6 +3020,28 @@ h2.section{
   transform: translateX(-50%) translateY(0);
 }
 
+/* Серое уведомление (инвентарь) */
+.floating-info {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-100px);
+  background: linear-gradient(135deg, #d1d5db, #6b7280);
+  color: #0b0f1a;
+  padding: 14px 22px;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 700;
+  z-index: 9999;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.28);
+  opacity: 0;
+  transition: all 0.4s ease;
+}
+.floating-info.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
 /* === КИБЕР-ЗАГРУЗКА ДЛЯ ПОПОЛНЕНИЯ === */
 
 .loader-overlay{
@@ -5018,7 +5040,7 @@ const list = window.INVENTORY || [];
   card.dataset.id = item.id;
   card.innerHTML = `
   <div class="inventory-card-number">№${index + 1}</div>
-    <img src="${item.img}" alt="предмет" loading="lazy" onerror="this.remove()">
+    <img src="${item.img || FALLBACK_IMG}" alt="предмет" loading="lazy" onerror="this.onerror=null;this.src='${FALLBACK_IMG}'">
     <button type="button" class="inv-sell">ПРОДАТЬ</button>
     <button type="button" class="inv-withdraw">Вывести</button>
   `;
@@ -5854,6 +5876,14 @@ if (!window.__bpBattlePassClickBound){
       setStarsBalance(getStarsBalance() + add);
     }
 
+    // ✅ предметы в инвентарь для наград 1,2,4,5,6
+    if (rewardId === 1 || rewardId === 2 || rewardId === 4 || rewardId === 5 || rewardId === 6){
+      const imgEl = item.querySelector('.bp-card-img img');
+      const imgSrc = (imgEl && (imgEl.getAttribute('src') || imgEl.src)) || FALLBACK_IMG;
+      addToInventory(imgSrc);
+      showFloatingInfo('Предмет добавлен в инвентарь');
+    }
+
     // фиксируем "получено" + сохраняем
     bpRunMarkClaimed(rewardId);
 
@@ -6424,30 +6454,55 @@ let errorTimeout = null;
 
 function showFloatingError(message) {
   if (isErrorVisible) return;
-  
   isErrorVisible = true;
-  
-  // Удаляем существующее сообщение если есть
-  const existingError = document.querySelector('.floating-error');
-  if (existingError) existingError.remove();
-  
-  // Создаем новое сообщение
-  const errorEl = document.createElement('div');
-  errorEl.className = 'floating-error';
-  errorEl.textContent = message;
-  document.body.appendChild(errorEl);
-  
-  // Показываем с анимацией
-  setTimeout(() => errorEl.classList.add('show'), 10);
-  
-  // Скрываем через 3 секунды
+
+  // Удаляем предыдущий
+  const existing = document.querySelector('.floating-error');
+  if (existing) existing.remove();
+
+  const err = document.createElement('div');
+  err.className = 'floating-error';
+  err.textContent = message;
+  document.body.appendChild(err);
+
+  // Запускаем анимацию появления
+  setTimeout(() => err.classList.add('show'), 10);
+
+  // Авто-скрытие через 3 секунды
   errorTimeout = setTimeout(() => {
-    errorEl.classList.remove('show');
+    err.classList.remove('show');
     setTimeout(() => {
-      if (errorEl.parentNode) errorEl.parentNode.removeChild(errorEl);
+      if (err.parentNode) err.parentNode.removeChild(err);
       isErrorVisible = false;
     }, 400);
   }, 3000);
+}
+
+let isInfoVisible = false;
+let infoTimeout = null;
+
+function showFloatingInfo(message) {
+  if (isInfoVisible) return;
+  isInfoVisible = true;
+
+  // Удаляем предыдущий
+  const existing = document.querySelector('.floating-info');
+  if (existing) existing.remove();
+
+  const box = document.createElement('div');
+  box.className = 'floating-info';
+  box.textContent = message;
+  document.body.appendChild(box);
+
+  setTimeout(() => box.classList.add('show'), 10);
+
+  infoTimeout = setTimeout(() => {
+    box.classList.remove('show');
+    setTimeout(() => {
+      if (box.parentNode) box.parentNode.removeChild(box);
+      isInfoVisible = false;
+    }, 400);
+  }, 2000);
 }
 
 function validateAmount(input) {
