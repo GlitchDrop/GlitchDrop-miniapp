@@ -1200,10 +1200,16 @@ html.scroll-locked, html.scroll-locked body{
   font-size: clamp(24px, 8vw, 52px);
 
   color: #e8efff;
-  text-shadow: 0 0 16px rgba(22,241,255,.18);
-  background: linear-gradient(180deg, rgba(12,16,38,.88), rgba(10,14,34,.82));
+  text-shadow: 0 0 16px rgba(22,241,255,18);
+  background: linear-gradient(180deg, rgba(12,16,38,88), rgba(10,14,34,82));
   border-bottom: 1px solid var(--border);
   backdrop-filter: blur(8px);
+}
+
+/* ПРОПУСК: заголовок не “липнет” под topbar */
+#upgradesScreen .contests-header{
+  position: static;
+  top: auto;
 }
 
 .contests-list{
@@ -3896,51 +3902,42 @@ sections.forEach(sec=>{
         </div>
       </div>
 
-      ${isFree ? '' : '<button type="button" class="card-open-btn">ОТКРЫТЬ</button>'}
+      <button type="button" class="card-open-btn">ОТКРЫТЬ</button>
     `;
 
-    if (isFree){
-      // Бесплатные — как раньше: клик по карточке сразу ведёт к барабану
-      card.addEventListener('click', ()=> openDetail({
-        title: `${sec.title} — Кейс #${i+1}`,
-        price: rawPrice,
-        setId
-      }));
-    } else {
-      const openBtn = card.querySelector('.card-open-btn');
+        const openBtn = card.querySelector('.card-open-btn');
 
-      // Выбор платной карточки — по normal click (не срабатывает при скролле)
-      card.addEventListener('click', (evt)=>{
-        // если жмём по самой кнопке "ОТКРЫТЬ" — не переключаем выбор
-        if (evt.target.closest('.card-open-btn')) return;
+    // Выбор карточки — по normal click (не срабатывает при скролле)
+    card.addEventListener('click', (evt)=>{
+      // если жмём по самой кнопке "ОТКРЫТЬ" — не переключаем выбор
+      if (evt.target.closest('.card-open-btn')) return;
 
-        // повторный тап по уже выбранной — "отбухает"
-        if (selectedCaseCard === card){
-          clearSelectedCase();
-          return;
-        }
-
-        // снимаем выбор с предыдущей
-        if (selectedCaseCard && selectedCaseCard !== card){
-          selectedCaseCard.classList.remove('case-selected');
-        }
-
-        selectedCaseCard = card;
-        card.classList.add('case-selected');
-      });
-
-      // Нажатие на кнопку "ОТКРЫТЬ" — перейти к барабану
-      if (openBtn){
-        openBtn.addEventListener('click', (ev)=>{
-          ev.stopPropagation();
-
-          openDetail({
-            title: `${sec.title} — Кейс #${i+1}`,
-            price: rawPrice,
-            setId
-          });
-        });
+      // повторный тап по уже выбранной — "отбухает"
+      if (selectedCaseCard === card){
+        clearSelectedCase();
+        return;
       }
+
+      // снимаем выбор с предыдущей
+      if (selectedCaseCard && selectedCaseCard !== card){
+        selectedCaseCard.classList.remove('case-selected');
+      }
+
+      selectedCaseCard = card;
+      card.classList.add('case-selected');
+    });
+
+    // Нажатие на кнопку "ОТКРЫТЬ" — перейти к барабану (и для бесплатных тоже)
+    if (openBtn){
+      openBtn.addEventListener('click', (ev)=>{
+        ev.stopPropagation();
+
+        openDetail({
+          title: `${sec.title} — Кейс #${i+1}`,
+          price: rawPrice,
+          setId
+        });
+      });
     }
 
     initCardTilt(card);
