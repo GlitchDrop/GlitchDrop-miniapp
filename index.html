@@ -592,25 +592,22 @@ html:not(.in-telegram) .card .price-pill{
 
 .tabbar{
   position: fixed;
-  left: 10px; right: 10px; bottom: 10px;
+  left: 12px; right: 12px; bottom: 12px;
   z-index: 80;
 
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 4px;
 
-  padding: 7px 8px;
-  padding-bottom: calc(env(safe-area-inset-bottom) + 7px);
+  padding: 14px 14px;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 14px);
 
-  background: linear-gradient(180deg, rgba(10,14,32,.88), rgba(7,9,20,.92));
-  border: 1px solid rgba(140,170,255,.20);
   border-radius: 28px;
+  background: linear-gradient(180deg, rgba(20,26,62,.78), rgba(10,14,32,.72));
+  border: 1px solid rgba(140,170,255,.22);
 
-  backdrop-filter: blur(14px) saturate(1.25);
-  box-shadow:
-    0 16px 48px rgba(0,0,0,.65),
-    0 0 40px rgba(138,92,255,.18),
-    inset 0 0 18px rgba(59,232,255,.06);
+  backdrop-filter: blur(14px) saturate(1.2);
+  box-shadow:0 18px 50px rgba(5,10,40,.65), 0 0 80px rgba(22,241,255,.06);
 }
 
 .tab{
