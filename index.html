@@ -1007,20 +1007,20 @@ html:not(.in-telegram) .d-auth-warning{
   width: 100vw;
   margin-left: calc(50% - 50vw);
   margin-right: calc(50% - 50vw);
-  position: relative;
+  position: relative; /* было sticky */
+  top: 0;             /* чтобы не смещалось */
+  z-index: 22;
 
-  /* вот это добавляем */
   overflow-x: hidden; /* фолбэк */
   overflow-x: clip;   /* основной вариант */
 
-  /* остальное оставь как было */
   padding: 10px max(12px, env(safe-area-inset-left)) 12px max(12px, env(safe-area-inset-right));
   text-align:center;
   font-weight:900;
   letter-spacing:1.4px;
   font-size:clamp(24px, 8vw, 52px);
   color:#e8efff;
-  text-shadow:0 0 16px rgba(22,241,255,18);
+  text-shadow: none; /* убрали неон */
   background: linear-gradient(180deg, rgba(12,16,38,88), rgba(10,14,34,82));
   border-bottom:1px solid var(--border);
   backdrop-filter: blur(8px);
