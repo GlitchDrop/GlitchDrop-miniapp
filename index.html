@@ -1999,85 +1999,63 @@ h2.section{
   display: grid;
   place-items: center;
   pointer-events: all;
-
-  /* переливающийся фон */
-  background:
-    radial-gradient(1200px 700px at 20% -10%, rgba(138,92,255,.45), transparent 60%),
-    radial-gradient(1000px 600px at 80% 110%, rgba(59,232,255,.38), transparent 60%),
-    linear-gradient(135deg, #050614, #0b0f2a, #120b3a, #071a3a);
-  background-size: 200% 200%;
-  animation: loaderBgShift 6s ease-in-out infinite alternate;
-}
-
-@keyframes loaderBgShift{
-  0%   { background-position: 0% 30%; filter: hue-rotate(0deg); }
-  100% { background-position: 100% 70%; filter: hue-rotate(12deg); }
+  background: #000;
 }
 
 #app-loader .loader-card{
   display:flex;
   flex-direction:column;
   align-items:center;
-  gap:12px;
+  gap:10px;
   transform: translateY(-6px);
 }
 
-/* круглая картинка + вращение */
+/* картинка без вращения */
 #app-loader .loader-logo{
-  width: 120px;
-  height: 120px;
+  width: 118px;
+  height: 118px;
   border-radius: 999px;
   object-fit: cover;
-
-  box-shadow:
-    0 0 25px rgba(59,232,255,.45),
-    0 0 35px rgba(138,92,255,.45);
-
-  animation: logoSpin 1.2s linear infinite;
+  box-shadow: 0 0 26px rgba(0,169,255,.28);
 }
 
-@keyframes logoSpin{
-  from{ transform: rotate(0deg); }
-  to  { transform: rotate(360deg); }
-}
-
-/* текст */
-#app-loader .loader-text{
+/* заголовок */
+#app-loader .loader-title{
+  margin-top: 4px;
   font-weight: 900;
-  letter-spacing: .6px;
+  font-size: 30px;
+  line-height: 1.05;
+  color: #fff;
+  text-align:center;
+  letter-spacing: .2px;
+}
+
+/* подпись над крутилкой */
+#app-loader .loader-sub{
+  font-weight: 700;
   font-size: 14px;
-  color: rgba(255,255,255,.75);
-  text-shadow: 0 0 10px rgba(59,232,255,.25);
+  color: #00a9ff;
+  opacity: .95;
+  letter-spacing: .2px;
 }
 
-/* прогресс */
-#app-loader .loader-bar{
-  width: 170px;
-  height: 6px;
+/* круглая загрузка */
+#app-loader .loader-spinner{
+  width: 56px;
+  height: 56px;
   border-radius: 999px;
-  background: rgba(255,255,255,.08);
-  border: 1px solid rgba(160,190,255,.25);
-  overflow: hidden;
-  box-shadow: inset 0 0 8px rgba(0,0,0,.6);
+  border: 6px solid rgba(0,169,255,.20);
+  border-top-color: #00a9ff;
+  animation: loaderSpin .9s linear infinite;
+  box-shadow: 0 0 22px rgba(0,169,255,.22);
 }
 
-#app-loader .loader-bar-fill{
-  height: 100%;
-  width: 40%;
-  border-radius: 999px;
-  background: linear-gradient(90deg, #3be8ff, #8a5cff, #ff61d0);
-  box-shadow: 0 0 12px rgba(59,232,255,.6);
-  animation: barMove 1.1s ease-in-out infinite;
-}
-
-@keyframes barMove{
-  0%   { transform: translateX(-110%); }
-  100% { transform: translateX(260%); }
+@keyframes loaderSpin{
+  to{ transform: rotate(360deg); }
 }
 
 /* плавное исчезновение */
 #app-loader.loaded{
-  animation: none;
   opacity: 0;
   transition: opacity .25s ease;
   pointer-events: none;
@@ -3162,18 +3140,13 @@ if (addr) {
 </head>
 <body>
 
-  <!-- APP LOADER OVERLAY -->
+<!-- APP LOADER OVERLAY -->
 <div id="app-loader" aria-live="polite">
   <div class="loader-card">
-    <img
-      class="loader-logo"
-      src="assets/images/Untitled (68).png"
-      alt="Loading"
-    />
-    <div class="loader-text">Загрузка элементов</div>
-    <div class="loader-bar">
-      <div class="loader-bar-fill"></div>
-    </div>
+    <img class="loader-logo" src="assets/images/20260106_2138_Объёмная неоновая сфера_remix_01kea9hvjwerkssk54mgxchbkt.png" alt="Loading" />
+    <div class="loader-title">Glitch Drop Loading</div>
+    <div class="loader-sub">Загрузка.......</div>
+    <div class="loader-spinner" aria-hidden="true"></div>
   </div>
 </div>
 
