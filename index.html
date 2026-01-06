@@ -3665,7 +3665,7 @@ const CHEAP_BACK_TEXT = {
 };
 
 const CASE_THUMBS = {
-  free:["assets/images/ПРОМОКОД.png","assets/images/за 500₽.png","assets/images/за 2000₽.png","assets/images/за 10 000₽.png"],
+  free:["assets/images/ПРОМОКОД.png","assets/images/за 500₽.png","assets/images/за 2000₽.png","assets/images/ChatGPT Image 6 янв. 2026 г., 15_43_15.png"],
   cheap:["assets/images/20251010_1652_Золотой Кубок_remix_01k7767y0he76bx0bzxsakmpd4.png","assets/images/20251226_1817_Грани механической шестерни_remix_01kddkqfbtfq0a36md3kbfpdwx.png","",""],
   nft:["assets/images/ChatGPT Image 5 окт. 2025 г., 10_33_06.png","assets/images/ChatGPT Image 5 окт. 2025 г., 11_26_19.png","assets/images/NFT 3.png","assets/images/20251005_1527_Зелёная призрачная тыква_remix_01k6t5bwrrfxet6r4vzrkgra3k.png"],
   exclusive:["assets/images/20251005_1639_Новогодняя змея_remix_01k6t9fz7mevwt1beaq5bxehc4.png","assets/images/20251005_1703_Фен с розовой лентой_remix_01k6tavjk3fq8brq0e5fr8hycw.png","assets/images/20251005_1718_Стильный школьный рюкзак_simple_compose_01k6tbpyfyedkb0r4qcr8r6p8m.png","assets/images/20251005_1752_Радужные Губы и Пузыри_remix_01k6tdn1ebem893yskvv82bpgz.png"],
@@ -5286,6 +5286,9 @@ const BP_REWARD_STARS = {
   7: 75
 };
 
+// цена разблокировки пропуска (в валюте баланса)
+const BP_PASS_PRICE = 150;
+
 // 24 часа между получением наград (кроме первой)
 const BP_COOLDOWN_MS = 24 * 60 * 60 * 1000;
 
@@ -5293,6 +5296,7 @@ const BP_COOLDOWN_MS = 24 * 60 * 60 * 1000;
 const LS_BP_CLAIMED   = 'gd_bp_claimed_v1';         // {"1":true,"2":true,...}
 const LS_BP_PROGRESS  = 'gd_bp_progress_idx_v1';    // "0..6"
 const LS_BP_LASTCLAIM = 'gd_bp_last_claim_ts_v1';   // unix ms
+const LS_BP_UNLOCKED  = 'gd_bp_unlocked_v1';        // "1" если пропуск куплен
 
 function bpLsGet(key, fallback){
   try{
@@ -5304,6 +5308,24 @@ function bpLsGet(key, fallback){
 }
 function bpLsSet(key, val){
   try{ localStorage.setItem(key, val); }catch(e){}
+}
+
+// куплен ли пропуск
+function bpIsPassUnlocked(){
+  try{
+    return localStorage.getItem(LS_BP_UNLOCKED) === '1';
+  }catch(e){
+    return false;
+  }
+}
+function bpSetPassUnlocked(on){
+  try{
+    if (on){
+      localStorage.setItem(LS_BP_UNLOCKED, '1');
+    }else{
+      localStorage.removeItem(LS_BP_UNLOCKED);
+    }
+  }catch(e){}
 }
 
 function bpLoadClaimed(){
@@ -5779,6 +5801,96 @@ function renderBattlePass(){
       </div>
     </div>
   `;
+
+    // если пропуск ещё не куплен — накладываем затемнение и кнопку "КУПИТЬ ЗА 150₽"
+  try{
+    if (!bpIsPassUnlocked()){
+      const surface = upgradesScreen.querySelector('.contests-surface');
+      if (surface){
+        const overlay = document.createElement('div');
+        overlay.className = 'bp-pay-overlay';
+        overlay.style.position = 'absolute';
+        overlay.style.inset = '0';
+        overlay.style.background = 'rgba(0,0,0,0.6)';
+        overlay.style.display = 'flex';
+        overlay.style.alignItems = 'center';
+        overlay.style.justifyContent = 'center';
+        overlay.style.zIndex = '10';
+
+        overlay.innerHTML = `
+          <div style="
+            background:#15182b;
+            border-radius:24px;
+            padding:20px 18px 18px;
+            text-align:center;
+            max-width:280px;
+            width:100%;
+            box-shadow:0 0 40px rgba(0,0,0,0.7);
+            border:1px solid rgba(255,217,74,0.7);
+          ">
+            <div style="font-weight:800;font-size:16px;margin-bottom:10px;">
+              Пропуск заблокирован
+            </div>
+            <div style="font-size:13px;opacity:.85;margin-bottom:14px;">
+              Оплати пропуск и забирай ежедневные награды.
+            </div>
+            <button
+              type="button"
+              class="bp-buy-pass-btn"
+              style="
+                width:100%;
+                padding:11px 16px;
+                border-radius:999px;
+                border:none;
+                background:#ffd94a;
+                color:#1b1300;
+                font-weight:900;
+                font-size:14px;
+                letter-spacing:.08em;
+                text-transform:uppercase;
+                cursor:pointer;
+              "
+            >
+              КУПИТЬ ЗА ${BP_PASS_PRICE}₽
+            </button>
+          </div>
+        `;
+
+        surface.appendChild(overlay);
+
+        const buyBtn = overlay.querySelector('.bp-buy-pass-btn');
+        if (buyBtn){
+          buyBtn.addEventListener('click', () => {
+            const price = BP_PASS_PRICE;
+            const bal = (typeof getStarsBalance === 'function')
+              ? getStarsBalance()
+              : 0;
+
+            if (bal < price){
+              if (typeof showInsufficientFunds === 'function'){
+                // то же меню пополнения, что и в "кейсы"
+                showInsufficientFunds();
+              } else if (typeof showFloatingError === 'function'){
+                showFloatingError('Недостаточно средств на балансе');
+              } else {
+                alert('Недостаточно средств на балансе');
+              }
+              return;
+            }
+
+            if (typeof setStarsBalance === 'function'){
+              setStarsBalance(bal - price);
+            }
+            bpSetPassUnlocked(true);
+
+            overlay.remove();
+          });
+        }
+      }
+    }
+  }catch(e){
+    console.warn('BP buy overlay error', e);
+  }
 
 // одна цельная линия строго от центра первой до центра последней точки
 // прогресс подхватываем из localStorage и подравниваем под "получено"
