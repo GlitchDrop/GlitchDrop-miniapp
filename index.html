@@ -5806,13 +5806,105 @@ function renderBattlePass(){
     </div>
   `;
 
-      // если пропуск ещё не куплен — ЛОЧИМ СКРОЛЛ до покупки, либо включаем предпросмотр
-  try{
-    if (!bpIsPassUnlocked()){
-      const surface = upgradesScreen.querySelector('.contests-surface');
-      if (surface){
+// если пропуск ещё не куплен — затемняем ТОЛЬКО ЛЕНТУ НАГРАД (без заголовка/топбара/таббара)
+try{
+  if (!bpIsPassUnlocked()){
+    const tl = upgradesScreen.querySelector('.bp-timeline');
+    if (tl){
+      const overlay = document.createElement('div');
+      overlay.className = 'bp-pay-overlay';
 
-        const doBuy = ()=>{
+      // фикс: не перекрываем таббар (z-index таббара у тебя 80)
+      overlay.style.position = 'fixed';
+      overlay.style.background = 'rgba(0,0,0,0.55)';
+      overlay.style.display = 'flex';
+      overlay.style.alignItems = 'center';
+      overlay.style.justifyContent = 'center';
+      overlay.style.padding = '12px 12px';
+      overlay.style.boxSizing = 'border-box';
+      overlay.style.zIndex = '70';
+
+      const placeOverlay = () => {
+        const r = tl.getBoundingClientRect();
+
+        // низ подрезаем до верхней границы таббара (чтобы таббар был кликабельный)
+        const tabbar = document.querySelector('.tabbar');
+        let bottom = r.bottom;
+        if (tabbar){
+          const tr = tabbar.getBoundingClientRect();
+          bottom = Math.min(bottom, tr.top);
+        }
+
+        const h = Math.max(0, bottom - r.top);
+        overlay.style.left = r.left + 'px';
+        overlay.style.top = r.top + 'px';
+        overlay.style.width = r.width + 'px';
+        overlay.style.height = h + 'px';
+      };
+
+      placeOverlay();
+      window.addEventListener('resize', placeOverlay);
+      window.addEventListener('scroll', placeOverlay, true);
+
+      // режем скролл внутри "Пропуска", но НЕ мешаем переключать вкладки снизу
+      overlay.addEventListener('wheel', (e)=> e.preventDefault(), { passive:false });
+      overlay.addEventListener('touchmove', (e)=> e.preventDefault(), { passive:false });
+
+      // рамку и всё внутри — чуть уменьшили
+      overlay.innerHTML = `
+        <div style="
+          background:linear-gradient(180deg,#151a33,#0b1026);
+          border-radius:20px;
+          padding:16px 16px 14px;
+          text-align:center;
+          max-width:260px;
+          width:100%;
+          box-shadow:0 18px 60px rgba(0,0,0,0.75);
+          border:1px solid rgba(255,217,74,0.55);
+        ">
+          <div style="font-weight:900;font-size:15px;margin-bottom:8px;letter-spacing:.2px;">
+            Пропуск заблокирован
+          </div>
+          <div style="font-size:12px;opacity:.85;margin-bottom:12px;line-height:1.35;">
+            Оплати пропуск и забирай ежедневные награды.
+          </div>
+
+          <button
+            type="button"
+            class="bp-buy-pass-btn"
+            style="
+              width:100%;
+              padding:13px 16px;
+              border-radius:999px;
+              border:1px solid rgba(0,0,0,0.18);
+              background:linear-gradient(135deg,#ffe64a,#ffb300);
+              color:#1b1300;
+              font-weight:900;
+              font-size:13px;
+              letter-spacing:.08em;
+              text-transform:uppercase;
+              cursor:pointer;
+              box-shadow:0 10px 26px rgba(255,217,74,0.28), inset 0 0 0 1px rgba(255,255,255,0.35);
+            "
+          >
+            КУПИТЬ ЗА ${BP_PASS_PRICE}₽
+          </button>
+        </div>
+      `;
+
+      upgradesScreen.appendChild(overlay);
+
+      // если хочешь прям железно запретить скролл страницы, пока рамка видна
+      try{ if (typeof lockBody === 'function') lockBody(true); }catch(e){}
+
+      const cleanup = () => {
+        window.removeEventListener('resize', placeOverlay);
+        window.removeEventListener('scroll', placeOverlay, true);
+      };
+
+      const buyBtn = overlay.querySelector('.bp-buy-pass-btn');
+      if (buyBtn){
+        buyBtn.addEventListener('click', () => {
           const price = BP_PASS_PRICE;
           const bal = (typeof getStarsBalance === 'function') ? getStarsBalance() : 0;
 
@@ -5827,168 +5919,19 @@ function renderBattlePass(){
             return;
           }
 
-          if (typeof setStarsBalance === 'function'){
-            setStarsBalance(bal - price);
-          }
+          if (typeof setStarsBalance === 'function') setStarsBalance(bal - price);
           bpSetPassUnlocked(true);
-          window.__bpPassPreviewMode = false;
 
-          try{ lockBody(false); }catch(e){}
-          renderBattlePass(); // перерисовать без блокировок/кнопок
-        };
-
-        // === РЕЖИМ ПРЕДПРОСМОТРА НАГРАД (скролл включён, награды недоступны, липкая кнопка купить) ===
-        if (window.__bpPassPreviewMode){
-          try{ lockBody(false); }catch(e){}
-          surface.style.touchAction = 'pan-y';
-
-          // "Получить" -> "Недоступно" (серые)
-          surface.querySelectorAll('.bp-card-btn').forEach(b=>{
-            b.textContent = 'Недоступно';
-            b.style.background = 'rgba(255,255,255,0.12)';
-            b.style.border = '1px solid rgba(255,255,255,0.18)';
-            b.style.color = 'rgba(232,239,255,0.55)';
-            b.style.cursor = 'not-allowed';
-            b.style.pointerEvents = 'none';
-          });
-
-          // маленькая желтая кнопка под топбаром, следует за ним при скролле
-          const sticky = document.createElement('div');
-          sticky.className = 'bp-sticky-buy';
-          sticky.style.position = 'fixed';
-          sticky.style.left = '50%';
-          sticky.style.top = 'calc(var(--topbar-h, 0px) + 10px)';
-          sticky.style.transform = 'translateX(-50%)';
-          sticky.style.zIndex = '29';
-          sticky.innerHTML = `
-            <button type="button" class="bp-buy-pass-btn" style="
-              padding:8px 14px;
-              border-radius:999px;
-              border:none;
-              background:#ffd94a;
-              color:#1b1300;
-              font-weight:900;
-              font-size:12px;
-              letter-spacing:.08em;
-              text-transform:uppercase;
-              cursor:pointer;
-              box-shadow:0 10px 24px rgba(0,0,0,0.35);
-            ">КУПИТЬ ЗА ${BP_PASS_PRICE}₽</button>
-          `;
-          surface.appendChild(sticky);
-          sticky.querySelector('.bp-buy-pass-btn')?.addEventListener('click', doBuy);
-
-        } else {
-          // === ЗАБЛОКИРОВАНО (скролл ВЫКЛ, вкладка фиксирована вверху, кнопки по центру) ===
-          try{ lockBody(true); }catch(e){}
-          surface.style.touchAction = 'none';
-          window.scrollTo({ top: 0, behavior: 'auto' });
-
-          const overlay = document.createElement('div');
-          overlay.className = 'bp-pay-overlay';
-          overlay.style.position = 'fixed';
-          overlay.style.inset = '0';
-          overlay.style.background = 'rgba(0,0,0,0.6)';
-          overlay.style.zIndex = '1000';
-
-          // стоп скролл под оверлеем (iOS/тач)
-          overlay.addEventListener('wheel', (ev)=> ev.preventDefault(), { passive:false });
-          overlay.addEventListener('touchmove', (ev)=> ev.preventDefault(), { passive:false });
-
-          // ЖЕЛТАЯ КНОПКА РОВНО В ЦЕНТРЕ + СЕРАЯ НИЖЕ
-        overlay.innerHTML = `
-          <div style="
-            position:fixed;
-            left:50%;
-            top:50%;
-            transform:translate(-50%,-50%);
-            background:linear-gradient(180deg, rgba(20,26,62,.92), rgba(10,14,32,.90));
-            border-radius:24px;
-            padding:22px 18px 18px;
-            text-align:center;
-            max-width:300px;
-            width:min(300px, calc(100vw - 48px));
-            box-shadow:0 18px 50px rgba(5,10,40,.75), 0 0 60px rgba(22,241,255,.06);
-            border:1px solid rgba(255,217,74,0.65);
-          ">
-            <div style="font-weight:900;font-size:16px;margin-bottom:10px;letter-spacing:.3px;">
-              Пропуск заблокирован
-            </div>
-            <div style="font-size:13px;opacity:.88;margin-bottom:16px;line-height:1.35;">
-              Оплати пропуск и забирай ежедневные награды.
-            </div>
-
-            <button
-              type="button"
-              class="bp-buy-pass-btn"
-              style="
-                width:100%;
-                padding:14px 18px;
-                border-radius:999px;
-                border:1px solid rgba(255,228,122,0.85);
-                background:linear-gradient(135deg, #ffe64a, #ffb300);
-                color:#241400;
-                font-weight:900;
-                font-size:14px;
-                letter-spacing:.08em;
-                text-transform:uppercase;
-                cursor:pointer;
-                box-shadow:
-                  0 12px 32px rgba(255,228,122,0.35),
-                  0 0 30px rgba(255,228,122,0.55);
-              "
-            >
-              КУПИТЬ ЗА ${BP_PASS_PRICE}₽
-            </button>
-
-            <button
-              type="button"
-              class="bp-preview-rewards-btn"
-              style="
-                width:100%;
-                margin-top:10px;
-                padding:12px 18px;
-                border-radius:999px;
-                border:1px solid rgba(140,170,255,.22);
-                background:linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
-                color:#e8efff;
-                font-weight:900;
-                font-size:13px;
-                letter-spacing:.06em;
-                text-transform:uppercase;
-                cursor:pointer;
-                box-shadow:
-                  inset 0 0 18px rgba(255,255,255,.04),
-                  0 10px 26px rgba(0,0,0,.35);
-              "
-            >
-              Просмотреть награды
-            </button>
-          </div>
-        `;
-
-          surface.appendChild(overlay);
-
-          overlay.querySelector('.bp-buy-pass-btn')?.addEventListener('click', doBuy);
-
-          overlay.querySelector('.bp-preview-rewards-btn')?.addEventListener('click', ()=>{
-            window.__bpPassPreviewMode = true;
-            try{ lockBody(false); }catch(e){}
-            surface.style.touchAction = 'pan-y';
-            renderBattlePass(); // убирает затемнение/кнопки, включает скролл, серит "Получить", добавляет липкую кнопку
-          });
-        }
+          cleanup();
+          overlay.remove();
+          try{ if (typeof lockBody === 'function') lockBody(false); }catch(e){}
+        });
       }
-    } else {
-      // куплен — всё штатно
-      window.__bpPassPreviewMode = false;
-      const surface = upgradesScreen.querySelector('.contests-surface');
-      if (surface) surface.style.touchAction = 'pan-y';
-      try{ lockBody(false); }catch(e){}
     }
-  }catch(e){
-    console.warn('BP buy overlay error', e);
   }
+}catch(e){
+  console.warn('BP buy overlay error', e);
+}
 
 // одна цельная линия строго от центра первой до центра последней точки
 // прогресс подхватываем из localStorage и подравниваем под "получено"
