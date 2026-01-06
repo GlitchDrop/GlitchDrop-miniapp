@@ -4944,6 +4944,11 @@ function hardCloseDetailAndModal(){
   }
   // Вернуть скролл, если был залочен
   try { lockBody(false); } catch(e){}
+
+  // убрать оверлей/кнопку пропуска и сбросить предпросмотр
+  document.querySelectorAll('.bp-pass-overlay').forEach(el => el.remove());
+  document.querySelectorAll('.bp-pass-sticky-buy').forEach(el => el.remove());
+  window.__bpPreviewMode = false;
 }
 
 // Показать экран кейсов (текущая главная)
@@ -5267,6 +5272,7 @@ function showUpgrades(){
   upgradesScreen.setAttribute('aria-hidden','false');
 
   // отрисовать пропуск
+  window.__bpPreviewMode = false;
   renderBattlePass();
 
   setActiveTab(upgradesTab);
@@ -5297,6 +5303,14 @@ const LS_BP_CLAIMED   = 'gd_bp_claimed_v1';         // {"1":true,"2":true,...}
 const LS_BP_PROGRESS  = 'gd_bp_progress_idx_v1';    // "0..6"
 const LS_BP_LASTCLAIM = 'gd_bp_last_claim_ts_v1';   // unix ms
 const LS_BP_UNLOCKED  = 'gd_bp_unlocked_v1';        // "1" если пропуск куплен
+
+function bpIsPassUnlocked(){
+  const v = bpLsGet(LS_BP_UNLOCKED, '0');
+  return v === '1';
+}
+function bpSetPassUnlocked(isUnlocked){
+  bpLsSet(LS_BP_UNLOCKED, isUnlocked ? '1' : '0');
+}
 
 function bpLsGet(key, fallback){
   try{
@@ -5661,6 +5675,197 @@ function syncBattlePassProgressUI(){
   });
 }
 
+function bpHandlePassPurchase(onSuccess){
+  if (typeof BP_PASS_PRICE === 'undefined') return;
+
+  const price = BP_PASS_PRICE;
+  const bal   = getStarsBalance();
+
+  if (bal < price){
+    if (typeof showInsufficientFunds === 'function'){
+      showInsufficientFunds();
+    } else if (typeof showFloatingError === 'function'){
+      showFloatingError('Недостаточно средств на балансе');
+    }
+    return;
+  }
+
+  setStarsBalance(bal - price);
+  bpSetPassUnlocked(true);
+  window.__bpPreviewMode = false;
+
+  if (typeof onSuccess === 'function'){
+    onSuccess();
+  }
+}
+
+// применяет состояние пропуска к UI:
+// 1) куплен — всё как обычно
+// 2) предпросмотр — прокрутка есть, кнопки "Недоступно", сверху маленькая жёлтая
+// 3) полностью залочен — фикс наверху + затемнение + две кнопки
+function bpApplyPassState(){
+  if (!upgradesScreen) return;
+
+  const surface = upgradesScreen.querySelector('.contests-surface');
+  if (!surface) return;
+
+  // убрать прошлый оверлей/кнопку, если есть
+  document.querySelectorAll('.bp-pass-overlay').forEach(el => el.remove());
+  document.querySelectorAll('.bp-pass-sticky-buy').forEach(el => el.remove());
+
+  const tl = surface.querySelector('.bp-timeline');
+  const btns = tl ? Array.from(tl.querySelectorAll('.bp-card-btn')) : [];
+
+  // восстановить подписи/стили
+  btns.forEach(btn => {
+    if (!btn.dataset.bpLabel){
+      btn.dataset.bpLabel = btn.textContent.trim();
+    }
+    btn.textContent = btn.dataset.bpLabel;
+    btn.disabled = false;
+    btn.style.opacity = '';
+    btn.style.cursor  = '';
+    btn.style.background = '';
+    btn.style.color = '';
+  });
+
+  const unlocked = bpIsPassUnlocked();
+  const preview  = !!window.__bpPreviewMode;
+
+  // 1) пропуск куплен — никаких блокировок
+  if (unlocked){
+    try { lockBody(false); } catch(_){}
+    return;
+  }
+
+  // 2) режим предпросмотра: можно скроллить, кнопки "Недоступно", сверху маленькая жёлтая
+  if (preview){
+    try { lockBody(false); } catch(_){}
+
+    btns.forEach(btn => {
+      if (!btn.dataset.bpLabel){
+        btn.dataset.bpLabel = btn.textContent.trim();
+      }
+      btn.textContent   = 'Недоступно';
+      btn.disabled      = true;
+      btn.style.opacity = '0.45';
+      btn.style.cursor  = 'default';
+      btn.style.background = '#2c3145';
+      btn.style.color      = '#9aa4ce';
+    });
+
+    const sticky = document.createElement('button');
+    sticky.className = 'bp-pass-sticky-buy';
+    sticky.type = 'button';
+    sticky.textContent = `КУПИТЬ ЗА ${BP_PASS_PRICE}₽`;
+    sticky.style.position = 'fixed';
+    sticky.style.left = '50%';
+    sticky.style.transform = 'translateX(-50%)';
+    sticky.style.top = '72px'; // чуть ниже верхнего топбара
+    sticky.style.zIndex = '40';
+    sticky.style.padding = '8px 18px';
+    sticky.style.borderRadius = '999px';
+    sticky.style.border = 'none';
+    sticky.style.background = '#ffcc00';
+    sticky.style.color = '#1b1300';
+    sticky.style.fontWeight = '800';
+    sticky.style.fontSize = '14px';
+    sticky.style.cursor = 'pointer';
+    sticky.style.boxShadow = '0 10px 26px rgba(0,0,0,0.6)';
+    document.body.appendChild(sticky);
+
+    sticky.addEventListener('click', () => {
+      bpHandlePassPurchase(() => {
+        window.__bpPreviewMode = false;
+        bpApplyPassState();
+      });
+    });
+
+    return;
+  }
+
+  // 3) полный лок: фикс наверху, затемнение, две кнопки
+  window.__bpPreviewMode = false;
+  window.scrollTo({ top: 0, behavior: 'instant' });
+  try { lockBody(true); } catch(_){}
+
+  const overlay = document.createElement('div');
+  overlay.className = 'bp-pass-overlay';
+  overlay.style.position = 'fixed';
+  overlay.style.inset = '0';
+  overlay.style.zIndex = '60';
+  overlay.style.background = 'rgba(0,0,0,0.78)';
+  overlay.style.display = 'flex';
+  overlay.style.alignItems = 'center';
+  overlay.style.justifyContent = 'center';
+  overlay.style.padding = '16px';
+
+  overlay.innerHTML = `
+    <div style="
+      max-width: 320px;
+      width: 100%;
+      border-radius: 18px;
+      background: #12131f;
+      padding: 20px 18px 16px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+      text-align: center;
+    ">
+      <div style="font-weight: 800; font-size: 18px; margin-bottom: 6px;">Боевой пропуск</div>
+      <div style="font-size: 14px; opacity: .85; margin-bottom: 16px;">
+        До покупки пропуска награды недоступны.
+      </div>
+      <button type="button" class="bp-pass-buy-main" style="
+        width: 100%;
+        padding: 12px 16px;
+        border-radius: 999px;
+        border: none;
+        background: #ffcc00;
+        color: #1b1300;
+        font-weight: 800;
+        font-size: 15px;
+        cursor: pointer;
+        margin-bottom: 10px;
+      ">
+        КУПИТЬ ЗА ${BP_PASS_PRICE}₽
+      </button>
+      <button type="button" class="bp-pass-preview" style="
+        width: 100%;
+        padding: 10px 16px;
+        border-radius: 999px;
+        border: 1px solid rgba(255,255,255,0.18);
+        background: #252738;
+        color: #eef0ff;
+        font-weight: 700;
+        font-size: 14px;
+        cursor: pointer;
+      ">
+        Просмотреть награды
+      </button>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  const buyMain    = overlay.querySelector('.bp-pass-buy-main');
+  const previewBtn = overlay.querySelector('.bp-pass-preview');
+
+  buyMain?.addEventListener('click', () => {
+    bpHandlePassPurchase(() => {
+      overlay.remove();
+      try { lockBody(false); } catch(_){}
+      window.__bpPreviewMode = false;
+      bpApplyPassState();
+    });
+  });
+
+  previewBtn?.addEventListener('click', () => {
+    window.__bpPreviewMode = true;
+    overlay.remove();
+    try { lockBody(false); } catch(_){}
+    bpApplyPassState();
+  });
+}
+
 function renderBattlePass(){
   if (!upgradesScreen) return;
 
@@ -5919,6 +6124,10 @@ function renderBattlePass(){
 syncBattlePassProgressUI();
 bpSyncClaimedUI();
 
+if (typeof bpApplyPassState === 'function'){
+  bpApplyPassState();
+}
+
 requestAnimationFrame(syncBattlePassMainLine);
 setTimeout(syncBattlePassMainLine, 60);
 
@@ -5948,8 +6157,14 @@ if (!window.__bpBattlePassClickBound){
     const btn = e.target.closest('.bp-card-btn');
     if (!btn) return;
 
+    // до покупки пропуска (и в режиме предпросмотра) награды недоступны
+    if (typeof bpIsPassUnlocked === 'function' && !bpIsPassUnlocked()){
+      return;
+    }
+
     const item = btn.closest('.bp-item');
     const tl = btn.closest('.bp-timeline');
+
     if (!item || !tl) return;
 
     const items = Array.from(tl.querySelectorAll('.bp-item'));
