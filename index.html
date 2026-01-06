@@ -2013,10 +2013,13 @@ h2.section{
 /* картинка без вращения */
 #app-loader .loader-logo{
   width: 118px;
-  height: 118px;
-  border-radius: 999px;
-  object-fit: cover;
-  box-shadow: 0 0 26px rgba(0,169,255,.28);
+  height: auto;
+  max-height: 118px;
+  border-radius: 0;
+  object-fit: contain;
+  background: transparent;
+  box-shadow: none;
+  display:block;
 }
 
 /* заголовок */
