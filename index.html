@@ -148,16 +148,16 @@ GD.ensureUid8 = function (tgId) {
 
   <style>
 :root{
-  --bg-top:#050814;
-  --bg-bot:#0a1022;
+  --bg-top:#000;
+  --bg-bot:#000;
   --grid:rgba(255,255,255,.025);
   --grid-gap:36px;
 
-  --panel:#070b18;
-  --panel2:#0a0f22;
+  --panel:#000;
+  --panel2:#000;
 
-  --card:#0b1026;
-  --card2:#0d1230;
+  --card:#000;
+  --card2:#000;
 
   --neon-cyan:#16f1ff;
   --neon-pink:#8a5cff;
@@ -608,12 +608,13 @@ html:not(.in-telegram) .card .price-pill{
   padding-bottom: calc(env(safe-area-inset-bottom) + 7px);
 
   background: linear-gradient(180deg, rgba(34,34,34,.92), rgba(10,10,10,.95));
-  border: 1px solid rgba(255,255,255,.10);
+  border: 1px solid rgba(255,255,255,.18);
   border-radius: 28px;
 
   backdrop-filter: blur(14px) saturate(1.15);
   box-shadow:
     0 16px 48px rgba(0,0,0,.78),
+    inset 0 0 0 1px rgba(255,255,255,.08),
     inset 0 0 18px rgba(255,255,255,.04);
 }
 
