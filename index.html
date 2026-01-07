@@ -595,134 +595,152 @@ html:not(.in-telegram) .card .price-pill{
   filter:brightness(0.9);
 }
 
+/* ===== TABBAR (как на скрине: стекло + активный поднятый сегмент) ===== */
 .tabbar{
   position: fixed;
-  left: 10px; right: 10px; bottom: 10px;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
   z-index: 80;
 
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 4px;
+  width: min(calc(100% - 24px), 720px);
 
-  padding: 7px 8px;
-  padding-bottom: calc(env(safe-area-inset-bottom) + 7px);
+  display: flex;
+  gap: 0;
+  padding: 10px 10px;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 10px);
 
-  background: linear-gradient(180deg, rgba(34,34,34,.92), rgba(10,10,10,.95));
+  border-radius: 30px;
+  background: linear-gradient(180deg, rgba(16,16,18,.68), rgba(8,8,10,.78));
   border: 1px solid rgba(255,255,255,.18);
-  border-radius: 28px;
 
-  backdrop-filter: blur(14px) saturate(1.15);
+  backdrop-filter: blur(18px) saturate(1.25);
+  -webkit-backdrop-filter: blur(18px) saturate(1.25);
+
   box-shadow:
-    0 16px 48px rgba(0,0,0,.78),
-    inset 0 0 0 1px rgba(255,255,255,.08),
-    inset 0 0 18px rgba(255,255,255,.04);
+    0 18px 60px rgba(0,0,0,.75),
+    inset 0 1px 0 rgba(255,255,255,.08);
 }
 
 .tab{
+  flex: 1;
   position: relative;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
 
-  gap: 3px;
-  padding: 5px 2px;
+  appearance: none;
+  border: none;
+  background: transparent;
 
-  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 
-  color: #9fb2d9;
+  padding: 10px 6px 8px;
+  border-radius: 18px;
+
+  color: rgba(255,255,255,.62);
   font-size: 11.5px;
   font-weight: 900;
   letter-spacing: .25px;
   line-height: 1.05;
 
-  cursor:pointer;
-  transition:
-    transform .16s ease,
-    color .16s ease,
-    background .2s ease;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  transition: transform .18s ease, color .18s ease, background .18s ease, box-shadow .18s ease, border-color .18s ease;
 }
 
-.tab:hover{
-  background: rgba(120,160,255,.06);
-  transform: translateY(-1px);
-  color: #dbe6ff;
+/* тонкие разделители */
+.tab:not(:last-child)::after{
+  content:"";
+  position:absolute;
+  right: 0;
+  top: 14px;
+  bottom: 14px;
+  width: 1px;
+  background: rgba(255,255,255,.10);
+  opacity: .35;
 }
 
-/* контейнер под иконку — оставим не очень большим,
-   чтобы он не тянул высоту таббара */
+/* иконка (монохром) */
 .ico{
-  width: 34px;
-  height: 34px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  position:relative;
-  overflow: visible;
-  border-radius: 12px;
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.10);
+
+  box-shadow: inset 0 0 16px rgba(255,255,255,.03);
 }
 
-
-/* реальный размер картинки маленький, а визуально увеличиваем scale-ом */
-.ico img{
-  width: 24px;
-  height: 24px;
+.ico svg{
+  width: 22px;
+  height: 22px;
   display:block;
-  object-fit: contain;
 
-  transform: translateY(0.5px) scale(1.45);
-  transform-origin:center;
-  filter: drop-shadow(0 0 6px rgba(120,160,255,.35));
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 
-  transition:
-    transform .18s ease,
-    filter .18s ease;
+  filter: drop-shadow(0 0 6px rgba(255,255,255,.12));
 }
 
-/* активная вкладка — мягкий неоновый ореол без жёстких границ */
+.tab-label{
+  opacity: .9;
+}
+
+/* hover — очень мягко */
+.tab:hover{
+  color: rgba(255,255,255,.82);
+}
+
+/* ACTIVE — поднятый “пилюльный” сегмент */
 .tab.active{
-  color: #eaf1ff;
-  background: linear-gradient(180deg, rgba(59,232,255,.10), rgba(138,92,255,.12));
-  transform: translateY(-4px);
+  z-index: 2;
+  color: #fff;
+
+  background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.05));
+  border: 1px solid rgba(255,255,255,.34);
+
+  box-shadow:
+    0 16px 40px rgba(0,0,0,.70),
+    0 0 26px rgba(255,255,255,.10);
+
+  transform: translateY(-10px);
+}
+
+/* glow сверху, чтобы выглядело “выпукло” */
+.tab.active::before{
+  content:"";
+  position:absolute;
+  left: 10px;
+  right: 10px;
+  top: 6px;
+  height: 24px;
+  border-radius: 999px;
+  background: radial-gradient(60% 120% at 50% 0%, rgba(255,255,255,.22), transparent 70%);
+  pointer-events:none;
 }
 
 .tab.active .ico{
-  background:
-    radial-gradient(80% 80% at 50% 20%, rgba(59,232,255,.28), transparent 60%),
-    radial-gradient(90% 90% at 50% 90%, rgba(138,92,255,.34), transparent 65%);
+  background: rgba(0,0,0,.18);
+  border-color: rgba(255,255,255,.42);
   box-shadow:
-    0 0 18px rgba(59,232,255,.45),
-    0 0 26px rgba(138,92,255,.35);
+    0 0 18px rgba(255,255,255,.14),
+    inset 0 0 20px rgba(255,255,255,.06);
 }
 
-.tab.active .ico img{
-  transform: translateY(0) scale(1.7);
-  filter:
-    drop-shadow(0 0 10px rgba(59,232,255,.9))
-    drop-shadow(0 0 14px rgba(138,92,255,.8));
-}
-
-/* светящийся индикатор снизу активной вкладки */
-.tab.active::after{
-  content:"";
-  position:absolute;
-  bottom: -2px;            /* было 4px — опускаем ниже текста */
-  left:50%;
-  width: 18px;
-  height: 4px;
-  border-radius: 999px;
-  transform: translateX(-50%);
-  background: linear-gradient(90deg, var(--neon-cyan), #b58cff);
-  box-shadow: 0 0 10px rgba(59,232,255,.9);
-}
-
-
-/* лёгкий glow при наведении — мягкий, без рамки */
-.tab:hover .ico img{
-  transform: translateY(0.5px) scale(1.7);
-  filter:
-    drop-shadow(0 0 10px rgba(59,232,255,.9))
-    drop-shadow(0 0 14px rgba(138,92,255,.8));
+.tab:focus-visible{
+  outline: none;
+  box-shadow:
+    0 0 0 2px rgba(255,255,255,.18),
+    0 18px 60px rgba(0,0,0,.75);
 }
 
     .backtop{
@@ -3257,41 +3275,69 @@ if (addr) {
   </div>
 </div>
 
-    <nav class="tabbar">
-  <div class="tab">
-    <div class="ico">
-      <img src="assets/images/20251116_1410_Чашка на прозрачном фоне_remix_01ka65p4jmegq99mzejj6nkprr.png" alt="Конкурсы">
-    </div>
-    Конкурсы
-  </div>
+<nav class="tabbar" aria-label="Навигация">
+  <button class="tab" type="button" data-tab="contests">
+    <span class="ico" aria-hidden="true">
+      <!-- trophy -->
+      <svg viewBox="0 0 24 24">
+        <path d="M8 4h8v3a4 4 0 0 1-8 0V4Z"></path>
+        <path d="M6 5H4v1a4 4 0 0 0 4 4"></path>
+        <path d="M18 10a4 4 0 0 0 4-4V5h-2"></path>
+        <path d="M12 14v3"></path>
+        <path d="M9 21h6"></path>
+      </svg>
+    </span>
+    <span class="tab-label">Конкурсы</span>
+  </button>
 
-  <div class="tab">
-    <div class="ico">
-      <img src="assets/images/20251117_1747_Иконка с прозрачным фоном_remix_01ka94fh16en3vq3kqfmhp6re2.png" alt="Пропуск">
-    </div>
-    Пропуск
-  </div>
+  <button class="tab" type="button" data-tab="pass">
+    <span class="ico" aria-hidden="true">
+      <!-- ticket -->
+      <svg viewBox="0 0 24 24">
+        <path d="M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2a2 2 0 0 0 0 6v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-6V7Z"></path>
+        <path d="M12 7v10" stroke-dasharray="2 2"></path>
+      </svg>
+    </span>
+    <span class="tab-label">Пропуск</span>
+  </button>
 
-  <div class="tab active">
-    <div class="ico">
-      <img src="assets/images/20251116_1418_Прозрачный фон, ровный центр_remix_01ka6642srfterwmtfaw3xvgx9.png" alt="Кейсы">
-    </div>
-    Кейсы
-  </div>
+  <button class="tab active" type="button" data-tab="cases">
+    <span class="ico" aria-hidden="true">
+      <!-- box -->
+      <svg viewBox="0 0 24 24">
+        <path d="M3 7l9-4 9 4-9 4-9-4Z"></path>
+        <path d="M3 7v10l9 4 9-4V7"></path>
+        <path d="M12 11v10"></path>
+      </svg>
+    </span>
+    <span class="tab-label">Кейсы</span>
+  </button>
 
-  <div class="tab">
-    <div class="ico">
-      <img src="assets/images/20251116_1344_Центральная иконка на прозрачном фоне_remix_01ka6472x6eeybwvx8cxa95kdh.png" alt="Друзья">
-    </div>
-    Друзья
-  </div>
+  <button class="tab" type="button" data-tab="friends">
+    <span class="ico" aria-hidden="true">
+      <!-- users -->
+      <svg viewBox="0 0 24 24">
+        <circle cx="8" cy="8" r="3"></circle>
+        <path d="M2 20a6 6 0 0 1 12 0"></path>
+        <circle cx="17" cy="9" r="2.5"></circle>
+        <path d="M14 20a5.5 5.5 0 0 1 8 0"></path>
+      </svg>
+    </span>
+    <span class="tab-label">Друзья</span>
+  </button>
 
-  <div class="tab" data-tab="inventory">
-    <div class="ico">
-      <img src="assets/images/20251116_1414_Рюкзак на прозрачном фоне_remix_01ka65wfdyf5htgqqchxje2t43.png" alt="Инвентарь">
-    </div>
-    Инвентарь
-  </div>
+  <button class="tab" type="button" data-tab="inventory">
+    <span class="ico" aria-hidden="true">
+      <!-- backpack -->
+      <svg viewBox="0 0 24 24">
+        <path d="M8 7V6a4 4 0 0 1 8 0v1"></path>
+        <path d="M6 7h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Z"></path>
+        <path d="M8 13h8"></path>
+        <path d="M9 17h6"></path>
+      </svg>
+    </span>
+    <span class="tab-label">Инвентарь</span>
+  </button>
 </nav>
 
   <!-- DETAIL VIEW -->
