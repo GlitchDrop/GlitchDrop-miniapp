@@ -651,17 +651,8 @@ html:not(.in-telegram) .card .price-pill{
   transition: transform .18s ease, color .18s ease, background .18s ease, box-shadow .18s ease, border-color .18s ease;
 }
 
-/* тонкие разделители */
-.tab:not(:last-child)::after{
-  content:"";
-  position:absolute;
-  right: 0;
-  top: 12px;
-  bottom: 12px;
-  width: 1px;
-  background: rgba(255,255,255,.10);
-  opacity: .35;
-}
+/* разделители убраны */
+.tab:not(:last-child)::after{ display:none; }
 
 /* иконка (монохром) */
 .ico{
@@ -671,24 +662,52 @@ html:not(.in-telegram) .card .price-pill{
   display: grid;
   place-items: center;
 
-  background: rgba(255,255,255,.03);
-  border: 1px solid rgba(255,255,255,.10);
+  position: relative;
+  overflow: visible;
+  isolation: isolate;
 
+  background: rgba(255,255,255,.025);
+  border: 1px solid rgba(255,255,255,.12);
   box-shadow: inset 0 0 16px rgba(255,255,255,.03);
 }
 
-.ico svg{
+/* мягкое “расплывающееся” свечение, без обрубания */
+.ico::before{
+  content:"";
+  position:absolute;
+  inset:-16px;
+  border-radius: 22px;
+  background: radial-gradient(60% 60% at 50% 35%, rgba(255,255,255,.22), rgba(255,255,255,0) 70%);
+  filter: blur(10px);
+  opacity: .45;
+  pointer-events:none;
+  z-index: 0;
+}
+
+.ico > svg,
+.ico > img{
+  position: relative;
+  z-index: 1;
+}
+
+.ico svg,
+.ico img{
   width: 20px;
   height: 20px;
   display:block;
+  filter: drop-shadow(0 0 6px rgba(255,255,255,.12));
+}
 
+.ico svg{
   fill: none;
   stroke: currentColor;
   stroke-width: 1.9;
   stroke-linecap: round;
   stroke-linejoin: round;
+}
 
-  filter: drop-shadow(0 0 6px rgba(255,255,255,.12));
+.ico img{
+  object-fit: contain;
 }
 
 .tab-label{
@@ -719,21 +738,27 @@ html:not(.in-telegram) .card .price-pill{
 .tab.active::before{
   content:"";
   position:absolute;
-  left: 10px;
-  right: 10px;
-  top: 6px;
-  height: 24px;
+  left: 6px;
+  right: 6px;
+  top: -2px;
+  height: 40px;
   border-radius: 999px;
-  background: radial-gradient(60% 120% at 50% 0%, rgba(255,255,255,.22), transparent 70%);
+  background: radial-gradient(75% 160% at 50% 0%, rgba(255,255,255,.30), rgba(255,255,255,0) 72%);
+  filter: blur(9px);
+  opacity: .95;
   pointer-events:none;
 }
 
 .tab.active .ico{
-  background: rgba(0,0,0,.18);
-  border-color: rgba(255,255,255,.42);
+  background: rgba(0,0,0,.12);
+  border-color: rgba(255,255,255,.48);
   box-shadow:
-    0 0 18px rgba(255,255,255,.14),
-    inset 0 0 20px rgba(255,255,255,.06);
+    0 0 28px rgba(255,255,255,.22),
+    0 0 56px rgba(255,255,255,.10),
+    inset 0 0 22px rgba(255,255,255,.06);
+}
+.tab.active .ico::before{
+  opacity: .78;
 }
 
 .tab:focus-visible{
