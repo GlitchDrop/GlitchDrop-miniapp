@@ -5460,10 +5460,31 @@ function bpSyncClaimedUI(tl){
   const curIdx = (window.__bpProgressIndex ?? 0);
   const curRewardId = curIdx + 1;
 
+  // пока пропуск не куплен — ВСЕ кнопки = "Недоступно"
+  if (!bpIsPassUnlocked()){
+    items.forEach((it) => {
+      const btn = it.querySelector('.bp-card-btn');
+      if (!btn) return;
+
+      btn.textContent = 'Недоступно';
+      btn.classList.remove('cooldown');
+
+      btn.style.pointerEvents = 'none';
+      btn.style.opacity = '0.65';
+      btn.style.cursor = 'not-allowed';
+    });
+    return;
+  }
+
   items.forEach((it, i) => {
     const rewardId = i + 1;
     const btn = it.querySelector('.bp-card-btn');
     if (!btn) return;
+
+    // вернуть обычное поведение после покупки
+    btn.style.pointerEvents = '';
+    btn.style.opacity = '';
+    btn.style.cursor = '';
 
     if (bpRunIsClaimed(rewardId)){
       btn.textContent = 'Получено';
@@ -5471,7 +5492,6 @@ function bpSyncClaimedUI(tl){
       return;
     }
 
-    // для активной награды (кроме первой) показываем таймер, если ещё рано
     if (rewardId === curRewardId && rewardId > 1){
       const left = bpCooldownRemainingMs();
       if (left > 0){
