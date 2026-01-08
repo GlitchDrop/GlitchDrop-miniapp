@@ -626,6 +626,8 @@ html:not(.in-telegram) .card .price-pill{
   flex: 1;
   position: relative;
 
+  --lift: 0px;
+
   appearance: none;
   border: 1px solid transparent;
   background: transparent;
@@ -666,14 +668,16 @@ html:not(.in-telegram) .card .price-pill{
   display: grid;
   place-items: center;
 
-  position: relative;
-  overflow: visible;
-  isolation: isolate;
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.10);
 
-  background: rgba(255,255,255,.025);
-  border: 1px solid rgba(255,255,255,.12);
   box-shadow: inset 0 0 16px rgba(255,255,255,.03);
+
+  transform: translateY(var(--lift));
+  transition: transform .18s ease;
+  will-change: transform;
 }
+
 
 /* мягкое “расплывающееся” свечение, без обрубания */
 .ico::before{
@@ -716,6 +720,10 @@ html:not(.in-telegram) .card .price-pill{
 
 .tab-label{
   opacity: .9;
+
+  transform: translateY(var(--lift));
+  transition: transform .18s ease;
+  will-change: transform;
 }
 
 /* hover — очень мягко */
@@ -725,6 +733,8 @@ html:not(.in-telegram) .card .price-pill{
 
 /* ACTIVE — поднятый “пилюльный” сегмент */
 .tab.active{
+  --lift: 8px;
+
   z-index: 2;
   color: #fff;
 
@@ -735,8 +745,9 @@ html:not(.in-telegram) .card .price-pill{
     0 16px 40px rgba(0,0,0,.70),
     0 0 26px rgba(255,255,255,.10);
 
-  transform: none;
+  transform: translateY(-8px);
 }
+
 
 /* glow сверху, чтобы выглядело “выпукло” */
 .tab.active::before{
