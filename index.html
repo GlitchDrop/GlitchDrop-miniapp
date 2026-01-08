@@ -627,7 +627,7 @@ html:not(.in-telegram) .card .price-pill{
   position: relative;
 
   appearance: none;
-  border: 1px solid transparent;
+  border: 1px solid transparent; /* чтобы иконки не “прыгали” при появлении рамки */
   background: transparent;
 
   display: flex;
@@ -650,6 +650,10 @@ html:not(.in-telegram) .card .price-pill{
 
   transition: transform .18s ease, color .18s ease, background .18s ease, box-shadow .18s ease, border-color .18s ease;
 }
+
+/* убираем микросдвиг в момент тапа */
+.tab:active{ transform: none; }
+.tab.active:active{ transform: translateY(-8px); }
 
 /* разделители убраны */
 .tab:not(:last-child)::after{ display:none; }
