@@ -1074,68 +1074,368 @@ html:not(.in-telegram) .d-auth-warning{
   backdrop-filter: blur(8px);
 }
 
-/* ===== FRIENDS v2 (новый дизайн) ===== */
-.friends-wrap{
-  max-width: 980px; margin: 12px auto 0; padding: 0 12px;
-  padding-bottom: max(var(--tabbar-h,84px), env(safe-area-inset-bottom) + 16px);
+/* ===== FRIENDS v3 (Друзья и награды) ===== */
+.fr2-page{
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 12px 14px calc(var(--tabbar-h,84px) + env(safe-area-inset-bottom) + 18px);
 }
 
-.friends-header{
-  width:100%;
-  position: sticky;
-  top: 0;
-  z-index: 22;
-  padding: 10px max(12px, env(safe-area-inset-left)) 12px max(12px, env(safe-area-inset-right));
-  text-align:center;
-  font-weight:900;
-  letter-spacing:1.4px;
-  font-size:clamp(24px, 8vw, 52px);
-  color:#e8efff;
-  text-shadow:0 0 16px rgba(22,241,255,.18);
-  background: linear-gradient(180deg, rgba(12,16,38,.88), rgba(10,14,34,.82));
-  border-bottom:1px solid var(--border);
-  backdrop-filter: blur(8px);
+.fr2-top{
+  position: relative;
+  padding-top: 12px;
+  margin-bottom: 10px;
 }
-.fr-title{
-  text-align:center; font-weight:900; letter-spacing:.6px;
-  font-size: clamp(18px, 4.6vw, 26px);
-  color:#e8efff; text-shadow:0 0 16px rgba(22,241,255,.2);
-  margin: 2px 0 6px;
+
+.fr2-close{
+  position: absolute;
+  left: 0;
+  top: 12px;
+
+  appearance: none;
+  border: none;
+  background: transparent;
+
+  color: rgba(255,255,255,.70);
+  font-weight: 900;
+  font-size: 15px;
+
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 8px 10px;
+  border-radius: 12px;
+
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
-.fr-sub{ text-align:center; color:#9fb2d9; font-weight:800; font-size:13px; margin-bottom:12px; }
-.fr-sub .bil{ filter: saturate(1.2); }
-
-.fr-cta-row{
-  display:grid; grid-template-columns:1fr 44px; gap:10px;
-  align-items:stretch; margin-bottom: 10px;
+.fr2-close:active{ transform: translateY(1px); }
+.fr2-close-ico{
+  font-size: 20px;
+  line-height: 1;
+  transform: translateY(-1px);
 }
-.btn{ appearance:none; border:none; cursor:pointer; border-radius:14px; padding:14px 16px; font-weight:900; letter-spacing:.3px; box-shadow: var(--shadow-soft); }
-.btn-primary{ color:#081121; background:linear-gradient(135deg, var(--neon-cyan), var(--neon-pink)); border:1px solid transparent; }
-.btn-icon{ display:grid; place-items:center; background:linear-gradient(135deg, rgba(15,20,48,.92), rgba(12,16,38,.92)); border:1px solid var(--border); color:#e8efff; width:44px; padding:0; }
-.btn-ghost{ color:#e8efff; background:linear-gradient(135deg, rgba(15,20,48,.9), rgba(12,16,38,.9)); border:1px solid var(--border); }
 
-.fr-block-title{ font-weight:900; letter-spacing:.4px; color:#d7e6ff; margin: 4px 0 10px; text-shadow:0 0 12px rgba(22,241,255,.15); }
-.fr-promo{ display:grid; grid-template-columns:1fr; gap:10px; }
-.fr-input{ width:100%; border-radius:12px; border:1px solid var(--border); background:rgba(15,20,48,.9); color:#e8efff; padding:12px 12px; font-weight:800; outline:none; }
-.fr-actions{ display:grid; grid-template-columns:1fr; gap:10px; }
-
-.fr-list-wrap{ margin-top:14px; border:1px solid var(--border); border-radius:16px; background:linear-gradient(180deg, rgba(15,20,48,.72), rgba(12,16,38,.72)); }
-.fr-list-head{ display:flex; justify-content:space-between; align-items:center; padding:12px 14px; font-weight:900; color:#e8efff; border-bottom:1px solid var(--border); }
-.fr-list{ display:flex; flex-direction:column; gap:8px; padding:10px; }
-.fr-item{ display:grid; grid-template-columns: 28px 1fr auto; align-items:center; gap:10px; padding:12px; border-radius:12px; border:1px solid var(--border); background:linear-gradient(135deg, rgba(18,24,56,.7), rgba(12,16,38,.7)); }
-.fr-item .n{ font-weight:900; color:#e8efff; }
-.fr-item .nm{ font-weight:900; color:#e8efff; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
-.fr-item .gain{ display:flex; align-items:center; gap:8px; font-weight:900; color:#e8efff; }
-.fr-item .gain img{ width:18px; height:18px; border-radius:4px; object-fit:cover; }
-
-@media (min-width: 680px){
-  .fr-cta-row{ grid-template-columns:1fr 48px 1fr; }
-  .fr-actions{ grid-template-columns:1fr 1fr; }
+.fr2-title{
+  text-align: center;
+  font-weight: 1000;
+  letter-spacing: .5px;
+  font-size: clamp(26px, 7vw, 44px);
+  margin: 10px 0 4px;
+  color: #e8efff;
+  text-shadow: 0 0 18px rgba(255,255,255,.12);
 }
+.fr2-sub{
+  text-align: center;
+  color: rgba(255,255,255,.55);
+  font-weight: 800;
+  font-size: 14px;
+  margin-bottom: 14px;
+}
+
+.fr2-stats{
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.fr2-stat{
+  border-radius: 18px;
+  padding: 14px 10px 12px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+
+  background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.02));
+  border: 1px solid rgba(255,255,255,.20);
+  backdrop-filter: blur(10px) saturate(1.15);
+
+  box-shadow:
+    0 18px 60px rgba(0,0,0,.55),
+    inset 0 0 0 1px rgba(255,255,255,.06);
+}
+.fr2-stat::before{
+  content:"";
+  position:absolute;
+  inset:-30px;
+  background: radial-gradient(60% 55% at 50% 0%, rgba(255,255,255,.22), rgba(255,255,255,0) 70%);
+  filter: blur(14px);
+  opacity: .55;
+  pointer-events: none;
+}
+
+.fr2-stat-ico{
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 10px;
+
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+
+  background: rgba(0,0,0,.14);
+  border: 1px solid rgba(255,255,255,.18);
+  box-shadow: inset 0 0 18px rgba(255,255,255,.05);
+
+  color: rgba(255,255,255,.82);
+  position: relative;
+  z-index: 1;
+}
+.fr2-stat-ico svg{
+  width: 30px;
+  height: 30px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.fr2-stat-val{
+  font-weight: 1000;
+  font-size: 38px;
+  line-height: 1;
+  margin-bottom: 6px;
+  position: relative;
+  z-index: 1;
+}
+.fr2-stat-lbl{
+  font-weight: 900;
+  font-size: 14px;
+  color: rgba(255,255,255,.62);
+  position: relative;
+  z-index: 1;
+}
+
+.fr2-invite{
+  width: 100%;
+  margin: 14px 0 18px;
+
+  border-radius: 26px;
+  padding: 18px 16px 14px;
+
+  border: 1px solid rgba(255,255,255,.22);
+  background: linear-gradient(90deg, rgba(54,142,255,.92), rgba(148,92,255,.92));
+  color: #fff;
+
+  font-weight: 1000;
+  cursor: pointer;
+
+  position: relative;
+  overflow: hidden;
+
+  box-shadow:
+    0 22px 70px rgba(0,0,0,.60),
+    0 0 40px rgba(120,160,255,.22);
+
+  -webkit-tap-highlight-color: transparent;
+}
+.fr2-invite:active{ transform: translateY(1px); }
+
+.fr2-invite::before{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  border-radius: 28px;
+  background: radial-gradient(70% 90% at 50% 0%, rgba(255,255,255,.35), rgba(255,255,255,0) 68%);
+  filter: blur(10px);
+  opacity: .75;
+  pointer-events: none;
+}
+
+.fr2-invite-title{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  font-size: 28px;
+  letter-spacing: .2px;
+
+  text-shadow: 0 14px 34px rgba(0,0,0,.35);
+  position: relative;
+  z-index: 1;
+}
+.fr2-plus{
+  width: 34px;
+  height: 34px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 12px;
+  background: rgba(255,255,255,.18);
+  border: 1px solid rgba(255,255,255,.22);
+  box-shadow: inset 0 0 16px rgba(255,255,255,.10);
+
+  font-size: 26px;
+  line-height: 1;
+}
+
+.fr2-invite-sub{
+  margin-top: 6px;
+
+  font-size: 14px;
+  font-weight: 900;
+  color: rgba(255,255,255,.82);
+  opacity: .9;
+
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+.fr2-section{
+  margin-top: 6px;
+  padding: 0 2px;
+}
+.fr2-section-title{
+  font-weight: 1000;
+  font-size: 22px;
+  margin: 8px 0 10px;
+  letter-spacing: .2px;
+  color: #e8efff;
+}
+
+.fr2-steps{
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fr2-step{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.fr2-step-ico{
+  width: 34px;
+  height: 34px;
+
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.14);
+  color: rgba(255,255,255,.78);
+
+  flex: 0 0 34px;
+}
+.fr2-step-ico svg{
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.fr2-step-text{
+  font-weight: 900;
+  font-size: 18px;
+  color: rgba(255,255,255,.70);
+
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.fr2-step-n{
+  width: 22px;
+  font-weight: 900;
+  color: rgba(255,255,255,.45);
+}
+
+.fr2-bonus{
+  margin-top: 18px;
+
+  border-radius: 22px;
+  padding: 16px 16px 14px;
+
+  border: 1px solid rgba(255,255,255,.20);
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+  backdrop-filter: blur(10px) saturate(1.1);
+
+  box-shadow: 0 18px 60px rgba(0,0,0,.55);
+
+  position: relative;
+  overflow: hidden;
+}
+.fr2-bonus::before{
+  content:"";
+  position:absolute;
+  right:-60px;
+  bottom:-60px;
+  width:240px;
+  height:240px;
+  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.18), rgba(255,255,255,0) 70%);
+  filter: blur(12px);
+  opacity: .65;
+  pointer-events: none;
+}
+
+.fr2-bonus-title{
+  font-weight: 1000;
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.fr2-bonus-list{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.fr2-bonus-item{
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+
+  font-weight: 900;
+  color: rgba(255,255,255,.70);
+  font-size: 18px;
+}
+.fr2-bonus-n{
+  width: 18px;
+  color: rgba(255,255,255,.45);
+}
+.fr2-bonus-item b{ color:#fff; }
+
+.fr2-bonus-btn{
+  margin-top: 12px;
+  width: 100%;
+
+  border-radius: 999px;
+  padding: 12px 14px;
+
+  border: 1px solid rgba(255,255,255,.22);
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.85);
+
+  font-weight: 1000;
+  font-size: 16px;
+
+  cursor: pointer;
+  box-shadow: inset 0 0 16px rgba(255,255,255,.05);
+  -webkit-tap-highlight-color: transparent;
+}
+.fr2-bonus-btn:active{ transform: translateY(1px); }
 
 /* где угодно в CSS */
 .friends-page{
   padding-bottom: max(var(--tabbar-h,84px), env(safe-area-inset-bottom) + 16px);
+}
+
+@media (max-width: 420px){
+  .fr2-invite-title{ font-size: 24px; }
+  .fr2-plus{ width: 30px; height: 30px; font-size: 24px; }
+  .fr2-stat-val{ font-size: 34px; }
 }
 
 /* Лочим скролл без position:fixed у body */
@@ -5138,7 +5438,7 @@ const list = window.INVENTORY || [];
   };
 }
 
-/* ===================== FRIENDS v2 ===================== */
+/* ===================== FRIENDS v3 (Друзья и награды) ===================== */
 const topbarEl = document.querySelector('.topbar');
 
 // флаг «уже нарисовали один раз»
@@ -5150,119 +5450,135 @@ async function renderFriends(forceReload = false){
   // если уже загружено и не просили форс-обновление — просто выходим
   if (friendsLoaded && !forceReload) return;
 
-  const TOKEN_ICON = 'assets/images/20251005_0825_Яркое неоновое сияние_remix_01k6sd902pf03ah1w3cpkr66jz.png';
-  const invited = await fetchInvited();
-
   friendsLoaded = true;
 
   friendsScreen.innerHTML = `
-    <div class="friends-header">ДРУЗЬЯ</div>
+    <div class="fr2-page">
+      <div class="fr2-top">
+        <button type="button" class="fr2-close" id="frClose">
+          <span class="fr2-close-ico">‹</span><span>Закрыть</span>
+        </button>
 
-    <div class="friends-wrap">
-      <!-- Промо-блок во всю ширину, без «панели» -->
-      <div class="fr-title">Приглашай друзей — Получай награды!</div>
-      <div class="fr-sub">Каждый приглашённый друг = <strong>1</strong> <span class="bil">🎟️</span> билет</div>
-
-      <div class="fr-cta-row">
-        <button type="button" class="btn btn-primary" id="btnInvite">ПРИГЛАСИТЬ ДРУГА</button>
-        <button type="button" class="btn btn-icon" id="btnCopy" title="Скопировать ссылку">📋</button>
-        <button type="button" class="btn btn-ghost" id="btnPartner" style="display:none">СТАТЬ ПАРТНЁРОМ</button>
+        <div class="fr2-title">Друзья и награды</div>
+        <div class="fr2-sub">Приглашай — зарабатывай больше</div>
       </div>
 
-      <div class="fr-list-wrap">
-        <div class="fr-list-head">
-          <span>Приглашённые друзья</span>
-          <span>(${invited.length})</span>
+      <div class="fr2-stats">
+        <div class="fr2-stat">
+          <div class="fr2-stat-ico">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M16 11a4 4 0 1 0-8 0"/>
+              <path d="M3 21c1.5-4 5-6 9-6s7.5 2 9 6"/>
+              <path d="M19 8.5a3 3 0 1 1 0 6"/>
+            </svg>
+          </div>
+          <div class="fr2-stat-val">0</div>
+          <div class="fr2-stat-lbl">Друзей</div>
         </div>
-        <div class="fr-list" id="frList">
-          ${
-  invited.length
-    ? invited.map((u,i)=>`
-      <div class="fr-item" role="listitem">
-        <div class="n">${i+1}.</div>
-        <div class="nm">
-          <span class="nm-txt">${esc(u.name || 'Пользователь')}</span>
+
+        <div class="fr2-stat">
+          <div class="fr2-stat-ico">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 7h16"/>
+              <path d="M6 7l2-3h8l2 3"/>
+              <path d="M6 7v13h12V7"/>
+              <path d="M9 11h6"/>
+              <path d="M9 15h6"/>
+            </svg>
+          </div>
+          <div class="fr2-stat-val">0</div>
+          <div class="fr2-stat-lbl">Заработано</div>
         </div>
-        <div class="gain">
-          +1 <img src="${u.photo_url || 'assets/images/20251005_0825_Яркое неоновое сияние_remix_01k6sd902pf03ah1w3cpkr66jz.png'}" alt="" onerror="this.src='assets/images/20251005_0825_Яркое неоновое сияние_remix_01k6sd902pf03ah1w3cpkr66jz.png'">
+
+        <div class="fr2-stat">
+          <div class="fr2-stat-ico">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M20 12v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8"/>
+              <path d="M22 7H2v5h20V7z"/>
+              <path d="M12 22V7"/>
+              <path d="M12 7c-1.5 0-3-1-3-2.5S10 2 12 4c2-2 3-.5 3 0S13.5 7 12 7z"/>
+            </svg>
+          </div>
+          <div class="fr2-stat-val">?</div>
+          <div class="fr2-stat-lbl">Бонус</div>
         </div>
       </div>
-    `).join('')
-    
-    : `<div class="fr-empty">Вы пока никого не пригласили</div>`
 
-}
+      <button type="button" class="fr2-invite" id="frInviteMain">
+        <div class="fr2-invite-title"><span class="fr2-plus">+</span> Пригласить друга</div>
+        <div class="fr2-invite-sub">Получай 1 🎟️ за каждого</div>
+      </button>
+
+      <div class="fr2-section">
+        <div class="fr2-section-title">Как получить награду?</div>
+
+        <div class="fr2-steps">
+          <div class="fr2-step">
+            <div class="fr2-step-ico">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M22 2L11 13"/>
+                <path d="M22 2l-7 20-4-9-9-4 20-7z"/>
+              </svg>
+            </div>
+            <div class="fr2-step-text"><span class="fr2-step-n">1</span> Отправь приглашение</div>
+          </div>
+
+          <div class="fr2-step">
+            <div class="fr2-step-ico">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 13l6-6"/>
+                <path d="M14 4l6 6-6 6-6-6 6-6z"/>
+                <path d="M10 10l-6 6"/>
+              </svg>
+            </div>
+            <div class="fr2-step-text"><span class="fr2-step-n">2</span> Друг запускает мини-приложение</div>
+          </div>
+
+          <div class="fr2-step">
+            <div class="fr2-step-ico">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M3 9h18"/>
+                <path d="M4 7h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z"/>
+                <path d="M7 12h4"/>
+              </svg>
+            </div>
+            <div class="fr2-step-text"><span class="fr2-step-n">3</span> Ты получаешь 🎟️ билет</div>
+          </div>
         </div>
+      </div>
+
+      <div class="fr2-bonus">
+        <div class="fr2-bonus-title">🔥 Бонус за активность</div>
+
+        <div class="fr2-bonus-list">
+          <div class="fr2-bonus-item"><span class="fr2-bonus-n">1</span> Пригласи <b>5 друзей</b> → +1 кейс</div>
+          <div class="fr2-bonus-item"><span class="fr2-bonus-n">2</span> Пригласи <b>10 друзей</b> → +3 билета</div>
+        </div>
+
+        <button type="button" class="fr2-bonus-btn" id="frInviteBonus">Пригласить</button>
       </div>
     </div>
   `;
 
-// ===== ДЕЙСТВИЯ КНОПОК ПРИГЛАШЕНИЯ/КОПИРОВАНИЯ — ЖЕЛЕЗОБЕТОННЫЙ ВАРИАНТ =====
-const tg = window.Telegram && window.Telegram.WebApp;
-
-function showToast(msg){
-  if (tg?.showAlert) tg.showAlert(msg);
-  else alert(msg);
-}
-
-document.getElementById('btnInvite')?.addEventListener('click', async () => {
   const tg = window.Telegram?.WebApp;
-const u = tg?.initDataUnsafe?.user;
-if(u?.id) await GD.ensureUid8(String(u.id));
-  const link = GD.buildInviteLink();
-  const text = 'Залетай в GLITCH DROP — ловим дропы вместе!';
-  const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`;
-  safeOpen(shareUrl); // без любых setTimeout/alert/toast
-});
 
-document.getElementById('btnCopy')?.addEventListener('click', async () => {
-  await GD.ensureUid8();
-  const link = GD.buildInviteLink();
-  // остальной код копирования — без изменений
+  document.getElementById('frClose')?.addEventListener('click', () => {
+    if (tg?.close) { tg.close(); return; }
+    try{ window.close(); }catch(_){}
+  });
 
-  // 1) Внутри Telegram
-  if (tg?.setClipboardText) {
-    tg.setClipboardText(link);
-    try { tg.HapticFeedback?.notificationOccurred('success'); } catch(_) {}
-    tg.showAlert?.('Ссылка скопирована');
-    return;
+  async function doShare(){
+    const u = tg?.initDataUnsafe?.user;
+    if (u?.id) await GD.ensureUid8(String(u.id));
+    const link = GD.buildInviteLink();
+    const text = 'Залетай в GLITCH DROP — ловим дропы вместе!';
+    const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`;
+    safeOpen(shareUrl);
   }
 
-  // 2) Современный Clipboard API
-  try {
-    await navigator.clipboard.writeText(link);
-    showToast('Ссылка скопирована');
-    return;
-  } catch(_) {}
-
-  // 3) Фолбэк через textarea
-  try {
-    const ta = document.createElement('textarea');
-    ta.value = link;
-    ta.setAttribute('readonly','');
-    ta.style.position = 'fixed';
-    ta.style.left = '-9999px';
-    document.body.appendChild(ta);
-    ta.select();
-    const ok = document.execCommand('copy');
-    document.body.removeChild(ta);
-    if (ok) { showToast('Ссылка скопирована'); return; }
-  } catch(_) {}
-
-  // 4) Абсолютный фолбэк — просто показать ссылку
-  showToast(`Скопируй вручную:\n${link}`);
-});
-
-
-// Партнёрская кнопка — оставим заглушкой (как и было)
-const partnerBtn = document.getElementById('btnPartner');
-if (window.matchMedia('(min-width:680px)').matches && partnerBtn){
-  partnerBtn.style.display = 'inline-block';
-  partnerBtn.addEventListener('click', ()=> alert('Стать партнёром (заглушка)'));
+  document.getElementById('frInviteMain')?.addEventListener('click', doShare);
+  document.getElementById('frInviteBonus')?.addEventListener('click', doShare);
 }
-
-}
-
 
 function showFriends(){
   hardCloseDetailAndModal();
