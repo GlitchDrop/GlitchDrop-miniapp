@@ -4403,7 +4403,17 @@ detail.scrollTop = 0;
   const nameEl    = document.getElementById('userName');
 
   if(!tg) return;
-  tg.ready(); tg.expand();
+
+  try { tg.ready(); tg.expand && tg.expand(); } catch (_) {}
+
+  // запретить закрытие свайпом вниз (если клиент Telegram поддерживает)
+  try{
+    if (typeof tg.disableVerticalSwipes === 'function') tg.disableVerticalSwipes();
+    else if (typeof tg.postEvent === 'function') tg.postEvent('web_app_setup_swipe_behavior', { allow_vertical_swipe: false });
+  }catch(e){}
+
+  // подтверждение на закрытие через шапку/кнопку Telegram
+  try{ if (typeof tg.enableClosingConfirmation === 'function') tg.enableClosingConfirmation(); }catch(e){}
 
 const u = tg.initDataUnsafe && tg.initDataUnsafe.user;
 if (!u) return;
@@ -7917,7 +7927,18 @@ document.addEventListener('DOMContentLoaded', function() {
   const u  = tg && tg.initDataUnsafe && tg.initDataUnsafe.user;
   if (!tg || !u) return; // не в Telegram Mini App
 
+    if(!tg) return;
+
   try { tg.ready(); tg.expand && tg.expand(); } catch (_) {}
+
+  // запретить закрытие свайпом вниз (если клиент Telegram поддерживает)
+  try{
+    if (typeof tg.disableVerticalSwipes === 'function') tg.disableVerticalSwipes();
+    else if (typeof tg.postEvent === 'function') tg.postEvent('web_app_setup_swipe_behavior', { allow_vertical_swipe: false });
+  }catch(e){}
+
+  // подтверждение на закрытие через шапку/кнопку Telegram
+  try{ if (typeof tg.enableClosingConfirmation === 'function') tg.enableClosingConfirmation(); }catch(e){}
 
   // Подстановка ID во все #userId
   function paint(uid8) {
