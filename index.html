@@ -1725,13 +1725,16 @@ html.scroll-locked, html.scroll-locked body{
   position:absolute; top: calc(100% + 10px); right: 0;
   min-width: 220px; padding:8px;
   border-radius: 14px;
-  border:1px solid var(--border);
-  background:
-    linear-gradient(180deg, rgba(20,26,62,.92), rgba(12,16,38,.94));
-  box-shadow: var(--shadow-strong);
-  backdrop-filter: blur(10px);
+  border:1px solid rgba(255,255,255,.18);
+  background:linear-gradient(180deg, rgba(38,38,38,.82), rgba(12,12,12,.78));
+  box-shadow:
+    0 18px 50px rgba(0,0,0,.70),
+    inset 0 0 0 1px rgba(255,255,255,.08),
+    inset 0 0 18px rgba(255,255,255,.04);
+  backdrop-filter:blur(14px) saturate(1.1);
   display:none; z-index: 200;
 }
+
 .quickmenu.show{ display:block; animation: qk-pop .18s cubic-bezier(.2,.7,.2,1) both; }
 
 @keyframes qk-pop{
@@ -1743,10 +1746,11 @@ html.scroll-locked, html.scroll-locked body{
   width:100%; text-align:left; cursor:pointer;
   padding:10px 12px; margin:4px 0;
   border-radius:12px; border:1px solid transparent;
-  background:linear-gradient(135deg, rgba(15,20,48,.86), rgba(12,16,38,.86));
+  background:linear-gradient(135deg, rgba(38,38,38,.82), rgba(12,12,12,.78));
   color:#e8efff; font-weight:900; letter-spacing:.2px;
   transition: background .15s ease, box-shadow .15s ease, border-color .15s ease;
 }
+
 .qm-item:hover{
   border-color: var(--border);
   box-shadow: 0 6px 20px rgba(22,241,255,.14);
@@ -1758,9 +1762,9 @@ html.scroll-locked, html.scroll-locked body{
 .plus-wrap::after{
   content:""; position:absolute; top: calc(100% + 2px); right: 12px;
   width: 10px; height: 10px; transform: rotate(45deg);
-  background: linear-gradient(180deg, rgba(20,26,62,.92), rgba(12,16,38,.94));
-  border-left:1px solid var(--border); border-top:1px solid var(--border);
-  filter: drop-shadow(0 2px 6px rgba(10,20,60,.35));
+  background: linear-gradient(180deg, rgba(38,38,38,.82), rgba(12,12,12,.78));
+  border-left:1px solid rgba(255,255,255,.18); border-top:1px solid rgba(255,255,255,.18);
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,.45));
   display:none; z-index: 201;
 }
 
@@ -8317,4 +8321,3 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
-
