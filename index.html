@@ -1081,6 +1081,7 @@ html:not(.in-telegram) .d-auth-warning{
   padding: 12px 20px calc(var(--tabbar-h,84px) + env(safe-area-inset-bottom) + 18px);
 }
 
+
 .fr2-top{
   position: relative;
   padding-top: 12px;
@@ -5452,7 +5453,10 @@ async function renderFriends(forceReload = false){
 
   friendsLoaded = true;
 
-  friendsScreen.innerHTML = `
+friendsScreen.innerHTML = `
+    <div class="fr2-page">
+      <div class="fr2-top">
+
         <div class="fr2-title">Друзья и награды</div>
         <div class="fr2-sub">Приглашай — зарабатывай больше</div>
       </div>
