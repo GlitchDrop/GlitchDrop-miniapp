@@ -2108,6 +2108,10 @@ html.scroll-locked, html.scroll-locked body{
   display:flex;
   flex-direction:column;
   row-gap: 8px;                 /* общий «ритм» */
+
+  /* чтобы ничего не упиралось в края экрана */
+  padding: 0 16px;
+  box-sizing: border-box;
 }
 
 /* пара "текст сверху" */
