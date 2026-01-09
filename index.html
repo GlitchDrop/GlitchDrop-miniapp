@@ -1078,13 +1078,8 @@ html:not(.in-telegram) .d-auth-warning{
 .fr2-page{
   max-width: 980px;
   margin: 0 auto;
-  padding-top: 12px;
-  padding-left: calc(30px + env(safe-area-inset-left));
-  padding-right: calc(30px + env(safe-area-inset-right));
-  padding-bottom: calc(var(--tabbar-h,84px) + env(safe-area-inset-bottom) + 18px);
-  box-sizing: border-box;
+  padding: 12px 20px calc(var(--tabbar-h,84px) + env(safe-area-inset-bottom) + 18px);
 }
-
 
 .fr2-top{
   position: relative;
@@ -1126,18 +1121,17 @@ html:not(.in-telegram) .d-auth-warning{
   text-align: center;
   font-weight: 1000;
   letter-spacing: .5px;
-  font-size: clamp(24px, 6.6vw, 40px);
-  margin: 8px 0 4px;
+  font-size: clamp(26px, 7vw, 44px);
+  margin: 10px 0 4px;
   color: #e8efff;
   text-shadow: 0 0 18px rgba(255,255,255,.12);
 }
-
 .fr2-sub{
   text-align: center;
   color: rgba(255,255,255,.55);
   font-weight: 800;
-  font-size: 13px;
-  margin-bottom: 12px;
+  font-size: 14px;
+  margin-bottom: 14px;
 }
 
 .fr2-stats{
@@ -1172,11 +1166,11 @@ html:not(.in-telegram) .d-auth-warning{
 }
 
 .fr2-stat-ico{
-  width: 48px;
-  height: 48px;
-  margin: 0 auto 8px;
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 10px;
 
-  border-radius: 16px;
+  border-radius: 18px;
   display: grid;
   place-items: center;
 
@@ -1188,7 +1182,6 @@ html:not(.in-telegram) .d-auth-warning{
   position: relative;
   z-index: 1;
 }
-
 .fr2-stat-ico svg{
   width: 30px;
   height: 30px;
@@ -1201,16 +1194,15 @@ html:not(.in-telegram) .d-auth-warning{
 
 .fr2-stat-val{
   font-weight: 1000;
-  font-size: 34px;
+  font-size: 38px;
   line-height: 1;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
   position: relative;
   z-index: 1;
 }
-
 .fr2-stat-lbl{
   font-weight: 900;
-  font-size: 13px;
+  font-size: 14px;
   color: rgba(255,255,255,.62);
   position: relative;
   z-index: 1;
@@ -1218,10 +1210,10 @@ html:not(.in-telegram) .d-auth-warning{
 
 .fr2-invite{
   width: 100%;
-  margin: 12px 0 16px;
+  margin: 14px 0 18px;
 
-  border-radius: 24px;
-  padding: 16px 14px 12px;
+  border-radius: 26px;
+  padding: 18px 16px 14px;
 
   border: 1px solid rgba(255,255,255,.22);
   background: linear-gradient(90deg, rgba(54,142,255,.92), rgba(148,92,255,.92));
@@ -1239,7 +1231,6 @@ html:not(.in-telegram) .d-auth-warning{
 
   -webkit-tap-highlight-color: transparent;
 }
-
 .fr2-invite:active{ transform: translateY(1px); }
 
 .fr2-invite::before{
@@ -1257,36 +1248,35 @@ html:not(.in-telegram) .d-auth-warning{
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
 
-  font-size: 26px;
+  font-size: 28px;
   letter-spacing: .2px;
 
   text-shadow: 0 14px 34px rgba(0,0,0,.35);
   position: relative;
   z-index: 1;
 }
-
 .fr2-plus{
-  width: 30px;
-  height: 30px;
+  width: 34px;
+  height: 34px;
 
   display: grid;
   place-items: center;
 
-  border-radius: 11px;
+  border-radius: 12px;
   background: rgba(255,255,255,.18);
   border: 1px solid rgba(255,255,255,.22);
   box-shadow: inset 0 0 16px rgba(255,255,255,.10);
 
-  font-size: 24px;
+  font-size: 26px;
   line-height: 1;
 }
 
 .fr2-invite-sub{
   margin-top: 6px;
 
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 900;
   color: rgba(255,255,255,.82);
   opacity: .9;
@@ -1302,7 +1292,7 @@ html:not(.in-telegram) .d-auth-warning{
 }
 .fr2-section-title{
   font-weight: 1000;
-  font-size: 20px;
+  font-size: 22px;
   margin: 8px 0 10px;
   letter-spacing: .2px;
   color: #e8efff;
@@ -1321,10 +1311,10 @@ html:not(.in-telegram) .d-auth-warning{
 }
 
 .fr2-step-ico{
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
 
-  border-radius: 11px;
+  border-radius: 12px;
   display: grid;
   place-items: center;
 
@@ -1332,9 +1322,8 @@ html:not(.in-telegram) .d-auth-warning{
   border: 1px solid rgba(255,255,255,.14);
   color: rgba(255,255,255,.78);
 
-  flex: 0 0 32px;
+  flex: 0 0 34px;
 }
-
 .fr2-step-ico svg{
   width: 18px;
   height: 18px;
@@ -1347,25 +1336,24 @@ html:not(.in-telegram) .d-auth-warning{
 
 .fr2-step-text{
   font-weight: 900;
-  font-size: 16px;
+  font-size: 18px;
   color: rgba(255,255,255,.70);
 
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: 10px;
 }
-
 .fr2-step-n{
-  width: 20px;
+  width: 22px;
   font-weight: 900;
   color: rgba(255,255,255,.45);
 }
 
 .fr2-bonus{
-  margin-top: 16px;
+  margin-top: 18px;
 
-  border-radius: 20px;
-  padding: 14px 14px 12px;
+  border-radius: 22px;
+  padding: 16px 16px 14px;
 
   border: 1px solid rgba(255,255,255,.20);
   background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
@@ -1376,7 +1364,6 @@ html:not(.in-telegram) .d-auth-warning{
   position: relative;
   overflow: hidden;
 }
-
 .fr2-bonus::before{
   content:"";
   position:absolute;
@@ -1392,11 +1379,11 @@ html:not(.in-telegram) .d-auth-warning{
 
 .fr2-bonus-title{
   font-weight: 1000;
-  font-size: 20px;
+  font-size: 22px;
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .fr2-bonus-list{
@@ -1408,39 +1395,36 @@ html:not(.in-telegram) .d-auth-warning{
 .fr2-bonus-item{
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: 10px;
 
   font-weight: 900;
   color: rgba(255,255,255,.70);
-  font-size: 16px;
+  font-size: 18px;
 }
-
 .fr2-bonus-n{
-  width: 16px;
+  width: 18px;
   color: rgba(255,255,255,.45);
 }
-
 .fr2-bonus-item b{ color:#fff; }
 
 .fr2-bonus-btn{
-  margin-top: 10px;
+  margin-top: 12px;
   width: 100%;
 
   border-radius: 999px;
-  padding: 11px 14px;
+  padding: 12px 14px;
 
   border: 1px solid rgba(255,255,255,.22);
   background: rgba(255,255,255,.06);
   color: rgba(255,255,255,.85);
 
   font-weight: 1000;
-  font-size: 15px;
+  font-size: 16px;
 
   cursor: pointer;
   box-shadow: inset 0 0 16px rgba(255,255,255,.05);
   -webkit-tap-highlight-color: transparent;
 }
-
 .fr2-bonus-btn:active{ transform: translateY(1px); }
 
 /* где угодно в CSS */
@@ -2113,10 +2097,6 @@ html.scroll-locked, html.scroll-locked body{
   display:flex;
   flex-direction:column;
   row-gap: 8px;                 /* общий «ритм» */
-
-  /* сильнее уводим всё от краёв */
-  padding-left: 28px;
-  padding-right: 28px;
 }
 
 /* пара "текст сверху" */
@@ -5473,6 +5453,12 @@ async function renderFriends(forceReload = false){
   friendsLoaded = true;
 
   friendsScreen.innerHTML = `
+    <div class="fr2-page">
+      <div class="fr2-top">
+        <button type="button" class="fr2-close" id="frClose">
+          <span class="fr2-close-ico">‹</span><span>Закрыть</span>
+        </button>
+
         <div class="fr2-title">Друзья и награды</div>
         <div class="fr2-sub">Приглашай — зарабатывай больше</div>
       </div>
