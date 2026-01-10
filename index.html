@@ -313,70 +313,102 @@ GD.ensureUid8 = function (tgId) {
     .pill--lg{ padding:10px 14px; }
     .pill--lg img{ width:24px; height:24px; }
 
-.chipbar{
+    .chipbar{
   position:sticky;
   top: var(--topbar-h, 64px);
   z-index:25;
 
+  width: min(calc(100% - 24px), 720px);
+  margin: 10px auto 0;
+
   display:flex;
-  gap:10px;
-  padding:10px 14px 6px;
+  gap:8px;
+  padding:10px 10px 8px;
   overflow-x:auto;
 
-  background:transparent;
-  border-bottom:none;
-  backdrop-filter:none;
+  border-radius:26px;
+  background: linear-gradient(180deg, rgba(16,16,18,.62), rgba(8,8,10,.70));
+  border:1px solid rgba(255,255,255,.16);
+
+  backdrop-filter: blur(14px) saturate(1.15);
+  -webkit-backdrop-filter: blur(14px) saturate(1.15);
+
+  box-shadow:
+    0 14px 44px rgba(0,0,0,.55),
+    inset 0 1px 0 rgba(255,255,255,.06);
 }
 
 .chipbar::-webkit-scrollbar{display:none}
 
 .chip{
-  padding:8px 14px;
-  border-radius:999px;
+  position:relative;
+  isolation:isolate;
+
+  padding:10px 14px;
+  border-radius:18px;
   white-space:nowrap;
   cursor:pointer;
   user-select:none;
 
   font-weight:900;
-  font-size:14px;
-  letter-spacing:.3px;
+  font-size:13px;
+  letter-spacing:.25px;
 
-  color:#a7b8df;
-  background:linear-gradient(180deg, rgba(10,14,32,.9), rgba(8,10,24,.9));
-  border:1px solid rgba(140,170,255,.18);
+  color: rgba(255,255,255,.62);
+  background: rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.12);
 
-  box-shadow:none;
+  box-shadow: inset 0 0 16px rgba(255,255,255,.03);
 
-  /* важное против “прыжков” на таче */
-  transform: translateY(0) scale(1);
+  transform: translateY(0);
   will-change: transform;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 
   transition:
-    transform .16s cubic-bezier(.25,.8,.25,1),
-    background .15s,
-    color .15s,
-    border-color .15s;
+    transform .18s ease,
+    background .18s ease,
+    color .18s ease,
+    border-color .18s ease,
+    box-shadow .18s ease;
 }
 
-/* НЕ двигаем при hover (на тачах hover залипает) */
 .chip:hover{
   transform:none;
+  color: rgba(255,255,255,.82);
 }
 
-/* НЕ двигаем при самом нажатии пальцем */
 .chip:active{
   transform:none;
 }
 
-/* вот ЕДИНСТВЕННОЕ движение — только активный */
 .chip.active{
-  color:#081121 !important;
-  background:linear-gradient(135deg, #16f1ff, #8a5cff) !important;
-  border-color:transparent !important;
+  color:#fff !important;
 
-  transform: translateY(-2px) scale(1.06);
+  background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.05)) !important;
+  border-color: rgba(255,255,255,.34) !important;
+
+  box-shadow:
+    0 14px 34px rgba(0,0,0,.55),
+    0 0 22px rgba(255,255,255,.10),
+    inset 0 0 18px rgba(255,255,255,.06);
+
+  transform: translateY(-2px);
+}
+
+.chip.active::before{
+  content:"";
+  position:absolute;
+  left:10px;
+  right:10px;
+  top:-2px;
+  height:24px;
+  border-radius:999px;
+  background: radial-gradient(75% 160% at 50% 0%, rgba(255,255,255,.28), rgba(255,255,255,0) 72%);
+  filter: blur(8px);
+  opacity:.9;
+  pointer-events:none;
+  z-index:-1;
 }
 
     .content{
@@ -5474,7 +5506,7 @@ friendsScreen.innerHTML = `
               <path d="M19 8.5a3 3 0 1 1 0 6"/>
             </svg>
           </div>
-          <div class="fr2-stat-val" id="frFriendsCount">0</div>
+          <div class="fr2-stat-val">0</div>
           <div class="fr2-stat-lbl">Друзей</div>
         </div>
 
@@ -5488,7 +5520,7 @@ friendsScreen.innerHTML = `
               <path d="M9 15h6"/>
             </svg>
           </div>
-          <div class="fr2-stat-val" id="frFriendsEarned">0</div>
+          <div class="fr2-stat-val">0</div>
           <div class="fr2-stat-lbl">Заработано</div>
         </div>
 
@@ -5564,19 +5596,6 @@ friendsScreen.innerHTML = `
 
   const tg = window.Telegram?.WebApp;
 
-  async function refreshFriendsStats(){
-    try{
-      const items = await fetchInvited();
-      const cnt = Array.isArray(items) ? items.length : 0;
-
-      const friendsEl = document.getElementById('frFriendsCount');
-      const earnedEl  = document.getElementById('frFriendsEarned');
-
-      if (friendsEl) friendsEl.textContent = String(cnt);
-      if (earnedEl) earnedEl.textContent = cnt ? `${cnt * 15}₽` : '0';
-    }catch(e){}
-  }
-
   document.getElementById('frClose')?.addEventListener('click', () => {
     if (tg?.close) { tg.close(); return; }
     try{ window.close(); }catch(_){}
@@ -5593,8 +5612,6 @@ friendsScreen.innerHTML = `
 
   document.getElementById('frInviteMain')?.addEventListener('click', doShare);
   document.getElementById('frInviteBonus')?.addEventListener('click', doShare);
-
-  refreshFriendsStats();
 }
 
 function showFriends(){
