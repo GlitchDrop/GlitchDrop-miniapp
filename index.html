@@ -5474,7 +5474,7 @@ friendsScreen.innerHTML = `
               <path d="M19 8.5a3 3 0 1 1 0 6"/>
             </svg>
           </div>
-          <div class="fr2-stat-val">0</div>
+          <div class="fr2-stat-val" id="frFriendsCount">0</div>
           <div class="fr2-stat-lbl">Друзей</div>
         </div>
 
@@ -5488,7 +5488,7 @@ friendsScreen.innerHTML = `
               <path d="M9 15h6"/>
             </svg>
           </div>
-          <div class="fr2-stat-val">0</div>
+          <div class="fr2-stat-val" id="frFriendsEarned">0</div>
           <div class="fr2-stat-lbl">Заработано</div>
         </div>
 
@@ -5564,6 +5564,19 @@ friendsScreen.innerHTML = `
 
   const tg = window.Telegram?.WebApp;
 
+  async function refreshFriendsStats(){
+    try{
+      const items = await fetchInvited();
+      const cnt = Array.isArray(items) ? items.length : 0;
+
+      const friendsEl = document.getElementById('frFriendsCount');
+      const earnedEl  = document.getElementById('frFriendsEarned');
+
+      if (friendsEl) friendsEl.textContent = String(cnt);
+      if (earnedEl) earnedEl.textContent = cnt ? `${cnt * 15}₽` : '0';
+    }catch(e){}
+  }
+
   document.getElementById('frClose')?.addEventListener('click', () => {
     if (tg?.close) { tg.close(); return; }
     try{ window.close(); }catch(_){}
@@ -5580,6 +5593,8 @@ friendsScreen.innerHTML = `
 
   document.getElementById('frInviteMain')?.addEventListener('click', doShare);
   document.getElementById('frInviteBonus')?.addEventListener('click', doShare);
+
+  refreshFriendsStats();
 }
 
 function showFriends(){
