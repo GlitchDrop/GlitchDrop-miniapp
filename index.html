@@ -148,20 +148,24 @@ GD.ensureUid8 = function (tgId) {
 
   <style>
 :root{
-  --bg-top:#050814;
-  --bg-bot:#0a1022;
+  --bg-top:#070708;
+  --bg-bot:#040405;
   --grid:rgba(255,255,255,.025);
   --grid-gap:36px;
 
-  --panel:#070b18;
-  --panel2:#0a0f22;
+  --app-bg:#050506;
+  --app-bg2:#030304;
 
-  --card:#0b1026;
-  --card2:#0d1230;
+  --panel:#0c0c0d;
+  --panel2:#080809;
+
+  --card:#101012;
+  --card2:#0b0b0c;
 
   --neon-cyan:#16f1ff;
   --neon-pink:#8a5cff;
   --neon-yellow:#ffe47a;
+
     --rub-sign-x: -4px; /* <-- меняй это число: -8px левее, +8px правее */
     
     /* только для ценника кейсов */
@@ -191,10 +195,10 @@ GD.ensureUid8 = function (tgId) {
      *{box-sizing:border-box}
     html,body{height:100%;margin:0;font-family:'Inter',system-ui,Segoe UI,Roboto,Arial,sans-serif}
     html{scroll-behavior:smooth; scrollbar-gutter: stable;}
-    body{ color:var(--text); overflow-x:hidden; background:var(--card); overflow-y:scroll; }
+body{ color:var(--text); overflow-x:hidden; background:var(--app-bg); overflow-y:scroll; }
 .cyber-bg{
   position:fixed; inset:0; z-index:0; pointer-events:none;
-  background: var(--card);
+  background: var(--app-bg);
 }
 
    .app{min-height:100%;display:flex;flex-direction:column;position:relative;z-index:1}
@@ -1670,11 +1674,11 @@ html.scroll-locked, html.scroll-locked body{
   touch-action:pan-y;
 
   background:
-    radial-gradient(60% 40% at 50% -10%, rgba(22,241,255,.06), transparent 60%),
-    radial-gradient(60% 40% at 50% 110%, rgba(255,62,208,.05), transparent 60%),
-    linear-gradient(180deg, #0b1030 0%, #0a1028 100%);
-  border-top:1px solid var(--border);
-  box-shadow: inset 0 30px 60px rgba(10,20,60,.35);
+    radial-gradient(60% 40% at 50% -10%, rgba(255,255,255,.06), transparent 60%),
+    radial-gradient(60% 40% at 50% 110%, rgba(255,255,255,.04), transparent 60%),
+    linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bot) 100%);
+  border-top:1px solid rgba(255,255,255,.10);
+  box-shadow: inset 0 30px 60px rgba(0,0,0,.55);
 }
 
 /* ===== CONTESTS ===== */
@@ -1682,11 +1686,11 @@ html.scroll-locked, html.scroll-locked body{
   position:relative;
   min-height:100svh;
   background:
-    radial-gradient(60% 40% at 50% -10%, rgba(22,241,255,.06), transparent 60%),
-    radial-gradient(60% 40% at 50% 110%, rgba(255,62,208,.05), transparent 60%),
-    linear-gradient(180deg, #0b1030 0%, #0a1028 100%);
-  border-top:1px solid var(--border);
-  box-shadow: inset 0 30px 60px rgba(10,20,60,.35);
+    radial-gradient(60% 40% at 50% -10%, rgba(255,255,255,.06), transparent 60%),
+    radial-gradient(60% 40% at 50% 110%, rgba(255,255,255,.04), transparent 60%),
+    linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bot) 100%);
+  border-top:1px solid rgba(255,255,255,.10);
+  box-shadow: inset 0 30px 60px rgba(0,0,0,.55);
   padding-bottom: max(var(--tabbar-h,84px), env(safe-area-inset-bottom) + 16px);
 }
 
@@ -2434,7 +2438,7 @@ h2.section{
 
 /* 1) БАЗА: твоя картинка */
 #live-grid-bg .grid-base{
-  background: var(--card);
+  background: var(--app-bg);
   background-image: none;
   filter: none;
   transform: none;
