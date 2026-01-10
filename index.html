@@ -148,24 +148,20 @@ GD.ensureUid8 = function (tgId) {
 
   <style>
 :root{
-  --bg-top:#070708;
-  --bg-bot:#040405;
+  --bg-top:#050814;
+  --bg-bot:#0a1022;
   --grid:rgba(255,255,255,.025);
   --grid-gap:36px;
 
-  --app-bg:#050506;
-  --app-bg2:#030304;
+  --panel:#070b18;
+  --panel2:#0a0f22;
 
-  --panel:#0c0c0d;
-  --panel2:#080809;
-
-  --card:#101012;
-  --card2:#0b0b0c;
+  --card:#0b1026;
+  --card2:#0d1230;
 
   --neon-cyan:#16f1ff;
   --neon-pink:#8a5cff;
   --neon-yellow:#ffe47a;
-
     --rub-sign-x: -4px; /* <-- меняй это число: -8px левее, +8px правее */
     
     /* только для ценника кейсов */
@@ -195,10 +191,10 @@ GD.ensureUid8 = function (tgId) {
      *{box-sizing:border-box}
     html,body{height:100%;margin:0;font-family:'Inter',system-ui,Segoe UI,Roboto,Arial,sans-serif}
     html{scroll-behavior:smooth; scrollbar-gutter: stable;}
-body{ color:var(--text); overflow-x:hidden; background:var(--app-bg); overflow-y:scroll; }
+    body{ color:var(--text); overflow-x:hidden; background:var(--card); overflow-y:scroll; }
 .cyber-bg{
   position:fixed; inset:0; z-index:0; pointer-events:none;
-  background: var(--app-bg);
+  background: var(--card);
 }
 
    .app{min-height:100%;display:flex;flex-direction:column;position:relative;z-index:1}
@@ -424,32 +420,23 @@ body{ color:var(--text); overflow-x:hidden; background:var(--app-bg); overflow-y
   padding-bottom: max(var(--tabbar-h,84px), env(safe-area-inset-bottom) + 16px);
 }
 
-/* ====== CARD кейса (стекло как topbar/tabbar) ====== */
+/* ====== CARD кейса (обновлённый) ====== */
 .card{
   position:relative;
   padding:10px;
   gap:8px;
   overflow:hidden;
   cursor:pointer;
-
-  border-radius:26px;
-  border:1px solid rgba(255,255,255,.16);
-
-  background: linear-gradient(180deg, rgba(16,16,18,.62), rgba(8,8,10,.70));
-  backdrop-filter: blur(16px) saturate(1.2);
-  -webkit-backdrop-filter: blur(16px) saturate(1.2);
-
-  box-shadow:
-    0 18px 60px rgba(0,0,0,.72),
-    inset 0 1px 0 rgba(255,255,255,.06),
-    inset 0 0 18px rgba(255,255,255,.03);
+  border-radius:var(--radius);
+  border:1px solid rgba(140,170,255,.2);
+  background:linear-gradient(180deg, var(--card), var(--card2));
+  box-shadow:var(--shadow-strong);
 
   transform:translateY(0) scale(1);
   transition:
     transform .14s cubic-bezier(.25,.8,.25,1),
     box-shadow .14s ease-out,
-    border-color .14s ease-out,
-    background .14s ease-out;
+    border-color .14s ease-out;
 }
 
 /* пока палец на карточке — убираем transition, чтобы не “резинило” */
@@ -463,18 +450,21 @@ body{ color:var(--text); overflow-x:hidden; background:var(--app-bg); overflow-y
   transform: translateZ(18px);
 }
 
-/* верхний “глянец” как у таббара */
+/* мягкий неон вокруг карточки */
 .card::before{
   content:"";
   position:absolute;
-  inset:-16px;
-  border-radius:32px;
-  background:
-    radial-gradient(75% 160% at 50% 0%, rgba(255,255,255,.26), rgba(255,255,255,0) 70%),
-    radial-gradient(55% 70% at 18% 22%, rgba(255,255,255,.08), rgba(255,255,255,0) 72%),
-    radial-gradient(55% 70% at 82% 78%, rgba(255,255,255,.06), rgba(255,255,255,0) 72%);
-  filter: blur(10px);
-  opacity:.9;
+  inset:-2px;
+  background:conic-gradient(
+    from 200deg,
+    transparent,
+    rgba(22,241,255,0.18),
+    transparent 30%,
+    rgba(255,62,208,0.18),
+    transparent 55%
+  );
+  filter:blur(14px);
+  opacity:.35;
   z-index:0;
   pointer-events:none;
 }
@@ -484,7 +474,7 @@ body{ color:var(--text); overflow-x:hidden; background:var(--app-bg); overflow-y
   content:"";
   position:absolute;
   inset:0;
-  background: linear-gradient(180deg, rgba(0,0,0,0.08), rgba(0,0,0,0.62));
+  background:radial-gradient(circle at 50% 50%, rgba(0,0,0,0.12), rgba(0,0,0,0.70));
   opacity:0;
   pointer-events:none;
   transition:opacity .14s ease-out;
@@ -827,71 +817,15 @@ html:not(.in-telegram) .card .price-pill{
     }
     .detail.show{ display:flex; }
     .d-topbar{ position:sticky; top:0; z-index:61; display:flex; align-items:center; gap:10px; padding:10px 14px; background:linear-gradient(180deg,rgba(36,36,36,.88),rgba(10,10,10,.86)); border-bottom:1px solid rgba(255,255,255,.10); backdrop-filter:blur(10px); }
-   .btn-back{
-  appearance:none;
-  cursor:pointer;
-  padding:10px 14px;
-  border-radius:14px;
-  font-weight:900;
-  letter-spacing:.2px;
-  color:rgba(255,255,255,.88);
-  background:linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04));
-  border:1px solid rgba(255,255,255,.18);
-  box-shadow:0 10px 24px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.10);
-  backdrop-filter:blur(10px) saturate(1.2);
-  -webkit-tap-highlight-color:transparent;
-}
-.btn-back:active{ transform:translateY(1px); }
-
+    .btn-back{ appearance:none; border:1px solid var(--border); background:transparent; color:var(--text); padding:8px 12px; border-radius:12px; font-weight:900; cursor:pointer; }
     .d-title{font-weight:900}
     .d-body{padding:16px; padding-bottom: max(var(--tabbar-h,84px), env(safe-area-inset-bottom) + 16px); max-width:1100px; margin:0 auto; width:100%}
     .d-hero{display:grid; grid-template-columns:1fr; gap:14px; margin-bottom:10px;}
-  .d-thumb{
-  min-height:200px;
-  height:auto;
-  border-radius:18px;
-  border:1px solid rgba(255,255,255,.18);
-  background:
-    radial-gradient(220px 160px at 20% 15%, rgba(255,255,255,.10), transparent 62%),
-    radial-gradient(260px 180px at 80% 90%, rgba(255,255,255,.06), transparent 66%),
-    linear-gradient(180deg, rgba(22,22,24,.70), rgba(10,10,12,.78));
-  box-shadow:
-    0 18px 60px rgba(0,0,0,.70),
-    inset 0 1px 0 rgba(255,255,255,.08),
-    inset 0 0 22px rgba(255,255,255,.04);
-  backdrop-filter:blur(16px) saturate(1.2);
-  display:grid;
-  place-items:center;
-  color:rgba(255,255,255,.70);
-  text-transform:uppercase;
-  letter-spacing:1px;
-}
-
+    .d-thumb{ min-height:200px; height:auto; border-radius:16px; border:1px dashed rgba(180,210,255,.35);
+      background: radial-gradient(160px 110px at 20% 20%, rgba(22,241,255,.12), transparent 60%), radial-gradient(160px 110px at 80% 80%, rgba(255,62,208,.10), transparent 60%), linear-gradient(180deg,#0c1230,#0a1028);
+      display:grid; place-items:center; color:#a9c2ff; text-transform:uppercase; letter-spacing:1px; }
     .d-actions{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
-   .btn-spin{
-  appearance:none;
-  cursor:pointer;
-  padding:12px 18px;
-  border-radius:16px;
-  font-weight:1000;
-  letter-spacing:.5px;
-  color:#241400;
-  background:linear-gradient(135deg,#ffe64a,#ffb300);
-  border:1px solid rgba(255,228,122,.85);
-  box-shadow:
-    0 16px 40px rgba(255,228,122,.40),
-    0 0 46px rgba(255,228,122,.55),
-    inset 0 1px 0 rgba(255,255,255,.30);
-  transform:translateY(0);
-  transition:transform .12s ease, box-shadow .12s ease, filter .12s ease;
-}
-.btn-spin:active{
-  transform:translateY(1px) scale(.99);
-  box-shadow:
-    0 10px 26px rgba(255,228,122,.32),
-    0 0 30px rgba(255,228,122,.48),
-    inset 0 1px 0 rgba(255,255,255,.25);
-}
+    .btn-spin{ appearance:none; border:none; cursor:pointer; padding:12px 18px; border-radius:14px; font-weight:900; color:#081121; background:linear-gradient(135deg,#ffe28a,#ffc13a); box-shadow:0 10px 28px rgba(255,209,102,.35), 0 0 30px rgba(255,209,102,.25); }
 
     /* --- Предупреждение "Вы не авторизованы" (только на сайте) --- */
 
@@ -945,71 +879,15 @@ html:not(.in-telegram) .d-auth-warning{
   opacity: 0.9;
 }
 
-   .panel{
-  margin-top:14px;
-  padding:12px;
-  border-radius:18px;
-  background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
-  border:1px solid rgba(255,255,255,.18);
-  backdrop-filter:blur(14px) saturate(1.15);
-  box-shadow:0 18px 55px rgba(0,0,0,.60), inset 0 1px 0 rgba(255,255,255,.08);
-}
-
+    .panel{ margin-top:14px; padding:12px; border:1px solid var(--border); border-radius:16px; background:linear-gradient(180deg, rgba(20,26,62,.55), rgba(14,18,40,.6)); }
     .panel h3{margin:0 0 10px; text-align:center}
     .switch{display:flex; align-items:center; gap:10px; font-weight:800}
- .toggle{
-  width:46px; height:26px;
-  border-radius:999px;
-  position:relative;
-  cursor:pointer;
-  background:rgba(255,255,255,.06);
-  border:1px solid rgba(255,255,255,.18);
-  box-shadow:inset 0 0 18px rgba(255,255,255,.03);
-  backdrop-filter:blur(10px) saturate(1.15);
-}
-.toggle::after{
-  content:"";
-  position:absolute;
-  top:2px; left:2px;
-  width:22px; height:22px;
-  border-radius:50%;
-  background:linear-gradient(180deg, rgba(255,255,255,.95), rgba(255,255,255,.75));
-  box-shadow:0 8px 18px rgba(0,0,0,.45);
-  transition:transform .18s;
-}
-.toggle.active{
-  background:linear-gradient(135deg, rgba(22,241,255,.95), rgba(138,92,255,.95));
-  border-color:rgba(255,255,255,.25);
-}
-.toggle.active::after{ transform:translateX(20px); }
-
+    .toggle{ width:46px; height:26px; border-radius:999px; position:relative; background:#2a314a; border:1px solid var(--border); cursor:pointer; }
+    .toggle::after{ content:""; position:absolute; top:2px; left:2px; width:22px; height:22px; border-radius:50%; background:#fff; transition:transform .18s; }
+    .toggle.active{ background:#19e6ff; } .toggle.active::after{ transform:translateX(20px); }
     .qty{display:flex; gap:10px; justify-content:center}
-  .qty .q{
-  min-width:44px;
-  height:40px;
-  border-radius:14px;
-  display:grid;
-  place-items:center;
-  cursor:pointer;
-  border:1px solid rgba(255,255,255,.18);
-  background:linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.03));
-  color:rgba(255,255,255,.82);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
-  backdrop-filter:blur(10px) saturate(1.15);
-  font-weight:1000;
-}
-
-  .qty .q.active{
-  outline:none;
-  border-color:rgba(255,255,255,.34);
-  color:#fff;
-  background:linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.06));
-  box-shadow:
-    0 14px 34px rgba(0,0,0,.55),
-    0 0 22px rgba(255,255,255,.10),
-    inset 0 1px 0 rgba(255,255,255,.12);
-  transform:translateY(-2px);
-}
+    .qty .q{ min-width:44px; height:40px; border-radius:12px; display:grid; place-items:center; cursor:pointer; border:1px solid var(--border); background:rgba(15,20,48,.6); font-weight:900; }
+    .qty .q.active{ outline:2px solid var(--neon-cyan); color:#081121; background:linear-gradient(135deg,var(--neon-cyan),var(--neon-pink)); border-color:transparent }
 
     .subhead{margin:18px 0 10px; text-align:center; font-weight:900; letter-spacing:1.2px}
 
@@ -1029,35 +907,26 @@ html:not(.in-telegram) .d-auth-warning{
     }
     .loot.flipped .loot-inner{ transform:rotateY(180deg); }
 
-.loot-face{
-  position:absolute; inset:0;
-  border-radius:16px;
-  border:1px solid rgba(255,255,255,.18);
-  overflow:hidden;
-  backface-visibility:hidden; -webkit-backface-visibility:hidden;
-  display:grid; place-items:center;
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.03)),
-    radial-gradient(220px 140px at 25% 20%, rgba(255,255,255,.10), transparent 62%),
-    radial-gradient(260px 160px at 75% 90%, rgba(255,255,255,.06), transparent 66%);
-  box-shadow:0 14px 40px rgba(0,0,0,.60), inset 0 1px 0 rgba(255,255,255,.08);
-  backdrop-filter:blur(14px) saturate(1.15);
-  color:rgba(255,255,255,.70);
-  font-size:12px;
-  letter-spacing:1px;
-  text-transform:uppercase;
-}
-
+    .loot-face{
+      position:absolute; inset:0;
+      border-radius:14px;
+      border:1px dashed rgba(180,210,255,.35);
+      overflow:hidden;
+      backface-visibility:hidden; -webkit-backface-visibility:hidden;
+      display:grid; place-items:center;
+      background: linear-gradient(180deg,#0c1230,#0a1028);
+      color:#a9c2ff; font-size:12px; letter-spacing:1px; text-transform:uppercase;
+    }
     .loot-front img{ width:100%; height:100%; object-fit:cover; display:block; }
-.loot-back{
-  transform:rotateY(180deg);
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.03)),
-    radial-gradient(600px 220px at 50% 110%, rgba(22,241,255,.10), transparent 60%),
-    radial-gradient(600px 220px at 50% -10%, rgba(138,92,255,.10), transparent 60%);
-  padding:12px;
-  gap:8px;
-}
+    .loot-back{
+      transform:rotateY(180deg);
+      background:
+        linear-gradient(180deg, rgba(12,18,48,.88), rgba(8,14,36,.9)),
+        radial-gradient(600px 200px at 50% 110%, rgba(22,241,255,.12), transparent 60%),
+        radial-gradient(600px 200px at 50% -10%, rgba(255,62,208,.10), transparent 60%);
+      padding:12px;
+      gap:8px;
+    }
 
     /* «как на скрине» */
     .lb-stats{ width:100%; }
@@ -1674,11 +1543,11 @@ html.scroll-locked, html.scroll-locked body{
   touch-action:pan-y;
 
   background:
-    radial-gradient(60% 40% at 50% -10%, rgba(255,255,255,.06), transparent 60%),
-    radial-gradient(60% 40% at 50% 110%, rgba(255,255,255,.04), transparent 60%),
-    linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bot) 100%);
-  border-top:1px solid rgba(255,255,255,.10);
-  box-shadow: inset 0 30px 60px rgba(0,0,0,.55);
+    radial-gradient(60% 40% at 50% -10%, rgba(22,241,255,.06), transparent 60%),
+    radial-gradient(60% 40% at 50% 110%, rgba(255,62,208,.05), transparent 60%),
+    linear-gradient(180deg, #0b1030 0%, #0a1028 100%);
+  border-top:1px solid var(--border);
+  box-shadow: inset 0 30px 60px rgba(10,20,60,.35);
 }
 
 /* ===== CONTESTS ===== */
@@ -1686,11 +1555,11 @@ html.scroll-locked, html.scroll-locked body{
   position:relative;
   min-height:100svh;
   background:
-    radial-gradient(60% 40% at 50% -10%, rgba(255,255,255,.06), transparent 60%),
-    radial-gradient(60% 40% at 50% 110%, rgba(255,255,255,.04), transparent 60%),
-    linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bot) 100%);
-  border-top:1px solid rgba(255,255,255,.10);
-  box-shadow: inset 0 30px 60px rgba(0,0,0,.55);
+    radial-gradient(60% 40% at 50% -10%, rgba(22,241,255,.06), transparent 60%),
+    radial-gradient(60% 40% at 50% 110%, rgba(255,62,208,.05), transparent 60%),
+    linear-gradient(180deg, #0b1030 0%, #0a1028 100%);
+  border-top:1px solid var(--border);
+  box-shadow: inset 0 30px 60px rgba(10,20,60,.35);
   padding-bottom: max(var(--tabbar-h,84px), env(safe-area-inset-bottom) + 16px);
 }
 
@@ -2438,7 +2307,7 @@ h2.section{
 
 /* 1) БАЗА: твоя картинка */
 #live-grid-bg .grid-base{
-  background: var(--app-bg);
+  background: var(--card);
   background-image: none;
   filter: none;
   transform: none;
@@ -3050,8 +2919,7 @@ h2.section{
   visibility: visible;        /* показываем без изменения размеров родителя */
 }
 
-
-/* === 3D барабан (фронтально, одна ячейка) === */
+/* === 2D барабан (обычный список, без 3D) === */
 :root{
   /* размеры можно менять из JS */
   --reel-slice-w: 210px;
@@ -3065,126 +2933,120 @@ h2.section{
   height:100%;
   min-height: var(--reel-min-h);
   display:grid; place-items:center;
-  perspective: 1200px;
 }
 
 .drum-stage{
   position:relative;
   width:min(560px, 92%);
   height:100%;
-  border-radius:18px;
-  border:1px solid rgba(255,255,255,.18);
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.03)),
-    radial-gradient(420px 220px at 15% 15%, rgba(255,255,255,.10), transparent 62%),
-    radial-gradient(520px 260px at 85% 90%, rgba(255,255,255,.06), transparent 66%);
-  backdrop-filter:blur(18px) saturate(1.25);
-  -webkit-backdrop-filter:blur(18px) saturate(1.25);
-  box-shadow:
-    0 18px 60px rgba(0,0,0,.75),
-    inset 0 1px 0 rgba(255,255,255,.08),
-    inset 0 0 26px rgba(255,255,255,.04);
+  border-radius:16px;
+  border:1px solid var(--border);
+  background:linear-gradient(180deg,#0c1230,#0a1028);
+  box-shadow:inset 0 0 24px rgba(22,241,255,.12);
   overflow:hidden;
 }
 
-/* фронтально, без наклона */
 .drum-tilt{
   position:absolute; inset:18px;
-  transform-style:preserve-3d;
+  overflow:hidden;
 }
 
 .drum{
-  position:absolute; left:50%; top:50%;
-  transform-style:preserve-3d;
+  position:absolute;
+  left:50%;
+  top: calc(50% - (var(--reel-slice-h) / 2));
+  width: var(--reel-slice-w);
+
+  display:flex;
+  flex-direction:column;
+  gap: var(--reel-gap);
+
   will-change:transform;
 }
 
 /* «вкладки» барабана */
 .slice{
-  position:absolute; left:50%; top:50%;
+  position:relative;
+  left:auto; top:auto;
+
   width: var(--reel-slice-w);
   height: var(--reel-slice-h);
-  margin: calc(-1 * var(--reel-slice-h) / 2) calc(-1 * var(--reel-slice-w) / 2);
-  border-radius:16px;
-  border:1px solid rgba(255,255,255,.16);
+  margin:0;
+
+  border-radius:14px;
+  border:1px dashed rgba(180,210,255,.35);
   background:
-    linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.03)),
-    radial-gradient(140px 110px at 20% 20%, rgba(255,255,255,.10), transparent 62%),
-    radial-gradient(160px 120px at 80% 90%, rgba(255,255,255,.06), transparent 66%);
-  box-shadow:
-    0 14px 40px rgba(0,0,0,.70),
-    inset 0 1px 0 rgba(255,255,255,.08),
-    inset 0 0 18px rgba(255,255,255,.04);
-  display:grid; grid-template-rows:1fr auto;
+    radial-gradient(120px 80px at 20% 20%, rgba(22,241,255,.10), transparent 60%),
+    radial-gradient(120px 80px at 80% 80%, rgba(255,62,208,.08), transparent 60%),
+    linear-gradient(180deg,#0b1030,#0a1028);
+  box-shadow:0 8px 26px rgba(10,20,60,.35);
+  display:grid; grid-template-rows:1fr auto; align-items:center; justify-items:center;
   overflow:hidden;
   backface-visibility:hidden; -webkit-backface-visibility:hidden;
 }
 
-.slice .meta{
-  width:100%; padding:8px 10px;
-  font-weight:900; letter-spacing:.3px; font-size:12px; color:#a9c2ff;
-  display:flex; align-items:center; justify-content:space-between;
+.slice .img{
+  width:100%;
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-bottom:1px solid rgba(120,180,255,.18);
+  background:rgba(0,0,0,.15);
 }
-.slice .value{
-  color:var(--neon-yellow); text-shadow:0 0 12px rgba(255,228,122,.25);
-  font-weight:900; font-size:14px;
+.slice .img img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+.slice .meta{
+  width:100%;
+  padding:10px 12px 10px;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+.slice .name{
+  font-weight:900;
+  font-size:14px;
+  letter-spacing:.2px;
+  color:#e8efff;
+}
+.slice .price{
+  display:flex;
+  align-items:baseline;
+  gap: var(--detail-rub-gap, 4px);
+  font-weight:900;
+  font-size:15px;
+  color:var(--neon-yellow);
+  text-shadow:0 0 12px rgba(255,228,122,.22);
+}
+.slice .price .rub{
+  transform: translateX(var(--detail-rub-sign-x, 0px));
 }
 
-/* центральная линия выигрыша */
 .drum-pointer{
   position:absolute; left:0; right:0; top:50%;
-  transform:translateY(-50%);
-  height:2px;
-  background:linear-gradient(90deg, transparent, rgba(255,255,255,.85), rgba(255,255,255,.35), transparent);
-  box-shadow:0 0 18px rgba(255,255,255,.18);
+  transform:translateY(-50%); height:2px;
+  background:linear-gradient(90deg, transparent, var(--neon-cyan), var(--neon-pink), transparent);
+  box-shadow:0 0 14px rgba(22,241,255,.45), 0 0 20px rgba(255,62,208,.25);
   pointer-events:none;
 }
 
 /* лёгкая виньетка для глубины */
 .drum-stage:before, .drum-stage:after{
-  content:"";
-  position:absolute; left:0; right:0;
-  height:22%;
-  pointer-events:none;
-  z-index:5;
-  background:linear-gradient(180deg, rgba(0,0,0,.65), transparent);
+  content:""; position:absolute; left:0; right:0; height:22%;
+  pointer-events:none; z-index:5;
+  background:linear-gradient(180deg, rgba(8,14,36,.8), transparent);
 }
 .drum-stage:after{ bottom:0; top:auto; transform:rotate(180deg); }
 
-/* 🔧 КВАДРАТНАЯ РАМА ДЛЯ КАРТИНКИ В БАРАБАНЕ */
-.slice .img{
-  position:relative;
-  aspect-ratio:1/1;
-  width:100%;
-  height:auto;
-  padding:0;
-  border-bottom:1px solid rgba(255,255,255,.12);
-  background:
-    radial-gradient(120px 90px at 50% 45%, rgba(255,255,255,.10), transparent 62%),
-    linear-gradient(180deg, rgba(0,0,0,.12), rgba(0,0,0,0));
-  overflow:hidden;
-  box-sizing:border-box;
+/* 🔧 КВАДРАТНАЯ РАМА 
+   ——— только для барабана, чтобы превью стало 1:1 и картинка не обрезалась ——— */
+.drum .slice{
+  grid-template-rows: 1fr; /* убираем мету */
 }
-
-/* 🔧 КАРТИНКА ВСЕГДА ЦЕЛИКОМ ВНУТРИ 1:1 РАМЫ */
-.slice .img img{
-  position: absolute;
-  inset: 8px;
-  width: calc(100% - 16px);
-  height: calc(100% - 16px);
-  object-fit: contain;
-  display: block;
-  max-width: none;
-  max-height: none;
-  border-radius: 12px;
-} /* ← вот этой скобки не хватало */
-
-/* === Оверрайды ТОЛЬКО для барабана === */
-.drum .slice {
-  grid-template-rows: 1fr;
-}
-
-/* рамка 1:1 + центрирование */
 .drum .slice .img{
   position: relative;
   display: flex;
@@ -3193,18 +3055,16 @@ h2.section{
   width: 100%;
   height: 100%;
   padding: 0;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 1 / 1; /* квадрат */
   overflow: hidden;
   border-bottom: none;
-  background: radial-gradient(80px 60px at 50% 50%, rgba(22,241,255,.10), transparent 60%);
+  background: rgba(0,0,0,.12);
 }
-
-/* картинка по центру, без обрезания краёв */
+/* картинка всегда целиком, без обрезания краёв */
 .drum .slice .img img{
-  position: static !important;
-  inset: auto !important;
-  width: 88%;
-  height: 88%;
+  position: static;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
   border-radius: 12px;
   display: block;
@@ -5194,10 +5054,11 @@ function getReelMetrics(){
   const h = parseFloat(cs.getPropertyValue('--reel-slice-h')) || 128;
   const gap = parseFloat(cs.getPropertyValue('--reel-gap')) || 0; // <-- расстояние между ячейками
 
-  const step = 360 / DRUM_ITEM_COUNT;
+  // В 2D шаг = высота + gap (в пикселях)
+  const step = h + gap;
 
-  // радиус считаем по "виртуальной" высоте (h + gap), а сама грань остаётся высотой h
-  const r = Math.round(((h + gap) / 2) / Math.tan(Math.PI / DRUM_ITEM_COUNT));
+  // 3D радиус больше не нужен
+  const r = 0;
 
   return { w, h, step, r };
 }
@@ -5221,15 +5082,25 @@ function ensureSpinStateWithAngle(key){
 function render3DReel(setId){
   const parent = document.getElementById('detailThumb');
   if(!parent) return;
+
   const key = `${setId}__0`;
   const st  = ensureSpinStateWithAngle(key);
-  const { step, r } = getReelMetrics();
+  const { step } = getReelMetrics();
+
+  // держим ленту в середине (чтобы хватало места на "3 прокрута")
+  const current  = Number.isFinite(st.currentAngle) ? st.currentAngle : 0;
+  const curSteps = Math.round(current / step);
+  const curMod   = ((curSteps % DRUM_ITEM_COUNT) + DRUM_ITEM_COUNT) % DRUM_ITEM_COUNT;
+
+  const CENTER_CYCLES = 4;   // середина ленты
+  const baseSteps = CENTER_CYCLES * DRUM_ITEM_COUNT + curMod;
+  st.currentAngle = baseSteps * step;
 
   parent.innerHTML = `
     <div class="drum-wrap">
       <div class="drum-stage">
         <div class="drum-tilt">
-          <div class="drum" id="drum_${key}" style="transform:translateZ(${-r}px) rotateX(${st.currentAngle}deg)"></div>
+          <div class="drum" id="drum_${key}" style="transform:translateX(-50%) translateY(${-st.currentAngle}px)"></div>
         </div>
         <div class="drum-pointer"></div>
       </div>
@@ -5242,27 +5113,29 @@ function render3DReel(setId){
   const imgs = (SPIN_IMAGES[setId]?.length ? SPIN_IMAGES[setId] : LOOT_SETS[setId] || []).slice(0, DRUM_ITEM_COUNT);
   while(imgs.length < DRUM_ITEM_COUNT) imgs.push("");
 
-  for(let i=0;i<DRUM_ITEM_COUNT;i++){
-    const deg = -i * step; // фронтально, вращаем вниз
-    const url   = imgs[i] || "";
-    const label = (SPIN_STATE.get(key)?.labels?.[i]) ?? "ПРИЗ";
-    const value = (SPIN_STATE.get(key)?.values?.[i]) ?? "—";
+  const REPEATS = 9; // 9 циклов по 11, хватает под 3 полных прокрута без пустот
+  const total = DRUM_ITEM_COUNT * REPEATS;
+
+  const frag = document.createDocumentFragment();
+  for(let i=0;i<total;i++){
+    const bi = i % DRUM_ITEM_COUNT;
+    const url = imgs[bi] || "";
 
     const el = document.createElement('div');
     el.className = 'slice';
-    el.style.setProperty('--_deg', `${deg}deg`);
-    el.style.setProperty('--_rz',  `${r}px`);
-    el.style.transform = `rotateX(${deg}deg) translateZ(${r}px)`;
-    
-// стало:
-el.innerHTML = `
-  <div class="img">
-    ${url ? `<img src="${url}" onerror="this.src='${FALLBACK_IMG}'" alt="">` : '—'}
-  </div>
-`;
-
-    drum.appendChild(el);
+    el.innerHTML = `
+      <div class="img">
+        ${url ? `<img src="${url}" onerror="this.src='${FALLBACK_IMG}'" alt="">` : '—'}
+      </div>
+    `;
+    frag.appendChild(el);
   }
+
+  drum.appendChild(frag);
+
+  // подсветим текущую центральную
+  const slices = drum.querySelectorAll('.slice');
+  slices[baseSteps]?.classList.add('win');
 }
 
 function start3DSpin(setId, onDone){
@@ -5270,43 +5143,71 @@ function start3DSpin(setId, onDone){
   const drum = document.getElementById(`drum_${key}`);
   if (!drum){ onDone && onDone({ idx:-1, imgSrc: FALLBACK_IMG }); return; }
 
-
   const st = ensureSpinState(key);
-  const { step, r } = getReelMetrics();
+  const { step } = getReelMetrics();
 
   drum.querySelectorAll('.slice').forEach(s=> s.classList.remove('win'));
 
   const idx = pickIndexByWeights(st.weights);
-  const current  = Number.isFinite(st.currentAngle) ? st.currentAngle : 0;
-  const curSteps = Math.round(current / step);
-  const curMod   = ((curSteps % 11) + 11) % 11;
 
-  const need = ((idx - curMod) + 11) % 11;
+  // currentAngle теперь в пикселях (шаг = h + gap)
+  let current  = Number.isFinite(st.currentAngle) ? st.currentAngle : 0;
+  let curSteps = Math.round(current / step);
+  let curMod   = ((curSteps % DRUM_ITEM_COUNT) + DRUM_ITEM_COUNT) % DRUM_ITEM_COUNT;
+
+  // если вдруг состояние "уехало" — возвращаем в середину ленты
+  const CENTER_CYCLES = 4;
+  if (curSteps < DRUM_ITEM_COUNT || curSteps > DRUM_ITEM_COUNT * 7){
+    curSteps = CENTER_CYCLES * DRUM_ITEM_COUNT + curMod;
+    current = curSteps * step;
+    st.currentAngle = current;
+    drum.style.transform = `translateX(-50%) translateY(${-current}px)`;
+  }
+
+  const need = ((idx - curMod) + DRUM_ITEM_COUNT) % DRUM_ITEM_COUNT;
+
   const EXTRA_TURNS_INT = 3;
-  const deltaSteps = EXTRA_TURNS_INT * 11 + need;
-  const target = (curSteps + deltaSteps) * step;
+  const deltaSteps = EXTRA_TURNS_INT * DRUM_ITEM_COUNT + need;
 
-  const SPIN_DURATION_MS = 3800;
+  const targetSteps = curSteps + deltaSteps;
+  const target = targetSteps * step;
+
   const t0 = performance.now();
   const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
 
   function frame(now){
     const p = Math.min(1, (now - t0) / SPIN_DURATION_MS);
-    const ang = current + (target - current) * easeOutCubic(p);
-    drum.style.transform = `translateZ(${-r}px) rotateX(${ang}deg)`;
+    const pos = current + (target - current) * easeOutCubic(p);
+
+    drum.style.transform = `translateX(-50%) translateY(${-pos}px)`;
 
     if(p < 1){
       st.rafId = requestAnimationFrame(frame);
     } else {
-            const snapped = Math.round(target / step) * step;
-      drum.style.transform = `translateZ(${-r}px) rotateX(${snapped}deg)`;
-      st.currentAngle = snapped;
+      const snappedSteps = Math.round(target / step);
+      const snapped = snappedSteps * step;
+
+      drum.style.transform = `translateX(-50%) translateY(${-snapped}px)`;
 
       const slices = drum.querySelectorAll('.slice');
-      const winEl = slices[idx];
+      const winEl  = slices[snappedSteps];
       winEl?.classList.add('win');
+
       const winImg = winEl?.querySelector('img');
       const imgSrc = winImg ? winImg.src : FALLBACK_IMG;
+
+      // recenter в середину (визуально не заметно, т.к. лента повторяется)
+      const recenterSteps = CENTER_CYCLES * DRUM_ITEM_COUNT + idx;
+      const recenterPos   = recenterSteps * step;
+
+      if (slices[recenterSteps]){
+        slices.forEach(s=> s.classList.remove('win'));
+        drum.style.transform = `translateX(-50%) translateY(${-recenterPos}px)`;
+        slices[recenterSteps].classList.add('win');
+        st.currentAngle = recenterPos;
+      } else {
+        st.currentAngle = snapped;
+      }
 
       st.rafId = 0;
       onDone && onDone({ idx, imgSrc });
