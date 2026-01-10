@@ -549,25 +549,6 @@ GD.ensureUid8 = function (tgId) {
 /* в браузере скрываем цену как раньше */
 html:not(.in-telegram) .card .price-pill{ display:none; }
 
-/* используем старый селектор, но кнопка теперь не по центру */
-.card-open-btn{
-  position:static;
-  opacity:1;
-  pointer-events:auto;
-  transform:none;
-  z-index:auto;
-}
-
-/* СОСТОЯНИЕ ВЫБРАННОЙ КАРТОЧКИ */
-.card.case-selected{
-  transform:translateY(-2px) scale(1.02);
-  border-color: rgba(138,92,255,.95);
-  box-shadow:
-    0 22px 70px rgba(0,0,0,.78),
-    0 0 28px rgba(138,92,255,.20),
-    inset 0 1px 0 rgba(255,255,255,.08);
-}
-
 /* ===== TABBAR (как на скрине: стекло + активный поднятый сегмент) ===== */
 .tabbar{
   position: fixed;
@@ -4269,37 +4250,25 @@ sections.forEach(sec=>{
 
     const openBtn = card.querySelector('.card-open-btn');
 
-    // Выбор карточки — по normal click (не срабатывает при скролле)
-    card.addEventListener('click', (evt)=>{
-      // если жмём по самой кнопке "ОТКРЫТЬ" — не переключаем выбор
-      if (evt.target.closest('.card-open-btn')) return;
-
-      // повторный тап по уже выбранной — "отбухает"
-      if (selectedCaseCard === card){
-        clearSelectedCase();
-        return;
-      }
-
-      // снимаем выбор с предыдущей
-      if (selectedCaseCard && selectedCaseCard !== card){
-        selectedCaseCard.classList.remove('case-selected');
-      }
-
-      selectedCaseCard = card;
-      card.classList.add('case-selected');
+    // Тап по карточке — сразу открыть барабан (включая ценник)
+    card.addEventListener('click', ()=>{
+      openDetail({
+        title: `${sec.title} — Кейс #${i+1}`,
+        price: rawPrice,
+        setId
+      });
     });
 
-    // Нажатие на кнопку "ОТКРЫТЬ" — перейти к барабану (и для бесплатных тоже)
+    // Кнопка "ОТКРЫТЬ" тоже открывает (если ты её где-то показываешь)
     if (openBtn){
       openBtn.addEventListener('click', (ev)=>{
         ev.stopPropagation();
 
         openDetail({
-          title: `case`,
+          title: `${sec.title} — Кейс #${i+1}`,
           price: rawPrice,
           setId
         });
-
       });
     }
 
@@ -4312,14 +4281,7 @@ sections.forEach(sec=>{
 });
 
 // ====== Клик мимо карточки — снимаем выбор ======
-document.addEventListener('click', (evt)=>{
-  if (!selectedCaseCard) return;
-
-  // если кликнули по любой карточке (или по кнопке внутри неё) — не трогаем
-  if (evt.target.closest('.card')) return;
-
-  clearSelectedCase();
-});
+// отключено: выбора больше нет (тап по карточке сразу открывает барабан)
 
 // ====== Чипы (ФИЛЬТР секций: заголовок + grid) ======
 const chips = Array.from(chipbar.querySelectorAll('.chip'));
