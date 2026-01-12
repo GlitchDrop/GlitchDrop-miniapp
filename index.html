@@ -281,6 +281,18 @@ GD.ensureUid8 = function (tgId) {
       color:#e8efff;
       line-height:1;
     }
+    .tb-balance #rubBalance{ line-height:1; }
+
+    .tb-currency{ position:relative; display:inline-flex; align-items:center; overflow:visible; }
+    .tb-currency-btn{
+      background:transparent;
+      border:0;
+      padding:0;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      line-height:1;
+    }
     .tb-rub{
       font-weight:900;
       font-size:inherit;
@@ -290,6 +302,86 @@ GD.ensureUid8 = function (tgId) {
       transform:none;
       display:inline-block;
     }
+    .tb-caret{
+      position:absolute;
+      left:50%;
+      top:100%;
+      transform:translate(-50%, 2px);
+      width:0;
+      height:0;
+      border-left:4px solid transparent;
+      border-right:4px solid transparent;
+      border-top:5px solid rgba(232,239,255,.32);
+    }
+
+    .tb-currency-menu{
+      position:absolute;
+      top:calc(100% + 10px);
+      right:-6px;
+      width:220px;
+      max-width:80vw;
+      padding:10px;
+      border-radius:14px;
+      background:rgba(10,12,22,.92);
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow:0 18px 40px rgba(0,0,0,.45);
+      display:none;
+      z-index:80;
+      text-align:left;
+    }
+    .tb-currency.open .tb-currency-menu{ display:block; }
+
+    .tb-cur-title{
+      font-size:11px;
+      font-weight:900;
+      letter-spacing:.5px;
+      text-transform:uppercase;
+      color:rgba(255,255,255,.55);
+      padding:6px 8px;
+    }
+    .tb-cur-sep{
+      height:1px;
+      background:rgba(255,255,255,.10);
+      margin:6px 0;
+    }
+    .tb-cur-item{
+      width:100%;
+      border:0;
+      background:transparent;
+      color:#e8efff;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+      padding:8px 8px;
+      border-radius:10px;
+      cursor:default;
+      text-align:left;
+    }
+    .tb-cur-item:hover{ background:rgba(255,255,255,.06); }
+    .tb-cur-left{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-weight:800;
+      font-size:13px;
+      line-height:1.15;
+      white-space:normal;
+    }
+    .tb-coin-ico{
+      width:18px;
+      height:18px;
+      border-radius:4px;
+      flex:0 0 auto;
+    }
+    .tb-check{
+      font-size:12px;
+      font-weight:900;
+      color:rgba(255,255,255,.85);
+      opacity:0;
+      margin-top:1px;
+    }
+    .tb-cur-item.is-selected .tb-check{ opacity:1; }
 
     .avatar{ width:42px; height:42px; border-radius:50%; border:2px solid rgba(22,241,255,.55); box-shadow:0 0 18px rgba(22,241,255,.28), 0 0 28px rgba(255,62,208,.18); object-fit:cover; background:linear-gradient(135deg, rgba(22,241,255,.15), rgba(255,62,208,.15)); }
     .avatar.hidden{ display:none; }
@@ -3530,9 +3622,77 @@ if (addr) {
         </div>
 
         <div class="tb-right">
-          <div class="tb-balance" title="Баланс ₽">
+
+<div class="tb-balance" title="Баланс ₽">
             <span id="rubBalance">0</span>
-            <span class="tb-rub" aria-hidden="true">₽</span>
+
+            <div class="tb-currency" id="tbCurrency">
+              <button class="tb-currency-btn" id="tbCurrencyBtn" type="button" aria-label="Выбор валюты" aria-haspopup="true" aria-expanded="false">
+                <span class="tb-rub" aria-hidden="true">₽</span>
+                <span class="tb-caret" aria-hidden="true"></span>
+              </button>
+
+              <div class="tb-currency-menu" id="tbCurrencyMenu" role="menu" aria-label="Список валют">
+                <div class="tb-cur-title">Валюта</div>
+
+                <button class="tb-cur-item" type="button" role="menuitem" data-cur="USD">
+                  <span class="tb-cur-left">$ Доллар (USD)</span>
+                  <span class="tb-check" aria-hidden="true"></span>
+                </button>
+                <button class="tb-cur-item" type="button" role="menuitem" data-cur="EUR">
+                  <span class="tb-cur-left">€ Евро (EUR)</span>
+                  <span class="tb-check" aria-hidden="true"></span>
+                </button>
+                <button class="tb-cur-item" type="button" role="menuitem" data-cur="GBP">
+                  <span class="tb-cur-left">£ Фунт стерлингов (GBP)</span>
+                  <span class="tb-check" aria-hidden="true"></span>
+                </button>
+                <button class="tb-cur-item" type="button" role="menuitem" data-cur="CNY">
+                  <span class="tb-cur-left">¥ Китайский юань (CNY)</span>
+                  <span class="tb-check" aria-hidden="true"></span>
+                </button>
+                <button class="tb-cur-item is-selected" type="button" role="menuitem" data-cur="RUB">
+                  <span class="tb-cur-left">₽ Российский рубль (RUB)</span>
+                  <span class="tb-check" aria-hidden="true">✓</span>
+                </button>
+                <button class="tb-cur-item" type="button" role="menuitem" data-cur="KZT">
+                  <span class="tb-cur-left">₸ Казахстанский тенге (KZT)</span>
+                  <span class="tb-check" aria-hidden="true"></span>
+                </button>
+
+                <div class="tb-cur-sep"></div>
+                <div class="tb-cur-title">Криптовалюта</div>
+
+                <button class="tb-cur-item" type="button" role="menuitem" data-cur="BTC">
+                  <span class="tb-cur-left">
+                    <img class="tb-coin-ico" alt="" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAYAAABWzo5XAAACCUlEQVR4nM2UO2sUQRCGv7u7e7u2u3d3v7y0uIhE4lA0gQhEwE0kZyQxgQkE0ZgGQxJ0mGkZJQbGf0rQn0mYH0a4v4fX9o8jv3Yk0Gx7c7p1d3V1v9eW0mPzOq7bQy1xQwqgS9q2oJq3mQf1oK2kGm0lXH4n0kqgM0j0tqgT8s4y8o7Kxk9b9g7m0s0m0g3S0mS7gq3l8Gd0tXJ9bVx8h9d1m6m9r8u8LqY4cQ5J5dJrX0oJmO0i0cHq2x0xQ7s0p4GQpZl2b0bSgqgkG0x8aV7bQ4m1e5lYb0oT4w0rHcKQ7wG6l5F4bYxw9c9f7cY2sFQyQ8g2Qf8g9cI7d0XoY7lC0b4Q0Q5yqk7mV0rZxjV8r0w4l6Qqk4H6Ww5l0gU9X9l0xvKJ9k2uQ6r8oP1kTQwQ7sD3pY0yQyQqk7cQGQkqgOZQ1tXjGk9t0oZQkqgQy2k4pHh5aZf5QpZlW4m2pV0aQkqgU0u7b2G0wqgqvQJwVd7i4ZJmJm3mQKqgG5Oe+2yOeWmMrjctyiMVCumuSeiu8rQbtgzIhv1sP0D7dwv/JgbZckAAAAASUVORK5CYII=">
+                    Bitcoin (BTC)
+                  </span>
+                  <span class="tb-check" aria-hidden="true"></span>
+                </button>
+                <button class="tb-cur-item" type="button" role="menuitem" data-cur="ETH">
+                  <span class="tb-cur-left">
+                    <img class="tb-coin-ico" alt="" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAYAAABWzo5XAAAB7ElEQVR4nM2UP0sDQRDGv7vZ2W0z2QmSxCwE0VQqQqJQYhQKkYhQKkYhQKkYhQKkYhQKkYhQKkYhQKkYhQKkYhQKkYhQKkYhQKkYhQKkYhQKkYhQKkYhQKn8f7g9zY2p0l7c7O7M3f8zG8i9f0s4XcGQGqgQm0g2c6o0j0Qy1qgQxwqgQy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gp3n7j8Yw3p1Wm+q2YxZ7Nb71aVrllX/1FvmvwbnKpZGZ893N5XBf8EP2b3lDtekk5gAAAAASUVORK5CYII=">
+                    Ethereum (ETH)
+                  </span>
+                  <span class="tb-check" aria-hidden="true"></span>
+                </button>
+                <button class="tb-cur-item" type="button" role="menuitem" data-cur="USDT">
+                  <span class="tb-cur-left">
+                    <img class="tb-coin-ico" alt="" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAYAAABWzo5XAAACRUlEQVR4nM2UP0sDQRDGv7vZ2W0z2QmSxCwE0VQqQqJQYhQKkYhQKkYhQKkYhQKkYhQKkYhQKkYhQKkYhQKkYhQKkYhQKkYhQKkYhQKkYhQKkYhQKn8f7g9zY2p0l7c7O7M3f8zG8i9f0s4XcGQGqgQm0g2c6o0j0Qy1qgQxwqgQy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gp9hZC7v1Vv3e0mGg0g7b7c9r37/fLXUHHwLF4x8Cx+H965M/M2K79bvU7GW5/EgBBIvwAAAAASUVORK5CYII=">
+                    Tether (USDT)
+                  </span>
+                  <span class="tb-check" aria-hidden="true"></span>
+                </button>
+                <button class="tb-cur-item" type="button" role="menuitem" data-cur="TON">
+                  <span class="tb-cur-left">
+                    <img class="tb-coin-ico" alt="" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAYAAABWzo5XAAACTElEQVR4nM2UP0sDQRDGv7vZ2W0z2QmSxCwE0VQqQqJQYhQKkYhQKkYhQKkYhQKkYhQKkYhQKkYhQKkYhQKkYhQKkYhQKkYhQKkYhQKkYhQKkYhQKn8f7g9zY2p0l7c7O7M3f8zG8i9f0s4XcGQGqgQm0g2c6o0j0Qy1qgQxwqgQy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gqgQm0o2Qy0oWQ1k0gp4F8d2S7Vv2u8mG0xgDiG3JNghcIU+MXuHT6OL9MrjxaI//TYvsbKjSLwyxFYWoAAAAASUVORK5CYII=">
+                    Toncoin (TON)
+                  </span>
+                  <span class="tb-check" aria-hidden="true"></span>
+                </button>
+              </div>
+            </div>
           </div>
 
           <div class="plus-wrap">
@@ -7149,6 +7309,41 @@ function setStarsBalance(n) {
 // ← при загрузке синхронизируем DOM с localStorage,
 //   чтобы если ранее уже пополняли, значение восстановилось
 setStarsBalance(getStarsBalance());
+
+// === Выпадающий список валют под значком ₽ (только UI) ===
+(() => {
+  const wrap = document.getElementById('tbCurrency');
+  const btn  = document.getElementById('tbCurrencyBtn');
+  const menu = document.getElementById('tbCurrencyMenu');
+  if (!wrap || !btn || !menu) return;
+
+  const open = () => {
+    wrap.classList.add('open');
+    btn.setAttribute('aria-expanded', 'true');
+  };
+  const close = () => {
+    wrap.classList.remove('open');
+    btn.setAttribute('aria-expanded', 'false');
+  };
+  const toggle = () => (wrap.classList.contains('open') ? close() : open());
+
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggle();
+  });
+
+  // клики по пунктам пока ничего не делают (и не закрывают меню)
+  menu.addEventListener('click', (e) => e.stopPropagation());
+
+  // клик вне меню — закрыть
+  document.addEventListener('click', close);
+
+  // ESC — закрыть
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') close();
+  });
+})();
 
 // ===== Покупка "прокрута": парсинг цены, списание, алерт "Пополнить" =====
 function parseCasePriceStars() {
