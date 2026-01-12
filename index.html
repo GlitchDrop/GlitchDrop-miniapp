@@ -271,9 +271,10 @@ GD.ensureUid8 = function (tgId) {
     }
 
     .tb-right{ display:flex; align-items:center; gap:12px; flex:0 0 auto; }
+
 .tb-balance{
       display:flex;
-      align-items:center;
+      align-items:flex-end;
       gap:6px;
       font-weight:900;
       font-size:26px;
@@ -281,27 +282,33 @@ GD.ensureUid8 = function (tgId) {
       color:#e8efff;
       line-height:1;
     }
-    .tb-balance #rubBalance{ line-height:1; }
+    .tb-balance #rubBalance{
+      line-height:1;
+      display:inline-block;
+    }
 
-    .tb-currency{ position:relative; display:inline-flex; align-items:center; overflow:visible; }
+    .tb-currency{ position:relative; display:inline-flex; align-items:flex-end; overflow:visible; }
     .tb-currency-btn{
       background:transparent;
       border:0;
       padding:0;
       cursor:pointer;
       display:inline-flex;
-      align-items:center;
+      align-items:flex-end;
       line-height:1;
+      font:inherit;          /* важно: не даём кнопке уменьшать шрифт */
+      font-size:1em;         /* размер = цифрам баланса */
     }
-    .tb-rub{
+    .tb-balance .tb-rub{
       font-weight:900;
-      font-size:inherit;
+      font-size:1em;         /* размер = цифрам баланса */
       line-height:1;
       color:var(--neon-yellow);
       text-shadow:0 0 10px rgba(255,228,122,.28);
       transform:none;
       display:inline-block;
     }
+
     .tb-caret{
       position:absolute;
       left:50%;
