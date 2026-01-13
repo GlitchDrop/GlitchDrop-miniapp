@@ -782,9 +782,9 @@ html:not(.in-telegram) .card .price-pill{ display:none; }
     .d-title{font-weight:900}
     .d-body{padding:16px; padding-bottom: max(var(--tabbar-h,84px), env(safe-area-inset-bottom) + 16px); max-width:1100px; margin:0 auto; width:100%}
     .d-hero{display:grid; grid-template-columns:1fr; gap:14px; margin-bottom:10px;}
-    .d-thumb{ min-height:200px; height:auto; border-radius:16px; border:1px dashed rgba(180,210,255,.35);
+    .d-thumb{ min-height:200px; height:auto; border-radius:26px; border:1px solid rgba(255,255,255,.16);
       background: radial-gradient(160px 110px at 20% 20%, rgba(22,241,255,.12), transparent 60%), radial-gradient(160px 110px at 80% 80%, rgba(255,62,208,.10), transparent 60%), linear-gradient(180deg,#0c1230,#0a1028);
-      display:grid; place-items:center; color:#a9c2ff; text-transform:uppercase; letter-spacing:1px; }
+      display:grid; place-items:stretch; overflow:hidden; padding:0; color:#a9c2ff; text-transform:uppercase; letter-spacing:1px; }
     .d-actions{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
     .btn-spin{ appearance:none; border:none; cursor:pointer; padding:12px 18px; border-radius:14px; font-weight:900; color:#081121; background:linear-gradient(135deg,#ffe28a,#ffc13a); box-shadow:0 10px 28px rgba(255,209,102,.35), 0 0 30px rgba(255,209,102,.25); }
 
@@ -2894,24 +2894,35 @@ h2.section{
   width:100%;
   height:100%;
   min-height: var(--reel-min-h);
-  display:grid; place-items:center;
+  display:grid; place-items:stretch;
   perspective: 1200px;
 }
 
+/* КАК ЯЧЕЙКА КЕЙСА (.card) */
 .drum-stage{
   position:relative;
-  width:min(560px, 92%);
+  width:100%;
   height:100%;
-  border-radius:16px;
-  border:1px solid var(--border);
-  background:linear-gradient(180deg,#0c1230,#0a1028);
-  box-shadow:inset 0 0 24px rgba(22,241,255,.12);
+  border-radius:26px;
+  border:1px solid rgba(255,255,255,.16);
+
+  background:
+    radial-gradient(120% 85% at 18% -10%, rgba(255,255,255,.12), rgba(255,255,255,0) 55%),
+    radial-gradient(90% 70% at 80% 0%, rgba(138,92,255,.14), rgba(138,92,255,0) 62%),
+    linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.18));
+
+  box-shadow:
+    0 22px 70px rgba(0,0,0,.72),
+    0 0 0 1px rgba(0,0,0,.35) inset,
+    inset 0 1px 0 rgba(255,255,255,.10),
+    inset 0 -18px 30px rgba(0,0,0,.30);
+
   overflow:hidden;
 }
 
 /* фронтально, без наклона */
 .drum-tilt{
-  position:absolute; inset:18px;
+  position:absolute; inset:0;
   transform-style:preserve-3d;
 }
 
@@ -2928,7 +2939,7 @@ h2.section{
   height: var(--reel-slice-h);
   margin: calc(-1 * var(--reel-slice-h) / 2) calc(-1 * var(--reel-slice-w) / 2);
   border-radius:14px;
-  border:1px dashed rgba(180,210,255,.35);
+  border:1px solid rgba(180,210,255,.35);
   background:
     radial-gradient(120px 80px at 20% 20%, rgba(22,241,255,.10), transparent 60%),
     radial-gradient(120px 80px at 80% 80%, rgba(255,62,208,.08), transparent 60%),
@@ -2938,6 +2949,7 @@ h2.section{
   overflow:hidden;
   backface-visibility:hidden; -webkit-backface-visibility:hidden;
 }
+
 
 .slice .meta{
   width:100%; padding:8px 10px;
@@ -3436,6 +3448,122 @@ h2.section{
   --grid-bg-image: url("assets/images/Untitled (75).png");
 }
 
+/* ===== TOPUP AMOUNT MODAL (official / как topbar+tabbar) ===== */
+#topupAmountModal .modal-card{
+  background:linear-gradient(180deg, rgba(38,38,38,.82), rgba(12,12,12,.78));
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:16px;
+
+  box-shadow:
+    0 18px 50px rgba(0,0,0,.70),
+    inset 0 0 0 1px rgba(255,255,255,.08),
+    inset 0 0 18px rgba(255,255,255,.04);
+}
+
+#topupAmountModal .modal-title{
+  text-align:left;
+  margin:0 0 14px;
+  font-weight:900;
+  letter-spacing:0;
+  color:#e8efff;
+  text-shadow:none;
+}
+
+#topupAmountModal .am-close{
+  position:absolute;
+  top:12px; right:12px;
+  width:36px; height:36px;
+  display:grid; place-items:center;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.06);
+  color:rgba(232,239,255,.92);
+  font-weight:900;
+  cursor:pointer;
+}
+
+#topupAmountModal .error-message{
+  margin:0 0 10px;
+  text-align:left;
+}
+
+#topupAmountModal .am-field{ margin-top:12px; }
+
+#topupAmountModal .am-label{
+  margin:0 0 8px;
+  font-size:12px;
+  font-weight:800;
+  color:rgba(232,239,255,.45);
+}
+
+#topupAmountModal .am-box{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:12px 14px;
+
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.12);
+  background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.18));
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.06),
+    inset 0 -18px 22px rgba(0,0,0,.35);
+}
+
+#topupAmountModal .am-input{
+  width:100%;
+  border:0;
+  outline:none;
+  background:transparent;
+  color:rgba(232,239,255,.95);
+  font-weight:900;
+  font-size:16px;
+}
+
+#topupAmountModal .am-input::placeholder{
+  color:rgba(232,239,255,.30);
+  font-weight:900;
+}
+
+#topupAmountModal .am-star{ opacity:.9; }
+
+#topupAmountModal .am-note{
+  margin-top:10px;
+  font-size:12px;
+  color:rgba(232,239,255,.45);
+}
+
+#topupAmountModal .am-submit{
+  width:100%;
+  margin-top:14px;
+  padding:14px 16px;
+
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.10);
+  background:linear-gradient(180deg, rgba(41,97,164,.85), rgba(27,69,124,.92));
+
+  box-shadow:0 14px 34px rgba(0,0,0,.55);
+  color:rgba(232,239,255,.92);
+  font-weight:900;
+  letter-spacing:.2px;
+  cursor:pointer;
+}
+
+#topupAmountModal .am-submit:disabled{
+  opacity:.55;
+  cursor:default;
+}
+
+/* чтобы тон-строка была в том же стиле */
+#topupAmountModal .wallet-line{
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.12);
+  background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.18));
+}
+#topupAmountModal .wallet-line-text{ color:rgba(232,239,255,.75); font-weight:800; }
+#topupAmountModal .wallet-line-close{ color:rgba(232,239,255,.85); }
+
 </style>
 
 <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
@@ -3739,39 +3867,43 @@ if (addr) {
         </div>
       </div>
 
-      <!-- TOPUP AMOUNT MODAL -->
+ <!-- TOPUP AMOUNT MODAL -->
+
 <div id="topupAmountModal" class="modal" aria-hidden="true" aria-modal="true" role="dialog">
   <div class="modal-card" role="document" style="max-width: 400px;">
-    <div class="modal-title">ПОПОЛНЕНИЕ БАЛАНСА</div>
-    
+    <button type="button" id="cancelAmountBtn" class="am-close" aria-label="Закрыть">✕</button>
+
+    <div class="modal-title">Заполните данные</div>
+
     <!-- Контейнер для сообщений об ошибке -->
     <div id="amountError" class="error-message"></div>
-    
-        <!-- TON WALLET LINE (показывается только если кошелек привязан) -->
+
+    <!-- TON WALLET LINE (показывается только если кошелек привязан) -->
     <div id="tonWalletLine" class="wallet-line" style="display:none;">
       <span id="tonWalletShort" class="wallet-line-text">UQB4...k8qK</span>
       <button type="button" id="tonWalletUnlink" class="wallet-line-close" aria-label="Отвязать кошелек">✕</button>
     </div>
 
-    <div class="amount-input-wrapper">
-      <input type="text" 
-             id="amountInput" 
-             class="amount-input" 
-             placeholder="Сумма пополнения"
-             maxlength="10"
-             autocomplete="off">
+    <div class="am-field">
+      <div class="am-label">Сумма пополнения</div>
+      <div class="am-box am-box-icon">
+        <span class="am-star">⭐</span>
+        <input type="text"
+               id="amountInput"
+               class="am-input"
+               placeholder="Введите сумму..."
+               maxlength="10"
+               autocomplete="off">
+      </div>
     </div>
 
     <div class="amount-meta" id="tonMeta" style="display:none;">
-  <div class="amount-meta-left" id="tonReceiveText">
-    Вы получите 2000 Stars
-  </div>
-</div>
-
-    <div class="modal-actions">
-      <button id="cancelAmountBtn" class="btn btn-ghost">ОТМЕНА</button>
-      <button id="confirmAmountBtn" class="btn btn-primary">ПОПОЛНИТЬ</button>
+      <div class="amount-meta-left" id="tonReceiveText">
+        Вы получите 2000 Stars
+      </div>
     </div>
+
+    <button id="confirmAmountBtn" class="am-submit" disabled>Пополнить баланс</button>
   </div>
 </div>
 
@@ -4017,7 +4149,7 @@ const CHEAP_BACK_TEXT = {
 const CASE_THUMBS = {
   free:["assets/images/ПРОМОКОД.png","assets/images/за 500₽.png","assets/images/ChatGPT Image 7 янв. 2026 г., 18_21_09.png","assets/images/ChatGPT Image 6 янв. 2026 г., 15_43_15.png"],
   cheap:["assets/images/20260111_2157_Image Generation_remix_01keq6p6dnfn4v8d2gq0sdgmz2.png","assets/images/ChatGPT Image 11 янв. 2026 г., 22_22_44.png","assets/images/20260111_2112_Image Generation_remix_01keq43c2dfzvt1aabsw9ssp7m.png","assets/images/20260112_2229_Image Generation_remix_01kestwp63fgmras30gj1angj1.png"],
-  nft:["assets/images/ChatGPT Image 5 окт. 2025 г., 10_33_06.png","assets/images/ChatGPT Image 5 окт. 2025 г., 11_26_19.png","assets/images/NFT 3.png","assets/images/20251005_1527_Зелёная призрачная тыква_remix_01k6t5bwrrfxet6r4vzrkgra3k.png"],
+  nft:["assets/images/ChatGPT Image 13 янв. 2026 г., 18_48_07.png","assets/images/ChatGPT Image 13 янв. 2026 г., 18_57_07.png","assets/images/NFT 3.png","assets/images/20251005_1527_Зелёная призрачная тыква_remix_01k6t5bwrrfxet6r4vzrkgra3k.png"],
   exclusive:["assets/images/20251005_1639_Новогодняя змея_remix_01k6t9fz7mevwt1beaq5bxehc4.png","assets/images/20251005_1703_Фен с розовой лентой_remix_01k6tavjk3fq8brq0e5fr8hycw.png","assets/images/20251005_1718_Стильный школьный рюкзак_simple_compose_01k6tbpyfyedkb0r4qcr8r6p8m.png","assets/images/20251005_1752_Радужные Губы и Пузыри_remix_01k6tdn1ebem893yskvv82bpgz.png"],
   standard:["","","",""],
   gold:["","","",""],
@@ -7622,9 +7754,10 @@ function topupAmountOpenModal() {
     return;
   }
   
-  const input   = document.getElementById('amountInput');
-  const errorEl = document.getElementById('amountError');
-  const metaEl  = document.getElementById('tonMeta');
+  const input      = document.getElementById('amountInput');
+  const errorEl    = document.getElementById('amountError');
+  const metaEl     = document.getElementById('tonMeta');
+  const confirmBtn = document.getElementById('confirmAmountBtn');
 
   // Сбрасываем ошибки
   if (errorEl) {
@@ -7632,39 +7765,37 @@ function topupAmountOpenModal() {
     errorEl.textContent = '';
   }
 
+  // Стартовое значение инпута
   if (input) {
     if (currentPaymentMethod === 'ton') {
       input.placeholder = 'Введите сумму в TON';
-      input.value = String(TON_MIN);          // стартуем с 10 TON
+      input.value = String(TON_MIN);
       input.dataset.lastValidTon = String(TON_MIN);
+      delete input.dataset.lastValidStars;
     } else {
       input.placeholder = 'Сумма пополнения';
-      input.value = '';
+      input.value = String(STARS_MIN);
+      input.dataset.lastValidStars = String(STARS_MIN);
       delete input.dataset.lastValidTon;
     }
   }
 
-  // ✅ Стартовое значение инпута
-if (input) {
-  if (currentPaymentMethod === 'ton') {
-    input.value = String(TON_MIN);
-    input.dataset.lastValidTon = String(TON_MIN);
-  } else {
-    input.value = String(STARS_MIN);
-    input.dataset.lastValidStars = String(STARS_MIN);
-  }
-}
-
   // Показать/спрятать блок с «Вы получите … Stars»
-if (metaEl) {
-  metaEl.style.display = currentPaymentMethod === 'ton' ? 'flex' : 'none';
-}
+  if (metaEl) {
+    metaEl.style.display = currentPaymentMethod === 'ton' ? 'flex' : 'none';
+  }
 
   // Обновляем текст «Вы получите … Stars»
   updateTonPreview();
 
   // ✅ показываем/прячем линию кошелька
   renderTonWalletLine();
+
+  // ✅ выставляем состояние кнопки
+  if (confirmBtn) confirmBtn.disabled = true;
+  if (typeof window.updateConfirmAmountBtnState === 'function') {
+    window.updateConfirmAmountBtnState();
+  }
 
   amountModal.classList.add('show');
   amountModal.setAttribute('aria-hidden', 'false');
@@ -7755,6 +7886,32 @@ function initAmountModal() {
   const input      = document.getElementById('amountInput');
   const confirmBtn = document.getElementById('confirmAmountBtn');
   const cancelBtn  = document.getElementById('cancelAmountBtn');
+  
+  // ✅ Активность кнопки "Пополнить баланс" (включается только когда сумма валидна)
+  const updateConfirmAmountBtnState = () => {
+    if (!confirmBtn || !input) return;
+
+    const raw = (input.value || '').trim();
+    const isDigits = /^\d+$/.test(raw);
+    let ok = false;
+
+    if (isDigits) {
+      const num = parseInt(raw, 10);
+      if (currentPaymentMethod === 'ton') {
+        ok = (num >= TON_MIN && num <= TON_MAX);
+      } else {
+        ok = (num >= STARS_MIN && num <= STARS_MAX);
+      }
+    }
+
+    confirmBtn.disabled = !ok;
+  };
+
+  // Делаем доступным из других мест (например, при открытии модалки)
+  window.updateConfirmAmountBtnState = updateConfirmAmountBtnState;
+
+  // По умолчанию — выключена
+  if (confirmBtn) confirmBtn.disabled = true;
 
   // Валидация в реальном времени + обновление превью
   if (input) {
@@ -7764,125 +7921,133 @@ function initAmountModal() {
       const isTon   = (currentPaymentMethod === 'ton');
       let   value   = el.value;
 
-      // Плейсхолдер
-      if (value.length > 0) {
-        el.placeholder = isTon ? 'Введите сумму в TON' : '';
-      } else {
-        el.placeholder = isTon ? 'Введите сумму в TON' : 'Сумма пополнения';
-      }
+      try {
+        // Плейсхолдер
+        if (value.length > 0) {
+          el.placeholder = isTon ? 'Введите сумму в TON' : '';
+        } else {
+          el.placeholder = isTon ? 'Введите сумму в TON' : 'Введите сумму...';
+        }
 
-      // === РЕЖИМ TON → STARS ===
-      if (isTon) {
-        // Оставляем только цифры
+        // === РЕЖИМ TON → STARS ===
+        if (isTon) {
+          // Оставляем только цифры
+          value = value.replace(/\D/g, '');
+          if (value !== el.value) el.value = value;
+
+          const prev = el.dataset.lastValidTon ?? '';
+
+          // Поле пустое — разрешаем, но напоминаем про минимум
+          if (value === '') {
+            if (errorEl) {
+              errorEl.textContent = `Минимальный депозит ${TON_MIN} TON`;
+              errorEl.style.display = 'block';
+            }
+            el.dataset.lastValidTon = '';
+            updateTonPreview();
+            return;
+          }
+
+          const num = parseInt(value, 10);
+
+          // Меньше минимума — не даём ввести, откат к предыдущему
+          if (num < TON_MIN) {
+            if (errorEl) {
+              errorEl.textContent = `Минимальный депозит ${TON_MIN} TON`;
+              errorEl.style.display = 'block';
+            }
+            el.value = prev;       // цифра не появляется в поле
+            updateTonPreview();
+            return;
+          }
+
+          // Больше максимума — не даём ввести, откат
+          if (num > TON_MAX) {
+            if (errorEl) {
+              errorEl.textContent = `Максимальный депозит ${formatRu(TON_MAX)} TON`;
+              errorEl.style.display = 'block';
+            }
+            el.value = prev;
+            updateTonPreview();
+            return;
+          }
+
+          // Всё ок, число в диапазоне
+          if (errorEl) {
+            errorEl.style.display = 'none';
+            errorEl.textContent = '';
+          }
+          el.dataset.lastValidTon = String(num);
+          el.value = String(num);  // убираем ведущие нули
+          updateTonPreview();
+          return;
+        }
+
+        // === Обычный режим (Stars + Bank) ===
         value = value.replace(/\D/g, '');
         if (value !== el.value) el.value = value;
 
-        const prev = el.dataset.lastValidTon ?? '';
+        const prev = el.dataset.lastValidStars ?? String(STARS_MIN);
 
-        // Поле пустое — разрешаем, но напоминаем про минимум
+        // ✅ теперь пустое поле разрешаем (ничего не подставляем)
         if (value === '') {
           if (errorEl) {
-            errorEl.textContent = `Минимальный депозит ${TON_MIN} TON`;
-            errorEl.style.display = 'block';
+            errorEl.style.display = 'none';
+            errorEl.textContent = '';
           }
-          el.dataset.lastValidTon = '';
-          updateTonPreview();
+          // lastValidStars не трогаем
           return;
         }
 
         const num = parseInt(value, 10);
 
-        // Меньше минимума — не даём ввести, откат к предыдущему
-        if (num < TON_MIN) {
+        // ✅ ниже минимума — просто показываем ошибку, но НЕ фиксируем значение
+        if (num < STARS_MIN) {
           if (errorEl) {
-            errorEl.textContent = `Минимальный депозит ${TON_MIN} TON`;
+            errorEl.textContent = `Минимальная сумма ${STARS_MIN}`;
             errorEl.style.display = 'block';
           }
-          el.value = prev;       // цифра не появляется в поле
-          updateTonPreview();
+          // lastValidStars не обновляем, чтобы работал max-кламп
           return;
         }
 
-        // Больше максимума — не даём ввести, откат
-        if (num > TON_MAX) {
+        // выше максимума — режем до 50 000 (КАК БЫЛО)
+        if (num > STARS_MAX) {
           if (errorEl) {
-            errorEl.textContent = `Максимальный депозит ${formatRu(TON_MAX)} TON`;
+            errorEl.textContent = `Максимальная сумма ${formatRu(STARS_MAX)}`;
             errorEl.style.display = 'block';
           }
-          el.value = prev;
-          updateTonPreview();
+          el.value = String(STARS_MAX);
+          el.dataset.lastValidStars = String(STARS_MAX);
           return;
         }
 
-        // Всё ок, число в диапазоне
+        // всё ок
+        el.dataset.lastValidStars = String(num);
         if (errorEl) {
           errorEl.style.display = 'none';
           errorEl.textContent = '';
         }
-        el.dataset.lastValidTon = String(num);
-        el.value = String(num);  // убираем ведущие нули
+
+        // На всякий случай обновим превью (в Stars-режиме оно просто спрячется)
         updateTonPreview();
-        return;
+      } finally {
+        updateConfirmAmountBtnState();
       }
-
-     // === Обычный режим (Stars + Bank) ===
-value = value.replace(/\D/g, '');
-if (value !== el.value) el.value = value;
-
-const prev = el.dataset.lastValidStars ?? String(STARS_MIN);
-
-// ✅ теперь пустое поле разрешаем (ничего не подставляем)
-if (value === '') {
-  if (errorEl) {
-    errorEl.style.display = 'none';
-    errorEl.textContent = '';
-  }
-  // lastValidStars не трогаем
-  return;
-}
-
-const num = parseInt(value, 10);
-
-// ✅ ниже минимума — просто показываем ошибку, но НЕ фиксируем значение
-if (num < STARS_MIN) {
-  if (errorEl) {
-    errorEl.textContent = `Минимальная сумма ${STARS_MIN}`;
-    errorEl.style.display = 'block';
-  }
-  // lastValidStars не обновляем, чтобы работал max-кламп
-  return;
-}
-
-// выше максимума — режем до 50 000 (КАК БЫЛО)
-if (num > STARS_MAX) {
-  if (errorEl) {
-    errorEl.textContent = `Максимальная сумма ${formatRu(STARS_MAX)}`;
-    errorEl.style.display = 'block';
-  }
-  el.value = String(STARS_MAX);
-  el.dataset.lastValidStars = String(STARS_MAX);
-  return;
-}
-
-// всё ок
-el.dataset.lastValidStars = String(num);
-if (errorEl) {
-  errorEl.style.display = 'none';
-  errorEl.textContent = '';
-}
-
-      // На всякий случай обновим превью (в Stars-режиме оно просто спрячется)
-      updateTonPreview();
     });
     
     // Обработка Enter
     input.addEventListener('keydown', function(e) {
       if (e.key === 'Enter') {
         e.preventDefault();
+        if (confirmBtn && confirmBtn.disabled) return;
+
         if (currentPaymentMethod === 'ton') {
           handleTonSubmit();
+        } else if (currentPaymentMethod === 'bank') {
+          handleBankSubmit();
         } else {
-          handleAmountSubmit(); // старый сценарий звёзд
+          handleAmountSubmit(); // stars
         }
       }
     });
@@ -7900,14 +8065,16 @@ if (errorEl) {
   // Кнопка подтверждения
   if (confirmBtn) {
     confirmBtn.addEventListener('click', function() {
-  if (currentPaymentMethod === 'ton') {
-    handleTonSubmit();
-  } else if (currentPaymentMethod === 'bank') {
-    handleBankSubmit();
-  } else {
-    handleAmountSubmit(); // stars
-  }
-});
+      if (confirmBtn.disabled) return;
+
+      if (currentPaymentMethod === 'ton') {
+        handleTonSubmit();
+      } else if (currentPaymentMethod === 'bank') {
+        handleBankSubmit();
+      } else {
+        handleAmountSubmit(); // stars
+      }
+    });
   }
   
   // Кнопка отмены
@@ -7915,6 +8082,9 @@ if (errorEl) {
     cancelBtn.addEventListener('click', topupAmountCloseModal);
   }
   
+  // ✅ выставляем стартовое состояние кнопки
+  updateConfirmAmountBtnState();
+
   console.log('✅ Модалка ввода суммы инициализирована');
 }
 
