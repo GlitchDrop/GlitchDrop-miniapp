@@ -3526,7 +3526,36 @@ h2.section{
   font-weight:900;
 }
 
-#topupAmountModal .am-star{ opacity:.9; }
+#topupAmountModal .am-star{
+  opacity:.9;
+  width:1em;
+  height:1em;
+  flex:0 0 1em;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
+
+#topupAmountModal .am-cur-img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  display:none;
+}
+
+#topupAmountModal .am-cur-rub{
+  display:none;
+  font-weight:900;
+  line-height:1;
+}
+
+#topupAmountModal #starsRateNote{ display:none; }
+
+#topupAmountModal[data-method="stars"] .am-cur-stars{ display:block; }
+#topupAmountModal[data-method="ton"]   .am-cur-ton{ display:block; }
+#topupAmountModal[data-method="bank"]  .am-cur-rub{ display:block; }
+
+#topupAmountModal[data-method="stars"] #starsRateNote{ display:block; }
 
 #topupAmountModal .am-note{
   margin-top:10px;
@@ -3887,7 +3916,11 @@ if (addr) {
     <div class="am-field">
       <div class="am-label">Сумма пополнения</div>
       <div class="am-box am-box-icon">
-        <span class="am-star">⭐</span>
+        <span class="am-star" aria-hidden="true">
+          <img class="am-cur-img am-cur-stars" src="assets/images/звезда.png" alt="">
+          <img class="am-cur-img am-cur-ton" src="assets/images/toncoin-ton-logo.png" alt="">
+          <span class="am-cur-rub">₽</span>
+        </span>
         <input type="text"
                id="amountInput"
                class="am-input"
@@ -3895,6 +3928,7 @@ if (addr) {
                maxlength="10"
                autocomplete="off">
       </div>
+      <div class="am-note" id="starsRateNote">1 TG STARS = 1₽</div>
     </div>
 
     <div class="amount-meta" id="tonMeta" style="display:none;">
@@ -7753,7 +7787,9 @@ function topupAmountOpenModal() {
     console.error('❌ Модалка ввода суммы не найдена');
     return;
   }
-  
+
+  amountModal.dataset.method = currentPaymentMethod;
+
   const input      = document.getElementById('amountInput');
   const errorEl    = document.getElementById('amountError');
   const metaEl     = document.getElementById('tonMeta');
