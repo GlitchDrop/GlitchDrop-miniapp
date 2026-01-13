@@ -782,9 +782,9 @@ html:not(.in-telegram) .card .price-pill{ display:none; }
     .d-title{font-weight:900}
     .d-body{padding:16px; padding-bottom: max(var(--tabbar-h,84px), env(safe-area-inset-bottom) + 16px); max-width:1100px; margin:0 auto; width:100%}
     .d-hero{display:grid; grid-template-columns:1fr; gap:14px; margin-bottom:10px;}
-    .d-thumb{ min-height:200px; height:auto; border-radius:26px; border:1px solid rgba(255,255,255,.16);
+    .d-thumb{ min-height:200px; height:auto; border-radius:16px; border:1px dashed rgba(180,210,255,.35);
       background: radial-gradient(160px 110px at 20% 20%, rgba(22,241,255,.12), transparent 60%), radial-gradient(160px 110px at 80% 80%, rgba(255,62,208,.10), transparent 60%), linear-gradient(180deg,#0c1230,#0a1028);
-      display:grid; place-items:stretch; overflow:hidden; padding:0; color:#a9c2ff; text-transform:uppercase; letter-spacing:1px; }
+      display:grid; place-items:center; color:#a9c2ff; text-transform:uppercase; letter-spacing:1px; }
     .d-actions{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
     .btn-spin{ appearance:none; border:none; cursor:pointer; padding:12px 18px; border-radius:14px; font-weight:900; color:#081121; background:linear-gradient(135deg,#ffe28a,#ffc13a); box-shadow:0 10px 28px rgba(255,209,102,.35), 0 0 30px rgba(255,209,102,.25); }
 
@@ -2880,7 +2880,8 @@ h2.section{
   visibility: visible;        /* показываем без изменения размеров родителя */
 }
 
-/* === 2D барабан (фронтально, одна ячейка) === */
+
+/* === 3D барабан (фронтально, одна ячейка) === */
 :root{
   /* размеры можно менять из JS */
   --reel-slice-w: 210px;
@@ -2894,78 +2895,57 @@ h2.section{
   height:100%;
   min-height: var(--reel-min-h);
   display:grid; place-items:center;
+  perspective: 1200px;
 }
 
-/* КАК ЯЧЕЙКА КЕЙСА (.card) */
 .drum-stage{
   position:relative;
   width:min(560px, 92%);
   height:100%;
-  border-radius:26px;
-  border:1px solid rgba(255,255,255,.16);
-
-  background:
-    radial-gradient(120% 85% at 18% -10%, rgba(255,255,255,.12), rgba(255,255,255,0) 55%),
-    radial-gradient(90% 70% at 80% 0%, rgba(138,92,255,.14), rgba(138,92,255,0) 62%),
-    linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.18));
-
-  box-shadow:
-    0 22px 70px rgba(0,0,0,.72),
-    0 0 0 1px rgba(0,0,0,.35) inset,
-    inset 0 1px 0 rgba(255,255,255,.10),
-    inset 0 -18px 30px rgba(0,0,0,.30);
-
+  border-radius:16px;
+  border:1px solid var(--border);
+  background:linear-gradient(180deg,#0c1230,#0a1028);
+  box-shadow:inset 0 0 24px rgba(22,241,255,.12);
   overflow:hidden;
 }
 
 /* фронтально, без наклона */
 .drum-tilt{
   position:absolute; inset:18px;
+  transform-style:preserve-3d;
 }
 
 .drum{
   position:absolute; left:50%; top:50%;
-  transform: translate(-50%,-50%) translateY(var(--y, 0px));
+  transform-style:preserve-3d;
   will-change:transform;
-
-  display:flex;
-  flex-direction:column;
-  gap: var(--reel-gap);
-  align-items:center;
 }
 
-/* КАК ВНУТРИШНЯЯ ЯЧЕЙКА КЕЙСА (.thumb/.case-row) */
+/* «вкладки» барабана */
 .slice{
-  position:relative;
+  position:absolute; left:50%; top:50%;
   width: var(--reel-slice-w);
   height: var(--reel-slice-h);
-
-  border-radius:18px;
-  border:1px solid rgba(255,255,255,.14);
-
+  margin: calc(-1 * var(--reel-slice-h) / 2) calc(-1 * var(--reel-slice-w) / 2);
+  border-radius:14px;
+  border:1px dashed rgba(180,210,255,.35);
   background:
-    radial-gradient(140px 100px at 20% 25%, rgba(22,241,255,.10), transparent 60%),
-    radial-gradient(140px 100px at 80% 80%, rgba(138,92,255,.10), transparent 60%),
-    linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.26));
-
-  box-shadow:
-    0 12px 28px rgba(0,0,0,.40),
-    inset 0 1px 0 rgba(255,255,255,.10),
-    inset 0 -18px 28px rgba(0,0,0,.38);
-
+    radial-gradient(120px 80px at 20% 20%, rgba(22,241,255,.10), transparent 60%),
+    radial-gradient(120px 80px at 80% 80%, rgba(255,62,208,.08), transparent 60%),
+    linear-gradient(180deg,#0b1030,#0a1028);
+  box-shadow:0 8px 26px rgba(10,20,60,.35);
   display:grid; grid-template-rows:1fr auto; align-items:center; justify-items:center;
   overflow:hidden;
+  backface-visibility:hidden; -webkit-backface-visibility:hidden;
 }
 
 .slice .meta{
   width:100%; padding:8px 10px;
-  font-weight:900; letter-spacing:.3px; font-size:12px;
-  color: rgba(255,255,255,.82);
+  font-weight:900; letter-spacing:.3px; font-size:12px; color:#a9c2ff;
   display:flex; align-items:center; justify-content:space-between;
 }
 .slice .value{
-  color:var(--neon-yellow);
-  text-shadow:0 0 12px rgba(255,228,122,.25);
+  color:var(--neon-yellow); text-shadow:0 0 12px rgba(255,228,122,.25);
   font-weight:900; font-size:14px;
 }
 
@@ -2982,7 +2962,7 @@ h2.section{
 .drum-stage:before, .drum-stage:after{
   content:""; position:absolute; left:0; right:0; height:22%;
   pointer-events:none; z-index:5;
-  background:linear-gradient(180deg, rgba(0,0,0,.42), transparent);
+  background:linear-gradient(180deg, rgba(8,14,36,.8), transparent);
 }
 .drum-stage:after{ bottom:0; top:auto; transform:rotate(180deg); }
 
@@ -2993,8 +2973,8 @@ h2.section{
   width: 100%;
   height: auto;
   padding: 0;
-  border-bottom: 1px solid rgba(255,255,255,.12);
-  background: transparent;
+  border-bottom: 1px solid var(--border);
+  background: radial-gradient(80px 60px at 50% 50%, rgba(22,241,255,.10), transparent 60%);
   overflow: hidden;
   box-sizing: border-box;
 }
@@ -3010,10 +2990,10 @@ h2.section{
   max-width: none;
   max-height: none;
   border-radius: 12px;
-}
+} /* ← вот этой скобки не хватало */
 
 /* === Оверрайды ТОЛЬКО для барабана === */
-.drum .slice{
+.drum .slice {
   grid-template-rows: 1fr;
 }
 
@@ -3029,7 +3009,7 @@ h2.section{
   aspect-ratio: 1 / 1;
   overflow: hidden;
   border-bottom: none;
-  background: transparent;
+  background: radial-gradient(80px 60px at 50% 50%, rgba(22,241,255,.10), transparent 60%);
 }
 
 /* картинка по центру, без обрезания краёв */
@@ -5045,19 +5025,13 @@ function render3DReel(setId){
   if(!parent) return;
   const key = `${setId}__0`;
   const st  = ensureSpinStateWithAngle(key);
-
-  const { step, h } = getReelMetrics();
-  const cs  = getComputedStyle(document.documentElement);
-  const gap = parseFloat(cs.getPropertyValue('--reel-gap')) || 0;
-  const row = h + gap;
-  const baseY = ((DRUM_ITEM_COUNT - 1) * row) / 2;
-  const y0 = baseY - (st.currentAngle / step) * row;
+  const { step, r } = getReelMetrics();
 
   parent.innerHTML = `
     <div class="drum-wrap">
       <div class="drum-stage">
         <div class="drum-tilt">
-          <div class="drum" id="drum_${key}" style="--y:${y0}px"></div>
+          <div class="drum" id="drum_${key}" style="transform:translateZ(${-r}px) rotateX(${st.currentAngle}deg)"></div>
         </div>
         <div class="drum-pointer"></div>
       </div>
@@ -5071,12 +5045,16 @@ function render3DReel(setId){
   while(imgs.length < DRUM_ITEM_COUNT) imgs.push("");
 
   for(let i=0;i<DRUM_ITEM_COUNT;i++){
+    const deg = -i * step; // фронтально, вращаем вниз
     const url   = imgs[i] || "";
     const label = (SPIN_STATE.get(key)?.labels?.[i]) ?? "ПРИЗ";
     const value = (SPIN_STATE.get(key)?.values?.[i]) ?? "—";
 
     const el = document.createElement('div');
     el.className = 'slice';
+    el.style.setProperty('--_deg', `${deg}deg`);
+    el.style.setProperty('--_rz',  `${r}px`);
+    el.style.transform = `rotateX(${deg}deg) translateZ(${r}px)`;
     
 // стало:
 el.innerHTML = `
@@ -5096,12 +5074,7 @@ function start3DSpin(setId, onDone){
 
 
   const st = ensureSpinState(key);
-
-  const { step, h } = getReelMetrics();
-  const cs  = getComputedStyle(document.documentElement);
-  const gap = parseFloat(cs.getPropertyValue('--reel-gap')) || 0;
-  const row = h + gap;
-  const baseY = ((DRUM_ITEM_COUNT - 1) * row) / 2;
+  const { step, r } = getReelMetrics();
 
   drum.querySelectorAll('.slice').forEach(s=> s.classList.remove('win'));
 
@@ -5122,13 +5095,13 @@ function start3DSpin(setId, onDone){
   function frame(now){
     const p = Math.min(1, (now - t0) / SPIN_DURATION_MS);
     const ang = current + (target - current) * easeOutCubic(p);
-    drum.style.setProperty('--y', `${baseY - (ang / step) * row}px`);
+    drum.style.transform = `translateZ(${-r}px) rotateX(${ang}deg)`;
 
     if(p < 1){
       st.rafId = requestAnimationFrame(frame);
     } else {
             const snapped = Math.round(target / step) * step;
-      drum.style.setProperty('--y', `${baseY - (snapped / step) * row}px`);
+      drum.style.transform = `translateZ(${-r}px) rotateX(${snapped}deg)`;
       st.currentAngle = snapped;
 
       const slices = drum.querySelectorAll('.slice');
