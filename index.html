@@ -767,24 +767,24 @@ html:not(.in-telegram) .card .price-pill{ display:none; }
     .backtop.show{opacity:1; pointer-events:auto; transform:translateY(0)}
 
     /* ===== DETAIL VIEW ===== */
-.detail{
+    .detail{
       position:fixed; inset:0; z-index:60; display:none; flex-direction:column;
       background:
-        radial-gradient(120% 85% at 18% -10%, rgba(255,255,255,.10), rgba(255,255,255,0) 55%),
-        radial-gradient(90% 70% at 80% 0%, rgba(138,92,255,.12), rgba(138,92,255,0) 62%),
-        linear-gradient(180deg, rgba(16,16,18,.94), rgba(8,8,10,.98));
+        linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bot) 100%),
+        repeating-linear-gradient(0deg,  var(--grid) 0 1px,  transparent 1px var(--grid-gap)),
+        repeating-linear-gradient(90deg, var(--grid) 0 1px,  transparent 1px var(--grid-gap));
+      background-blend-mode: normal, overlay, overlay;
       overflow:auto;
     }
-
     .detail.show{ display:flex; }
     .d-topbar{ position:sticky; top:0; z-index:61; display:flex; align-items:center; gap:10px; padding:10px 14px; background:linear-gradient(180deg,rgba(36,36,36,.88),rgba(10,10,10,.86)); border-bottom:1px solid rgba(255,255,255,.10); backdrop-filter:blur(10px); }
     .btn-back{ appearance:none; border:1px solid var(--border); background:transparent; color:var(--text); padding:8px 12px; border-radius:12px; font-weight:900; cursor:pointer; }
     .d-title{font-weight:900}
     .d-body{padding:16px; padding-bottom: max(var(--tabbar-h,84px), env(safe-area-inset-bottom) + 16px); max-width:1100px; margin:0 auto; width:100%}
     .d-hero{display:grid; grid-template-columns:1fr; gap:14px; margin-bottom:10px;}
-    .d-thumb{ min-height:200px; height:auto; border-radius:16px; border:1px dashed rgba(180,210,255,.35);
+    .d-thumb{ min-height:200px; height:auto; border-radius:26px; border:1px solid rgba(255,255,255,.16);
       background: radial-gradient(160px 110px at 20% 20%, rgba(22,241,255,.12), transparent 60%), radial-gradient(160px 110px at 80% 80%, rgba(255,62,208,.10), transparent 60%), linear-gradient(180deg,#0c1230,#0a1028);
-      display:grid; place-items:center; color:#a9c2ff; text-transform:uppercase; letter-spacing:1px; }
+      display:grid; place-items:stretch; overflow:hidden; padding:0; color:#a9c2ff; text-transform:uppercase; letter-spacing:1px; }
     .d-actions{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
     .btn-spin{ appearance:none; border:none; cursor:pointer; padding:12px 18px; border-radius:14px; font-weight:900; color:#081121; background:linear-gradient(135deg,#ffe28a,#ffc13a); box-shadow:0 10px 28px rgba(255,209,102,.35), 0 0 30px rgba(255,209,102,.25); }
 
@@ -1036,13 +1036,11 @@ html:not(.in-telegram) .d-auth-warning{
   position:relative;
   min-height:100svh; /* растягивается на всю высоту экрана */
   background:
-    radial-gradient(120% 85% at 18% -10%, rgba(255,255,255,.10), rgba(255,255,255,0) 55%),
-    radial-gradient(90% 70% at 80% 0%, rgba(138,92,255,.10), rgba(138,92,255,0) 62%),
-    linear-gradient(180deg, rgba(16,16,18,.92), rgba(8,8,10,.96));
-  border-top:1px solid rgba(255,255,255,.16);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.06),
-    inset 0 30px 80px rgba(0,0,0,.40);
+    radial-gradient(60% 40% at 50% -10%, rgba(22,241,255,.06), transparent 60%),
+    radial-gradient(60% 40% at 50% 110%, rgba(255,62,208,.05), transparent 60%),
+    linear-gradient(180deg, #0b1030 0%, #0a1028 100%);
+  border-top:1px solid var(--border);
+  box-shadow: inset 0 30px 60px rgba(10,20,60,.35);
 }
 
 /* === INVENTORY HEADER — full-bleed до краёв экрана === */
@@ -1506,13 +1504,11 @@ html.scroll-locked, html.scroll-locked body{
   touch-action:pan-y;
 
   background:
-    radial-gradient(120% 85% at 18% -10%, rgba(255,255,255,.10), rgba(255,255,255,0) 55%),
-    radial-gradient(90% 70% at 80% 0%, rgba(138,92,255,.10), rgba(138,92,255,0) 62%),
-    linear-gradient(180deg, rgba(16,16,18,.92), rgba(8,8,10,.96));
-  border-top:1px solid rgba(255,255,255,.16);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.06),
-    inset 0 30px 80px rgba(0,0,0,.40);
+    radial-gradient(60% 40% at 50% -10%, rgba(22,241,255,.06), transparent 60%),
+    radial-gradient(60% 40% at 50% 110%, rgba(255,62,208,.05), transparent 60%),
+    linear-gradient(180deg, #0b1030 0%, #0a1028 100%);
+  border-top:1px solid var(--border);
+  box-shadow: inset 0 30px 60px rgba(10,20,60,.35);
 }
 
 /* ===== CONTESTS ===== */
@@ -1520,13 +1516,11 @@ html.scroll-locked, html.scroll-locked body{
   position:relative;
   min-height:100svh;
   background:
-    radial-gradient(120% 85% at 18% -10%, rgba(255,255,255,.10), rgba(255,255,255,0) 55%),
-    radial-gradient(90% 70% at 80% 0%, rgba(138,92,255,.10), rgba(138,92,255,0) 62%),
-    linear-gradient(180deg, rgba(16,16,18,.92), rgba(8,8,10,.96));
-  border-top:1px solid rgba(255,255,255,.16);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.06),
-    inset 0 30px 80px rgba(0,0,0,.40);
+    radial-gradient(60% 40% at 50% -10%, rgba(22,241,255,.06), transparent 60%),
+    radial-gradient(60% 40% at 50% 110%, rgba(255,62,208,.05), transparent 60%),
+    linear-gradient(180deg, #0b1030 0%, #0a1028 100%);
+  border-top:1px solid var(--border);
+  box-shadow: inset 0 30px 60px rgba(10,20,60,.35);
   padding-bottom: max(var(--tabbar-h,84px), env(safe-area-inset-bottom) + 16px);
 }
 
@@ -2900,24 +2894,35 @@ h2.section{
   width:100%;
   height:100%;
   min-height: var(--reel-min-h);
-  display:grid; place-items:center;
+  display:grid; place-items:stretch;
   perspective: 1200px;
 }
 
+/* КАК ЯЧЕЙКА КЕЙСА (.card) */
 .drum-stage{
   position:relative;
-  width:min(560px, 92%);
+  width:100%;
   height:100%;
-  border-radius:16px;
-  border:1px solid var(--border);
-  background:linear-gradient(180deg,#0c1230,#0a1028);
-  box-shadow:inset 0 0 24px rgba(22,241,255,.12);
+  border-radius:26px;
+  border:1px solid rgba(255,255,255,.16);
+
+  background:
+    radial-gradient(120% 85% at 18% -10%, rgba(255,255,255,.12), rgba(255,255,255,0) 55%),
+    radial-gradient(90% 70% at 80% 0%, rgba(138,92,255,.14), rgba(138,92,255,0) 62%),
+    linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.18));
+
+  box-shadow:
+    0 22px 70px rgba(0,0,0,.72),
+    0 0 0 1px rgba(0,0,0,.35) inset,
+    inset 0 1px 0 rgba(255,255,255,.10),
+    inset 0 -18px 30px rgba(0,0,0,.30);
+
   overflow:hidden;
 }
 
 /* фронтально, без наклона */
 .drum-tilt{
-  position:absolute; inset:18px;
+  position:absolute; inset:0;
   transform-style:preserve-3d;
 }
 
