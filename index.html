@@ -3547,6 +3547,8 @@ h2.section{
   display:none;
   font-weight:900;
   line-height:1;
+  color:var(--neon-yellow);
+  text-shadow:0 0 10px rgba(255,228,122,.28);
 }
 
 #topupAmountModal #starsRateNote{ display:none; }
@@ -3577,6 +3579,23 @@ h2.section{
   font-weight:900;
   letter-spacing:.2px;
   cursor:pointer;
+
+  transition: filter .18s ease, box-shadow .18s ease, background .18s ease, transform .12s ease, border-color .18s ease;
+}
+
+#topupAmountModal .am-submit:not(:disabled){
+  background:linear-gradient(135deg, rgba(22,241,255,.75), rgba(138,92,255,.95));
+  border-color: rgba(22,241,255,.55);
+  box-shadow:
+    0 14px 34px rgba(0,0,0,.55),
+    0 0 22px rgba(22,241,255,.22),
+    0 0 22px rgba(138,92,255,.18);
+  color:#fff;
+  filter:saturate(1.25) brightness(1.07);
+}
+
+#topupAmountModal .am-submit:active:not(:disabled){
+  transform: translateY(1px);
 }
 
 #topupAmountModal .am-submit:disabled{
@@ -3586,10 +3605,12 @@ h2.section{
 
 /* чтобы тон-строка была в том же стиле */
 #topupAmountModal .wallet-line{
+  margin-top:2px;
   border-radius:12px;
   border:1px solid rgba(255,255,255,.12);
   background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.18));
 }
+
 #topupAmountModal .wallet-line-text{ color:rgba(232,239,255,.75); font-weight:800; }
 #topupAmountModal .wallet-line-close{ color:rgba(232,239,255,.85); }
 
@@ -7986,13 +8007,12 @@ function initAmountModal() {
 
           const num = parseInt(value, 10);
 
-          // Меньше минимума — не даём ввести, откат к предыдущему
+// Меньше минимума — даём вводить/стирать, но подсвечиваем ошибку
           if (num < TON_MIN) {
             if (errorEl) {
               errorEl.textContent = `Минимальный депозит ${TON_MIN} TON`;
               errorEl.style.display = 'block';
             }
-            el.value = prev;       // цифра не появляется в поле
             updateTonPreview();
             return;
           }
