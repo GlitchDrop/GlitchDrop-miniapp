@@ -1772,6 +1772,22 @@ html.scroll-locked, html.scroll-locked body{
   background: linear-gradient(180deg, rgba(8,14,36,.60), rgba(6,10,26,.72));
 }
 
+/* DROP MODAL = стиль topup */
+#dropModal.modal-topup .modal-card{
+  border:1px solid rgba(255,255,255,.18);
+  background:linear-gradient(180deg, rgba(38,38,38,.82), rgba(12,12,12,.78));
+  box-shadow:
+    0 18px 50px rgba(0,0,0,.70),
+    inset 0 0 0 1px rgba(255,255,255,.08),
+    inset 0 0 18px rgba(255,255,255,.04);
+}
+
+#dropModal.modal-topup .modal-image{
+  border:1px solid var(--border);
+  background:linear-gradient(180deg, rgba(56,56,56,.82), rgba(18,18,18,.78));
+  box-shadow: inset 0 0 18px rgba(255,255,255,.06);
+}
+
 /* карточка меньше половины 9:16, аккуратная */
 .topup-card{
   position:relative;
@@ -3155,16 +3171,9 @@ h2.section{
 }
 
 .modal-actions .btn.sell{
-  color:#fff;
-  background: linear-gradient(180deg, rgba(157,118,255,98), rgba(110,70,255,98));
-  border: 1px solid rgba(255,255,255,20);
-  box-shadow:
-    0 14px 30px rgba(0,0,0,55),
-    inset 0 1px 0 rgba(255,255,255,18),
-    inset 0 -12px 18px rgba(0,0,0,22);
-}
-.modal-actions .btn.sell:active{
-  transform: translateY(1px);
+  color:#e8efff; background:linear-gradient(135deg, rgba(15,20,48,9), rgba(12,16,38,9));
+  border:1px solid var(--border);
+
 }
 
 /* текст в модалке подтверждения */
@@ -3889,7 +3898,7 @@ if (addr) {
   </div>   <!-- ←← закрыл #detail -->
 
 <!-- DROP MODAL -->
-<div id="dropModal" class="modal" aria-hidden="true" aria-modal="true" role="dialog">
+<div id="dropModal" class="modal modal-topup" aria-hidden="true" aria-modal="true" role="dialog">
   <div class="modal-card" role="document">
     <div class="modal-title">ПРЕДМЕТ ПОЛУЧЕН</div>
     <div class="modal-image">
