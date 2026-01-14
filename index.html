@@ -4226,10 +4226,35 @@ function normalizeSrc(src){
   return i >= 0 ? s.slice(i) : s;
 }
 
-function getSellPriceBySrc(src){
-  const key = normalizeSrc(src);
-  const v = SELL_PRICE_BY_SRC[key];
-  return Math.max(0, parseInt(v, 10) || 0);
+function getSellPrice(src){
+  let key = String(src || '').trim();
+  if (!key) return 0;
+
+  // убрать ?query и #hash
+  key = key.split('?')[0].split('#')[0];
+
+  // если пришёл абсолютный URL — привести к "assets/images/..."
+  const at = key.indexOf('assets/images/');
+  if (at !== -1) key = key.slice(at);
+
+  // декодировать %D0... и %20
+  try { key = decodeURIComponent(key); } catch(e) {}
+
+  // прямое совпадение
+  let n = parseInt(SELL_PRICE_RUB[key], 10);
+  if (Number.isFinite(n)) return Math.max(0, n);
+
+  // фолбэк: совпадение по имени файла
+  const base = key.split('/').pop();
+  if (base){
+    const foundKey = Object.keys(SELL_PRICE_RUB).find(k => k.split('/').pop() === base);
+    if (foundKey){
+      n = parseInt(SELL_PRICE_RUB[foundKey], 10);
+      if (Number.isFinite(n)) return Math.max(0, n);
+    }
+  }
+
+  return 0;
 }
 
 const CHEAP_BACK_TEXT = {
@@ -4242,7 +4267,7 @@ const CHEAP_BACK_TEXT = {
 const CASE_THUMBS = {
   free:["assets/images/ПРОМОКОД.png","assets/images/за 500₽.png","assets/images/ChatGPT Image 7 янв. 2026 г., 18_21_09.png","assets/images/ChatGPT Image 6 янв. 2026 г., 15_43_15.png"],
   cheap:["assets/images/20260111_2157_Image Generation_remix_01keq6p6dnfn4v8d2gq0sdgmz2.png","assets/images/ChatGPT Image 11 янв. 2026 г., 22_22_44.png","assets/images/20260111_2112_Image Generation_remix_01keq43c2dfzvt1aabsw9ssp7m.png","assets/images/20260112_2229_Image Generation_remix_01kestwp63fgmras30gj1angj1.png"],
-  nft:["assets/images/ChatGPT Image 13 янв. 2026 г., 18_48_07.png","assets/images/ChatGPT Image 13 янв. 2026 г., 18_57_07.png","assets/images/20260114_1331_Image Generation_remix_01key0xmk3ffrbq50cvbr1zctc.png","assets/images/20251005_1527_Зелёная призрачная тыква_remix_01k6t5bwrrfxet6r4vzrkgra3k.png"],
+  nft:["assets/images/ChatGPT Image 13 янв. 2026 г., 18_48_07.png","assets/images/ChatGPT Image 13 янв. 2026 г., 18_57_07.png","assets/images/20260114_1331_Image Generation_remix_01key0xmk3ffrbq50cvbr1zctc.png","assets/images/20260114_2211_Image Generation_remix_01keyymgrvftzs52zbrvc727xc.png"],
   exclusive:["assets/images/20251005_1639_Новогодняя змея_remix_01k6t9fz7mevwt1beaq5bxehc4.png","assets/images/20251005_1703_Фен с розовой лентой_remix_01k6tavjk3fq8brq0e5fr8hycw.png","assets/images/20251005_1718_Стильный школьный рюкзак_simple_compose_01k6tbpyfyedkb0r4qcr8r6p8m.png","assets/images/20251005_1752_Радужные Губы и Пузыри_remix_01k6tdn1ebem893yskvv82bpgz.png"],
   standard:["","","",""],
   gold:["","","",""],
@@ -4303,7 +4328,7 @@ const sections = [
   { id:'nft',         title:'ТОЛЬКО NFT-КЕЙСЫ',  items:4, price:['25₽','30₽','35₽','40₽'] },
   { id:'exclusive',   title:'ЭКСКЛЮЗИВНЫЕ КЕЙСЫ',items:4, price:['2000₽','3500₽','5800₽','8500₽'] },
   { id:'standard',    title:'СТАНДАРТНЫЕ КЕЙСЫ', items:4, price:['20₽','25₽','28₽','35₽'] },
-  { id:'gold',        title:'КЕЙСЫ ЗА ЗОЛОТО',   items:4, price:['ЗОЛОТО','ЗОЛОТО','ЗОЛОТО','ЗОЛОТО'] },
+  { id:'gold',        title:'МЕМ-КЕЙСЫ',   items:4, price:['150₽','250₽','550₽','650₽'] },
   { id:'allornothing',title:'ВСЁ ИЛИ НИЧЕГО КЕЙСЫ',items:4,price:['50₽','75₽','100₽','150₽'] },
   { id:'expensive',   title:'ДОРОГИЕ КЕЙСЫ',     items:4, price:['200₽','250₽','300₽','400₽'] },
 ];
