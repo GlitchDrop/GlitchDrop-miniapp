@@ -3119,6 +3119,11 @@ h2.section{
     opacity .55s ease;
 }
 
+/* белая подсветка ТОЛЬКО у дроп-модалки */
+#dropModal .modal-card{
+  box-shadow: 0 18px 50px rgba(5,10,40,.7), 0 0 80px rgba(255,255,255,.06);
+}
+
 .modal.show .modal-card{
   opacity:1;
   transform: translateY(0) scale(1);
@@ -3129,14 +3134,20 @@ h2.section{
   margin-bottom:12px; color:#d7e6ff; text-shadow:0 0 16px rgba(22,241,255,.25);
 }
 
+/* белая подсветка ТОЛЬКО у дроп-модалки */
+#dropModal .modal-title{
+  text-shadow:0 0 16px rgba(255,255,255,.14);
+}
+
 .modal-image{
   width:100%; aspect-ratio:1/1; border-radius:16px;
   border:1px dashed rgba(180,210,255,.35);
   background:
-    radial-gradient(120px 80px at 50% 50%, rgba(22,241,255,.10), transparent 60%),
+    radial-gradient(120px 80px at 50% 50%, rgba(255,255,255,.10), transparent 60%),
     linear-gradient(180deg,#0b1030,#0a1028);
   display:grid; place-items:center; overflow:hidden; margin-bottom:12px;
 }
+
 .modal-image img{
   width:88%; height:88%; object-fit:contain; border-radius:12px; display:block;
 }
