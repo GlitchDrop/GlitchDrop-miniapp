@@ -582,8 +582,8 @@ GD.ensureUid8 = function (tgId) {
   filter: drop-shadow(0 0 6px rgba(255,255,255,.16));
 }
 
-.price-pill-text{ font-weight:950; font-size:14px; color:#fff; }
-.price-pill-cur{ font-weight:950; font-size:14px; color:rgba(255,255,255,.92); }
+.price-pill-text{ font-weight:900; color:#fff; }
+.price-pill-cur{ font-weight:900; color:rgba(255,255,255,.90); }
 
 /* в браузере скрываем цену как раньше */
 html:not(.in-telegram) .card .price-pill{ display:none; }
@@ -3648,9 +3648,7 @@ h2.section{
           // ✅ сохраняем адрес после первой/любой успешной привязки
           try {
             const addr = wallet?.account?.address;
-            const pref = localStorage.getItem('gd_setting_save_wallet');
-            const allowSave = (pref === null || pref === '1' || pref === 'true' || pref === 'on');
-if (addr && allowSave) {
+if (addr) {
   const friendlyAddr = normalizeTonAddr(addr);
   localStorage.setItem(window.TON_WALLET_LS_KEY, friendlyAddr);
   if (typeof renderTonWalletLine === 'function') renderTonWalletLine();
@@ -3658,7 +3656,6 @@ if (addr && allowSave) {
           } catch (e) {
             console.warn('Не удалось сохранить TON-адрес', e);
           }
-
 
           // Если кошелёк подключился и у нас есть ожидающее пополнение — отправляем транзакцию
           if (wallet && window.tonTopupPending) {
@@ -3777,7 +3774,13 @@ if (addr && allowSave) {
       </label>
     </div>
 
-    <!-- (убрали блок "Автоматическая продажа") -->
+    <div class="settings-row">
+      <div class="settings-label">Автоматическая продажа</div>
+      <label class="switch">
+        <input type="checkbox" id="toggleAutoSell" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
   </div>
 </div>
 
@@ -3885,7 +3888,7 @@ if (addr && allowSave) {
     </div>
     <div class="modal-actions">
       <button id="keepBtn" class="btn keep">ОСТАВИТЬ</button>
-      <button id="sellBtn" class="btn sell">ПРОДАТЬ</button>
+      <button id="sellBtn" class="btn sell">ПРОДАТЬ ЗА 0₽</button>
     </div>
   </div>
 </div>
@@ -3894,8 +3897,8 @@ if (addr && allowSave) {
 <div id="confirmModal" class="modal" aria-hidden="true" aria-modal="true" role="dialog">
   <div class="modal-card" role="document">
     <div class="modal-title">ПОДТВЕРДИТЬ ПРОДАЖУ</div>
-    <div id="confirmText" class="modal-text">
-      Вы уверены, что хотите продать этот предмет?
+<div id="confirmText" class="modal-text">
+      Вы уверены, что хотите продать этот предмет за 0₽?
     </div>
     <div class="modal-actions">
       <button id="confirmNo"  class="btn btn-no">НЕТ</button>
@@ -4199,11 +4202,41 @@ const LOOT_SETS = { /* <-- твои массивы, оставляю как ес
   expensive_4:["","","","","","","","","","",""],
 };
 
+// ===== SELL PRICES (привязка по src) =====
+const SELL_PRICE_BY_SRC = {
+  "assets/images/20251003_1635_Прозрачный фон_remix_01k6n4frmwe74ry17r7gszk6ef.png": 35,
+  "assets/images/20251003_1629_Прозрачный фон_remix_01k6n43z74eq3ve8a9rcx44f02.png": 35,
+  "assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png": 35,
+  "assets/images/20251012_1000_Прозрачный фон_remix_01k7bkfcsqe3mts7q04f9z6xgq.png": 25,
+  "assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png": 25,
+  "assets/images/20251008_1905_Прозрачный фон_remix_01k72913cgfyy90e2abb8t2dft.png": 25,
+  "assets/images/20251003_1632_Прозрачный фон_remix_01k6n49ebnfssrvwq0605g9bkx.png": 25,
+  "assets/images/20251003_1621_Прозрачный фон_remix_01k6n3p2hwf4fbk1r0rqbvdc5d.png": 15,
+  "assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png": 15,
+  "assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png": 15,
+  "assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png": 15,
+  "assets/images/снупп дог.png": 150,
+  "assets/images/kniga.png": 350,
+  "assets/images/klever.png": 250,
+};
+
+function normalizeSrc(src){
+  const s = String(src || "");
+  const i = s.indexOf("assets/");
+  return i >= 0 ? s.slice(i) : s;
+}
+
+function getSellPriceBySrc(src){
+  const key = normalizeSrc(src);
+  const v = SELL_PRICE_BY_SRC[key];
+  return Math.max(0, parseInt(v, 10) || 0);
+}
+
 const CHEAP_BACK_TEXT = {
-  cheap_1: Array(11).fill({stars:"174000/", ton:"870"}),
-  cheap_2: Array(11).fill({stars:"174000/", ton:"870"}),
-  cheap_3: Array(11).fill({stars:"174000/", ton:"870"}),
-  cheap_4: Array(11).fill({stars:"174000/", ton:"870"}),
+  cheap_1: Array(11).fill({stars:"25/"}),
+  cheap_2: Array(11).fill({stars:"30/"}),
+  cheap_3: Array(11).fill({stars:"45/"}),
+  cheap_4: Array(11).fill({stars:"50/"}),
 };
 
 const CASE_THUMBS = {
@@ -4733,7 +4766,10 @@ function openDropModal(imgSrc){
 
   // картинка
   dropImg.src = imgSrc || FALLBACK_IMG;
-window._lastDropImgSrc = dropImg.src;   // ИНВЕНТАРЬ: запомнили картинку дропа
+window._lastDropImgSrc = normalizeSrc(dropImg.src);   // ИНВЕНТАРЬ: запомнили картинку дропа
+
+  const _sellPrice = getSellPriceBySrc(window._lastDropImgSrc);
+  if (sellBtn) sellBtn.textContent = `ПРОДАТЬ ЗА ${_sellPrice}₽`;
 
   dropImg.onerror = () => { dropImg.src = FALLBACK_IMG; };
 
@@ -4805,10 +4841,12 @@ keepBtn?.addEventListener('click', () => {
 });
 
 sellBtn?.addEventListener('click', () => {
-  // TODO: продать предмет/начислить валюту
+  const src = window._lastDropImgSrc || normalizeSrc(dropImg?.src) || '';
+  const price = getSellPriceBySrc(src);
+
+  setStarsBalance(getStarsBalance() + price);
   closeDropModal();
 });
-
 
 function lockBody(locked){
   if (locked){
@@ -5456,11 +5494,6 @@ const upgradesTab = tabsAll.find(t => /Пропуск/i.test(t.textContent.trim(
 // ===== HAPTIC FEEDBACK (вибрация) =====
 function tabHaptic(){
   try{
-    const v = localStorage.getItem('gd_setting_vibration');
-    if (v === '0') return;
-  }catch(e){}
-
-  try{
     if (window.Telegram?.WebApp?.HapticFeedback?.impactOccurred){
       window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
       return;
@@ -5611,14 +5644,18 @@ const list = window.INVENTORY || [];
   });
 
   // делегирование на кнопки ПРОДАТЬ
-  grid.onclick = (e)=>{
+grid.onclick = (e)=>{
     const btn  = e.target.closest('.inv-sell');
     if(!btn) return;
     const card = btn.closest('.inventory-card');
     const id   = card?.dataset.id;
     if(!id) return;
 
-    openConfirmSell(() => sellFromInventory(id, card));
+    const item = (window.INVENTORY || []).find(it => it.id === id);
+    const src = normalizeSrc(item?.img || card?.querySelector('img')?.getAttribute('src') || '');
+    const price = getSellPriceBySrc(src);
+
+    openConfirmSell(() => sellFromInventory(id, card, price), `Вы уверены, что хотите продать этот предмет за ${price}₽?`);
   };
 }
 
@@ -6791,7 +6828,9 @@ function _confirmTrapTab(e){
   else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
 }
 
-function sellFromInventory(id, cardEl){
+function sellFromInventory(id, cardEl, sellPrice){
+  const price = Math.max(0, parseInt(sellPrice, 10) || 0);
+
   // небольшая анимация исчезновения
   if (cardEl){
     cardEl.style.transition = 'transform 160ms ease, opacity 160ms ease';
@@ -6806,6 +6845,9 @@ function sellFromInventory(id, cardEl){
     arr.splice(idx, 1);
     saveInventory();
   }
+
+  // начисляем ₽ на баланс
+  setStarsBalance(getStarsBalance() + price);
 
   // перерисовать сетку чуть позже, чтобы анимация успела проиграться
   setTimeout(() => {
@@ -6925,53 +6967,10 @@ const settingsBack   = document.getElementById('settingsBack');
 const topbarEl       = document.querySelector('.topbar');
 const tabbarEl       = document.querySelector('.tabbar');
 
-const LS_SET_VIBRATION   = 'gd_setting_vibration';    // 1/0 (по умолчанию ВКЛ)
-const LS_SET_SAVE_WALLET = 'gd_setting_save_wallet';  // 1/0 (по умолчанию ВКЛ)
-
-function lsBool(key, def=true){
-  try{
-    const v = localStorage.getItem(key);
-    if (v === null) return def;
-    return (v === '1' || v === 'true' || v === 'on');
-  }catch(e){ return def; }
-}
-function lsSetBool(key, on){
-  try{ localStorage.setItem(key, on ? '1' : '0'); }catch(e){}
-}
-function syncSettingsToggles(){
-  const vib = document.getElementById('toggleVibration');
-  if (vib) vib.checked = lsBool(LS_SET_VIBRATION, true);
-
-  const w = document.getElementById('toggleWalletSave');
-  if (w) w.checked = lsBool(LS_SET_SAVE_WALLET, true);
-}
-
-if (!window.__gd_settings_bound){
-  window.__gd_settings_bound = true;
-
-  document.getElementById('toggleVibration')?.addEventListener('change', (e)=>{
-    const t = e.target;
-    lsSetBool(LS_SET_VIBRATION, !!t?.checked);
-  });
-
-  document.getElementById('toggleWalletSave')?.addEventListener('change', (e)=>{
-    const t = e.target;
-    const on = !!t?.checked;
-    lsSetBool(LS_SET_SAVE_WALLET, on);
-
-    if (!on){
-      try { localStorage.removeItem(window.TON_WALLET_LS_KEY || 'gd_ton_wallet_addr'); } catch(_){}
-      if (typeof renderTonWalletLine === 'function') renderTonWalletLine();
-    }
-  });
-}
-
 function showSettings(){
   if (!settingsScreen) return;
-  syncSettingsToggles();
 
   // скрываем все другие экраны как обычно
-
   try{
     document.querySelectorAll('.app .screen, .app .hide').forEach(el=>{
       if (el !== settingsScreen) el.classList.add('hide');
@@ -7671,17 +7670,8 @@ async function handleTonSubmit() {
   // ✅ Ставим флаг ожидания оплаты
   window.tonTopupPending = true;
 
-  const pref = localStorage.getItem('gd_setting_save_wallet');
-  const saveWallet = (pref === null || pref === '1' || pref === 'true' || pref === 'on');
-
-  // ❗️если сохранение выключено — каждый раз переподключаем перед оплатой
-  if (!saveWallet) {
-    try { localStorage.removeItem(LS_TON_WALLET); } catch(_){}
-    try { await window.tonConnectUI.disconnect(); } catch(_){}
-  }
-
-  const savedAddr = saveWallet ? localStorage.getItem(LS_TON_WALLET) : null;
-  const hasLiveWallet = saveWallet ? !!window.tonConnectUI?.wallet : false;
+  const savedAddr = localStorage.getItem(LS_TON_WALLET);
+  const hasLiveWallet = !!window.tonConnectUI?.wallet;
 
   // ✅ если кошелек уже привязан/есть сессия — сразу шлём транзакцию
   if (hasLiveWallet || savedAddr) {
@@ -7848,10 +7838,6 @@ function renderTonWalletLine(){
   const line = document.getElementById('tonWalletLine');
   const textEl = document.getElementById('tonWalletShort');
   if (!line || !textEl) return;
-
-  const pref = localStorage.getItem('gd_setting_save_wallet');
-  const allowSave = (pref === null || pref === '1' || pref === 'true' || pref === 'on');
-  if (!allowSave){ line.style.display = 'none'; return; }
 
   const addr = localStorage.getItem(LS_TON_WALLET);
   if (addr && currentPaymentMethod === 'ton'){
