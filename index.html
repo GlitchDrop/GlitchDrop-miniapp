@@ -6809,8 +6809,12 @@ function sellFromInventory(id, cardEl){
   }, 170);
 }
 
-
 // Навешиваем клики
+const isTelegramMiniApp = document.documentElement.classList.contains('in-telegram');
+function requireAuth(){
+  showFloatingError('Авторизуйтесь через Telegram');
+}
+
 if (casesTab){
   casesTab.style.cursor = 'pointer';
   casesTab.addEventListener('click', () => {
@@ -6821,6 +6825,7 @@ if (casesTab){
 if (profileTab){
   profileTab.style.cursor = 'pointer';
   profileTab.addEventListener('click', () => {
+    if (!isTelegramMiniApp) { requireAuth(); return; }
     tabHaptic();
     showProfile();
   });
@@ -6828,6 +6833,7 @@ if (profileTab){
 if (friendsTab){
   friendsTab.style.cursor = 'pointer';
   friendsTab.addEventListener('click', () => {
+    if (!isTelegramMiniApp) { requireAuth(); return; }
     tabHaptic();
     showFriends();
   });
@@ -6835,6 +6841,7 @@ if (friendsTab){
 if (contestsTab){
   contestsTab.style.cursor = 'pointer';
   contestsTab.addEventListener('click', () => {
+    if (!isTelegramMiniApp) { requireAuth(); return; }
     tabHaptic();
     showContests();
   });
@@ -6842,6 +6849,7 @@ if (contestsTab){
 if (upgradesTab){
   upgradesTab.style.cursor = 'pointer';
   upgradesTab.addEventListener('click', () => {
+    if (!isTelegramMiniApp) { requireAuth(); return; }
     tabHaptic();
     showUpgrades();
   });
