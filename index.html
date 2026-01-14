@@ -4226,14 +4226,16 @@ function normalizeSrc(src){
   return i >= 0 ? s.slice(i) : s;
 }
 
-function getSellPrice(src){
+function getSellPriceBySrc(src){
   let key = String(src || '').trim();
   if (!key) return 0;
+
+  key = normalizeSrc(key);
 
   // убрать ?query и #hash
   key = key.split('?')[0].split('#')[0];
 
-  // если пришёл абсолютный URL — привести к "assets/images/..."
+  // если всё ещё абсолютный URL — привести к "assets/images/..."
   const at = key.indexOf('assets/images/');
   if (at !== -1) key = key.slice(at);
 
@@ -4241,20 +4243,25 @@ function getSellPrice(src){
   try { key = decodeURIComponent(key); } catch(e) {}
 
   // прямое совпадение
-  let n = parseInt(SELL_PRICE_RUB[key], 10);
+  let n = parseInt(SELL_PRICE_BY_SRC[key], 10);
   if (Number.isFinite(n)) return Math.max(0, n);
 
   // фолбэк: совпадение по имени файла
   const base = key.split('/').pop();
   if (base){
-    const foundKey = Object.keys(SELL_PRICE_RUB).find(k => k.split('/').pop() === base);
+    const foundKey = Object.keys(SELL_PRICE_BY_SRC).find(k => k.split('/').pop() === base);
     if (foundKey){
-      n = parseInt(SELL_PRICE_RUB[foundKey], 10);
+      n = parseInt(SELL_PRICE_BY_SRC[foundKey], 10);
       if (Number.isFinite(n)) return Math.max(0, n);
     }
   }
 
   return 0;
+}
+
+// совместимость (если где-то ещё зовётся getSellPrice)
+function getSellPrice(src){
+  return getSellPriceBySrc(src);
 }
 
 const CHEAP_BACK_TEXT = {
