@@ -3153,10 +3153,18 @@ h2.section{
   color:#081121; background:linear-gradient(135deg, var(--neon-cyan), var(--neon-pink));
   border:1px solid transparent;
 }
-.modal-actions .btn.sell{
-  color:#e8efff; background:linear-gradient(135deg, rgba(15,20,48,.9), rgba(12,16,38,.9));
-  border:1px solid var(--border);
 
+.modal-actions .btn.sell{
+  color:#fff;
+  background: linear-gradient(180deg, rgba(157,118,255,98), rgba(110,70,255,98));
+  border: 1px solid rgba(255,255,255,20);
+  box-shadow:
+    0 14px 30px rgba(0,0,0,55),
+    inset 0 1px 0 rgba(255,255,255,18),
+    inset 0 -12px 18px rgba(0,0,0,22);
+}
+.modal-actions .btn.sell:active{
+  transform: translateY(1px);
 }
 
 /* текст в модалке подтверждения */
