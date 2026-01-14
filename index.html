@@ -762,8 +762,9 @@ html:not(.in-telegram) .card .price-pill{ display:none; }
 }
 
     .backtop{
-  bottom: calc(var(--tabbar-h,84px) + 18px); position:fixed; right:14px; z-index:50; padding:9px 12px; border-radius:12px; font-weight:900; font-size:12px; letter-spacing:.3px; border:1px solid rgba(22,241,255,45); color:#081121; background:linear-gradient(135deg, var(--neon-cyan), var(--neon-pink)); box-shadow:0 10px 28px rgba(22,241,255,35), 0 0 36px rgba(255,62,208,25); opacity:0; pointer-events:none; transform:translateY(8px); transition:opacity .2s, transform .2s;
+  bottom: calc(var(--tabbar-h,84px) + 18px); position:fixed; right:14px; z-index:50; padding:9px 12px; border-radius:12px; font-weight:900; font-size:12px; letter-spacing:.3px; border:1px solid rgba(255,255,255,.20); color:#fff; background:linear-gradient(180deg, rgba(157,118,255,.98), rgba(110,70,255,.98)); box-shadow:0 14px 30px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.18), inset 0 -12px 18px rgba(0,0,0,.22); opacity:0; pointer-events:none; transform:translateY(8px); transition:opacity .2s, transform .2s;
 }
+
     .backtop.show{opacity:1; pointer-events:auto; transform:translateY(0)}
 
     /* ===== DETAIL VIEW ===== */
@@ -1035,9 +1036,12 @@ html:not(.in-telegram) .d-auth-warning{
 .inventory-surface{
   position:relative;
   min-height:100svh; /* растягивается на всю высоту экрана */
-  background: transparent;
-  border-top:none;
-  box-shadow:none;
+  background:
+    radial-gradient(60% 40% at 50% -10%, rgba(22,241,255,.06), transparent 60%),
+    radial-gradient(60% 40% at 50% 110%, rgba(255,62,208,.05), transparent 60%),
+    linear-gradient(180deg, #0b1030 0%, #0a1028 100%);
+  border-top:1px solid var(--border);
+  box-shadow: inset 0 30px 60px rgba(10,20,60,.35);
 }
 
 /* === INVENTORY HEADER — full-bleed до краёв экрана === */
@@ -1500,18 +1504,24 @@ html.scroll-locked, html.scroll-locked body{
   overscroll-behavior-x:none;
   touch-action:pan-y;
 
-  background: transparent;
-  border-top:none;
-  box-shadow:none;
+  background:
+    radial-gradient(60% 40% at 50% -10%, rgba(22,241,255,.06), transparent 60%),
+    radial-gradient(60% 40% at 50% 110%, rgba(255,62,208,.05), transparent 60%),
+    linear-gradient(180deg, #0b1030 0%, #0a1028 100%);
+  border-top:1px solid var(--border);
+  box-shadow: inset 0 30px 60px rgba(10,20,60,.35);
 }
 
 /* ===== CONTESTS ===== */
 .contests-wrap{
   position:relative;
   min-height:100svh;
-  background: transparent;
-  border-top:none;
-  box-shadow:none;
+  background:
+    radial-gradient(60% 40% at 50% -10%, rgba(22,241,255,.06), transparent 60%),
+    radial-gradient(60% 40% at 50% 110%, rgba(255,62,208,.05), transparent 60%),
+    linear-gradient(180deg, #0b1030 0%, #0a1028 100%);
+  border-top:1px solid var(--border);
+  box-shadow: inset 0 30px 60px rgba(10,20,60,.35);
   padding-bottom: max(var(--tabbar-h,84px), env(safe-area-inset-bottom) + 16px);
 }
 
@@ -1629,9 +1639,12 @@ html.scroll-locked, html.scroll-locked body{
   bottom: 0; /* ВАЖНО: тянем фон до самого низа под таббар */
   z-index: 22;
   overflow: hidden; /* вообще без скролла */
-  background: transparent;
-  border-top:none;
-  box-shadow:none;
+  background:
+    radial-gradient(60% 40% at 50% -10%, rgba(22,241,255,.06), transparent 60%),
+    radial-gradient(60% 40% at 50% 110%, rgba(255,62,208,.05), transparent 60%),
+    linear-gradient(180deg, #0b1030 0%, #0a1028 100%);
+  border-top:1px solid var(--border);
+  box-shadow: inset 0 30px 60px rgba(10,20,60,.35);
 
   /* чтобы контент/текст не уезжал под таббар */
   padding-bottom: max(var(--tabbar-h,84px), env(safe-area-inset-bottom) + 16px);
