@@ -3648,7 +3648,9 @@ h2.section{
           // ✅ сохраняем адрес после первой/любой успешной привязки
           try {
             const addr = wallet?.account?.address;
-if (addr) {
+            const pref = localStorage.getItem('gd_setting_save_wallet');
+            const allowSave = (pref === null || pref === '1' || pref === 'true' || pref === 'on');
+if (addr && allowSave) {
   const friendlyAddr = normalizeTonAddr(addr);
   localStorage.setItem(window.TON_WALLET_LS_KEY, friendlyAddr);
   if (typeof renderTonWalletLine === 'function') renderTonWalletLine();
@@ -3656,6 +3658,7 @@ if (addr) {
           } catch (e) {
             console.warn('Не удалось сохранить TON-адрес', e);
           }
+
 
           // Если кошелёк подключился и у нас есть ожидающее пополнение — отправляем транзакцию
           if (wallet && window.tonTopupPending) {
@@ -3774,13 +3777,7 @@ if (addr) {
       </label>
     </div>
 
-    <div class="settings-row">
-      <div class="settings-label">Автоматическая продажа</div>
-      <label class="switch">
-        <input type="checkbox" id="toggleAutoSell" checked>
-        <span class="slider"></span>
-      </label>
-    </div>
+    <!-- (убрали блок "Автоматическая продажа") -->
   </div>
 </div>
 
@@ -5459,6 +5456,11 @@ const upgradesTab = tabsAll.find(t => /Пропуск/i.test(t.textContent.trim(
 // ===== HAPTIC FEEDBACK (вибрация) =====
 function tabHaptic(){
   try{
+    const v = localStorage.getItem('gd_setting_vibration');
+    if (v === '0') return;
+  }catch(e){}
+
+  try{
     if (window.Telegram?.WebApp?.HapticFeedback?.impactOccurred){
       window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
       return;
@@ -6923,10 +6925,53 @@ const settingsBack   = document.getElementById('settingsBack');
 const topbarEl       = document.querySelector('.topbar');
 const tabbarEl       = document.querySelector('.tabbar');
 
+const LS_SET_VIBRATION   = 'gd_setting_vibration';    // 1/0 (по умолчанию ВКЛ)
+const LS_SET_SAVE_WALLET = 'gd_setting_save_wallet';  // 1/0 (по умолчанию ВКЛ)
+
+function lsBool(key, def=true){
+  try{
+    const v = localStorage.getItem(key);
+    if (v === null) return def;
+    return (v === '1' || v === 'true' || v === 'on');
+  }catch(e){ return def; }
+}
+function lsSetBool(key, on){
+  try{ localStorage.setItem(key, on ? '1' : '0'); }catch(e){}
+}
+function syncSettingsToggles(){
+  const vib = document.getElementById('toggleVibration');
+  if (vib) vib.checked = lsBool(LS_SET_VIBRATION, true);
+
+  const w = document.getElementById('toggleWalletSave');
+  if (w) w.checked = lsBool(LS_SET_SAVE_WALLET, true);
+}
+
+if (!window.__gd_settings_bound){
+  window.__gd_settings_bound = true;
+
+  document.getElementById('toggleVibration')?.addEventListener('change', (e)=>{
+    const t = e.target;
+    lsSetBool(LS_SET_VIBRATION, !!t?.checked);
+  });
+
+  document.getElementById('toggleWalletSave')?.addEventListener('change', (e)=>{
+    const t = e.target;
+    const on = !!t?.checked;
+    lsSetBool(LS_SET_SAVE_WALLET, on);
+
+    if (!on){
+      try { localStorage.removeItem(window.TON_WALLET_LS_KEY || 'gd_ton_wallet_addr'); } catch(_){}
+      if (typeof renderTonWalletLine === 'function') renderTonWalletLine();
+    }
+  });
+}
+
 function showSettings(){
   if (!settingsScreen) return;
+  syncSettingsToggles();
 
   // скрываем все другие экраны как обычно
+
   try{
     document.querySelectorAll('.app .screen, .app .hide').forEach(el=>{
       if (el !== settingsScreen) el.classList.add('hide');
@@ -7626,8 +7671,17 @@ async function handleTonSubmit() {
   // ✅ Ставим флаг ожидания оплаты
   window.tonTopupPending = true;
 
-  const savedAddr = localStorage.getItem(LS_TON_WALLET);
-  const hasLiveWallet = !!window.tonConnectUI?.wallet;
+  const pref = localStorage.getItem('gd_setting_save_wallet');
+  const saveWallet = (pref === null || pref === '1' || pref === 'true' || pref === 'on');
+
+  // ❗️если сохранение выключено — каждый раз переподключаем перед оплатой
+  if (!saveWallet) {
+    try { localStorage.removeItem(LS_TON_WALLET); } catch(_){}
+    try { await window.tonConnectUI.disconnect(); } catch(_){}
+  }
+
+  const savedAddr = saveWallet ? localStorage.getItem(LS_TON_WALLET) : null;
+  const hasLiveWallet = saveWallet ? !!window.tonConnectUI?.wallet : false;
 
   // ✅ если кошелек уже привязан/есть сессия — сразу шлём транзакцию
   if (hasLiveWallet || savedAddr) {
@@ -7794,6 +7848,10 @@ function renderTonWalletLine(){
   const line = document.getElementById('tonWalletLine');
   const textEl = document.getElementById('tonWalletShort');
   if (!line || !textEl) return;
+
+  const pref = localStorage.getItem('gd_setting_save_wallet');
+  const allowSave = (pref === null || pref === '1' || pref === 'true' || pref === 'on');
+  if (!allowSave){ line.style.display = 'none'; return; }
 
   const addr = localStorage.getItem(LS_TON_WALLET);
   if (addr && currentPaymentMethod === 'ton'){
