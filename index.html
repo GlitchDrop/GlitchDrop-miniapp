@@ -3195,14 +3195,16 @@ h2.section{
   font-weight: 900;
   letter-spacing: .3px;
   cursor: pointer;
-  color: #081121;
-  background: linear-gradient(135deg, var(--neon-cyan), var(--neon-pink));
-  border: 1px solid rgba(22,241,255,.35);
-  box-shadow: 0 8px 22px rgba(22,241,255,.28), 0 0 24px rgba(255,62,208,.22);
+  color: #fff;
+  background: linear-gradient(180deg, rgba(157,118,255,.98), rgba(110,70,255,.98));
+  border: 1px solid rgba(255,255,255,.20);
+  box-shadow:
+    0 14px 30px rgba(0,0,0,.55),
+    inset 0 1px 0 rgba(255,255,255,.18),
+    inset 0 -12px 18px rgba(0,0,0,.22);
   width: calc(50% - 12px);
   text-align: center;
 
-  /* → добавляем абсолютный центр текста ← */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -5854,8 +5856,7 @@ const LS_BP_PROGRESS  = 'gd_bp_progress_idx_v1';    // "0.6"
 const LS_BP_LASTCLAIM = 'gd_bp_last_claim_ts_v1';   // unix ms
 const LS_BP_UNLOCKED  = 'gd_bp_unlocked_v1';        // "1" если пропуск куплен
 
-// TEMP: после обновления страницы снова требуем покупку пропуска
-try{ localStorage.removeItem(LS_BP_UNLOCKED); }catch(e){}
+// ✅ покупка пропуска сохраняется между перезагрузками (не сбрасываем LS_BP_UNLOCKED)
 
 function bpLsGet(key, fallback){
   try{
