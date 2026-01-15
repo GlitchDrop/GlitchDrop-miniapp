@@ -147,46 +147,48 @@ GD.ensureUid8 = function (tgId) {
   <title>GLITCH DROP — Mini App</title>
 
   <style>
+
 :root{
   --bg-top:#050814;
   --bg-bot:#0a1022;
   --grid:rgba(255,255,255,.025);
   --grid-gap:36px;
 
-  --panel:#070b18;
-  --panel2:#0a0f22;
+  /* чуть более “официальные” нейтральные поверхности */
+  --panel:#0b0b10;
+  --panel2:#0f0f16;
 
-  --card:#0b1026;
-  --card2:#0d1230;
+  --card:#0a0a10;
+  --card2:#0f1020;
 
-  --neon-cyan:#16f1ff;
+  /* фиолетовый главный */
+  --neon-cyan:#6d28d9;   /* было #16f1ff */
   --neon-pink:#8a5cff;
   --neon-yellow:#ffe47a;
-    --rub-sign-x: -4px; /* <-- меняй это число: -8px левее, +8px правее */
+    --rub-sign-x: -4px;
     
-    /* только для ценника кейсов */
---case-rub-sign-x: -2px;  /* <-- двигает ₽ влево/вправо ТОЛЬКО в ценнике */
---case-rub-gap: 2px;      /* <-- зазор между числом и ₽ ТОЛЬКО в ценнике */
+--case-rub-sign-x: -2px;
+--case-rub-gap: 2px;
 
-/* ===== для "Цена" в модалке барабана (detail) ===== */
---detail-rub-gap: 4px;      /* <-- зазор между числом и ₽ в барабане */
---detail-rub-sign-x: 2px;   /* <-- сдвиг ₽ по X в барабане (минус=влево, плюс=вправо) */
+--detail-rub-gap: 4px;
+--detail-rub-sign-x: 2px;
 
-/* ===== зазор между ячейками барабана ===== */
---reel-gap: 12px;           /* меняй: 0px / 8px / 12px / 16px ... */
+--reel-gap: 12px;
 
   --text:#e8efff;
-  --muted:#9fb2d9;
-  --border:rgba(120,180,255,.22);
+  --muted:rgba(255,255,255,.62);
 
-  --shadow-strong:0 18px 50px rgba(5,10,40,.7), 0 0 80px rgba(22,241,255,.07);
-  --shadow-soft:0 8px 22px rgba(5,10,40,.45);
+  /* контуры без синевы */
+  --border:rgba(255,255,255,.16);
+
+  /* тени без голубого неона */
+  --shadow-strong:0 18px 60px rgba(0,0,0,.78), 0 0 80px rgba(138,92,255,.08);
+  --shadow-soft:0 10px 28px rgba(0,0,0,.55);
 
   --radius:20px;
-  --tabbar-h: 84px;  /* дефолт, дальше пересчитаем JS-ом */
-    --rub-gap: 2px; /* <-- меняй это число: 0px вплотную, 1–3px чуть свободнее */
+  --tabbar-h: 84px;
+  --rub-gap: 2px;
 }
-
 
      *{box-sizing:border-box}
     html,body{height:100%;margin:0;font-family:'Inter',system-ui,Segoe UI,Roboto,Arial,sans-serif}
@@ -226,29 +228,34 @@ GD.ensureUid8 = function (tgId) {
 
     .tb-left{ display:flex; align-items:center; gap:12px; min-width:0; }
 
-    .tb-ava{
-      width:54px; height:54px;
-      border-radius:50%;
-      overflow:hidden;
-      position:relative;
-      flex:0 0 54px;
-      border:2px solid rgba(140,170,255,.22);
-      box-shadow:0 0 18px rgba(22,241,255,.10), 0 0 18px rgba(138,92,255,.08);
-      background:linear-gradient(135deg, rgba(22,241,255,.08), rgba(138,92,255,.10));
-    }
+.tb-ava{
+  width:54px; height:54px;
+  border-radius:50%;
+  overflow:hidden;
+  position:relative;
+  flex:0 0 54px;
+
+  border:2px solid rgba(255,255,255,.16);
+  box-shadow:0 0 18px rgba(138,92,255,.14);
+  background:linear-gradient(135deg, rgba(109,40,217,.14), rgba(138,92,255,.14));
+}
+
     .tb-ava .avatar{ width:100%; height:100%; border-radius:50%; border:none; box-shadow:none; object-fit:cover; background:transparent; }
     .tb-ava .avatar.hidden{ display:none; }
-    .tb-ava .avatar-fallback{
-      position:absolute; inset:0;
-      border-radius:50%;
-      display:grid; place-items:center;
-      background:linear-gradient(135deg, rgba(22,241,255,.18), rgba(138,92,255,.18));
-      border:none;
-      font-weight:900;
-      letter-spacing:.5px;
-      color:#e8efff;
-      text-shadow:0 0 12px rgba(22,241,255,.35);
-    }
+.tb-ava .avatar-fallback{
+  position:absolute; inset:0;
+  border-radius:50%;
+  display:grid; place-items:center;
+
+  background:linear-gradient(135deg, rgba(109,40,217,.20), rgba(138,92,255,.20));
+  border:none;
+
+  font-weight:900;
+  letter-spacing:.5px;
+  color:#e8efff;
+
+  text-shadow:0 0 12px rgba(255,255,255,.12);
+}
 
     .tb-text{ display:flex; flex-direction:column; gap:4px; min-width:0; line-height:1.05; }
     .tb-name{
@@ -295,20 +302,21 @@ GD.ensureUid8 = function (tgId) {
     .avatar.hidden{ display:none; }
     .avatar-fallback{ width:42px; height:42px; border-radius:12px; display:grid; place-items:center; background:linear-gradient(135deg, rgba(22,241,255,.18), rgba(255,62,208,.18)); border:1px solid var(--border); font-weight:900; letter-spacing:.5px; color:#081121; text-shadow:0 0 12px rgba(22,241,255,.7); }
     .brand{position:relative; font-weight:900; line-height:1; letter-spacing:1px}
-    .brand .glitch{ font-size:22px; color:#cfe6ff; position:relative; display:inline-block; text-shadow:0 0 24px rgba(22,241,255,.55), 0 0 24px rgba(255,62,208,.35); }
+   .brand .glitch{ font-size:22px; color:#eaf0ff; position:relative; display:inline-block; text-shadow:0 0 16px rgba(138,92,255,.18); }
+.brand .glitch::before{ transform:translateX(1px); color:var(--neon-cyan); opacity:.55; text-shadow:0 0 8px rgba(109,40,217,.22); animation:glitch 3s infinite ease-in-out;}
+.brand .glitch::after { transform:translateX(-1px); color:var(--neon-pink); opacity:.55; text-shadow:0 0 8px rgba(138,92,255,.22); animation:glitch 2.6s infinite ease-in-out reverse;}
     .brand .glitch::before,.brand .glitch::after{ content:attr(data-text); position:absolute; left:0; top:0; width:100%; overflow:hidden; }
-    .brand .glitch::before{ transform:translateX(1px); color:var(--neon-cyan); opacity:.9; text-shadow:0 0 10px rgba(22,241,255,.8); animation:glitch 3s infinite ease-in-out;}
-    .brand .glitch::after { transform:translateX(-1px); color:var(--neon-pink); opacity:.8; text-shadow:0 0 10px rgba(255,62,208,.8); animation:glitch 2.6s infinite ease-in-out reverse;}
     @keyframes glitch{ 0%,100%{clip-path:inset(0 0 0 0)} 10%{clip-path:inset(0 0 65% 0)} 20%{clip-path:inset(0 0 0 0)} 30%{clip-path:inset(40% 0 0 0)} 45%{clip-path:inset(0 0 0 0)} 60%{clip-path:inset(0 0 75% 0)} 80%{clip-path:inset(20% 0 10% 0)} }
     .grow{flex:1}
 
-    .pill{
-      display:flex; align-items:center; gap:10px; padding:8px 12px;
-      border-radius:999px; border:1px solid var(--border);
-      background:linear-gradient(135deg, rgba(22,241,255,.1), rgba(138,92,255,.12));
-      box-shadow:0 0 18px rgba(22,241,255,.12) inset;
-      font-weight:900; color:#cfe6ff;
-    }
+.pill{
+  display:flex; align-items:center; gap:10px; padding:8px 12px;
+  border-radius:999px; border:1px solid var(--border);
+  background:linear-gradient(135deg, rgba(109,40,217,.14), rgba(138,92,255,.14));
+  box-shadow: inset 0 0 18px rgba(255,255,255,.04);
+  font-weight:900; color:rgba(255,255,255,.82);
+}
+
     /* базовый размер иконок */
     .pill img{width:18px; height:18px; display:block; object-fit:cover; border-radius:4px}
     /* единый увеличенный размер для обеих пилюль */
@@ -490,8 +498,8 @@ GD.ensureUid8 = function (tgId) {
   border:1px solid rgba(255,255,255,.14);
 
   background:
-    radial-gradient(140px 100px at 20% 25%, rgba(22,241,255,.10), transparent 60%),
-    radial-gradient(140px 100px at 80% 80%, rgba(138,92,255,.10), transparent 60%),
+    radial-gradient(140px 100px at 20% 25%, rgba(109,40,217,.12), transparent 60%),
+    radial-gradient(140px 100px at 80% 80%, rgba(138,92,255,.12), transparent 60%),
     linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.26));
 
   box-shadow:
@@ -2215,7 +2223,9 @@ html.scroll-locked, html.scroll-locked body{
   max-width: 420px;
   border-radius: 999px;
   padding: 14px 18px;
-  border: 1px solid rgba(22,241,255,0.6);
+
+  border: 1px solid rgba(255,255,255,.20);
+
   font-weight: 900;
   font-size: 16px;
   letter-spacing: .8px;
@@ -2223,10 +2233,11 @@ html.scroll-locked, html.scroll-locked body{
   cursor: pointer;
 
   background: linear-gradient(135deg, var(--neon-cyan), var(--neon-pink));
-  color: #081121;
+  color: #fff;
+
   box-shadow:
-    0 12px 32px rgba(22,241,255,0.35),
-    0 0 40px rgba(255,62,208,0.25);
+    0 16px 40px rgba(0,0,0,.55),
+    0 0 34px rgba(138,92,255,.16);
   text-align: center;
 }
 
@@ -2449,23 +2460,23 @@ h2.section{
 }
 
 /* подпись над крутилкой */
+
 #app-loader .loader-sub{
   font-weight: 700;
   font-size: 14px;
-  color: #00a9ff;
-  opacity: .95;
+  color: var(--neon-pink);
+  opacity: .92;
   letter-spacing: .2px;
 }
 
-/* круглая загрузка */
 #app-loader .loader-spinner{
   width: 56px;
   height: 56px;
   border-radius: 999px;
-  border: 6px solid rgba(0,169,255,.20);
-  border-top-color: #00a9ff;
+  border: 6px solid rgba(138,92,255,.20);
+  border-top-color: var(--neon-pink);
   animation: loaderSpin .9s linear infinite;
-  box-shadow: 0 0 22px rgba(0,169,255,.22);
+  box-shadow: 0 0 22px rgba(138,92,255,.18);
 }
 
 @keyframes loaderSpin{
