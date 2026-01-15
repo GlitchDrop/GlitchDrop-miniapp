@@ -1820,23 +1820,39 @@ html.scroll-locked, html.scroll-locked body{
 #topupModal .topup-close{
   position:absolute; top:10px; right:10px;
   appearance:none;
-
   width:28px; height:28px; border-radius:10px;
   padding:0;
 
-  /* контур как у стрелок */
-  border:1px solid rgba(255,255,255,18);
+  /* как .topup-slider .nav */
+  border: 1px solid rgba(255,255,255,18);
   background: linear-gradient(180deg, rgba(74,74,74,88), rgba(24,24,24,84));
   box-shadow: 0 10px 26px rgba(0,0,0,55),
               inset 0 0 0 1px rgba(255,255,255,08),
               inset 0 0 18px rgba(255,255,255,04);
 
   cursor:pointer;
-  display:flex; align-items:center; justify-content:center;
 
-  /* убираем смещение символа и рисуем его идеально по центру */
+  /* центрируем крест */
+  display:grid;
+  place-items:center;
+
   font-size:0;
   color:#e8efff;
+}
+
+#topupModal .topup-close::before{
+  content:"✖";
+  font-size:18px;
+  line-height:1;
+}
+
+#topupModal .topup-close:hover{
+  background: linear-gradient(180deg, rgba(86,86,86,90), rgba(32,32,32,86));
+  border-color: rgba(255,255,255,28);
+}
+
+#topupModal .topup-close:active{
+  transform: translateY(1px);
 }
 
 #topupModal .topup-close::before{
