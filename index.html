@@ -1816,39 +1816,30 @@ html.scroll-locked, html.scroll-locked body{
   padding-right: 28px; /* место под крестик */
 }
 
-/* крестик */
+/* крестик — только в модалке "Выберите способ оплаты" */
 #topupModal .topup-close{
   position:absolute; top:10px; right:10px;
   appearance:none;
-  width:28px; height:28px; border-radius:10px;
+  width:38px; height:38px; border-radius:12px; /* как у стрелок */
   padding:0;
 
-  /* как .topup-slider .nav */
-  border: 1px solid rgba(255,255,255,18);
-  background: linear-gradient(180deg, rgba(74,74,74,88), rgba(24,24,24,84));
-  box-shadow: 0 10px 26px rgba(0,0,0,55),
-              inset 0 0 0 1px rgba(255,255,255,08),
-              inset 0 0 18px rgba(255,255,255,04);
+  border:1px solid var(--border); /* как у стрелок */
+  background:linear-gradient(135deg, rgba(15,20,48,92), rgba(12,16,38,92)); /* как у стрелок */
+  box-shadow: var(--shadow-soft); /* как у стрелок */
 
   cursor:pointer;
+  display:grid; place-items:center;
 
-  /* центрируем крест */
-  display:grid;
-  place-items:center;
-
-  font-size:0;
-  color:#e8efff;
+  /* фикс центровки символа */
+  font-size:0; line-height:0;
+  color:#e8efff; font-weight:900;
 }
 
 #topupModal .topup-close::before{
-  content:"✖";
-  font-size:18px;
+  content:"✕";
+  font-size:22px;
   line-height:1;
-}
-
-#topupModal .topup-close:hover{
-  background: linear-gradient(180deg, rgba(86,86,86,90), rgba(32,32,32,86));
-  border-color: rgba(255,255,255,28);
+  transform: translateY(-1px);
 }
 
 #topupModal .topup-close:active{
