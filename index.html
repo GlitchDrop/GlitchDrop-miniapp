@@ -3302,6 +3302,7 @@ h2.section{
 
 
 /* === Кнопка ПРОДАТЬ — текст по центру === */
+
 .inv-sell{
   position: absolute;
   left: 10px;
@@ -3327,6 +3328,12 @@ h2.section{
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.inv-sell.inv-sell--solo{
+  left: 50%;
+  width: calc(100% - 20px);
+  transform: translateX(-50%);
 }
 
 .inv-sell:active{
@@ -5933,13 +5940,17 @@ const list = window.INVENTORY || [];
 
   list.forEach((item, index)=>{
   const card = document.createElement('div');
+  const _src = normalizeSrc(item.img || FALLBACK_IMG);
+  const _isNFT = /NFT$/i.test(_src);
+  const _price = getSellPriceBySrc(_src);
+
   card.className = 'inventory-card';
   card.dataset.id = item.id;
   card.innerHTML = `
   <div class="inventory-card-number">№${index + 1}</div>
     <img src="${item.img || FALLBACK_IMG}" alt="предмет" loading="lazy" onerror="this.onerror=null;this.src='${FALLBACK_IMG}'">
-    <button type="button" class="inv-sell">ПРОДАТЬ</button>
-    <button type="button" class="inv-withdraw">Вывести</button>
+    <button type="button" class="inv-sell${_isNFT ? '' : ' inv-sell--solo'}">${_isNFT ? 'ПРОДАТЬ' : ('ПРОДАТЬ ЗА ' + _price + '₽')}</button>
+    ${_isNFT ? '<button type="button" class="inv-withdraw">Вывести</button>' : ''}
   `;
   grid.appendChild(card);
 
