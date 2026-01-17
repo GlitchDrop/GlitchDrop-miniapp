@@ -2421,51 +2421,49 @@ h2.section{
   display:flex;
   flex-direction:column;
   align-items:center;
-  gap:10px;
-  transform: translateY(-6px);
+  gap:8px;
+  transform: translateY(-8px);
 }
 
-/* картинка без вращения */
-#app-loader .loader-logo{
-  width: 118px;
-  height: auto;
-  max-height: 118px;
-  border-radius: 0;
-  object-fit: contain;
-  background: transparent;
-  box-shadow: none;
-  display:block;
+#app-loader .loader-spinner{
+  width: 64px;
+  height: 64px;
+  border-radius: 999px;
+  background: conic-gradient(
+    rgba(0,0,0,0) 0deg 44deg,
+    #b200ff 44deg 92deg,
+    rgba(235,235,244,.92) 92deg 360deg
+  );
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 6px), #000 calc(100% - 6px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 6px), #000 calc(100% - 6px));
+  animation: loaderSpin .9s linear infinite;
 }
 
-/* заголовок */
-#app-loader .loader-title{
-  margin-top: 4px;
-  font-weight: 900;
-  font-size: 30px;
-  line-height: 1.05;
-  color: #fff;
-  text-align:center;
-  letter-spacing: .2px;
+@supports not (background: conic-gradient(#000, #fff)){
+  #app-loader .loader-spinner{
+    background: none;
+    border: 6px solid rgba(235,235,244,.92);
+    border-right-color: #b200ff;
+  }
 }
 
-/* подпись над крутилкой */
 #app-loader .loader-sub{
   font-weight: 700;
   font-size: 14px;
-  color: #00a9ff;
-  opacity: .95;
+  color: #b200ff;
   letter-spacing: .2px;
 }
 
-/* круглая загрузка */
-#app-loader .loader-spinner{
-  width: 56px;
-  height: 56px;
-  border-radius: 999px;
-  border: 6px solid rgba(0,169,255,.20);
-  border-top-color: #00a9ff;
-  animation: loaderSpin .9s linear infinite;
-  box-shadow: 0 0 22px rgba(0,169,255,.22);
+#app-loader .loader-brand{
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 26px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 12px;
+  color: rgba(255,255,255,.35);
+  letter-spacing: .2px;
 }
 
 @keyframes loaderSpin{
@@ -3765,11 +3763,10 @@ if (addr) {
 <!-- APP LOADER OVERLAY -->
 <div id="app-loader" aria-live="polite">
   <div class="loader-card">
-    <img class="loader-logo" src="assets/images/20260106_2138_Объёмная неоновая сфера_remix_01kea9hvjwerkssk54mgxchbkt.png" alt="Loading" />
-    <div class="loader-title">Glitch Drop Loading</div>
-    <div class="loader-sub">Загрузка.......</div>
     <div class="loader-spinner" aria-hidden="true"></div>
+    <div class="loader-sub">Loading...</div>
   </div>
+  <div class="loader-brand">Glitch Drop</div>
 </div>
 
   <div class="cyber-bg"></div>
