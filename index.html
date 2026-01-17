@@ -2421,30 +2421,41 @@ h2.section{
   display:flex;
   flex-direction:column;
   align-items:center;
-  gap:8px;
+  gap:10px;
   transform: translateY(-8px);
 }
 
 #app-loader .loader-spinner{
-  width: 64px;
-  height: 64px;
-  border-radius: 999px;
-  background: conic-gradient(
-    rgba(0,0,0,0) 0deg 44deg,
-    #b200ff 44deg 92deg,
-    rgba(235,235,244,.92) 92deg 360deg
-  );
-  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 6px), #000 calc(100% - 6px));
-  mask: radial-gradient(farthest-side, transparent calc(100% - 6px), #000 calc(100% - 6px));
-  animation: loaderSpin .9s linear infinite;
+  width: 96px;
+  height: 96px;
+  display:grid;
+  place-items:center;
 }
 
-@supports not (background: conic-gradient(#000, #fff)){
-  #app-loader .loader-spinner{
-    background: none;
-    border: 6px solid rgba(235,235,244,.92);
-    border-right-color: #b200ff;
-  }
+#app-loader .spinner-svg{
+  width:100%;
+  height:100%;
+  animation: loaderSpin 1.05s linear infinite;
+}
+
+#app-loader .spinner-arc{
+  fill: none;
+  stroke-width: 9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  shape-rendering: geometricPrecision;
+}
+
+#app-loader .spinner-arc--white{
+  stroke: rgba(235,235,244,.92);
+  stroke-dasharray: 78 22;
+  stroke-dashoffset: 0;
+}
+
+#app-loader .spinner-arc--purple{
+  stroke: #b200ff;
+  stroke-dasharray: 10 90;
+  stroke-dashoffset: -85;
 }
 
 #app-loader .loader-sub{
@@ -2467,7 +2478,8 @@ h2.section{
 }
 
 @keyframes loaderSpin{
-  to{ transform: rotate(360deg); }
+  from{ transform: rotate(-10deg); }
+  to{ transform: rotate(350deg); }
 }
 
 /* плавное исчезновение */
@@ -3763,7 +3775,12 @@ if (addr) {
 <!-- APP LOADER OVERLAY -->
 <div id="app-loader" aria-live="polite">
   <div class="loader-card">
-    <div class="loader-spinner" aria-hidden="true"></div>
+    <div class="loader-spinner" aria-hidden="true">
+      <svg class="spinner-svg" viewBox="0 0 100 100">
+        <circle class="spinner-arc spinner-arc--white" cx="50" cy="50" r="38" pathLength="100"></circle>
+        <circle class="spinner-arc spinner-arc--purple" cx="50" cy="50" r="38" pathLength="100"></circle>
+      </svg>
+    </div>
     <div class="loader-sub">Loading...</div>
   </div>
   <div class="loader-brand">Glitch Drop</div>
