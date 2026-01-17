@@ -588,49 +588,36 @@ GD.ensureUid8 = function (tgId) {
 /* в браузере скрываем цену как раньше */
 html:not(.in-telegram) .card .price-pill{ display:none; }
 
-/* ===== TABBAR (SVG фон с ВЫРЕЗОМ как на макете) ===== */
+/* ===== TABBAR (как на скрине: стекло + активный поднятый сегмент) ===== */
 .tabbar{
-  --lift: 34px;        /* насколько кнопка CASE торчит вверх */
-  --btn: 80px;         /* диаметр круглой кнопки CASE (меньше дырки) */
-
   position: fixed;
   left: 50%;
-  bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  bottom: 10px;
   transform: translateX(-50%);
   z-index: 80;
 
-  width: min(calc(100% - 24px), 420px);
+  width: min(calc(100% - 24px), 720px);
 
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
   gap: 0;
+  padding: 8px 10px;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 8px);
 
-  padding: 0 18px 12px;
+  border-radius: 30px;
+  background: linear-gradient(180deg, rgba(16,16,18,.68), rgba(8,8,10,.78));
+  border: 1px solid rgba(255,255,255,.18);
 
-  background: transparent;
-  border: none;
-  overflow: visible;
-  isolation: isolate;
+  backdrop-filter: blur(18px) saturate(1.25);
+  -webkit-backdrop-filter: blur(18px) saturate(1.25);
+
+  box-shadow:
+    0 18px 60px rgba(0,0,0,.75),
+    inset 0 1px 0 rgba(255,255,255,.08);
 }
 
-.tabbar .tabbar-bg{
-  position:absolute;
-  left:0;
-  right:0;
-  bottom:-2px;
-  top: calc(-1 * var(--lift));
-  width:100%;
-  height: calc(100% + var(--lift) + 2px);
-  z-index: 0;
-  pointer-events:none;
-  overflow: visible;
-}
-
-.tabbar .tab{
+.tab{
   flex: 1;
   position: relative;
-  z-index: 2;
 
   appearance: none;
   border: none;
@@ -639,94 +626,139 @@ html:not(.in-telegram) .card .price-pill{ display:none; }
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
-  gap: 6px;
+  justify-content: center;
+  gap: 5px;
 
-  padding: 0 6px 0;
-  color: rgba(255,255,255,.98);
+  padding: 8px 6px 6px;
+  border-radius: 18px;
+
+  color: rgba(255,255,255,.62);
+  font-size: 11.5px;
+  font-weight: 900;
+  letter-spacing: .25px;
+  line-height: 1.05;
 
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 
-  transition: filter .18s ease;
+  transition: transform .18s ease, color .18s ease, background .18s ease, box-shadow .18s ease, border-color .18s ease;
 }
 
-.tabbar .tab.active{
-  filter: brightness(.92);
-}
+/* разделители убраны */
+.tab:not(:last-child)::after{ display:none; }
 
-.tabbar .ico{
-  width: 48px;
-  height: 48px;
-  display:grid;
-  place-items:center;
-}
+/* иконка (монохром) */
+.ico{
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
 
-.tabbar .tab svg{
-  width: 40px;
-  height: 40px;
-  display:block;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 3.2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  filter: drop-shadow(0 10px 14px rgba(0,0,0,.22));
-}
-
-.tabbar .tab-label{
-  font-weight: 900;
-  font-size: 12.5px;
-  line-height: 1;
-  letter-spacing: .35px;
-  text-shadow: 0 10px 16px rgba(0,0,0,.25);
-}
-
-/* центральная кнопка */
-.tabbar .tab--center{
-  flex: 0 0 160px;
-  z-index: 3;
-}
-
-.tabbar .tab--center .ico{
-  width: var(--btn);
-  height: var(--btn);
-  border-radius: 999px;
   position: relative;
+  overflow: visible;
+  isolation: isolate;
 
-  background:
-    radial-gradient(120% 120% at 30% 20%, rgba(255,255,255,.22), rgba(255,255,255,0) 55%),
-    linear-gradient(180deg, rgba(255,255,255,.14), rgba(0,0,0,.14));
-
-  box-shadow:
-    0 22px 38px rgba(0,0,0,.45),
-    inset 0 3px 0 rgba(255,255,255,.28),
-    inset 0 -18px 26px rgba(0,0,0,.22);
-
-  transform: translateY(calc(-1 * var(--lift)));
+  background: rgba(255,255,255,.025);
+  border: 1px solid rgba(255,255,255,.12);
+  box-shadow: inset 0 0 16px rgba(255,255,255,.03);
 }
 
-/* кольцо вокруг кнопки */
-.tabbar .tab--center .ico::before{
+/* мягкое “расплывающееся” свечение, без обрубания */
+.ico::before{
   content:"";
   position:absolute;
-  inset:-7px;
-  border-radius:999px;
-  border: 3px solid rgba(255,255,255,.22);
+  inset:-16px;
+  border-radius: 22px;
+  background: radial-gradient(60% 60% at 50% 35%, rgba(255,255,255,.22), rgba(255,255,255,0) 70%);
+  filter: blur(10px);
+  opacity: .45;
+  pointer-events:none;
+  z-index: 0;
+}
+
+.ico > svg,
+.ico > img{
+  position: relative;
+  z-index: 1;
+}
+
+.ico svg,
+.ico img{
+  width: 20px;
+  height: 20px;
+  display:block;
+  filter: drop-shadow(0 0 6px rgba(255,255,255,.12));
+}
+
+.ico svg{
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.ico img{
+  object-fit: contain;
+}
+
+.tab-label{
+  opacity: .9;
+}
+
+/* hover — очень мягко */
+.tab:hover{
+  color: rgba(255,255,255,.82);
+}
+
+/* ACTIVE — поднятый “пилюльный” сегмент */
+.tab.active{
+  z-index: 2;
+  color: #fff;
+
+  background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.05));
+  border: 1px solid rgba(255,255,255,.34);
+
   box-shadow:
-    0 14px 26px rgba(0,0,0,.35),
-    inset 0 3px 0 rgba(255,255,255,.18);
+    0 16px 40px rgba(0,0,0,.70),
+    0 0 26px rgba(255,255,255,.10);
+
+  transform: translateY(-8px);
+}
+
+/* glow сверху, чтобы выглядело “выпукло” */
+.tab.active::before{
+  content:"";
+  position:absolute;
+  left: 6px;
+  right: 6px;
+  top: -2px;
+  height: 40px;
+  border-radius: 999px;
+  background: radial-gradient(75% 160% at 50% 0%, rgba(255,255,255,.30), rgba(255,255,255,0) 72%);
+  filter: blur(9px);
+  opacity: .95;
   pointer-events:none;
 }
 
-.tabbar .tab--center svg{
-  width: 44px;
-  height: 44px;
-  stroke-width: 3.4;
+.tab.active .ico{
+  background: rgba(0,0,0,.12);
+  border-color: rgba(255,255,255,.48);
+  box-shadow:
+    0 0 28px rgba(255,255,255,.22),
+    0 0 56px rgba(255,255,255,.10),
+    inset 0 0 22px rgba(255,255,255,.06);
+}
+.tab.active .ico::before{
+  opacity: .78;
 }
 
-.tabbar .tab--center .tab-label{
-  letter-spacing: .6px;
+.tab:focus-visible{
+  outline: none;
+  box-shadow:
+    0 0 0 2px rgba(255,255,255,.18),
+    0 18px 60px rgba(0,0,0,.75);
 }
 
     .backtop{
@@ -3840,118 +3872,67 @@ if (addr) {
 </div>
 
 <nav class="tabbar" aria-label="Навигация">
-  <svg class="tabbar-bg" viewBox="0 0 420 130" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <linearGradient id="tbGrad" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%"  stop-color="#d86cff"/>
-        <stop offset="55%" stop-color="#b245ff"/>
-        <stop offset="100%" stop-color="#8f2bff"/>
-      </linearGradient>
-
-      <linearGradient id="tbShine" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="rgba(255,255,255,.55)"/>
-        <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
-      </linearGradient>
-
-      <filter id="tbShadow" x="-60" y="-60" width="540" height="260" filterUnits="userSpaceOnUse">
-        <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#000" flood-opacity=".55"/>
-        <feDropShadow dx="0" dy="6"  stdDeviation="8"  flood-color="#000" flood-opacity=".28"/>
-      </filter>
-
-      <clipPath id="tbTopClip">
-        <rect x="0" y="0" width="420" height="78"/>
-      </clipPath>
-    </defs>
-
-    <g filter="url(#tbShadow)">
-      <!-- shape with cut-out (evenodd) -->
-      <path fill="url(#tbGrad)" fill-rule="evenodd" d="
-        M47 46
-        H373
-        A37 37 0 0 1 410 83
-        A37 37 0 0 1 373 120
-        H47
-        A37 37 0 0 1 10 83
-        A37 37 0 0 1 47 46
-        Z
-        M256 46
-        A46 46 0 1 0 164 46
-        A46 46 0 1 0 256 46
-        Z
-      "/>
-
-      <!-- border (outer + hole edge) -->
-      <path fill="none" stroke="rgba(255,255,255,.28)" stroke-width="2" fill-rule="evenodd" d="
-        M47 46
-        H373
-        A37 37 0 0 1 410 83
-        A37 37 0 0 1 373 120
-        H47
-        A37 37 0 0 1 10 83
-        A37 37 0 0 1 47 46
-        Z
-        M256 46
-        A46 46 0 1 0 164 46
-        A46 46 0 1 0 256 46
-        Z
-      "/>
-
-      <!-- top shine -->
-      <path clip-path="url(#tbTopClip)" fill="url(#tbShine)" opacity=".55" fill-rule="evenodd" d="
-        M47 46
-        H373
-        A37 37 0 0 1 410 83
-        A37 37 0 0 1 373 120
-        H47
-        A37 37 0 0 1 10 83
-        A37 37 0 0 1 47 46
-        Z
-        M256 46
-        A46 46 0 1 0 164 46
-        A46 46 0 1 0 256 46
-        Z
-      "/>
-
-      <!-- extra ring highlight around the hole -->
-      <circle cx="210" cy="46" r="46" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="4"/>
-      <circle cx="210" cy="46" r="46" fill="none" stroke="rgba(0,0,0,.25)" stroke-width="2" opacity=".7"/>
-    </g>
-  </svg>
+  <button class="tab" type="button" data-tab="contests">
+    <span class="ico" aria-hidden="true">
+      <!-- trophy -->
+      <svg viewBox="0 0 24 24">
+        <path d="M8 4h8v3a4 4 0 0 1-8 0V4Z"></path>
+        <path d="M6 5H4v1a4 4 0 0 0 4 4"></path>
+        <path d="M18 10a4 4 0 0 0 4-4V5h-2"></path>
+        <path d="M12 14v3"></path>
+        <path d="M9 21h6"></path>
+      </svg>
+    </span>
+    <span class="tab-label">Конкурсы</span>
+  </button>
 
   <button class="tab" type="button" data-tab="pass">
     <span class="ico" aria-hidden="true">
-      <!-- gift -->
+      <!-- ticket -->
       <svg viewBox="0 0 24 24">
-        <path d="M20 12v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-9"></path>
-        <path d="M2 7h20v5H2V7Z"></path>
-        <path d="M12 7v16"></path>
-        <path d="M12 7c-1.8 0-3.5-.7-4.6-1.8C6.2 4 6.5 2.7 7.6 2.2c1.5-.7 3.6.3 4.4 2.1L12 7Z"></path>
-        <path d="M12 7c1.8 0 3.5-.7 4.6-1.8C17.8 4 17.5 2.7 16.4 2.2c-1.5-.7-3.6.3-4.4 2.1L12 7Z"></path>
+        <path d="M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2a2 2 0 0 0 0 6v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-6V7Z"></path>
+        <path d="M12 7v10" stroke-dasharray="2 2"></path>
       </svg>
     </span>
-    <span class="tab-label">Pass</span>
+    <span class="tab-label">Пропуск</span>
   </button>
 
-  <button class="tab tab--center active" type="button" data-tab="cases">
+  <button class="tab active" type="button" data-tab="cases">
     <span class="ico" aria-hidden="true">
-      <!-- home -->
+      <!-- box -->
       <svg viewBox="0 0 24 24">
-        <path d="M3 11.5 12 4l9 7.5"></path>
-        <path d="M6.5 10.5V20h11V10.5"></path>
+        <path d="M3 7l9-4 9 4-9 4-9-4Z"></path>
+        <path d="M3 7v10l9 4 9-4V7"></path>
+        <path d="M12 11v10"></path>
       </svg>
     </span>
-    <span class="tab-label">CASE</span>
+    <span class="tab-label">Кейсы</span>
   </button>
 
   <button class="tab" type="button" data-tab="friends">
     <span class="ico" aria-hidden="true">
-      <!-- bubble + sparkle -->
+      <!-- users -->
       <svg viewBox="0 0 24 24">
-        <path d="M12 20.5c4.97 0 9-3.07 9-6.86S16.97 6.8 12 6.8 3 9.85 3 13.64c0 2.05 1.2 3.9 3.12 5.16L5.4 21l2.58-.96c1.24.3 2.6.46 4.02.46Z"></path>
-        <path d="M19 4.2l.45 1.2 1.2.45-1.2.45-.45 1.2-.45-1.2-1.2-.45 1.2-.45.45-1.2Z"></path>
+        <circle cx="8" cy="8" r="3"></circle>
+        <path d="M2 20a6 6 0 0 1 12 0"></path>
+        <circle cx="17" cy="9" r="2.5"></circle>
+        <path d="M14 20a5.5 5.5 0 0 1 8 0"></path>
       </svg>
     </span>
-    <span class="tab-label">Friends</span>
+    <span class="tab-label">Друзья</span>
+  </button>
+
+  <button class="tab" type="button" data-tab="inventory">
+    <span class="ico" aria-hidden="true">
+      <!-- backpack -->
+      <svg viewBox="0 0 24 24">
+        <path d="M8 7V6a4 4 0 0 1 8 0v1"></path>
+        <path d="M6 7h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Z"></path>
+        <path d="M8 13h8"></path>
+        <path d="M9 17h6"></path>
+      </svg>
+    </span>
+    <span class="tab-label">Инвентарь</span>
   </button>
 </nav>
 
@@ -5621,11 +5602,13 @@ const upgradesScreen = document.getElementById('upgradesScreen');
 
 const tabsAll = Array.from(document.querySelectorAll('.tabbar .tab'));
 
-const casesTab    = document.querySelector('.tabbar .tab[data-tab="cases"]');
-const profileTab  = document.querySelector('.tabbar .tab[data-tab="inventory"]');
-const friendsTab  = document.querySelector('.tabbar .tab[data-tab="friends"]');
-const contestsTab = document.querySelector('.tabbar .tab[data-tab="contests"]');
-const upgradesTab = document.querySelector('.tabbar .tab[data-tab="pass"]');
+const casesTab   = tabsAll.find(t => t.textContent.trim().includes('Кейсы'));
+const profileTab =
+  document.querySelector('.tabbar .tab[data-tab="inventory"]')
+  || tabsAll.find(t => /ИНВЕНТАРЬ|Профиль/i.test(t.textContent.trim()));
+const friendsTab = tabsAll.find(t => /Друзья/i.test(t.textContent.trim()));
+const contestsTab = tabsAll.find(t => /Конкурсы/i.test(t.textContent.trim()));
+const upgradesTab = tabsAll.find(t => /Пропуск/i.test(t.textContent.trim()));
 
 // ===== HAPTIC FEEDBACK (вибрация) =====
 function tabHaptic(){
