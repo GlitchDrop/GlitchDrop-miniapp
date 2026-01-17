@@ -2627,11 +2627,43 @@ h2.section{
 .switch input:checked + .slider{
   background: rgba(120,255,180,.45);
 }
+
 .switch input:checked + .slider:before{
   transform: translateX(20px);
 }
 
+/* settings tooltip (подсказка) */
+.settings-tip{
+  position: fixed;
+  left: 14px;
+  right: 14px;
+  bottom: 96px; /* над таббаром */
+  z-index: 10001;
+
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  box-shadow: 0 14px 34px rgba(0,0,0,.55);
+  backdrop-filter: blur(10px);
+
+  color: rgba(232,239,255,.92);
+  font-size: 13px;
+  line-height: 1.35;
+
+  opacity: 0;
+  transform: translateY(10px);
+  pointer-events: none;
+  transition: opacity .18s ease, transform .18s ease;
+}
+.settings-tip.show{
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
 /* ===== "Цена" в detail/baraбане: число + ₽ как у ценника ===== */
+
 #detailPrice{
   display: inline-flex;
   align-items: center;
@@ -3732,16 +3764,30 @@ h2.section{
         window.tonConnectUI.onStatusChange(function (wallet) {
           console.log('[TonConnect] status change:', wallet);
 
-          // ✅ сохраняем адрес после первой/любой успешной привязки
+// ✅ сохраняем адрес после привязки (если включено «Сохранение кошелька»)
           try {
             const addr = wallet?.account?.address;
-if (addr) {
-  const friendlyAddr = normalizeTonAddr(addr);
-  localStorage.setItem(window.TON_WALLET_LS_KEY, friendlyAddr);
-  if (typeof renderTonWalletLine === 'function') renderTonWalletLine();
-}
+            if (addr) {
+              const friendlyAddr = normalizeTonAddr(addr);
+              const key = window.TON_WALLET_LS_KEY;
+              // по умолчанию включено
+              const walletSaveOn = (function(){
+                try{
+                  const v = localStorage.getItem('gd_setting_wallet_save');
+                  return (v === null || v === '1' || v === 'true');
+                }catch(_){ return true; }
+              })();
+
+              if (walletSaveOn) {
+                localStorage.setItem(key, friendlyAddr);
+              } else {
+                localStorage.removeItem(key);
+              }
+
+              if (typeof renderTonWalletLine === 'function') renderTonWalletLine();
+            }
           } catch (e) {
-            console.warn('Не удалось сохранить TON-адрес', e);
+            console.warn('Не удалось обработать TON-адрес', e);
           }
 
           // Если кошелёк подключился и у нас есть ожидающее пополнение — отправляем транзакцию
@@ -3861,13 +3907,13 @@ if (addr) {
       </label>
     </div>
 
-    <div class="settings-row">
-      <div class="settings-label">Автоматическая продажа</div>
-      <label class="switch">
-        <input type="checkbox" id="toggleAutoSell" checked>
-        <span class="slider"></span>
-      </label>
-    </div>
+<div class="settings-row">
+  <div class="settings-label">Автоматическая продажа</div>
+  <label class="switch">
+    <input type="checkbox" id="toggleAutoSell">
+    <span class="slider"></span>
+  </label>
+</div>
   </div>
 </div>
 
@@ -4260,8 +4306,8 @@ const LOOT_SETS = { /* <-- твои массивы, оставляю как ес
     "assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png",
     "assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png"
   ],
-  cheap_2:["assets/images/снупп дог.png","assets/images/20251003_1635_Прозрачный фон_remix_01k6n4frmwe74ry17r7gszk6ef.png","assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png","assets/images/20251003_1629_Прозрачный фон_remix_01k6n43z74eq3ve8a9rcx44f02.png","assets/images/20251012_1000_Прозрачный фон_remix_01k7bkfcsqe3mts7q04f9z6xgq.png","assets/images/20251003_1632_Прозрачный фон_remix_01k6n49ebnfssrvwq0605g9bkx.png","assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png","assets/images/20251008_1905_Прозрачный фон_remix_01k72913cgfyy90e2abb8t2dft.png","assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png","assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png","assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png"],
-  cheap_3:["assets/images/kniga.png","assets/images/klever.NFT","assets/images/20251003_1635_Прозрачный фон_remix_01k6n4frmwe74ry17r7gszk6ef.png","assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png","assets/images/20251003_1629_Прозрачный фон_remix_01k6n43z74eq3ve8a9rcx44f02.png","assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png","assets/images/20251008_1905_Прозрачный фон_remix_01k72913cgfyy90e2abb8t2dft.png","assets/images/20251003_1621_Прозрачный фон_remix_01k6n3p2hwf4fbk1r0rqbvdc5d.png","assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png","assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png","assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png"],
+  cheap_2:["assets/images/снупп дог.NFT","assets/images/20251003_1635_Прозрачный фон_remix_01k6n4frmwe74ry17r7gszk6ef.png","assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png","assets/images/20251003_1629_Прозрачный фон_remix_01k6n43z74eq3ve8a9rcx44f02.png","assets/images/20251012_1000_Прозрачный фон_remix_01k7bkfcsqe3mts7q04f9z6xgq.png","assets/images/20251003_1632_Прозрачный фон_remix_01k6n49ebnfssrvwq0605g9bkx.png","assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png","assets/images/20251008_1905_Прозрачный фон_remix_01k72913cgfyy90e2abb8t2dft.png","assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png","assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png","assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png"],
+  cheap_3:["assets/images/kniga.NFT","assets/images/klever.NFT","assets/images/20251003_1635_Прозрачный фон_remix_01k6n4frmwe74ry17r7gszk6ef.png","assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png","assets/images/20251003_1629_Прозрачный фон_remix_01k6n43z74eq3ve8a9rcx44f02.png","assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png","assets/images/20251008_1905_Прозрачный фон_remix_01k72913cgfyy90e2abb8t2dft.png","assets/images/20251003_1621_Прозрачный фон_remix_01k6n3p2hwf4fbk1r0rqbvdc5d.png","assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png","assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png","assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png"],
   cheap_4:["","","","","","","","","","",""],
   nft_1:["","","","","","","","","","",""],
   nft_2:["","","","","","","","","","",""],
@@ -4880,6 +4926,15 @@ let _lastFocus = null;
 let _modalOpen = false;
 
 function openDropModal(imgSrc){
+  // ✅ Автоматическая продажа: сразу продаём и НЕ показываем модалку
+  if (typeof isAutoSellEnabled === 'function' && isAutoSellEnabled()){
+    const src = normalizeSrc(imgSrc || FALLBACK_IMG);
+    window._lastDropImgSrc = src;
+    const price = getSellPriceBySrc(src);
+    try { setStarsBalance(getStarsBalance() + price); } catch(e) {}
+    return;
+  }
+
   if (!dropModal) return;
   _lastFocus = document.activeElement;
 
@@ -5610,8 +5665,90 @@ const friendsTab = tabsAll.find(t => /Друзья/i.test(t.textContent.trim()))
 const contestsTab = tabsAll.find(t => /Конкурсы/i.test(t.textContent.trim()));
 const upgradesTab = tabsAll.find(t => /Пропуск/i.test(t.textContent.trim()));
 
-// ===== HAPTIC FEEDBACK (вибрация) =====
+// ===== SETTINGS: toggles + persistent state =====
+const LS_SET_VIBRATION   = 'gd_setting_vibration';      // '1'|'0'
+const LS_SET_WALLET_SAVE = 'gd_setting_wallet_save';    // '1'|'0'
+const LS_SET_AUTO_SELL   = 'gd_setting_auto_sell';      // '1'|'0'
+
+function _lsBool(key, def){
+  try{
+    const v = localStorage.getItem(key);
+    if (v === null || v === undefined) return !!def;
+    return v === '1' || v === 'true';
+  }catch(e){
+    return !!def;
+  }
+}
+function _lsSetBool(key, on){
+  try{ localStorage.setItem(key, on ? '1' : '0'); }catch(e){}
+}
+
+function isVibrationEnabled(){ return _lsBool(LS_SET_VIBRATION, true); }
+function isWalletSaveEnabled(){ return _lsBool(LS_SET_WALLET_SAVE, true); }
+function isAutoSellEnabled(){ return _lsBool(LS_SET_AUTO_SELL, false); }
+
+function ensureDefaultSettings(){
+  try{
+    if (localStorage.getItem(LS_SET_VIBRATION)   === null) localStorage.setItem(LS_SET_VIBRATION, '1');
+    if (localStorage.getItem(LS_SET_WALLET_SAVE) === null) localStorage.setItem(LS_SET_WALLET_SAVE, '1');
+    if (localStorage.getItem(LS_SET_AUTO_SELL)   === null) localStorage.setItem(LS_SET_AUTO_SELL, '0');
+  }catch(e){}
+}
+
+function showSettingsTip(html){
+  let tip = document.getElementById('settingsTip');
+  if (!tip){
+    tip = document.createElement('div');
+    tip.id = 'settingsTip';
+    tip.className = 'settings-tip';
+    tip.setAttribute('role','status');
+    tip.setAttribute('aria-live','polite');
+    document.body.appendChild(tip);
+    tip.addEventListener('click', ()=> tip.classList.remove('show'));
+  }
+  tip.innerHTML = html;
+  tip.classList.add('show');
+  clearTimeout(showSettingsTip._t);
+  showSettingsTip._t = setTimeout(()=> tip.classList.remove('show'), 3200);
+}
+
+// ===== HAPTIC FEEDBACK (вибрация) — учитывает настройку =====
+function patchHapticsOnce(){
+  if (patchHapticsOnce._done) return;
+  patchHapticsOnce._done = true;
+
+  // navigator.vibrate
+  try{
+    if (navigator && typeof navigator.vibrate === 'function'){
+      const orig = navigator.vibrate.bind(navigator);
+      navigator.vibrate = function(pattern){
+        if (!isVibrationEnabled()) return false;
+        try{ return orig(pattern); }catch(e){ return false; }
+      };
+    }
+  }catch(e){}
+
+  // Telegram WebApp HapticFeedback
+  try{
+    const hf = window.Telegram?.WebApp?.HapticFeedback;
+    if (hf){
+      ['impactOccurred','notificationOccurred','selectionChanged'].forEach(fn=>{
+        if (typeof hf[fn] !== 'function' || hf[fn]._gdWrapped) return;
+        const orig = hf[fn].bind(hf);
+        const wrapped = function(){
+          if (!isVibrationEnabled()) return;
+          return orig.apply(hf, arguments);
+        };
+        wrapped._gdWrapped = true;
+        hf[fn] = wrapped;
+      });
+    }
+  }catch(e){}
+}
+
 function tabHaptic(){
+  patchHapticsOnce();
+  if (!isVibrationEnabled()) return;
   try{
     if (window.Telegram?.WebApp?.HapticFeedback?.impactOccurred){
       window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
@@ -5619,6 +5756,68 @@ function tabHaptic(){
     }
   }catch(e){}
   if (navigator.vibrate) navigator.vibrate(18);
+}
+
+function initSettingsToggles(){
+  if (initSettingsToggles._done) return;
+  initSettingsToggles._done = true;
+
+  ensureDefaultSettings();
+  patchHapticsOnce();
+
+  const vib = document.getElementById('toggleVibration');
+  const wal = document.getElementById('toggleWalletSave');
+  const as  = document.getElementById('toggleAutoSell');
+
+  if (vib){
+    vib.checked = isVibrationEnabled();
+    vib.addEventListener('change', ()=>{
+      const on = !!vib.checked;
+      _lsSetBool(LS_SET_VIBRATION, on);
+      showSettingsTip(on
+        ? 'Вибрация включена. Тактильные отклики при взаимодействии с интерфейсом будут работать (если поддерживаются устройством).'
+        : 'Отключая эту функцию, вы отключаете всю вибрацию при взаимодействии с интерфейсом.'
+      );
+      patchHapticsOnce();
+    });
+  }
+
+  if (wal){
+    wal.checked = isWalletSaveEnabled();
+    wal.addEventListener('change', async ()=>{
+      const on = !!wal.checked;
+      _lsSetBool(LS_SET_WALLET_SAVE, on);
+
+      showSettingsTip(on
+        ? 'Сохранение кошелька включено. Ваш крипто-кошелёк будет сохраняться в Glitch Drop и подставляться при следующем пополнении.'
+        : 'Отключая эту функцию, ваш крипто-кошелёк не будет сохраняться в Glitch Drop — вам придётся привязывать его при каждом пополнении.'
+      );
+
+      if (!on){
+        try{ localStorage.removeItem(window.TON_WALLET_LS_KEY || 'gd_ton_wallet_addr'); }catch(e){}
+        try{ await window.tonConnectUI?.disconnect(); }catch(e){}
+      }
+      try{ if (typeof renderTonWalletLine === 'function') renderTonWalletLine(); }catch(e){}
+    });
+  }
+
+  if (as){
+    as.checked = isAutoSellEnabled();
+    as.addEventListener('change', ()=>{
+      const on = !!as.checked;
+      _lsSetBool(LS_SET_AUTO_SELL, on);
+      showSettingsTip(on
+        ? '<b>ВНИМАНИЕ:</b> при включенной «Автоматической продаже» каждый выпавший подарок будет продан сразу после получения. Отмена и восстановление невозможны.'
+        : 'Автоматическая продажа отключена. Выпавшие подарки будут добавляться в инвентарь и показываться в окне получения.'
+      );
+    });
+  }
+}
+
+if (document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', initSettingsToggles, { once:true });
+} else {
+  initSettingsToggles();
 }
 
 // Делает таб активным визуально
@@ -7789,8 +7988,18 @@ async function handleTonSubmit() {
   // ✅ Ставим флаг ожидания оплаты
   window.tonTopupPending = true;
 
-  const savedAddr = localStorage.getItem(LS_TON_WALLET);
-  const hasLiveWallet = !!window.tonConnectUI?.wallet;
+  const walletSaveEnabled = (typeof isWalletSaveEnabled === 'function') ? isWalletSaveEnabled() : true;
+
+  let savedAddr = walletSaveEnabled ? localStorage.getItem(LS_TON_WALLET) : null;
+  let hasLiveWallet = walletSaveEnabled ? !!window.tonConnectUI?.wallet : false;
+
+  // Если «Сохранение кошелька» выключено — заставляем перепривязывать кошелёк каждый раз
+  if (!walletSaveEnabled) {
+    try { await window.tonConnectUI?.disconnect(); } catch(_){ }
+    try { localStorage.removeItem(LS_TON_WALLET); } catch(_){ }
+    savedAddr = null;
+    hasLiveWallet = false;
+  }
 
   // ✅ если кошелек уже привязан/есть сессия — сразу шлём транзакцию
   if (hasLiveWallet || savedAddr) {
@@ -7957,6 +8166,12 @@ function renderTonWalletLine(){
   const line = document.getElementById('tonWalletLine');
   const textEl = document.getElementById('tonWalletShort');
   if (!line || !textEl) return;
+
+  // если «Сохранение кошелька» выключено — не показываем строку
+  if (typeof isWalletSaveEnabled === 'function' && !isWalletSaveEnabled()){
+    line.style.display = 'none';
+    return;
+  }
 
   const addr = localStorage.getItem(LS_TON_WALLET);
   if (addr && currentPaymentMethod === 'ton'){
@@ -8416,8 +8631,14 @@ async function sendTonTopup() {
 
   } finally {
     window.tonTopupPending = false;
-    // ВАЖНО: НЕ дисконнектим сразу — Telegram Wallet часто падает из-за этого
-    // await window.tonConnectUI.disconnect();
+
+    // Если «Сохранение кошелька» выключено — не держим сессию и не сохраняем адрес
+    try{
+      if (typeof isWalletSaveEnabled === 'function' && !isWalletSaveEnabled()){
+        try { localStorage.removeItem(LS_TON_WALLET); } catch(_){ }
+        try { await window.tonConnectUI?.disconnect(); } catch(_){ }
+      }
+    }catch(_){ }
   }
 }
 
