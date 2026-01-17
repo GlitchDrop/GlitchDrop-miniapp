@@ -2955,6 +2955,25 @@ h2.section{
   opacity: .6;
 }
 
+/* ===== ADAPTIVE VIEWPORT (mobile) ===== */
+:root{
+  --vh: 1vh; /* fallback */
+  --vw: 1vw;
+}
+
+/* базовая высота приложения под реальные размеры экрана */
+html, body{
+  height: calc(var(--vh) * 100);
+}
+
+/* если где-то используется 100vh — переопределяем на --vh */
+.friends-wrap{
+  min-height: calc((var(--vh) * 100) - var(--tabbar-h, 84px) - 20px - env(safe-area-inset-bottom, 0px));
+}
+.contests-fixed{
+  min-height: calc((var(--vh) * 100) - var(--topbar-h, 0px) - var(--tabbar-h, 0px));
+}
+
   </style>
 
 <style>
@@ -3801,6 +3820,28 @@ h2.section{
       console.error('❌ Ошибка при инициализации TonConnectUI:', e);
     }
   });
+</script>
+
+<script>
+(function(){
+  function setRealViewportVars(){
+    var vh = window.innerHeight * 0.01;
+    var vw = window.innerWidth  * 0.01;
+    document.documentElement.style.setProperty('--vh', vh + 'px');
+    document.documentElement.style.setProperty('--vw', vw + 'px');
+  }
+
+  setRealViewportVars();
+  window.addEventListener('resize', setRealViewportVars);
+  window.addEventListener('orientationchange', setRealViewportVars);
+
+  try{
+    var tg = window.Telegram && window.Telegram.WebApp;
+    if (tg && typeof tg.onEvent === 'function'){
+      tg.onEvent('viewportChanged', setRealViewportVars);
+    }
+  }catch(e){}
+})();
 </script>
 
 </head>
