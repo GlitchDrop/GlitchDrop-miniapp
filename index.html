@@ -2405,71 +2405,62 @@ h2.section{
 }
 
 /* =========================
-   APP LOADER
+   APP LOADER (image reveal)
    ========================= */
 #app-loader{
   position: fixed;
   inset: 0;
   z-index: 99999;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   pointer-events: all;
-  background: #000;
+  background: #000; /* черный фон */
 }
 
-#app-loader .loader-card{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:10px;
-  transform: translateY(-6px);
+/* контейнер картинки */
+#app-loader .loader-art{
+  position: relative;
+  width: min(520px, 84vw);
+  transform: translateY(4px);
 }
 
-/* картинка без вращения */
-#app-loader .loader-logo{
-  width: 118px;
+#app-loader .loader-img{
+  width: 100%;
   height: auto;
-  max-height: 118px;
-  border-radius: 0;
+  display: block;
   object-fit: contain;
-  background: transparent;
-  box-shadow: none;
-  display:block;
 }
 
-/* заголовок */
-#app-loader .loader-title{
-  margin-top: 4px;
-  font-weight: 900;
-  font-size: 30px;
-  line-height: 1.05;
-  color: #fff;
-  text-align:center;
-  letter-spacing: .2px;
+/* еле видимая подложка */
+#app-loader .loader-img.base{
+  opacity: .18;
+  filter: brightness(1.25);
 }
 
-/* подпись над крутилкой */
-#app-loader .loader-sub{
-  font-weight: 700;
-  font-size: 14px;
-  color: #00a9ff;
-  opacity: .95;
-  letter-spacing: .2px;
+/* “прорисовка” снизу вверх */
+#app-loader .loader-fill{
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 0;
+  overflow: hidden;
+  animation: loaderFillUp 1.35s ease-in-out infinite;
 }
 
-/* круглая загрузка */
-#app-loader .loader-spinner{
-  width: 56px;
-  height: 56px;
-  border-radius: 999px;
-  border: 6px solid rgba(0,169,255,.20);
-  border-top-color: #00a9ff;
-  animation: loaderSpin .9s linear infinite;
-  box-shadow: 0 0 22px rgba(0,169,255,.22);
+#app-loader .loader-img.fill{
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
 
-@keyframes loaderSpin{
-  to{ transform: rotate(360deg); }
+@keyframes loaderFillUp{
+  0%   { height: 0; }
+  70%  { height: 100%; }
+  90%  { height: 100%; }
+  100% { height: 0; }
 }
 
 /* плавное исчезновение */
@@ -3817,11 +3808,11 @@ h2.section{
 
 <!-- APP LOADER OVERLAY -->
 <div id="app-loader" aria-live="polite">
-  <div class="loader-card">
-    <img class="loader-logo" src="assets/images/20260106_2138_Объёмная неоновая сфера_remix_01kea9hvjwerkssk54mgxchbkt.png" alt="Loading" />
-    <div class="loader-title">Glitch Drop Loading</div>
-    <div class="loader-sub">Загрузка.......</div>
-    <div class="loader-spinner" aria-hidden="true"></div>
+  <div class="loader-art" aria-hidden="true">
+    <img class="loader-img base" src="assets/images/20260117_1741_Image Generation_remix_01kf66dgt0e2qbb8m6ngnmn416.png" alt="">
+    <div class="loader-fill">
+      <img class="loader-img fill" src="assets/images/20260117_1741_Image Generation_remix_01kf66dgt0e2qbb8m6ngnmn416.png" alt="Loading">
+    </div>
   </div>
 </div>
 
