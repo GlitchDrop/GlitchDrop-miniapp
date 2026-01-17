@@ -422,47 +422,49 @@ GD.ensureUid8 = function (tgId) {
   padding-bottom: max(var(--tabbar-h,84px), env(safe-area-inset-bottom) + 16px);
 }
 
-/* ====== CARD кейса (обновлённый) ====== */
+/* ====== CARD кейса (GiftsBattle-style) ====== */
 .card{
   position:relative;
-  padding:12px;
+  padding:14px;
   overflow:hidden;
   cursor:pointer;
 
-  border-radius:26px;
-  border:1px solid rgba(255,255,255,.16);
+  border-radius:22px;
+  border:1px solid rgba(255,255,255,.10);
 
-  background:
-    radial-gradient(120% 85% at 18% -10%, rgba(255,255,255,.12), rgba(255,255,255,0) 55%),
-    radial-gradient(90% 70% at 80% 0%, rgba(138,92,255,.14), rgba(138,92,255,0) 62%),
-    linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.18));
+  background: linear-gradient(180deg, rgba(19,23,34,.92), rgba(12,14,20,.92));
 
   box-shadow:
-    0 22px 70px rgba(0,0,0,.72),
-    0 0 0 1px rgba(0,0,0,.35) inset,
-    inset 0 1px 0 rgba(255,255,255,.10),
-    inset 0 -18px 30px rgba(0,0,0,.30);
+    0 18px 50px rgba(0,0,0,.70),
+    inset 0 1px 0 rgba(255,255,255,.08);
 
-  transform:translateY(0) scale(1);
+  transform: translateY(0) scale(1);
   transition:
-    transform .14s ease,
-    box-shadow .14s ease,
-    border-color .14s ease,
-    background .14s ease;
+    transform .16s ease,
+    box-shadow .16s ease,
+    border-color .16s ease,
+    background .16s ease;
 }
+
+.card:hover{
+  border-color: rgba(79,150,255,.28);
+  box-shadow:
+    0 22px 64px rgba(0,0,0,.78),
+    0 0 0 1px rgba(79,150,255,.10) inset,
+    inset 0 1px 0 rgba(255,255,255,.10);
+}
+
+.card:active{ transform: translateY(1px) scale(.995); }
 
 /* пока палец на карточке — убираем transition, чтобы не “резинило” */
 .card.tilting{ transition:none !important; }
 
-/* глянец + “мульт” обводка */
 .card::before{
   content:"";
   position:absolute;
-  inset:-2px;
+  inset:0;
   border-radius:inherit;
-  background:
-    radial-gradient(70% 55% at 50% 0%, rgba(255,255,255,.14), rgba(255,255,255,0) 68%),
-    radial-gradient(70% 55% at 50% 110%, rgba(0,0,0,.22), rgba(0,0,0,0) 62%);
+  background: radial-gradient(80% 60% at 50% 0%, rgba(255,255,255,.10), rgba(255,255,255,0) 70%);
   pointer-events:none;
   z-index:0;
 }
@@ -471,7 +473,7 @@ GD.ensureUid8 = function (tgId) {
   position:absolute;
   inset:0;
   border-radius:inherit;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.10);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.55);
   pointer-events:none;
   z-index:0;
 }
@@ -481,96 +483,103 @@ GD.ensureUid8 = function (tgId) {
   z-index:1;
   display:flex;
   flex-direction:column;
-  gap:10px;
+  gap:12px;
 }
 
 .thumb{
-  height:200px;
+  aspect-ratio: 1 / 1;
   border-radius:18px;
-  border:1px solid rgba(255,255,255,.14);
+  border:1px solid rgba(255,255,255,.10);
 
-  background:
-    radial-gradient(140px 100px at 20% 25%, rgba(22,241,255,.10), transparent 60%),
-    radial-gradient(140px 100px at 80% 80%, rgba(138,92,255,.10), transparent 60%),
-    linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.26));
-
+  background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(0,0,0,.24));
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.10),
-    inset 0 -18px 28px rgba(0,0,0,.38);
+    inset 0 1px 0 rgba(255,255,255,.08),
+    inset 0 -18px 28px rgba(0,0,0,.40);
 
   overflow:hidden;
   position:relative;
   display:grid;
   place-items:center;
-  padding:0;
+  padding:14px;
 }
 
 .thumb img{
-  position:absolute;
-  inset:0;
+  position:static;
   width:100%;
   height:100%;
-  object-fit:cover;
+  object-fit:contain;
   display:block;
+  filter: drop-shadow(0 14px 30px rgba(0,0,0,.55));
 }
 
 .card-footer{
   position:relative;
   z-index:1;
-  margin-top:10px;
+  margin-top:12px;
 }
 
 .case-row{
   display:flex;
+  flex-direction:column;
   align-items:center;
-  justify-content:space-between;
+  justify-content:center;
   gap:10px;
 
-  padding:12px;
+  padding:14px;
   border-radius:18px;
 
-  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.16));
-  border:1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.10);
 
   box-shadow:
-    0 12px 28px rgba(0,0,0,.40),
-    inset 0 1px 0 rgba(255,255,255,.10);
+    0 12px 26px rgba(0,0,0,.40),
+    inset 0 1px 0 rgba(255,255,255,.08);
 }
 
 .case-name{
   font-weight:900;
   font-size:15px;
-  letter-spacing:.25px;
+  letter-spacing:.4px;
   color: rgba(255,255,255,.92);
-  text-transform:none;
+  text-transform:uppercase;
+  text-align:center;
+
+  max-width:100%;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
 }
 
-/* правая фиолетовая кнопка-цена */
+/* кнопка-цена (как аккуратная CTA снизу) */
 .price-pill{
   appearance:none;
   border:none;
   cursor:pointer;
 
+  width:100%;
   display:flex;
   align-items:center;
   justify-content:center;
   gap:8px;
 
-  min-width: 96px;
-  padding:10px 14px;
-  border-radius:999px;
+  padding:12px 14px;
+  border-radius:14px;
 
-  background: linear-gradient(180deg, rgba(157,118,255,.98), rgba(110,70,255,.98));
-  border:1px solid rgba(255,255,255,.20);
+  background: rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.14);
 
   box-shadow:
-    0 14px 30px rgba(0,0,0,.55),
-    inset 0 1px 0 rgba(255,255,255,.18),
-    inset 0 -12px 18px rgba(0,0,0,.22);
+    0 12px 24px rgba(0,0,0,.55),
+    inset 0 1px 0 rgba(255,255,255,.12);
 
   color:#fff;
   font-weight:900;
   letter-spacing:.3px;
+}
+
+.price-pill:hover{
+  background: rgba(79,150,255,.16);
+  border-color: rgba(79,150,255,.30);
 }
 
 .price-pill:active{ transform: translateY(1px); }
@@ -1439,36 +1448,30 @@ html.scroll-locked, html.scroll-locked body{
   overscroll-behavior: none; /* без резких пружин на iOS/Android */
 }
 
-/* ===== СЕТКА КАРТОЧЕК КЕЙСОВ ===== */
+/* ===== СЕТКА КАРТОЧЕК КЕЙСОВ (GiftsBattle-style) ===== */
 .grid{
   display: grid;
-  gap: 14px;
-  grid-template-columns: repeat(2, minmax(0, 1fr)); /* 2 колонки на мобиле */
-  align-items: start;
-
-  perspective: 900px;
-  perspective-origin: 50% 40%;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
 }
 
 @media (min-width: 560px){
-  .grid{ grid-template-columns: repeat(3, minmax(0,1fr)); } /* планшет */
+  .grid{ grid-template-columns: repeat(3, minmax(0,1fr)); }
 }
 @media (min-width: 960px){
-  .grid{ grid-template-columns: repeat(4, minmax(0,1fr)); } /* десктоп */
+  .grid{ grid-template-columns: repeat(4, minmax(0,1fr)); }
 }
 
-/* ===== ПРЕВЬЮ В КАРТОЧКЕ — фиксированная высота/пропорции ===== */
+/* ===== ПРЕВЬЮ В КАРТОЧКЕ — квадрат + contain ===== */
 .card .thumb{
-  /* вариант 1: фикс по высоте (как было) */
-  height: 160px !important;
-
-  /* вариант 2: если хочешь пропорции вместо фикс. высоты — раскомментируй: */
-  /* aspect-ratio: 16 / 9; height: auto !important; */
+  aspect-ratio: 1 / 1;
+  height: auto !important;
 }
 .card .thumb img{
   width: 100%;
   height: 100%;
-  object-fit: cover;   /* картинка заполняет рамку, не тянется по высоте */
+  object-fit: contain;
   display: block;
 }
 
@@ -4706,7 +4709,7 @@ sections.forEach(sec=>{
 
       <div class="card-footer">
         <div class="case-row">
-          <div class="case-name">case</div>
+          <div class="case-name">${sec.title.replace(' КЕЙСЫ','')} #${i+1}</div>
           <button type="button" class="card-open-btn price-pill">
             ${isFree ? giftIco : ''}
             <span class="price-pill-text">${isFree ? 'FREE' : cleanPrice}</span>
