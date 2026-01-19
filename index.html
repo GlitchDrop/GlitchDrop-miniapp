@@ -2974,6 +2974,88 @@ html, body{
   min-height: calc((var(--vh) * 100) - var(--topbar-h, 0px) - var(--tabbar-h, 0px));
 }
 
+/* ===== CASES BOARD (NEW UI) ===== */
+#chipbar{ display:none !important; }
+
+.cases-board{
+  margin: 0 0 16px;
+  padding: 14px;
+  border-radius: 22px;
+  background: #121212;
+  border: 1px solid #2a2a2a;
+  box-shadow: 0 14px 44px rgba(0,0,0,.55);
+}
+
+.cases-board-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.cases-balance{
+  display:flex;
+  align-items:flex-end;
+  gap:6px;
+}
+
+.cases-balance-num{
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: .5px;
+  color:#fff;
+  line-height:1;
+}
+
+.cases-balance-cur{
+  font-size: 30px;
+  font-weight: 400;
+  color:#fff;
+  line-height:1;
+}
+
+.cases-deposit-btn{
+  height: 42px;
+  padding: 0 16px;
+  border-radius: 14px;
+  background: #ffffff;
+  color: #000000;
+  font-size: 18px;
+  border: none;
+  box-shadow: 0 8px 24px rgba(0,0,0,.35);
+}
+.cases-deposit-btn:active{ transform: translateY(1px); }
+
+.cases-board-hero{
+  margin-top: 12px;
+  border-radius: 16px;
+  overflow:hidden;
+  background:#0b0b0b;
+  border:1px solid #2a2a2a;
+}
+.cases-board-hero-img{
+  width:100%;
+  height:140px;
+  object-fit:cover;
+  display:block;
+}
+
+.cases-board-actions{
+  margin-top: 12px;
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.cases-square{
+  width:59px;
+  height:59px;
+  border-radius:14px;
+  background:#242424;
+  border:2px solid #363636;
+}
+.cases-square:active{ transform: translateY(1px); }
+
   </style>
 
 <style>
@@ -4655,6 +4737,75 @@ function initCardTilt(card){
   }
 }
 
+// ====== CASES BOARD (NEW UI) ======
+const casesBoard = document.createElement('div');
+casesBoard.className = 'cases-board frame board-6f57c3075741';
+casesBoard.id = 'casesBoard';
+casesBoard.innerHTML = `
+  <div class="cases-board-top">
+    <div class="cases-balance">
+      <span id="casesBoardBalance" class="cases-balance-num">0</span>
+      <span class="cases-balance-cur">₽</span>
+    </div>
+
+    <button type="button" class="cases-deposit-btn" id="casesDepositBtn">DEPOSIT</button>
+  </div>
+
+  <div class="cases-board-hero">
+    <img class="cases-board-hero-img"
+         src="assets/images/20260119_1849_Image Generation_remix_01kfbf1jhfesmtkf0g5yhch3yd.png"
+         alt="">
+  </div>
+
+  <div class="cases-board-actions" aria-label="Быстрые переходы">
+    <button type="button" class="cases-square" data-scroll="#sec-free" aria-label="Free"></button>
+    <button type="button" class="cases-square" data-scroll="#sec-cheap" aria-label="Cheap"></button>
+    <button type="button" class="cases-square" data-scroll="#sec-nft" aria-label="NFT"></button>
+    <button type="button" class="cases-square" data-scroll="#sec-exclusive" aria-label="Exclusive"></button>
+  </div>
+`;
+content.appendChild(casesBoard);
+
+// контейнер для секций (чтобы фильтры не ломали порядок и не поднимали секцию выше борда)
+const casesList = document.createElement('div');
+casesList.className = 'cases-list';
+casesList.id = 'casesList';
+content.appendChild(casesList);
+
+// DEPOSIT => открыть модалку пополнения
+const depBtn = document.getElementById('casesDepositBtn');
+if (depBtn){
+  depBtn.addEventListener('click', (e)=>{
+    e.preventDefault();
+    e.stopPropagation();
+    try{ topupOpen(); }catch(_){}
+  });
+}
+
+// баланс в борде = баланс в topbar
+(function(){
+  const src = document.getElementById('rubBalance');
+  const dst = document.getElementById('casesBoardBalance');
+  if (!src || !dst) return;
+
+  const sync = ()=>{ dst.textContent = (src.textContent || '0').trim(); };
+  sync();
+
+  try{
+    new MutationObserver(sync).observe(src, { childList:true, characterData:true, subtree:true });
+  }catch(_){}
+})();
+
+// быстрые кнопки -> скролл к секциям
+casesBoard.addEventListener('click', (e)=>{
+  const b = e.target.closest('.cases-square');
+  if (!b) return;
+  const sel = b.dataset.scroll;
+  if (!sel) return;
+  const el = document.querySelector(sel);
+  if (el) el.scrollIntoView({ behavior:'smooth', block:'start' });
+});
+
 // ====== Рендер карточек ======
 sections.forEach(sec=>{
   // чип
@@ -4669,7 +4820,7 @@ sections.forEach(sec=>{
   h2.className = 'section';
   h2.id = `sec-${sec.id}`;
   h2.textContent = sec.title;
-  content.appendChild(h2);
+  casesList.appendChild(h2);
 
   // грид
   const grid = document.createElement('div');
@@ -4745,7 +4896,7 @@ sections.forEach(sec=>{
 
   }
 
-  content.appendChild(grid);
+  casesList.appendChild(grid);
 });
 
 // ====== Клик мимо карточки — снимаем выбор ======
