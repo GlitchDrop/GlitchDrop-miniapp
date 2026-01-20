@@ -2974,150 +2974,6 @@ html, body{
   min-height: calc((var(--vh) * 100) - var(--topbar-h, 0px) - var(--tabbar-h, 0px));
 }
 
-/* ===== CASES MOCK (100% вместо текущего интерфейса "Кейсы") ===== */
-body.cases-mock-active .topbar,
-body.cases-mock-active .tabbar,
-body.cases-mock-active #chipbar,
-body.cases-mock-active #backTop{
-  display:none !important;
-}
-
-body.cases-mock-active #content{
-  padding:0 !important;
-}
-
-/* экран */
-.cases-mock-screen{
-  height: calc(var(--vh, 1vh) * 100);
-  background:#000;
-  overflow:hidden;
-  position: relative;
-}
-
-/* HEADER */
-.cases-mock-header{
-  position: relative;
-  background:#000;
-  padding: calc(env(safe-area-inset-top, 0px) + 18px) 18px 0;
-}
-
-.cases-mock-header-row{
-  display:flex;
-  align-items:center;
-  gap:18px;
-}
-
-/* круг слева */
-.cases-mock-logo{
-  width:78px;
-  height:78px;
-  border-radius:999px;
-  border:4px solid #fff;
-  display:grid;
-  place-items:center;
-  color:#fff;
-}
-.cases-mock-logo svg{ width:44px; height:44px; display:block; }
-
-/* белая плашка баланса */
-.cases-mock-balance-pill{
-  flex: 1;
-  height:78px;
-  border-radius:26px;
-  background:#fff;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:0 16px;
-}
-.cases-mock-balance-text{
-  color:#000;
-  font-size:56px;
-  line-height:1;
-  font-weight:700;
-  letter-spacing:1px;
-  font-family: "Comic Sans MS","Bradley Hand","Marker Felt",cursive;
-}
-
-/* волна снизу хедера (в цвет серого тела) */
-.cases-mock-wave{
-  position:absolute;
-  left:0; right:0;
-  width:100%;
-  height:22px;
-}
-.cases-mock-wave--header{
-  bottom:-1px;
-}
-.cases-mock-wave--header path{ fill:#5b5b5b; }
-
-/* BODY */
-.cases-mock-body{
-  background:#5b5b5b;
-  height: calc(100% - 160px - 140px); /* footer + header (примерно как на скрине) */
-}
-
-/* FOOTER */
-.cases-mock-footer{
-  position:absolute;
-  left:0; right:0; bottom:0;
-  height:160px;
-  background:#000;
-}
-
-.cases-mock-wave--footer{
-  top:-21px;
-  height:22px;
-}
-.cases-mock-wave--footer path{ fill:#000; }
-
-/* три кнопки */
-.cases-mock-nav{
-  position:absolute;
-  left:0; right:0;
-  top:-72px;
-  display:flex;
-  align-items:flex-end;
-  justify-content:space-between;
-  padding: 0 22px;
-  box-sizing:border-box;
-}
-
-.cases-mock-btn{
-  appearance:none;
-  border:none;
-  background:#fff;
-  color:#111;
-  border-radius:999px;
-  display:grid;
-  place-items:center;
-  box-shadow: 0 14px 40px rgba(0,0,0,.55);
-}
-.cases-mock-btn svg{
-  width:54px;
-  height:54px;
-  display:block;
-  fill:none;
-  stroke: currentColor;
-  stroke-width: 2.6;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.cases-mock-btn--side{
-  width:126px;
-  height:126px;
-}
-
-.cases-mock-btn--center{
-  width:154px;
-  height:154px;
-  transform: translateY(10px);
-}
-
-.cases-mock-btn:active{ transform: scale(.985); }
-.cases-mock-btn--center:active{ transform: translateY(10px) scale(.985); }
-
   </style>
 
 <style>
@@ -6007,9 +5863,6 @@ if (document.readyState === 'loading'){
 function setActiveTab(tab){
   tabsAll.forEach(t => t.classList.remove('active'));
   tab?.classList.add('active');
-
-  // мок-интерфейс только на вкладке "Кейсы"
-  document.body.classList.toggle('cases-mock-active', tab === casesTab);
 }
 
 function hardCloseDetailAndModal(){
@@ -6030,97 +5883,31 @@ function hardCloseDetailAndModal(){
 }
 
 // Показать экран кейсов (текущая главная)
-
 function showCases(){
   hardCloseDetailAndModal();
-  cancelPromoEditing();
+cancelPromoEditing(); // если редактировал на вкладке "Друзья" — откатить черновик
 
-  contestsScreen.classList.add('hide');
+contestsScreen.classList.add('hide');
   contestsScreen.setAttribute('aria-hidden','true');
 
-  // в "Кейсах" старого UI не оставляем
-  chipbar.classList.add('hide');
-  chipbar.setAttribute('aria-hidden','true');
-  backTop.classList.add('hide');
+  chipbar.classList.remove('hide');
+  content.classList.remove('hide');
+  backTop.classList.remove('hide');
 
   profileScreen.classList.add('hide');
   profileScreen.setAttribute('aria-hidden','true');
 
   friendsScreen.classList.add('hide');
   friendsScreen.setAttribute('aria-hidden','true');
-
   upgradesScreen.classList.add('hide');
-  upgradesScreen.setAttribute('aria-hidden','true');
+upgradesScreen.setAttribute('aria-hidden','true');
 
-  content.classList.remove('hide');
-  content.setAttribute('aria-hidden','false');
 
   setActiveTab(casesTab);
-  renderCasesMockUI();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
+  restoreTopbarIfNeeded();
+  document.body.classList.remove('friends-active');
+  if (typeof syncTopbarOffset === 'function') syncTopbarOffset();
 
-function renderCasesMockUI(){
-  // можно оставить статично, но пусть берёт текущий баланс если есть
-  var bal = (document.getElementById('rubBalance')?.textContent || '16 500').trim();
-  if (!bal) bal = '16 500';
-
-  content.innerHTML = `
-    <div class="cases-mock-screen">
-      <div class="cases-mock-header">
-        <div class="cases-mock-header-row">
-          <div class="cases-mock-logo" aria-hidden="true">
-            <svg viewBox="0 0 64 64">
-              <path d="M32 6c7 0 12 6 12 13 0 6-4 10-9 12l-3 22h-6l3-22c-5-2-9-6-9-12C20 12 25 6 32 6Z" fill="currentColor"/>
-              <path d="M18 30h16" stroke="currentColor" stroke-width="6" stroke-linecap="round" fill="none"/>
-            </svg>
-          </div>
-
-          <div class="cases-mock-balance-pill">
-            <span class="cases-mock-balance-text">${bal}₽</span>
-          </div>
-        </div>
-
-        <svg class="cases-mock-wave cases-mock-wave--header" viewBox="0 0 100 12" preserveAspectRatio="none" aria-hidden="true">
-          <path d="M0,6 C10,2 20,10 30,6 C40,2 50,10 60,6 C70,2 80,10 90,6 C95,4 100,6 100,6 L100,12 L0,12 Z" />
-        </svg>
-      </div>
-
-      <div class="cases-mock-body"></div>
-
-      <div class="cases-mock-footer">
-        <svg class="cases-mock-wave cases-mock-wave--footer" viewBox="0 0 100 12" preserveAspectRatio="none" aria-hidden="true">
-          <path d="M0,6 C10,10 20,2 30,6 C40,10 50,2 60,6 C70,10 80,2 90,6 C95,8 100,6 100,6 L100,12 L0,12 Z" />
-        </svg>
-
-        <div class="cases-mock-nav">
-          <button type="button" class="cases-mock-btn cases-mock-btn--side" aria-label="Left">
-            <svg viewBox="0 0 24 24">
-              <path d="M12 2l9 5-9 5-9-5 9-5Z"/>
-              <path d="M3 7v10l9 5 9-5V7"/>
-              <path d="M12 12v10"/>
-            </svg>
-          </button>
-
-          <button type="button" class="cases-mock-btn cases-mock-btn--center" aria-label="Center">
-            <svg viewBox="0 0 24 24">
-              <path d="M12 2l9 5-9 5-9-5 9-5Z"/>
-              <path d="M3 7v10l9 5 9-5V7"/>
-              <path d="M12 12v10"/>
-            </svg>
-          </button>
-
-          <button type="button" class="cases-mock-btn cases-mock-btn--side" aria-label="Right">
-            <svg viewBox="0 0 24 24">
-              <path d="M12 2l9 5-9 5-9-5 9-5Z"/>
-              <path d="M3 7v10l9 5 9-5V7"/>
-              <path d="M12 12v10"/>
-            </svg>
-          </button>
-        </div>
-      </div>
-    </div>
-  `;
 }
 
 function showProfile(){
