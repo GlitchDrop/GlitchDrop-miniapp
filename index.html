@@ -3915,10 +3915,6 @@ html, body{
 <div class="hide" id="profileScreen" aria-hidden="true"></div>
 <!-- ПУСТОЙ ЭКРАН ДРУЗЕЙ -->
 <div class="hide" id="friendsScreen" aria-hidden="true"></div>
-
-<!-- ПУСТОЙ ЭКРАН КОНКУРСОВ -->
-<div class="hide" id="contestsScreen" aria-hidden="true"></div>
-
 <!-- ПУСТОЙ ЭКРАН ОБМЕНОВ -->
 <div class="hide" id="upgradesScreen" aria-hidden="true"></div>
 
@@ -3957,19 +3953,6 @@ html, body{
 </div>
 
 <nav class="tabbar" aria-label="Навигация">
-  <button class="tab" type="button" data-tab="contests">
-    <span class="ico" aria-hidden="true">
-      <!-- trophy -->
-      <svg viewBox="0 0 24 24">
-        <path d="M8 4h8v3a4 4 0 0 1-8 0V4Z"></path>
-        <path d="M6 5H4v1a4 4 0 0 0 4 4"></path>
-        <path d="M18 10a4 4 0 0 0 4-4V5h-2"></path>
-        <path d="M12 14v3"></path>
-        <path d="M9 21h6"></path>
-      </svg>
-    </span>
-    <span class="tab-label">Конкурсы</span>
-  </button>
 
   <button class="tab" type="button" data-tab="pass">
     <span class="ico" aria-hidden="true">
@@ -4513,18 +4496,6 @@ const sections = [
 ];
 
 const FALLBACK_IMG = "https://via.placeholder.com/512?text=%F0%9F%8E%81";
-
-/* ===== КОНКУРСЫ — данные, которые ты редактируешь =====
-   img: URL 1:1 картинки (любая пропорция, впишется в квадрат)
-   username: строка вида "@ChannelName"
-   link: (опционально) прямая ссылка; если пусто — сделаю https://t.me/<username без @>
-*/
-const CONTESTS_DATA = [
-  { img: "assets/images/contest1.png", username: "@podarkisliv", link: "" },
-  { img: "assets/images/contest2.png", username: "@Username2", link: "" },
-  { img: "assets/images/contest3.png", username: "@Username3", link: "" },
-  { img: "assets/images/contest4.png", username: "@Username4", link: "" },
-];
 
 
 // ====== DOM-ссылки ======
@@ -5690,7 +5661,6 @@ function addToInventory(imgSrc){
 // ===== Переключение между "Кейсы" и "Профиль" =====
 const profileScreen = document.getElementById('profileScreen');
 const friendsScreen  = document.getElementById('friendsScreen');
-const contestsScreen = document.getElementById('contestsScreen');
 const upgradesScreen = document.getElementById('upgradesScreen');
 
 
@@ -5701,7 +5671,6 @@ const profileTab =
   document.querySelector('.tabbar .tab[data-tab="inventory"]')
   || tabsAll.find(t => /ИНВЕНТАРЬ|Профиль/i.test(t.textContent.trim()));
 const friendsTab = tabsAll.find(t => /Друзья/i.test(t.textContent.trim()));
-const contestsTab = tabsAll.find(t => /Конкурсы/i.test(t.textContent.trim()));
 const upgradesTab = tabsAll.find(t => /Пропуск/i.test(t.textContent.trim()));
 
 // ===== SETTINGS: toggles + persistent state =====
@@ -5887,9 +5856,6 @@ function showCases(){
   hardCloseDetailAndModal();
 cancelPromoEditing(); // если редактировал на вкладке "Друзья" — откатить черновик
 
-contestsScreen.classList.add('hide');
-  contestsScreen.setAttribute('aria-hidden','true');
-
   chipbar.classList.remove('hide');
   content.classList.remove('hide');
   backTop.classList.remove('hide');
@@ -5913,9 +5879,6 @@ upgradesScreen.setAttribute('aria-hidden','true');
 function showProfile(){
   hardCloseDetailAndModal();
 cancelPromoEditing(); // если редактировал на вкладке "Друзья" — откатить черновик
-
-contestsScreen.classList.add('hide');
-  contestsScreen.setAttribute('aria-hidden','true');
 
   chipbar.classList.add('hide');
   content.classList.add('hide');
@@ -6162,12 +6125,10 @@ friendsScreen.innerHTML = `
 function showFriends(){
   hardCloseDetailAndModal();
 
-contestsScreen.classList.add('hide');
-  contestsScreen.setAttribute('aria-hidden','true');
-
   chipbar.classList.add('hide');
   content.classList.add('hide');
   backTop.classList.add('hide');
+
   profileScreen.classList.add('hide');
   profileScreen.setAttribute('aria-hidden','true');
   upgradesScreen.classList.add('hide');
@@ -6217,8 +6178,6 @@ function showUpgrades(){
 
   profileScreen.classList.add('hide');  profileScreen.setAttribute('aria-hidden','true');
   friendsScreen.classList.add('hide');  friendsScreen.setAttribute('aria-hidden','true');
-  contestsScreen.classList.add('hide'); contestsScreen.setAttribute('aria-hidden','true');
-
   // показать обмен
   upgradesScreen.classList.remove('hide');
   upgradesScreen.setAttribute('aria-hidden','false');
@@ -6231,11 +6190,6 @@ function showUpgrades(){
   document.body.classList.remove('friends-active');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-
-// === ПУСТОЙ РЕЖИМ ДЛЯ «КОНКУРСОВ» ===
-
-// true — показываем заглушку «Здесь пока что пусто»; false — обычный интерфейс
-GD.contestsEmpty = true;
 
 // ===== BATTLE PASS — НАЧИСЛЕНИЕ STARS + PERSIST + COOLDOWN 24H =====
 // ✅ МЕНЯЙ СУММЫ ТУТ:
@@ -6408,142 +6362,6 @@ function bpSyncClaimedUI(tl){
     btn.textContent = 'Получить';
     btn.classList.remove('cooldown');
   });
-}
-
-/** Переключить пустой режим конкурсов.
- * Примеры:
- *   GD.setContestsEmpty(false) // показать полноценный интерфейс
- *   GD.setContestsEmpty(true)  // снова показать заглушку
- */
-GD.setContestsEmpty = function(on){
-  GD.contestsEmpty = !!on;
-  // если вкладка уже открыта — перерисуем
-  const scr = document.getElementById('contestsScreen');
-  if (scr && !scr.classList.contains('hide')) {
-    renderContests();
-  }
-};
-
-function renderContests(){
-  const contestsScreen = document.getElementById('contestsScreen');
-  if (!contestsScreen) return;
-
-  // ——— ПУСТОЙ РЕЖИМ ———
-  if (GD.contestsEmpty){
-    // ——— ПУСТОЙ РЕЖИМ ———
-contestsScreen.innerHTML = `
-  <div class="contests-fixed">
-    <div class="contests-header">КОНКУРСЫ</div>
-
-    <div class="inventory-empty">ЗДЕСЬ ПОКА НИЧЕГО НЕТ</div>
-  </div>
-`;
-return;
-  }
-
-  // ——— ПОЛНЫЙ ИНТЕРФЕЙС ———
-contestsScreen.innerHTML = `
-  <div class="contests-fixed contests-surface contests-page">
-    <div class="contests-header">КОНКУРСЫ</div>
-    <div class="contests-list" id="contList"></div>
-  </div>
-`;
-
-
-  const list = document.getElementById('contList');
-
-  const buildLink = (username, link) => {
-    const u = String(username || "").trim();
-    if (link) return link;
-    if (u.startsWith("@")) return `https://t.me/${u.slice(1)}`;
-    return "";
-  };
-
-  (window.CONTESTS_DATA || []).forEach((item, i) => {
-    if (i > 0){
-      const sep = document.createElement('div');
-      sep.className = 'cont-sep';
-      list.appendChild(sep);
-    }
-
-    const card = document.createElement('div');
-    card.className = 'cont-card';
-    const imgUrl = item.img || window.FALLBACK_IMG || 'https://via.placeholder.com/512?text=%F0%9F%8E%81';
-    const uname  = item.username || "@username";
-    const href   = buildLink(uname, item.link);
-
-    card.innerHTML = `
-      <div class="cont-img">
-        <img src="${imgUrl}" alt="${esc(uname)}"
-             onerror="this.src='${window.FALLBACK_IMG || 'https://via.placeholder.com/512?text=%F0%9F%8E%81'}'">
-      </div>
-      <div class="cont-right">
-        ${href
-          ? `<a class="cont-username" href="${href}" target="_blank" rel="noopener" title="${esc(uname)}">${esc(uname)}</a>`
-          : `<span class="cont-username" title="${esc(uname)}">${esc(uname)}</span>`}
-        ${href ? `<button type="button" class="cont-btn">Подробнее</button>` : ``}
-      </div>
-    `;
-    list.appendChild(card);
-  });
-
-  list.addEventListener('click', (e) => {
-    const userLink = e.target.closest('.cont-username');
-    if (userLink && userLink.href){
-      e.preventDefault();
-      safeOpen(userLink.href);
-      return;
-    }
-    const btn = e.target.closest('.cont-btn');
-    if (btn){
-      e.preventDefault();
-      const card = btn.closest('.cont-card');
-      const link = card?.querySelector('.cont-username')?.href;
-      if (link) safeOpen(link);
-    }
-  }, { passive:false });
-}
-
-
-
-function showContests(){
-  hardCloseDetailAndModal();
-// гарантируем видимый верхний топбар и корректные отступы
-topbarEl?.classList.remove('hide');
-restoreTopbarIfNeeded?.();
-if (typeof syncTopbarOffset === 'function') syncTopbarOffset();
-if (typeof syncTabbarOffset === 'function') syncTabbarOffset();
-  cancelPromoEditing?.();
-
-  // прячем «Кейсы», «Профиль» и «Друзья»
-  chipbar.classList.add('hide');
-  content.classList.add('hide');
-  backTop.classList.add('hide');
-
-  profileScreen.classList.add('hide');
-  profileScreen.setAttribute('aria-hidden','true');
-
-  friendsScreen.classList.add('hide');
-  friendsScreen.setAttribute('aria-hidden','true');
-  upgradesScreen.classList.add('hide');
-upgradesScreen.setAttribute('aria-hidden','true');
-
-
-  // показываем экран конкурсов
-  contestsScreen.classList.remove('hide');
-  contestsScreen.setAttribute('aria-hidden','false');
-
-  // подменяем контент на наш интерфейс конкурсов
-  renderContests();
-
-  // активный таб и корректные отступы
-  setActiveTab(contestsTab);
-  restoreTopbarIfNeeded();
-  document.body.classList.remove('friends-active');
-  if (typeof syncTopbarOffset === 'function') syncTopbarOffset();
-  if (typeof syncTabbarOffset === 'function') syncTabbarOffset();
-
-  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function renderUpgrades(){
@@ -7243,14 +7061,6 @@ if (friendsTab){
     if (!isTelegramMiniApp) { requireAuth(); return; }
     tabHaptic();
     showFriends();
-  });
-}
-if (contestsTab){
-  contestsTab.style.cursor = 'pointer';
-  contestsTab.addEventListener('click', () => {
-    if (!isTelegramMiniApp) { requireAuth(); return; }
-    tabHaptic();
-    showContests();
   });
 }
 if (upgradesTab){
