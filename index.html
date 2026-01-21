@@ -989,6 +989,33 @@ html:not(.in-telegram) .d-auth-warning{
   padding:12px 4px 0;
 }
 
+/* пустое состояние: блок на всю ширину вкладки (ниже заголовка) + текст по центру */
+.inventory-empty{
+  flex: 1 1 auto;
+  min-height: 0;
+
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  margin-top: 12px;
+
+  display: grid;          /* JS ставит display:grid — совпадает */
+  place-items: center;
+  text-align: center;
+
+  padding: 16px 12px;
+  box-sizing: border-box;
+
+  background: rgba(255,255,255,.04);
+  border-top: 1px solid rgba(255,255,255,.12);
+  border-bottom: 1px solid rgba(255,255,255,.12);
+
+  color: #ffffff;
+  font-weight: 900;
+  letter-spacing: .8px;
+  opacity: .95;
+}
+
 /* ПУСТОЕ СОСТОЯНИЕ ИНВЕНТАРЯ: по центру + блок на всю вкладку (ниже заголовка) */
 .inventory-empty{
   flex: 1 1 auto;
@@ -3884,7 +3911,6 @@ a:hover{ color:#fff; }
 .topup-card,
 .modal-card,
 .inventory-surface,
-.inventory-page,
 .fr2-section{
   background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03)) !important;
   border: 1px solid var(--border) !important;
