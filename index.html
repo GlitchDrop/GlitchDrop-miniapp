@@ -979,8 +979,27 @@ html:not(.in-telegram) .d-auth-warning{
   display:flex;
   flex-direction:column;
   box-sizing:border-box;
+
+  position: relative;
+  z-index: 0;
 }
 
+.inventory-page::before{
+  content:"";
+  position:absolute;
+  top:0; bottom:0;
+  left:50%;
+  transform:translateX(-50%);
+  width:100vw;
+  background: rgba(255,255,255,.04);
+  pointer-events:none;
+  z-index: 0;
+}
+
+.inventory-page > *{
+  position: relative;
+  z-index: 1;
+}
 
 .inventory-grid{
   display:grid;
@@ -3048,14 +3067,14 @@ html, body{
 
   background:
     radial-gradient(120% 85% at 18% -10%, rgba(255,255,255,.12), rgba(255,255,255,0) 55%),
-    radial-gradient(90% 70% at 80% 0%, rgba(138,92,255,.14), rgba(138,92,255,0) 62%),
-    linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.18));
+    radial-gradient(90% 70% at 80% 0%, rgba(255,255,255,.07), rgba(255,255,255,0) 62%),
+    linear-gradient(180deg, rgba(255,255,255,.05), rgba(0,0,0,.22));
 
   box-shadow:
     0 22px 70px rgba(0,0,0,.72),
     0 0 0 1px rgba(0,0,0,.35) inset,
     inset 0 1px 0 rgba(255,255,255,.10),
-    inset 0 -18px 30px rgba(0,0,0,.30);
+    inset 0 -18px 30px rgba(0,0,0,.34);
 
   overflow:hidden;
 }
@@ -3079,25 +3098,25 @@ html, body{
   height: var(--reel-slice-h);
   margin: calc(-1 * var(--reel-slice-h) / 2) calc(-1 * var(--reel-slice-w) / 2);
   border-radius:14px;
-  border:1px solid rgba(180,210,255,.35);
+  border:1px solid rgba(255,255,255,.18);
   background:
-    radial-gradient(120px 80px at 20% 20%, rgba(22,241,255,.10), transparent 60%),
-    radial-gradient(120px 80px at 80% 80%, rgba(255,62,208,.08), transparent 60%),
-    linear-gradient(180deg,#0b1030,#0a1028);
-  box-shadow:0 8px 26px rgba(10,20,60,.35);
+    radial-gradient(120px 80px at 20% 20%, rgba(255,255,255,.08), transparent 60%),
+    radial-gradient(120px 80px at 80% 80%, rgba(255,255,255,.04), transparent 60%),
+    linear-gradient(180deg,#101010,#050505);
+  box-shadow:0 8px 26px rgba(0,0,0,.45);
   display:grid; grid-template-rows:1fr auto; align-items:center; justify-items:center;
   overflow:hidden;
   backface-visibility:hidden; -webkit-backface-visibility:hidden;
 }
 
-
 .slice .meta{
   width:100%; padding:8px 10px;
-  font-weight:900; letter-spacing:.3px; font-size:12px; color:#a9c2ff;
+  font-weight:900; letter-spacing:.3px; font-size:12px; color:rgba(255,255,255,.72);
   display:flex; align-items:center; justify-content:space-between;
 }
+
 .slice .value{
-  color:var(--neon-yellow); text-shadow:0 0 12px rgba(255,228,122,.25);
+  color:rgba(255,255,255,.92); text-shadow:0 0 12px rgba(255,255,255,.12);
   font-weight:900; font-size:14px;
 }
 
@@ -3105,8 +3124,8 @@ html, body{
 .drum-pointer{
   position:absolute; left:0; right:0; top:50%;
   transform:translateY(-50%); height:2px;
-  background:linear-gradient(90deg, transparent, var(--neon-cyan), var(--neon-pink), transparent);
-  box-shadow:0 0 14px rgba(22,241,255,.45), 0 0 20px rgba(255,62,208,.25);
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,.85), transparent);
+  box-shadow:0 0 14px rgba(255,255,255,.22);
   pointer-events:none;
 }
 
@@ -3125,8 +3144,8 @@ html, body{
   width: 100%;
   height: auto;
   padding: 0;
-  border-bottom: 1px solid var(--border);
-  background: radial-gradient(80px 60px at 50% 50%, rgba(22,241,255,.10), transparent 60%);
+  border-bottom: 1px solid rgba(255,255,255,.12);
+  background: radial-gradient(80px 60px at 50% 50%, rgba(255,255,255,.06), transparent 60%);
   overflow: hidden;
   box-sizing: border-box;
 }
@@ -3161,7 +3180,7 @@ html, body{
   aspect-ratio: 1 / 1;
   overflow: hidden;
   border-bottom: none;
-  background: radial-gradient(80px 60px at 50% 50%, rgba(22,241,255,.10), transparent 60%);
+  background: radial-gradient(80px 60px at 50% 50%, rgba(255,255,255,.06), transparent 60%);
 }
 
 /* картинка по центру, без обрезания краёв */
@@ -4161,7 +4180,7 @@ a:hover{ color:#fff; }
       </div>
     </div>
 
-    <div class="chipbar" id="chipbar"><div class="chip active" data-target="#top">Все</div></div>
+    <div class="chipbar" id="chipbar" style="display:none"></div>
     <div class="content" id="content"></div>
 
 <!-- ПУСТОЙ ЭКРАН ПРОФИЛЯ -->
@@ -4683,7 +4702,7 @@ const CASE_THUMBS = {
   free:["assets/images/ПРОМОКОД.png","assets/images/за 500₽.png","assets/images/ChatGPT Image 7 янв. 2026 г., 18_21_09.png","assets/images/ChatGPT Image 6 янв. 2026 г., 15_43_15.png"],
   cheap:["assets/images/20260111_2157_Image Generation_remix_01keq6p6dnfn4v8d2gq0sdgmz2.png","assets/images/ChatGPT Image 11 янв. 2026 г., 22_22_44.png","assets/images/20260111_2112_Image Generation_remix_01keq43c2dfzvt1aabsw9ssp7m.png","assets/images/20260112_2229_Image Generation_remix_01kestwp63fgmras30gj1angj1.png"],
   nft:["assets/images/ChatGPT Image 13 янв. 2026 г., 18_48_07.png","assets/images/ChatGPT Image 13 янв. 2026 г., 18_57_07.png","assets/images/20260114_1331_Image Generation_remix_01key0xmk3ffrbq50cvbr1zctc.png","assets/images/20260114_2211_Image Generation_remix_01keyymgrvftzs52zbrvc727xc.png"],
-  exclusive:["assets/images/20251005_1639_Новогодняя змея_remix_01k6t9fz7mevwt1beaq5bxehc4.png","assets/images/20251005_1703_Фен с розовой лентой_remix_01k6tavjk3fq8brq0e5fr8hycw.png","assets/images/20251005_1718_Стильный школьный рюкзак_simple_compose_01k6tbpyfyedkb0r4qcr8r6p8m.png","assets/images/20251005_1752_Радужные Губы и Пузыри_remix_01k6tdn1ebem893yskvv82bpgz.png"],
+  exclusive:["assets/images/20260121_1752_Image Generation_remix_01kfggn2c2ewnrhdk0wafd8q8s.png","assets/images/20260121_1818_Image Generation_remix_01kfgj4a66eejs7192vm11hq0b.png","assets/images/20260121_1819_Предметы на экране_remix_01kfgj67jsf988m25bmvgyk0pv.png",""],
   standard:["assets/images/20260114_2345_Image Generation_remix_01kez41fzyfjkv7cecwarga3xy.png","","",""],
   gold:["","","",""],
   allornothing:["","","",""],
@@ -4738,14 +4757,10 @@ const CASE_THUMBS = {
 })();
 
 const sections = [
-  { id:'free',        title:'БЕСПЛАТНЫЕ КЕЙСЫ',  items:4, price:'БЕСПЛАТНО',},
   { id:'cheap',       title:'ДЕШЁВЫЕ КЕЙСЫ',     items:4, price:['50₽','250₽','500₽','1500₽'] },
   { id:'nft',         title:'ТОЛЬКО NFT-КЕЙСЫ',  items:4, price:['25₽','30₽','35₽','40₽'] },
   { id:'exclusive',   title:'ЭКСКЛЮЗИВНЫЕ КЕЙСЫ',items:4, price:['2000₽','3500₽','5800₽','8500₽'] },
   { id:'standard',    title:'СТАНДАРТНЫЕ КЕЙСЫ', items:4, price:['20₽','25₽','28₽','35₽'] },
-  { id:'gold',        title:'МЕМ-КЕЙСЫ',   items:4, price:['150₽','250₽','550₽','650₽'] },
-  { id:'allornothing',title:'ВСЁ ИЛИ НИЧЕГО КЕЙСЫ',items:4,price:['50₽','75₽','100₽','150₽'] },
-  { id:'expensive',   title:'ДОРОГИЕ КЕЙСЫ',     items:4, price:['200₽','250₽','300₽','400₽'] },
 ];
 
 const FALLBACK_IMG = "https://via.placeholder.com/512?text=%F0%9F%8E%81";
@@ -4880,212 +4895,102 @@ function initCardTilt(card){
 }
 
 // ====== Рендер карточек ======
-sections.forEach(sec=>{
-  // чип
-  const chip = document.createElement('div');
-  chip.className = 'chip';
-  chip.dataset.target = `#sec-${sec.id}`;
-  chip.textContent = sec.title.replace(' КЕЙСЫ','');
-  chipbar.appendChild(chip);
+(()=>{
+  // убираем кнопки-навигаторы
+  if (chipbar){
+    chipbar.innerHTML = '';
+    chipbar.style.display = 'none';
+  }
 
-  // заголовок секции
-  const h2 = document.createElement('h2');
-  h2.className = 'section';
-  h2.id = `sec-${sec.id}`;
-  h2.textContent = sec.title;
-  content.appendChild(h2);
-
-  // грид
+  // один общий грид: одинаковый gap между всеми кейсами
   const grid = document.createElement('div');
   grid.className = 'grid';
 
-  for(let i=0;i<sec.items;i++){
-    const thumbUrl  = (CASE_THUMBS[sec.id] && CASE_THUMBS[sec.id][i]) || "";
-    const thumbHTML = thumbUrl
-      ? `<img src="${thumbUrl}" alt="Обложка кейса #${i+1}" onerror="this.src='${FALLBACK_IMG}'">`
-      : `Заглушка`;
+  let globalIndex = 0;
 
-    const isFree   = (sec.id === 'free');
-    const rawPrice = Array.isArray(sec.price)? sec.price[i] : sec.price;
+  sections.forEach(sec=>{
+    for(let i=0;i<sec.items;i++){
+      globalIndex++;
+      const caseNum = globalIndex;
 
-        const rawPriceStr = String(rawPrice || '');
-    const curChar = /⭐/.test(rawPriceStr) ? '⭐' : '₽';
+      const thumbUrl  = (CASE_THUMBS[sec.id] && CASE_THUMBS[sec.id][i]) || "";
+      const thumbHTML = thumbUrl
+        ? `<img src="${thumbUrl}" alt="Обложка кейса #${i+1}" onerror="this.src='${FALLBACK_IMG}'">`
+        : `Заглушка`;
 
-    // убираем знак валюты/звезду в конце ("50 ⭐" -> "50", "199 ₽" -> "199")
-    const cleanPrice = rawPriceStr.replace(/\s*[⭐₽]\s*$/,'').trim();
+      const isFree   = (sec.id === 'free');
+      const rawPrice = Array.isArray(sec.price)? sec.price[i] : sec.price;
 
-    const card = document.createElement('div');
-    card.className='card';
+          const rawPriceStr = String(rawPrice || '');
+      const curChar = /⭐/.test(rawPriceStr) ? '⭐' : '₽';
 
-    const setId = `${sec.id}_${i+1}`;
+      // убираем знак валюты/звезду в конце ("50 ⭐" -> "50", "199 ₽" -> "199")
+      const cleanPrice = rawPriceStr.replace(/\s*[⭐₽]\s*$/,'').trim();
 
-    const giftIco = '<svg class="price-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12v9H4v-9"></path><path d="M2 7h20v5H2z"></path><path d="M12 22V7"></path><path d="M12 7c-1.5 0-2.5-1-2.5-2.5S10.7 2 12 4c1.3-2 2.5-1 2.5.5S13.5 7 12 7z"></path></svg>';
+      const card = document.createElement('div');
+      card.className='card';
 
-    card.innerHTML = `
-      <div class="inner">
-        <div class="thumb">
-          ${thumbHTML}
+      const setId = `${sec.id}_${i+1}`;
+
+      const giftIco = '<svg class="price-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12v9H4v-9"></path><path d="M2 7h20v5H2z"></path><path d="M12 22V7"></path><path d="M12 7c-1.5 0-2.5-1-2.5-2.5S10.7 2 12 4c1.3-2 2.5-1 2.5.5S13.5 7 12 7z"></path></svg>';
+
+      card.innerHTML = `
+        <div class="inner">
+          <div class="thumb">
+            ${thumbHTML}
+          </div>
         </div>
-      </div>
 
-      <div class="card-footer">
-        <div class="case-row">
-          <div class="case-name">case</div>
-          <button type="button" class="card-open-btn price-pill">
-            ${isFree ? giftIco : ''}
-            <span class="price-pill-text">${isFree ? 'FREE' : cleanPrice}</span>
-            ${isFree ? '' : `<span class="price-pill-cur">${curChar}</span>`}
-          </button>
+        <div class="card-footer">
+          <div class="case-row">
+            <div class="case-name">case</div>
+            <button type="button" class="card-open-btn price-pill">
+              ${isFree ? giftIco : ''}
+              <span class="price-pill-text">${isFree ? 'FREE' : cleanPrice}</span>
+              ${isFree ? '' : `<span class="price-pill-cur">${curChar}</span>`}
+            </button>
+          </div>
         </div>
-      </div>
-    `;
+      `;
 
-    const openBtn = card.querySelector('.card-open-btn');
+      const openBtn = card.querySelector('.card-open-btn');
 
-    // Тап по карточке — сразу открыть барабан (включая ценник)
-    card.addEventListener('click', ()=>{
-      openDetail({
-        title: `${sec.title} — Кейс #${i+1}`,
-        price: rawPrice,
-        setId
-      });
-    });
-
-    // Кнопка "ОТКРЫТЬ" тоже открывает (если ты её где-то показываешь)
-    if (openBtn){
-      openBtn.addEventListener('click', (ev)=>{
-        ev.stopPropagation();
-
+      // Тап по карточке — сразу открыть барабан (включая ценник)
+      card.addEventListener('click', ()=>{
         openDetail({
-          title: `${sec.title} — Кейс #${i+1}`,
+          title: `Кейс #${caseNum}`,
           price: rawPrice,
           setId
         });
       });
+
+      // Кнопка "ОТКРЫТЬ" тоже открывает (если ты её где-то показываешь)
+      if (openBtn){
+        openBtn.addEventListener('click', (ev)=>{
+          ev.stopPropagation();
+
+          openDetail({
+            title: `Кейс #${caseNum}`,
+            price: rawPrice,
+            setId
+          });
+        });
+      }
+
+      initCardTilt(card);
+      grid.appendChild(card);
+
     }
-
-    initCardTilt(card);
-    grid.appendChild(card);
-
-  }
+  });
 
   content.appendChild(grid);
-});
+})();
 
 // ====== Клик мимо карточки — снимаем выбор ======
 // отключено: выбора больше нет (тап по карточке сразу открывает барабан)
 
 // ====== Чипы (ФИЛЬТР секций: заголовок + grid) ======
-const chips = Array.from(chipbar.querySelectorAll('.chip'));
-
-// Собираем пары секций: heading (h2#sec-...) + grid (следующий div.grid)
-const sectionPairs = sections.map((s, i) => {
-  const heading = document.getElementById(`sec-${s.id}`);
-  const grid = heading ? heading.nextElementSibling : null;
-
-  return {
-    id: s.id,
-    heading,
-    grid,
-    index: i
-  };
-}).filter(p =>
-  p.heading &&
-  p.grid &&
-  p.grid.classList.contains('grid')
-);
-
-const sectionsContainer = sectionPairs[0]?.heading?.parentElement;
-
-// текущий активный фильтр (по умолчанию "Все")
-let activeFilterSel = "#top";
-
-// Показать ВСЕ секции в исходном порядке (heading + grid)
-function showAllSections(){
-  if (!sectionsContainer) return;
-
-  sectionPairs
-    .sort((a,b)=> a.index - b.index)
-    .forEach(p=>{
-      p.heading.style.display = "";
-      p.grid.style.display = "";
-
-      // возвращаем порядок: заголовок -> grid
-      sectionsContainer.appendChild(p.heading);
-      sectionsContainer.appendChild(p.grid);
-    });
-}
-
-// Показать ТОЛЬКО одну секцию (и поднять её вверх)
-function showOnlySection(sel){
-  if (!sectionsContainer) return;
-
-  // sel вида "#sec-cheap" => id "cheap"
-  const targetId = sel.replace('#sec-','');
-  const target = sectionPairs.find(p => p.id === targetId);
-  if (!target) return;
-
-  // прячем все пары кроме нужной
-  sectionPairs.forEach(p=>{
-    const isTarget = (p === target);
-    p.heading.style.display = isTarget ? "" : "none";
-    p.grid.style.display = isTarget ? "" : "none";
-  });
-
-  // поднимаем нужную секцию в самый верх:
-  // сначала heading, сразу за ним grid
-  sectionsContainer.insertBefore(target.heading, sectionsContainer.firstChild);
-  sectionsContainer.insertBefore(target.grid, target.heading.nextSibling);
-}
-
-// скроллим к верху, потом применяем фильтр
-function scrollToTopThen(cb){
-  if (window.scrollY < 5){
-    cb();
-    return;
-  }
-
-  window.scrollTo({ top: 0, behavior: "smooth" });
-
-  const start = Date.now();
-  const onScroll = ()=>{
-    if (window.scrollY < 5 || (Date.now() - start) > 700){
-      window.removeEventListener("scroll", onScroll);
-      cb();
-    }
-  };
-  window.addEventListener("scroll", onScroll, { passive:true });
-}
-
-// клик по чипу = выбрать фильтр
-chipbar.addEventListener("click", e=>{
-  const chip = e.target.closest(".chip");
-  if (!chip) return;
-
-  setActiveChip(chip);
-
-  const sel = chip.dataset.target || "#top";
-  activeFilterSel = sel;
-
-  if (sel === "#top"){
-    // "Все"
-    scrollToTopThen(showAllSections);
-  } else {
-    // конкретная секция
-    scrollToTopThen(()=> showOnlySection(sel));
-  }
-});
-
-// активный чип подсвечен, пока не выберут другой
-function setActiveChip(ch){
-  chips.forEach(c=> c.classList.remove("active"));
-  ch.classList.add("active");
-}
-
-// при старте — включаем "Все"
-const topChip = chips.find(c => (c.dataset.target || "#top") === "#top");
-if (topChip) setActiveChip(topChip);
-showAllSections();
+// отключено: навигаторы и названия отделов удалены, все кейсы рендерятся одним гридом
 
 // ====== Кнопка «вверх» ======
 const backTop = document.getElementById('backTop');
