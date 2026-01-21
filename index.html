@@ -586,8 +586,9 @@ GD.ensureUid8 = function (tgId) {
   filter: drop-shadow(0 0 6px rgba(0,0,0,.18));
 }
 
-.price-pill-text{ font-weight:900; color:#0b0b0b; }
-.price-pill-cur{ font-weight:900; color:rgba(0,0,0,.68); }
+.price-pill-text{ font-weight:900; font-size:16px; line-height:1; letter-spacing:.4px; color:#0b0b0b; }
+
+.price-pill-cur{ font-weight:900; font-size:14px; line-height:1; letter-spacing:.35px; color:rgba(0,0,0,.68); }
 
 /* в браузере скрываем цену как раньше */
 html:not(.in-telegram) .card .price-pill{ display:none; }
