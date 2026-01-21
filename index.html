@@ -3951,7 +3951,7 @@ a:hover{ color:#fff; }
 #app-loader .loader-img{ filter: grayscale(1) contrast(1.15); }
 </style>
 
-<script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+<script defer src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
 
 <script>
   window.addEventListener('load', function () {
@@ -4035,7 +4035,13 @@ a:hover{ color:#fff; }
 })();
 </script>
 
+<link rel="preconnect" href="https://telegram.org" crossorigin>
+<link rel="preconnect" href="https://unpkg.com" crossorigin>
+<link rel="preconnect" href="https://sneerful-anamaria-doucely.ngrok-free.dev" crossorigin>
+<link rel="preload" as="image" href="assets/images/20260117_1741_Image Generation_remix_01kf66dgt0e2qbb8m6ngnmn416.png" fetchpriority="high">
+
 </head>
+
 <body>
 
 <!-- APP LOADER OVERLAY -->
@@ -8870,14 +8876,30 @@ document.addEventListener('DOMContentLoaded', function() {
   const prevOverflow = document.body.style.overflow;
   document.body.style.overflow = 'hidden';
 
-  window.addEventListener('load', () => {
-    loader.classList.add('loaded');
+  let done = false;
+  const finish = () => {
+    if (done) return;
+    done = true;
 
+    loader.classList.add('loaded');
     setTimeout(() => {
       loader.remove();
       document.body.style.overflow = prevOverflow || '';
-    }, 260);
-  });
+    }, 180);
+  };
+
+  // снимаем лоадер максимально рано
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', finish, { once:true });
+  } else {
+    finish();
+  }
+
+  // фолбэк на случай подвисших ресурсов
+  setTimeout(finish, 1800);
+
+  // если всё загрузилось быстро — тоже ок
+  window.addEventListener('load', finish, { once:true });
 })();
 
 </script>
@@ -8961,6 +8983,13 @@ document.addEventListener('DOMContentLoaded', function() {
     .catch(err => console.warn('Balance fetch failed', err));
 })();
 
+</script>
+
+<script>
+/* SW кеширует статику → запуск очень быстрый со 2-го раза */
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(()=>{});
+}
 </script>
 </body>
 </html>
