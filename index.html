@@ -8837,6 +8837,8 @@ document.addEventListener('DOMContentLoaded', function() {
   const prevOverflow = document.body.style.overflow;
   document.body.style.overflow = 'hidden';
 
+  const BOOT_DELAY_MS = 10000;
+
   let done = false;
   const finish = () => {
     if (done) return;
@@ -8846,86 +8848,97 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(() => {
       loader.remove();
       document.body.style.overflow = prevOverflow || '';
+
+      // запускаем "бота" после скрытия лоадера
+      try{
+        if (typeof Event === 'function') window.dispatchEvent(new Event('gd_boot'));
+        else{
+          const ev = document.createEvent('Event');
+          ev.initEvent('gd_boot', true, true);
+          window.dispatchEvent(ev);
+        }
+      }catch(e){}
     }, 180);
   };
 
-  // снимаем лоадер максимально рано
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', finish, { once:true });
-  } else {
-    finish();
-  }
-
-  // фолбэк на случай подвисших ресурсов
-  setTimeout(finish, 1800);
-
-  // если всё загрузилось быстро — тоже ок
-  window.addEventListener('load', finish, { once:true });
+  // держим лоадер 10 секунд всегда
+  setTimeout(finish, BOOT_DELAY_MS);
 })();
 
 </script>
 
 <script>
+
 (function () {
-  const tg = window.Telegram && window.Telegram.WebApp;
-  const u  = tg && tg.initDataUnsafe && tg.initDataUnsafe.user;
-  if (!tg || !u) return; // не в Telegram Mini App
 
-    if(!tg) return;
+  function boot(){
+    const tg = window.Telegram && window.Telegram.WebApp;
+    const u  = tg && tg.initDataUnsafe && tg.initDataUnsafe.user;
+    if (!tg || !u) return; // не в Telegram Mini App
 
-  try { tg.ready(); tg.expand && tg.expand(); } catch (_) {}
+      if(!tg) return;
 
-  // запретить закрытие свайпом вниз (если клиент Telegram поддерживает)
-  try{
-    if (typeof tg.disableVerticalSwipes === 'function') tg.disableVerticalSwipes();
-    else if (typeof tg.postEvent === 'function') tg.postEvent('web_app_setup_swipe_behavior', { allow_vertical_swipe: false });
-  }catch(e){}
+    try { tg.ready(); tg.expand && tg.expand(); } catch (_) {}
 
-  // подтверждение на закрытие через шапку/кнопку Telegram
-  try{ if (typeof tg.enableClosingConfirmation === 'function') tg.enableClosingConfirmation(); }catch(e){}
+    // запретить закрытие свайпом вниз (если клиент Telegram поддерживает)
+    try{
+      if (typeof tg.disableVerticalSwipes === 'function') tg.disableVerticalSwipes();
+      else if (typeof tg.postEvent === 'function') tg.postEvent('web_app_setup_swipe_behavior', { allow_vertical_swipe: false });
+    }catch(e){}
 
-  // Подстановка ID во все #userId
-  function paint(uid8) {
-    if (!uid8 || uid8 === '00000000') return;
-    document.querySelectorAll('#userId').forEach(el => {
-      el.textContent = 'ID ' + uid8;
-    });
-  }
+    // подтверждение на закрытие через шапку/кнопку Telegram
+    try{ if (typeof tg.enableClosingConfirmation === 'function') tg.enableClosingConfirmation(); }catch(e){}
 
-  // 🔹 КЭШ в памяти: получаем UID один раз
-  let uid8Cached = null;
-
-  async function resolveAndPaint() {
-    try {
-      uid8Cached = await GD.ensureUid8(u.id);  // ← кешируем ОДИН раз
-      paint(uid8Cached);
-    } catch (e) {
-      console.warn('ensureUid8/paint failed', e);
+    // Подстановка ID во все #userId
+    function paint(uid8) {
+      if (!uid8 || uid8 === '00000000') return;
+      document.querySelectorAll('#userId').forEach(el => {
+        el.textContent = 'ID ' + uid8;
+      });
     }
+
+    // 🔹 КЭШ в памяти: получаем UID один раз
+    let uid8Cached = null;
+
+    async function resolveAndPaint() {
+      try {
+        uid8Cached = await GD.ensureUid8(u.id);  // ← кешируем ОДИН раз
+        paint(uid8Cached);
+      } catch (e) {
+        console.warn('ensureUid8/paint failed', e);
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', resolveAndPaint, { once: true });
+    } else {
+      resolveAndPaint();
+    }
+
+    // 🔹 Лёгкий observer: больше НЕ зовём ensureUid8, только перерисовываем по известному uid
+    let repaintScheduled = false;
+    const mo = new MutationObserver(() => {
+      if (repaintScheduled) return;
+      repaintScheduled = true;
+      setTimeout(() => {
+        paint(uid8Cached);
+        repaintScheduled = false;
+      }, 80);
+    });
+
+    // Наблюдаем за body (меньше шума, чем documentElement)
+    mo.observe(document.body, { childList: true, subtree: true });
+
+    // Через 3 секунды отключаем observer, чтобы не мешал UI
+    setTimeout(() => mo.disconnect(), 3000);
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', resolveAndPaint, { once: true });
+  if (document.getElementById('app-loader')) {
+    window.addEventListener('gd_boot', boot, { once:true });
   } else {
-    resolveAndPaint();
+    boot();
   }
 
-  // 🔹 Лёгкий observer: больше НЕ зовём ensureUid8, только перерисовываем по известному uid
-  let repaintScheduled = false;
-  const mo = new MutationObserver(() => {
-    if (repaintScheduled) return;
-    repaintScheduled = true;
-    setTimeout(() => {
-      paint(uid8Cached);
-      repaintScheduled = false;
-    }, 80);
-  });
-
-  // Наблюдаем за body (меньше шума, чем documentElement)
-  mo.observe(document.body, { childList: true, subtree: true });
-
-  // Через 3 секунды отключаем observer, чтобы не мешал UI
-  setTimeout(() => mo.disconnect(), 3000);
 })();
 
 (function(){
