@@ -322,6 +322,19 @@ GD.ensureUid8 = function (tgId) {
     .pill--lg{ padding:10px 14px; }
     .pill--lg img{ width:24px; height:24px; }
 
+    /* DETAIL: ценник (ч/б) */
+    .detail .pill{
+      border:1px solid rgba(0,0,0,.12);
+      background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(235,235,235,.92));
+      box-shadow:
+        0 10px 26px rgba(0,0,0,.55),
+        inset 0 1px 0 rgba(255,255,255,.75),
+        inset 0 -12px 18px rgba(0,0,0,.10);
+      color:#0b0b0b;
+    }
+    .detail .pill span{ color:rgba(0,0,0,.68); }
+    .detail .pill .num{ color:#0b0b0b; }
+
     .chipbar{
   position:sticky;
   top: var(--topbar-h, 64px);
@@ -877,23 +890,24 @@ html:not(.in-telegram) .d-auth-warning{
     }
     .loot.flipped .loot-inner{ transform:rotateY(180deg); }
 
-    .loot-face{
+        .loot-face{
       position:absolute; inset:0;
       border-radius:14px;
-      border:1px dashed rgba(180,210,255,.35);
+      border:1px solid rgba(0,0,0,.12);
       overflow:hidden;
       backface-visibility:hidden; -webkit-backface-visibility:hidden;
       display:grid; place-items:center;
-      background: linear-gradient(180deg,#0c1230,#0a1028);
-      color:#a9c2ff; font-size:12px; letter-spacing:1px; text-transform:uppercase;
+      background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(235,235,235,.92));
+      color:rgba(0,0,0,.68); font-size:12px; letter-spacing:1px; text-transform:uppercase;
+      box-shadow: 0 10px 22px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.85);
     }
     .loot-front img{ width:100%; height:100%; object-fit:cover; display:block; }
     .loot-back{
       transform:rotateY(180deg);
       background:
-        linear-gradient(180deg, rgba(12,18,48,.88), rgba(8,14,36,.9)),
-        radial-gradient(600px 200px at 50% 110%, rgba(22,241,255,.12), transparent 60%),
-        radial-gradient(600px 200px at 50% -10%, rgba(255,62,208,.10), transparent 60%);
+        linear-gradient(180deg, rgba(255,255,255,.96), rgba(235,235,235,.92)),
+        radial-gradient(600px 200px at 50% 110%, rgba(0,0,0,.08), transparent 60%),
+        radial-gradient(600px 200px at 50% -10%, rgba(0,0,0,.06), transparent 60%);
       padding:12px;
       gap:8px;
     }
@@ -908,29 +922,29 @@ html:not(.in-telegram) .d-auth-warning{
     }
     .lb-stars{
       font-size:20px;
-      color:var(--neon-yellow);
+      color:#0b0b0b;
       margin-bottom:4px;
-      text-shadow:0 0 12px rgba(255,228,122,.25);
+      text-shadow:none;
     }
     .lb-ton{
       font-size:18px;
-      color:#79c6ff;
-      text-shadow:0 0 12px rgba(22,241,255,.22);
+      color:rgba(0,0,0,.62);
+      text-shadow:none;
     }
 
-/* подсветка выигрыша без трансформаций */
+    /* подсветка выигрыша без трансформаций */
 .slice.win{
-  outline:2px solid var(--neon-cyan);
-  box-shadow:0 0 30px rgba(22,241,255,.28), inset 0 0 14px rgba(22,241,255,.12);
+  outline:2px solid rgba(255,255,255,.55);
+  box-shadow:0 0 28px rgba(255,255,255,.18), inset 0 0 14px rgba(0,0,0,.10);
   animation:win-glow 900ms ease-out 1;
 }
 
 /* мягкий импульс свечения */
 @keyframes win-glow{
-  0%   { box-shadow:0 0 0 rgba(22,241,255,0), inset 0 0 0 rgba(22,241,255,0); }
-  25%  { box-shadow:0 0 34px rgba(22,241,255,.35), inset 0 0 16px rgba(22,241,255,.14); }
-  60%  { box-shadow:0 0 26px rgba(22,241,255,.28), inset 0 0 14px rgba(22,241,255,.12); }
-  100% { box-shadow:0 0 30px rgba(22,241,255,.28), inset 0 0 14px rgba(22,241,255,.12); }
+  0%   { box-shadow:0 0 0 rgba(255,255,255,0), inset 0 0 0 rgba(0,0,0,0); }
+  25%  { box-shadow:0 0 34px rgba(255,255,255,.22), inset 0 0 16px rgba(0,0,0,.10); }
+  60%  { box-shadow:0 0 26px rgba(255,255,255,.18), inset 0 0 14px rgba(0,0,0,.10); }
+  100% { box-shadow:0 0 28px rgba(255,255,255,.18), inset 0 0 14px rgba(0,0,0,.10); }
 }
 
 :root{
@@ -2718,8 +2732,8 @@ h2.section{
   font-size: inherit;            /* размер как у цифр */
   font-weight: inherit;          /* толщина как у цифр */
   line-height: 1;
-  color: var(--neon-yellow);     /* золотой как на главной */
-  text-shadow: 0 0 12px rgba(255,228,122,0.25);
+  color: rgba(0,0,0,.68);
+  text-shadow: none;
 
   display: inline-block;
   transform: translateX(var(--detail-rub-sign-x)); /* регулируемый сдвиг */
@@ -3069,15 +3083,15 @@ html, body{
   border:1px solid rgba(255,255,255,.16);
 
   background:
-    radial-gradient(120% 85% at 18% -10%, rgba(255,255,255,.12), rgba(255,255,255,0) 55%),
-    radial-gradient(90% 70% at 80% 0%, rgba(255,255,255,.07), rgba(255,255,255,0) 62%),
-    linear-gradient(180deg, rgba(255,255,255,.05), rgba(0,0,0,.22));
+    radial-gradient(120% 85% at 18% -10%, rgba(255,255,255,.10), rgba(255,255,255,0) 55%),
+    radial-gradient(90% 70% at 80% 0%, rgba(255,255,255,.08), rgba(255,255,255,0) 62%),
+    linear-gradient(180deg, rgba(18,18,18,.92), rgba(0,0,0,.98));
 
   box-shadow:
     0 22px 70px rgba(0,0,0,.72),
     0 0 0 1px rgba(0,0,0,.35) inset,
     inset 0 1px 0 rgba(255,255,255,.10),
-    inset 0 -18px 30px rgba(0,0,0,.34);
+    inset 0 -18px 30px rgba(0,0,0,.30);
 
   overflow:hidden;
 }
@@ -3101,12 +3115,12 @@ html, body{
   height: var(--reel-slice-h);
   margin: calc(-1 * var(--reel-slice-h) / 2) calc(-1 * var(--reel-slice-w) / 2);
   border-radius:14px;
-  border:1px solid rgba(255,255,255,.18);
+  border:1px solid rgba(0,0,0,.14);
   background:
-    radial-gradient(120px 80px at 20% 20%, rgba(255,255,255,.08), transparent 60%),
-    radial-gradient(120px 80px at 80% 80%, rgba(255,255,255,.04), transparent 60%),
-    linear-gradient(180deg,#101010,#050505);
-  box-shadow:0 8px 26px rgba(0,0,0,.45);
+    radial-gradient(120px 80px at 20% 20%, rgba(0,0,0,.05), transparent 60%),
+    radial-gradient(120px 80px at 80% 80%, rgba(0,0,0,.06), transparent 60%),
+    linear-gradient(180deg,#ffffff,#eeeeee);
+  box-shadow:0 10px 26px rgba(0,0,0,.22);
   display:grid; grid-template-rows:1fr auto; align-items:center; justify-items:center;
   overflow:hidden;
   backface-visibility:hidden; -webkit-backface-visibility:hidden;
@@ -3114,12 +3128,11 @@ html, body{
 
 .slice .meta{
   width:100%; padding:8px 10px;
-  font-weight:900; letter-spacing:.3px; font-size:12px; color:rgba(255,255,255,.72);
+  font-weight:900; letter-spacing:.3px; font-size:12px; color:rgba(0,0,0,.62);
   display:flex; align-items:center; justify-content:space-between;
 }
-
 .slice .value{
-  color:rgba(255,255,255,.92); text-shadow:0 0 12px rgba(255,255,255,.12);
+  color:#0b0b0b; text-shadow:none;
   font-weight:900; font-size:14px;
 }
 
@@ -3127,8 +3140,8 @@ html, body{
 .drum-pointer{
   position:absolute; left:0; right:0; top:50%;
   transform:translateY(-50%); height:2px;
-  background:linear-gradient(90deg, transparent, rgba(255,255,255,.85), transparent);
-  box-shadow:0 0 14px rgba(255,255,255,.22);
+  background:linear-gradient(90deg, transparent, rgba(0,0,0,.62), rgba(0,0,0,.62), transparent);
+  box-shadow:0 0 10px rgba(255,255,255,.14), 0 0 16px rgba(0,0,0,.55);
   pointer-events:none;
 }
 
@@ -3136,7 +3149,7 @@ html, body{
 .drum-stage:before, .drum-stage:after{
   content:""; position:absolute; left:0; right:0; height:22%;
   pointer-events:none; z-index:5;
-  background:linear-gradient(180deg, rgba(8,14,36,.8), transparent);
+  background:linear-gradient(180deg, rgba(0,0,0,.82), transparent);
 }
 .drum-stage:after{ bottom:0; top:auto; transform:rotate(180deg); }
 
@@ -3147,8 +3160,10 @@ html, body{
   width: 100%;
   height: auto;
   padding: 0;
-  border-bottom: 1px solid rgba(255,255,255,.12);
-  background: radial-gradient(80px 60px at 50% 50%, rgba(255,255,255,.06), transparent 60%);
+  border-bottom: 1px solid rgba(0,0,0,.12);
+  background:
+    radial-gradient(90px 70px at 50% 50%, rgba(0,0,0,.06), transparent 60%),
+    linear-gradient(180deg, rgba(255,255,255,.96), rgba(235,235,235,.92));
   overflow: hidden;
   box-sizing: border-box;
 }
@@ -3183,7 +3198,9 @@ html, body{
   aspect-ratio: 1 / 1;
   overflow: hidden;
   border-bottom: none;
-  background: radial-gradient(80px 60px at 50% 50%, rgba(255,255,255,.06), transparent 60%);
+  background:
+    radial-gradient(90px 70px at 50% 50%, rgba(0,0,0,.06), transparent 60%),
+    linear-gradient(180deg, rgba(255,255,255,.96), rgba(235,235,235,.92));
 }
 
 /* картинка по центру, без обрезания краёв */
@@ -3945,8 +3962,7 @@ a:hover{ color:#fff; }
 .bp-card-btn,
 .fr2-bonus-btn,
 .btn-yes,
-.btn-no,
-.btn-spin{
+.btn-no{
   background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.05)) !important;
   color: #fff !important;
   border: 1px solid rgba(255,255,255,.14) !important;
@@ -3957,7 +3973,15 @@ a:hover{ color:#fff; }
 .bp-card-btn:active,
 .fr2-bonus-btn:active,
 .btn-yes:active,
-.btn-no:active,
+.btn-no:active{ transform: translateY(1px); }
+
+/* SPIN (ч/б) */
+.btn-spin{
+  background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(235,235,235,.92)) !important;
+  color: #0b0b0b !important;
+  border: 1px solid rgba(0,0,0,.12) !important;
+  box-shadow: 0 18px 44px rgba(0,0,0,.65), inset 0 1px 0 rgba(255,255,255,.75), inset 0 -12px 18px rgba(0,0,0,.10) !important;
+}
 .btn-spin:active{ transform: translateY(1px); }
 
 /* ===== Chipbar ===== */
@@ -4348,8 +4372,7 @@ a:hover{ color:#fff; }
 
       <div class="viewport">
         <div class="track">
-          <!-- 3 слайда-заглушки -->
-<div class="slide"></div>
+          <!-- 2 слайда-заглушки -->
 <div class="slide"></div>
 <div class="slide"></div>
         </div>
@@ -4401,29 +4424,13 @@ a:hover{ color:#fff; }
 </div>
 
 <!-- ✅ Cardlink / SBP оплата -->
-<div id="bankPayModal" class="modal" aria-hidden="true">
-  <div class="modal-card" role="document" style="max-width: 520px; width: 100%;">
-    <div class="modal-title">ОПЛАТА ЧЕРЕЗ СБП</div>
-
-    <div class="bankpay-frame-wrap" style="width:100%; height:70vh; min-height:420px;">
-      <iframe id="bankPayFrame"
-              src=""
-              style="border:0; width:100%; height:100%; border-radius:12px;"
-              allow="payment *; clipboard-read; clipboard-write"></iframe>
-    </div>
-
-    <div class="modal-actions">
-      <button id="bankPayCloseBtn" class="btn btn-ghost">ЗАКРЫТЬ</button>
-    </div>
-  </div>
-</div>
+<!-- УДАЛЕНО: оставлены только Stars и TON -->
 
       <button class="nav next" aria-label="Следующий">›</button>
     </div>
 
     <div class="topup-dots" id="topupDots" role="tablist" aria-label="Варианты оплаты">
   <button class="dot" role="tab" aria-selected="true"></button>
-  <button class="dot" role="tab" aria-selected="false"></button>
   <button class="dot" role="tab" aria-selected="false"></button>
 </div>
 
@@ -4695,10 +4702,10 @@ function getSellPrice(src){
 }
 
 const CHEAP_BACK_TEXT = {
-  cheap_1: Array(11).fill({stars:"25/"}),
-  cheap_2: Array(11).fill({stars:"30/"}),
-  cheap_3: Array(11).fill({stars:"45/"}),
-  cheap_4: Array(11).fill({stars:"50/"}),
+  cheap_1: Array(11).fill({stars:"25"}),
+  cheap_2: Array(11).fill({stars:"30"}),
+  cheap_3: Array(11).fill({stars:"45"}),
+  cheap_4: Array(11).fill({stars:"50"}),
 };
 
 const CASE_THUMBS = {
@@ -7379,25 +7386,24 @@ case 'topup':
 
 // ===== TOPUP MODAL - ИСПРАВЛЕННАЯ ВЕРСИЯ =====
 let currentSlide = 0;
-const totalSlides = 3;
+const totalSlides = 2;
 let isAnimating = false;
 let touchStartX = 0;
 let touchEndX = 0;
 // какой способ оплаты выбран
 // 0-й слайд — звезды, 1-й — TON → Stars
-let currentPaymentMethod = 'stars'; // 'stars' | 'ton' | 'bank'
+let currentPaymentMethod = 'stars'; // 'stars' | 'ton'
 
 function initTopupModal() {
     console.log('🔄 Инициализация топ-ап модалки');
 
     // ===== МАССИВ С URL КАРТИНОК ДЛЯ СЛАЙДОВ =====
     // ЗАМЕНИТЕ ЭТИ URL НА СВОИ ИЗОБРАЖЕНИЯ!
-    const slideImages = [
+const slideImages = [
   'assets/images/20251030_1539_Белый текст по центру_remix_01k8thzzsgf4jbcyf41pwnff8y.png',  // Первый слайд
-  'assets/images/Untitled (48).png',  // Второй слайд  
-  'assets/images/Untitled (50).png'   // Третий слайд
+  'assets/images/Untitled (48).png'   // Второй слайд
 ];
-    
+ 
     // Добавляем изображения в слайды
     const slides = document.querySelectorAll('#topupSlider .slide');
     slides.forEach((slide, index) => {
@@ -7458,7 +7464,7 @@ function initTopupModal() {
     });
     console.log('✅ Точки навигации настроены');
 
-// Кнопка подтверждения
+    // Кнопка подтверждения
 const confirmBtn = document.getElementById('topupConfirm');
 if (confirmBtn) {
   confirmBtn.addEventListener('click', () => {
@@ -7472,13 +7478,6 @@ if (confirmBtn) {
     // 1-й слайд — пополнение через TON → Stars
     if (currentSlide === 1) {
       currentPaymentMethod = 'ton';
-      topupAmountOpenModal();
-      return;
-    }
-
-        // ✅ 2-й индекс / 3-й слайд — Cardlink / SBP
-    if (currentSlide === 2) {
-      currentPaymentMethod = 'bank';
       topupAmountOpenModal();
       return;
     }
@@ -8080,81 +8079,7 @@ window.lastTonTopup = { ton, stars: starsToAdd };
   return true;
 }
 
-// ✅ Cardlink / SBP
-const CARDLINK_BASE_URL = 'https://ВАШ_CARDLINK_URL/checkout'; 
-// пример: https://pay.cardlink.ru/xxxxxxx  (подставь свой)
-
-function buildCardlinkUrl(amount) {
-  // если у тебя другой формат параметров — поменяй тут
-  const url = new URL(CARDLINK_BASE_URL);
-  url.searchParams.set('amount', String(amount));
-  url.searchParams.set('currency', 'RUB');
-  return url.toString();
-}
-
-function openBankPayModal(amount) {
-  const modal = document.getElementById('bankPayModal');
-  const frame = document.getElementById('bankPayFrame');
-  if (!modal || !frame) return;
-
-  frame.src = buildCardlinkUrl(amount);
-  modal.classList.add('show');
-  modal.setAttribute('aria-hidden', 'false');
-}
-
-function closeBankPayModal() {
-  const modal = document.getElementById('bankPayModal');
-  const frame = document.getElementById('bankPayFrame');
-  if (!modal) return;
-
-  modal.classList.remove('show');
-  modal.setAttribute('aria-hidden', 'true');
-  if (frame) frame.src = '';
-}
-
-// кнопка закрытия
-document.getElementById('bankPayCloseBtn')
-  ?.addEventListener('click', closeBankPayModal);
-
-  async function handleBankSubmit() {
-  const input = document.getElementById('amountInput');
-  const errorEl = document.getElementById('amountError');
-  if (!input) return false;
-
-  const raw = (input.value || '').trim();
-  if (!raw || !/^\d+$/.test(raw)) {
-    if (errorEl) {
-      errorEl.textContent = 'Некорректная сумма';
-      errorEl.style.display = 'block';
-    }
-    return false;
-  }
-
-  const amount = parseInt(raw, 10);
-
-  if (amount < STARS_MIN) {
-    if (errorEl) {
-      errorEl.textContent = `Минимальная сумма ${STARS_MIN}`;
-      errorEl.style.display = 'block';
-    }
-    return false;
-  }
-
-  if (amount > STARS_MAX) {
-    if (errorEl) {
-      errorEl.textContent = `Максимальная сумма ${formatRu(STARS_MAX)}`;
-      errorEl.style.display = 'block';
-    }
-    return false;
-  }
-
-  topupAmountCloseModal();
-
-  // ✅ открываем Cardlink-меню с "Оплатить ..." и QR
-  openBankPayModal(amount);
-
-  return true;
-}
+// ✅ Cardlink / SBP — УДАЛЕНО (оставлены только Stars и TON)
 
 // ✅ Лимиты для Stars и Cardlink (одинаковые)
 const STARS_MIN = 1;
@@ -8520,7 +8445,7 @@ function initAmountModal() {
       }
     });
     
-    // Обработка Enter
+ // Обработка Enter
     input.addEventListener('keydown', function(e) {
       if (e.key === 'Enter') {
         e.preventDefault();
@@ -8528,14 +8453,12 @@ function initAmountModal() {
 
         if (currentPaymentMethod === 'ton') {
           handleTonSubmit();
-        } else if (currentPaymentMethod === 'bank') {
-          handleBankSubmit();
         } else {
           handleAmountSubmit(); // stars
         }
       }
     });
-    
+
     // Восстанавливаем placeholder при потере фокуса если пусто
     input.addEventListener('blur', function(e) {
       if (e.target.value === '') {
@@ -8546,21 +8469,19 @@ function initAmountModal() {
     });
   }
   
-  // Кнопка подтверждения
+// Кнопка подтверждения
   if (confirmBtn) {
     confirmBtn.addEventListener('click', function() {
       if (confirmBtn.disabled) return;
 
       if (currentPaymentMethod === 'ton') {
         handleTonSubmit();
-      } else if (currentPaymentMethod === 'bank') {
-        handleBankSubmit();
       } else {
         handleAmountSubmit(); // stars
       }
     });
   }
-  
+
   // Кнопка отмены
   if (cancelBtn) {
     cancelBtn.addEventListener('click', topupAmountCloseModal);
