@@ -890,22 +890,22 @@ html:not(.in-telegram) .d-auth-warning{
     }
     .loot.flipped .loot-inner{ transform:rotateY(180deg); }
 
-    .loot-face{
+        .loot-face{
       position:absolute; inset:0;
       border-radius:14px;
       border:1px solid rgba(0,0,0,.12);
       overflow:hidden;
       backface-visibility:hidden; -webkit-backface-visibility:hidden;
       display:grid; place-items:center;
-      background: linear-gradient(180deg, rgba(243,243,243,.98), rgba(233,233,233,.94));
+      background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(235,235,235,.92));
       color:rgba(0,0,0,.68); font-size:12px; letter-spacing:1px; text-transform:uppercase;
-      box-shadow: 0 10px 22px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.70);
+      box-shadow: 0 10px 22px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.85);
     }
     .loot-front img{ width:100%; height:100%; object-fit:cover; display:block; }
     .loot-back{
       transform:rotateY(180deg);
       background:
-        linear-gradient(180deg, rgba(243,243,243,.98), rgba(233,233,233,.94)),
+        linear-gradient(180deg, rgba(255,255,255,.96), rgba(235,235,235,.92)),
         radial-gradient(600px 200px at 50% 110%, rgba(0,0,0,.08), transparent 60%),
         radial-gradient(600px 200px at 50% -10%, rgba(0,0,0,.06), transparent 60%);
       padding:12px;
@@ -932,7 +932,7 @@ html:not(.in-telegram) .d-auth-warning{
       text-shadow:none;
     }
 
-    /* подсветка выигрыша без трансформаций */
+/* подсветка выигрыша без трансформаций */
 .slice.win{
   outline:2px solid rgba(255,255,255,.55);
   box-shadow:0 0 28px rgba(255,255,255,.18), inset 0 0 14px rgba(0,0,0,.10);
@@ -3119,7 +3119,7 @@ html, body{
   background:
     radial-gradient(120px 80px at 20% 20%, rgba(0,0,0,.05), transparent 60%),
     radial-gradient(120px 80px at 80% 80%, rgba(0,0,0,.06), transparent 60%),
-    linear-gradient(180deg,#f3f3f3,#e9e9e9);
+    linear-gradient(180deg,#ffffff,#eeeeee);
   box-shadow:0 10px 26px rgba(0,0,0,.22);
   display:grid; grid-template-rows:1fr auto; align-items:center; justify-items:center;
   overflow:hidden;
@@ -3163,7 +3163,7 @@ html, body{
   border-bottom: 1px solid rgba(0,0,0,.12);
   background:
     radial-gradient(90px 70px at 50% 50%, rgba(0,0,0,.06), transparent 60%),
-    linear-gradient(180deg, rgba(243,243,243,.98), rgba(233,233,233,.94));
+    linear-gradient(180deg, rgba(255,255,255,.96), rgba(235,235,235,.92));
   overflow: hidden;
   box-sizing: border-box;
 }
@@ -3200,7 +3200,7 @@ html, body{
   border-bottom: none;
   background:
     radial-gradient(90px 70px at 50% 50%, rgba(0,0,0,.06), transparent 60%),
-    linear-gradient(180deg, rgba(243,243,243,.98), rgba(233,233,233,.94));
+    linear-gradient(180deg, rgba(255,255,255,.96), rgba(235,235,235,.92));
 }
 
 /* картинка по центру, без обрезания краёв */
@@ -3842,7 +3842,7 @@ html, body{
 :root{
   --bg-top:#000000;
   --bg-bot:#000000;
-  --grid:rgba(255,255,255,015);
+  --grid:rgba(255,255,255,.015);
 
   --panel:#070707;
   --panel2:#0b0b0b;
@@ -3851,14 +3851,14 @@ html, body{
   --card2:#101010;
 
   --text:#ffffff;
-  --muted:rgba(255,255,255,66);
-  --muted2:rgba(255,255,255,44);
+  --muted:rgba(255,255,255,.66);
+  --muted2:rgba(255,255,255,.44);
 
-  --border:rgba(255,255,255,10);
-  --border2:rgba(255,255,255,16);
+  --border:rgba(255,255,255,.10);
+  --border2:rgba(255,255,255,.16);
 
-  --shadow-soft: 0 16px 48px rgba(0,0,0,70), inset 0 0 0 1px rgba(255,255,255,08);
-  --shadow-strong: 0 22px 70px rgba(0,0,0,80), inset 0 0 0 1px rgba(255,255,255,10);
+  --shadow-soft: 0 16px 48px rgba(0,0,0,.70), inset 0 0 0 1px rgba(255,255,255,.08);
+  --shadow-strong: 0 22px 70px rgba(0,0,0,.80), inset 0 0 0 1px rgba(255,255,255,.10);
 
   /* гасим «неон» в моно-стиле */
   --neon-cyan:#ffffff;
@@ -4372,7 +4372,8 @@ a:hover{ color:#fff; }
 
       <div class="viewport">
         <div class="track">
-          <!-- 2 слайда-заглушки -->
+          <!-- 3 слайда-заглушки -->
+<div class="slide"></div>
 <div class="slide"></div>
 <div class="slide"></div>
         </div>
@@ -4424,13 +4425,29 @@ a:hover{ color:#fff; }
 </div>
 
 <!-- ✅ Cardlink / SBP оплата -->
-<!-- УДАЛЕНО: оставлены только Stars и TON -->
+<div id="bankPayModal" class="modal" aria-hidden="true">
+  <div class="modal-card" role="document" style="max-width: 520px; width: 100%;">
+    <div class="modal-title">ОПЛАТА ЧЕРЕЗ СБП</div>
+
+    <div class="bankpay-frame-wrap" style="width:100%; height:70vh; min-height:420px;">
+      <iframe id="bankPayFrame"
+              src=""
+              style="border:0; width:100%; height:100%; border-radius:12px;"
+              allow="payment *; clipboard-read; clipboard-write"></iframe>
+    </div>
+
+    <div class="modal-actions">
+      <button id="bankPayCloseBtn" class="btn btn-ghost">ЗАКРЫТЬ</button>
+    </div>
+  </div>
+</div>
 
       <button class="nav next" aria-label="Следующий">›</button>
     </div>
 
     <div class="topup-dots" id="topupDots" role="tablist" aria-label="Варианты оплаты">
   <button class="dot" role="tab" aria-selected="true"></button>
+  <button class="dot" role="tab" aria-selected="false"></button>
   <button class="dot" role="tab" aria-selected="false"></button>
 </div>
 
@@ -4702,10 +4719,10 @@ function getSellPrice(src){
 }
 
 const CHEAP_BACK_TEXT = {
-  cheap_1: Array(11).fill({stars:"25"}),
-  cheap_2: Array(11).fill({stars:"30"}),
-  cheap_3: Array(11).fill({stars:"45"}),
-  cheap_4: Array(11).fill({stars:"50"}),
+  cheap_1: Array(11).fill({stars:"25/"}),
+  cheap_2: Array(11).fill({stars:"30/"}),
+  cheap_3: Array(11).fill({stars:"45/"}),
+  cheap_4: Array(11).fill({stars:"50/"}),
 };
 
 const CASE_THUMBS = {
@@ -7386,24 +7403,25 @@ case 'topup':
 
 // ===== TOPUP MODAL - ИСПРАВЛЕННАЯ ВЕРСИЯ =====
 let currentSlide = 0;
-const totalSlides = 2;
+const totalSlides = 3;
 let isAnimating = false;
 let touchStartX = 0;
 let touchEndX = 0;
 // какой способ оплаты выбран
 // 0-й слайд — звезды, 1-й — TON → Stars
-let currentPaymentMethod = 'stars'; // 'stars' | 'ton'
+let currentPaymentMethod = 'stars'; // 'stars' | 'ton' | 'bank'
 
 function initTopupModal() {
     console.log('🔄 Инициализация топ-ап модалки');
 
     // ===== МАССИВ С URL КАРТИНОК ДЛЯ СЛАЙДОВ =====
     // ЗАМЕНИТЕ ЭТИ URL НА СВОИ ИЗОБРАЖЕНИЯ!
-const slideImages = [
+    const slideImages = [
   'assets/images/20251030_1539_Белый текст по центру_remix_01k8thzzsgf4jbcyf41pwnff8y.png',  // Первый слайд
-  'assets/images/Untitled (48).png'   // Второй слайд
+  'assets/images/Untitled (48).png',  // Второй слайд  
+  'assets/images/Untitled (50).png'   // Третий слайд
 ];
- 
+    
     // Добавляем изображения в слайды
     const slides = document.querySelectorAll('#topupSlider .slide');
     slides.forEach((slide, index) => {
@@ -7464,7 +7482,7 @@ const slideImages = [
     });
     console.log('✅ Точки навигации настроены');
 
-    // Кнопка подтверждения
+// Кнопка подтверждения
 const confirmBtn = document.getElementById('topupConfirm');
 if (confirmBtn) {
   confirmBtn.addEventListener('click', () => {
@@ -7478,6 +7496,13 @@ if (confirmBtn) {
     // 1-й слайд — пополнение через TON → Stars
     if (currentSlide === 1) {
       currentPaymentMethod = 'ton';
+      topupAmountOpenModal();
+      return;
+    }
+
+        // ✅ 2-й индекс / 3-й слайд — Cardlink / SBP
+    if (currentSlide === 2) {
+      currentPaymentMethod = 'bank';
       topupAmountOpenModal();
       return;
     }
@@ -8079,7 +8104,81 @@ window.lastTonTopup = { ton, stars: starsToAdd };
   return true;
 }
 
-// ✅ Cardlink / SBP — УДАЛЕНО (оставлены только Stars и TON)
+// ✅ Cardlink / SBP
+const CARDLINK_BASE_URL = 'https://ВАШ_CARDLINK_URL/checkout'; 
+// пример: https://pay.cardlink.ru/xxxxxxx  (подставь свой)
+
+function buildCardlinkUrl(amount) {
+  // если у тебя другой формат параметров — поменяй тут
+  const url = new URL(CARDLINK_BASE_URL);
+  url.searchParams.set('amount', String(amount));
+  url.searchParams.set('currency', 'RUB');
+  return url.toString();
+}
+
+function openBankPayModal(amount) {
+  const modal = document.getElementById('bankPayModal');
+  const frame = document.getElementById('bankPayFrame');
+  if (!modal || !frame) return;
+
+  frame.src = buildCardlinkUrl(amount);
+  modal.classList.add('show');
+  modal.setAttribute('aria-hidden', 'false');
+}
+
+function closeBankPayModal() {
+  const modal = document.getElementById('bankPayModal');
+  const frame = document.getElementById('bankPayFrame');
+  if (!modal) return;
+
+  modal.classList.remove('show');
+  modal.setAttribute('aria-hidden', 'true');
+  if (frame) frame.src = '';
+}
+
+// кнопка закрытия
+document.getElementById('bankPayCloseBtn')
+  ?.addEventListener('click', closeBankPayModal);
+
+  async function handleBankSubmit() {
+  const input = document.getElementById('amountInput');
+  const errorEl = document.getElementById('amountError');
+  if (!input) return false;
+
+  const raw = (input.value || '').trim();
+  if (!raw || !/^\d+$/.test(raw)) {
+    if (errorEl) {
+      errorEl.textContent = 'Некорректная сумма';
+      errorEl.style.display = 'block';
+    }
+    return false;
+  }
+
+  const amount = parseInt(raw, 10);
+
+  if (amount < STARS_MIN) {
+    if (errorEl) {
+      errorEl.textContent = `Минимальная сумма ${STARS_MIN}`;
+      errorEl.style.display = 'block';
+    }
+    return false;
+  }
+
+  if (amount > STARS_MAX) {
+    if (errorEl) {
+      errorEl.textContent = `Максимальная сумма ${formatRu(STARS_MAX)}`;
+      errorEl.style.display = 'block';
+    }
+    return false;
+  }
+
+  topupAmountCloseModal();
+
+  // ✅ открываем Cardlink-меню с "Оплатить ..." и QR
+  openBankPayModal(amount);
+
+  return true;
+}
 
 // ✅ Лимиты для Stars и Cardlink (одинаковые)
 const STARS_MIN = 1;
@@ -8445,7 +8544,7 @@ function initAmountModal() {
       }
     });
     
- // Обработка Enter
+    // Обработка Enter
     input.addEventListener('keydown', function(e) {
       if (e.key === 'Enter') {
         e.preventDefault();
@@ -8453,12 +8552,14 @@ function initAmountModal() {
 
         if (currentPaymentMethod === 'ton') {
           handleTonSubmit();
+        } else if (currentPaymentMethod === 'bank') {
+          handleBankSubmit();
         } else {
           handleAmountSubmit(); // stars
         }
       }
     });
-
+    
     // Восстанавливаем placeholder при потере фокуса если пусто
     input.addEventListener('blur', function(e) {
       if (e.target.value === '') {
@@ -8469,19 +8570,21 @@ function initAmountModal() {
     });
   }
   
-// Кнопка подтверждения
+  // Кнопка подтверждения
   if (confirmBtn) {
     confirmBtn.addEventListener('click', function() {
       if (confirmBtn.disabled) return;
 
       if (currentPaymentMethod === 'ton') {
         handleTonSubmit();
+      } else if (currentPaymentMethod === 'bank') {
+        handleBankSubmit();
       } else {
         handleAmountSubmit(); // stars
       }
     });
   }
-
+  
   // Кнопка отмены
   if (cancelBtn) {
     cancelBtn.addEventListener('click', topupAmountCloseModal);
