@@ -3,7 +3,10 @@
 
 <head>
 
+  <link rel="preload" as="image" href="assets/images/20260117_1741_Image Generation_remix_01kf66dgt0e2qbb8m6ngnmn416.png" fetchpriority="high">
+
   <script>
+
 // === ГЛОБАЛЬНЫЙ СБРОС UID ДЛЯ ВСЕХ ПРИ СЛЕДУЮЩЕМ ЗАПУСКЕ ===
 // Увеличь версию, когда нужно «сбросить всем»: 'v2' -> 'v3' и т.д.
 var UID_SCHEMA_VERSION = 'v2';
@@ -4113,7 +4116,7 @@ a:hover{ color:#fff; }
 <link rel="preconnect" href="https://telegram.org" crossorigin>
 <link rel="preconnect" href="https://unpkg.com" crossorigin>
 <link rel="preconnect" href="https://sneerful-anamaria-doucely.ngrok-free.dev" crossorigin>
-<link rel="preload" as="image" href="assets/images/20260117_1741_Image Generation_remix_01kf66dgt0e2qbb8m6ngnmn416.png" fetchpriority="high">
+<!-- loader preload перенесён в начало <head> -->
 
 </head>
 
@@ -4122,9 +4125,9 @@ a:hover{ color:#fff; }
 <!-- APP LOADER OVERLAY -->
 <div id="app-loader" aria-live="polite">
   <div class="loader-art" aria-hidden="true">
-    <img class="loader-img base" src="assets/images/20260117_1741_Image Generation_remix_01kf66dgt0e2qbb8m6ngnmn416.png" alt="">
+   <img class="loader-img base" src="assets/images/20260117_1741_Image Generation_remix_01kf66dgt0e2qbb8m6ngnmn416.png" alt="" loading="eager" decoding="async" fetchpriority="high">
     <div class="loader-fill">
-      <img class="loader-img fill" src="assets/images/20260117_1741_Image Generation_remix_01kf66dgt0e2qbb8m6ngnmn416.png" alt="Loading">
+     <img class="loader-img fill" src="assets/images/20260117_1741_Image Generation_remix_01kf66dgt0e2qbb8m6ngnmn416.png" alt="Loading" loading="eager" decoding="async" fetchpriority="high">
     </div>
   </div>
 </div>
@@ -4602,7 +4605,7 @@ const LOOT_SETS = { /* <-- твои массивы, оставляю как ес
   ],
   cheap_2:["assets/images/снупп дог.NFT","assets/images/20251003_1635_Прозрачный фон_remix_01k6n4frmwe74ry17r7gszk6ef.png","assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png","assets/images/20251003_1629_Прозрачный фон_remix_01k6n43z74eq3ve8a9rcx44f02.png","assets/images/20251012_1000_Прозрачный фон_remix_01k7bkfcsqe3mts7q04f9z6xgq.png","assets/images/20251003_1632_Прозрачный фон_remix_01k6n49ebnfssrvwq0605g9bkx.png","assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png","assets/images/20251008_1905_Прозрачный фон_remix_01k72913cgfyy90e2abb8t2dft.png","assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png","assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png","assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png"],
   cheap_3:["assets/images/kniga.NFT","assets/images/klever.NFT","assets/images/20251003_1635_Прозрачный фон_remix_01k6n4frmwe74ry17r7gszk6ef.png","assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png","assets/images/20251003_1629_Прозрачный фон_remix_01k6n43z74eq3ve8a9rcx44f02.png","assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png","assets/images/20251008_1905_Прозрачный фон_remix_01k72913cgfyy90e2abb8t2dft.png","assets/images/20251003_1621_Прозрачный фон_remix_01k6n3p2hwf4fbk1r0rqbvdc5d.png","assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png","assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png","assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png"],
-  cheap_4:["","","","","","","","","","",""],
+  cheap_4:["assets/images/20260122_1312_Image Generation_remix_01kfjjytjpevf87qfh5tnq4tmx.NFT","assets/images/20260122_1311_Image Generation_remix_01kfjjyepvfme8m6g48xa4eth5.NFT","assets/images/20260122_1313_Золотые Самородки_remix_01kfjk29fnf0ztvcvhg9r625n9.NFT", "assets/images/20251003_1627_Прозрачный Фон_remix_01k6n416bkeassbn7rx8a17bdt.png", "assets/images/20251003_1629_Прозрачный фон_remix_01k6n43z74eq3ve8a9rcx44f02.png","assets/images/20251003_1624_Прозрачный фон_remix_01k6n3v1nbffkrc39mm720d2gm.png","assets/images/20251008_1905_Прозрачный фон_remix_01k72913cgfyy90e2abb8t2dft.png","assets/images/20251003_1621_Прозрачный фон_remix_01k6n3p2hwf4fbk1r0rqbvdc5d.png","assets/images/20251003_1620_Прозрачный фон_remix_01k6n3k7yrey7864fgc944j33p.png","assets/images/20251003_1618_Прозрачный фон_remix_01k6n3fv8bej7813hnthjyags5.png","assets/images/20251003_1616_Сердце с бантом_remix_01k6n3czjze6paj61x9g5r7ab3.png",],
   nft_1:["","","","","","","","","","",""],
   nft_2:["","","","","","","","","","",""],
   nft_3:["","","","","","","","","","",""],
@@ -4703,10 +4706,7 @@ const CASE_THUMBS = {
   cheap:["assets/images/20260111_2157_Image Generation_remix_01keq6p6dnfn4v8d2gq0sdgmz2.png","assets/images/ChatGPT Image 11 янв. 2026 г., 22_22_44.png","assets/images/20260111_2112_Image Generation_remix_01keq43c2dfzvt1aabsw9ssp7m.png","assets/images/20260112_2229_Image Generation_remix_01kestwp63fgmras30gj1angj1.png"],
   nft:["assets/images/ChatGPT Image 13 янв. 2026 г., 18_48_07.png","assets/images/ChatGPT Image 13 янв. 2026 г., 18_57_07.png","assets/images/20260114_1331_Image Generation_remix_01key0xmk3ffrbq50cvbr1zctc.png","assets/images/20260114_2211_Image Generation_remix_01keyymgrvftzs52zbrvc727xc.png"],
   exclusive:["assets/images/20260121_1752_Image Generation_remix_01kfggn2c2ewnrhdk0wafd8q8s.png","assets/images/20260121_1818_Image Generation_remix_01kfgj4a66eejs7192vm11hq0b.png","assets/images/20260121_1819_Предметы на экране_remix_01kfgj67jsf988m25bmvgyk0pv.png","assets/images/20260122_0439_Image Generation_remix_01kfhnng16eeprk4j5ah3ebhwx.png"],
-  standard:["assets/images/20260114_2345_Image Generation_remix_01kez41fzyfjkv7cecwarga3xy.png","","",""],
-  gold:["","","",""],
-  allornothing:["","","",""],
-  expensive:["","","",""],
+  standard:["assets/images/20260114_2345_Image Generation_remix_01kez41fzyfjkv7cecwarga3xy.png","assets/images/20260122_1310_Image Generation_remix_01kfjjw2mgfm08fdw7a7vhpgfv.png","assets/images/20260122_1334_Розовые носки_remix_01kfjm9n3pe5tskdkt9tzj651x.png","assets/images/20260122_1333_Плотно прилипшие предметы_remix_01kfjm6ysjefq9f1x1jfknxypw.png"],
 };
 
 // ===== Прелоад картинок кейсов и лута =====
