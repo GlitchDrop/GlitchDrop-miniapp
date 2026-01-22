@@ -4712,45 +4712,77 @@ const CASE_THUMBS = {
 // ===== Прелоад картинок кейсов и лута =====
 (function preloadCaseImages(){
   try {
-    const urls = [];
+    const critical = [];
+    const secondary = [];
 
-    // обложки кейсов
+    // обложки кейсов (видно сразу)
     if (typeof CASE_THUMBS === 'object' && CASE_THUMBS) {
       for (const key in CASE_THUMBS) {
         const arr = CASE_THUMBS[key];
         if (Array.isArray(arr)) {
-          arr.forEach(u => { if (u) urls.push(u); });
+          arr.forEach(u => { if (u) critical.push(u); });
         }
       }
     }
 
-    // картинки приза для барабана/лута
+    // статические картинки интерфейса (иконки и т.п.)
+    try{
+      document.querySelectorAll('img[src]').forEach(el=>{
+        const s = el.getAttribute('src');
+        if (s && /^assets\/images\//.test(s)) critical.push(s);
+      });
+    }catch(_){}
+
+    // лут/спин — в фоне, чтобы не отъедали приоритет у обложек
     if (typeof LOOT_SETS === 'object' && LOOT_SETS) {
       for (const key in LOOT_SETS) {
         const arr = LOOT_SETS[key];
         if (Array.isArray(arr)) {
-          arr.forEach(u => { if (u) urls.push(u); });
+          arr.forEach(u => { if (u) secondary.push(u); });
         }
       }
     }
 
-    // если используешь SPIN_IMAGES, тоже можно прогреть
     if (typeof SPIN_IMAGES === 'object' && SPIN_IMAGES) {
       for (const key in SPIN_IMAGES) {
         const arr = SPIN_IMAGES[key];
         if (Array.isArray(arr)) {
-          arr.forEach(u => { if (u) urls.push(u); });
+          arr.forEach(u => { if (u) secondary.push(u); });
         }
       }
     }
 
-    // убираем дубли, чтобы не спамить одинаковые запросы
-    const unique = Array.from(new Set(urls));
+    const uniq = (arr) => Array.from(new Set(arr));
 
-    unique.forEach(src => {
-      const img = new Image();
-      img.src = src; // браузер сам закэширует
-    });
+    function warm(src){
+      return new Promise(resolve => {
+        const img = new Image();
+        try{
+          img.decoding = 'async';
+          img.loading = 'eager';
+          img.fetchPriority = 'high';
+        }catch(_){}
+        const done = ()=> resolve(src);
+        img.onload = done;
+        img.onerror = done;
+        img.src = src;
+        if (img.decode){
+          img.decode().then(done).catch(()=>{});
+        }
+      });
+    }
+
+    const CRITICAL  = uniq(critical);
+    const SECONDARY = uniq(secondary);
+
+    // ждём только то, что видно на главном экране
+    window.GD_PRELOAD_PROMISE = Promise.allSettled(CRITICAL.map(warm));
+
+    // остальное — прогреваем “тихо”
+    setTimeout(()=> {
+      try { SECONDARY.forEach(src => { const img = new Image(); img.src = src; }); } catch(e){}
+    }, 0);
+
   } catch (e) {
     console.warn('preloadCaseImages error', e);
   }
@@ -4914,9 +4946,9 @@ function initCardTilt(card){
       const caseNum = globalIndex;
 
       const thumbUrl  = (CASE_THUMBS[sec.id] && CASE_THUMBS[sec.id][i]) || "";
-      const thumbHTML = thumbUrl
-        ? `<img src="${thumbUrl}" alt="Обложка кейса #${i+1}" onerror="this.src='${FALLBACK_IMG}'">`
-        : `Заглушка`;
+const thumbHTML = thumbUrl
+      ? `<img src="${thumbUrl}" alt="Обложка кейса #${i+1}" loading="eager" decoding="async" fetchpriority="high" onerror="this.src='${FALLBACK_IMG}'">`
+      : `Заглушка`;
 
       const isFree   = (sec.id === 'free');
       const rawPrice = Array.isArray(sec.price)? sec.price[i] : sec.price;
@@ -8837,6 +8869,11 @@ document.addEventListener('DOMContentLoaded', function() {
   const prevOverflow = document.body.style.overflow;
   document.body.style.overflow = 'hidden';
 
+  const BOOT_DELAY_MS = 10000;   // минимум 10 секунд
+  const PRELOAD_MAX_MS = 12000;  // максимум ждём прогрев (на всякий)
+
+  const wait = (ms)=> new Promise(r=> setTimeout(r, ms));
+
   let done = false;
   const finish = () => {
     if (done) return;
@@ -8846,21 +8883,23 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(() => {
       loader.remove();
       document.body.style.overflow = prevOverflow || '';
+
+      // запуск "бота" после лоадера (если используешь)
+      try{
+        if (typeof Event === 'function') window.dispatchEvent(new Event('gd_boot'));
+        else{
+          const ev = document.createEvent('Event');
+          ev.initEvent('gd_boot', true, true);
+          window.dispatchEvent(ev);
+        }
+      }catch(e){}
     }, 180);
   };
 
-  // снимаем лоадер максимально рано
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', finish, { once:true });
-  } else {
-    finish();
-  }
-
-  // фолбэк на случай подвисших ресурсов
-  setTimeout(finish, 1800);
-
-  // если всё загрузилось быстро — тоже ок
-  window.addEventListener('load', finish, { once:true });
+  Promise.all([
+    wait(BOOT_DELAY_MS),
+    Promise.race([ (window.GD_PRELOAD_PROMISE || Promise.resolve()), wait(PRELOAD_MAX_MS) ])
+  ]).then(finish);
 })();
 
 </script>
